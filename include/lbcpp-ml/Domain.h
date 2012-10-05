@@ -25,6 +25,26 @@ public:
     {return object;}
 };
 
+class DiscreteDomain : public Domain
+{
+public:
+  size_t getNumElements() const
+    {return elements.size();}
+
+  const ObjectPtr& getElement(size_t index) const
+    {jassert(index < elements.size()); return elements[index];}
+
+  void addElement(const ObjectPtr& object)
+    {elements.push_back(object);}
+
+private:
+  friend class DiscreteDomainClass;
+
+  std::vector<ObjectPtr> elements;
+};
+
+typedef ReferenceCountedObjectPtr<DiscreteDomain> DiscreteDomainPtr;
+
 class ContinuousDomain : public Domain
 {
 public:

@@ -9,12 +9,17 @@
   <import name="Expression"/>
   
   <include file="lbcpp-ml/Problem.h"/>
+  <include file="lbcpp-ml/Search.h"/>
 
   <!-- CORE -->
   <class name="Domain" abstract="yes"/>
+  <class name="DiscreteDomain" base="Domain">
+    <variable type="ObjectVector[Object]" name="elements"/>
+  </class>
   <class name="ContinuousDomain" base="Domain">
     <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
   </class>
+
   <class name="FitnessLimits" base="ContinuousDomain"/>
 
   <class name="Fitness">
@@ -34,6 +39,14 @@
   <class name="ParetoFront" base="SolutionSet"/>
 
   <uicomponent name="SolutionSetComponent" type="SolutionSet"/>
+
+  <!-- Search -->
+  <class name="SearchState" base="Object" abstract="yes"/>
+  <class name="SearchTrajectory" base="Object">
+    <variable type="ObjectVector[Object]" name="actions"/>
+    <variable type="SearchState" name="finalState"/>
+  </class>
+  <class name="SearchDomain" base="Domain" abstract="yes"/>
 
   <!-- Problems -->
   <class name="Problem" abstract="yes"/>

@@ -22,13 +22,16 @@ public:
 
   virtual ObjectPtr sample(ExecutionContext& context) const
   {
+    SearchTrajectoryPtr res(new SearchTrajectory());
     SearchStatePtr state = domain->createInitialState();
     while (!state->isFinalState())
     {
       ObjectPtr action = sampleAction(context, state);
+      res->append(action);
       state->performTransition(context, action);
     }
-    return state;
+    res->setFinalState(state);
+    return res;
   }
 
   virtual bool isDeterministic() const // returns true if the sampler has became deterministic
@@ -39,9 +42,7 @@ public:
 
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
   {
-    SearchStatePtr finalState = object.staticCast<SearchState>();
-    jassert(finalState && finalState->isFinalState());
-
+    SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
     jassertfalse; // FIXME
   }
 
@@ -57,7 +58,7 @@ protected:
 
   ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
   {
-    FiniteDomainPtr actionDomain = state->getActionsDomain().staticCast<FiniteDomain>();
+    DiscreteDomainPtr actionDomain = state->getActionsDomain().staticCast<DiscreteDomain>();
     size_t n = actionDomain->getNumElements();
     
     std::vector<double> probabilities(n, 0.0);
