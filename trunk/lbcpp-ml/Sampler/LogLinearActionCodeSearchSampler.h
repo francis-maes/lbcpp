@@ -10,61 +10,28 @@
 # define LBCPP_ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
 
 # include <lbcpp-ml/Search.h>
-
-# include <lbcpp-ml/Problem.h> // tmp
+# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Problem.h>
+# include <lbcpp-ml/SolutionSet.h>
 
 namespace lbcpp
 {
   
-class ContinuousProblem : public Problem
-{
-public:
-  ContinuousProblem()
-  {
-  }
-
-  virtual DomainPtr getDomain() const
-    {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
-    {return limits;}
-
-protected:
-  ContinuousDomainPtr domain;
-  FitnessLimitsPtr limits;
-};
-
-class ContinuousDerivableProblem : public ContinuousProblem
-{
-public:
-  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, size_t objectiveNumber, double* value, DoubleVectorPtr* gradient) = 0;
-
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
-
-    std::vector<double> values(limits->getNumObjectives());
-    for (size_t i = 0; i < values.size(); ++i)
-      evaluate(context, parameters, i, &values[i], NULL);
-    return new Fitness(values, limits);
-  }
-};
-
-typedef ReferenceCountedObjectPtr<ContinuousDerivableProblem> ContinuousDerivableProblemPtr;
-
 class LogLinearActionCodeLearningProblem : public ContinuousDerivableProblem
 {
 public:
-  // FIXME: initialize domain and fitness limits
-
   struct Example
   {
     std::vector<size_t> availableActions;
     std::map<size_t, size_t> countsPerAction;
   };
 
-  LogLinearActionCodeLearningProblem(const std::vector<Example>& examples, double regularizer)
-    : examples(examples), regularizer(regularizer) {}
+  LogLinearActionCodeLearningProblem(const std::vector<Example>& examples, double regularizer, const DenseDoubleVectorPtr& currentParameters)
+    : examples(examples), regularizer(regularizer), currentParameters(currentParameters)
+  {
+    domain = new ContinuousDomain(std::vector<std::pair<double, double> >(currentParameters->getNumValues(), std::make_pair(-DBL_MAX, DBL_MAX)));
+    limits = new FitnessLimits(std::vector<std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // minimization problem
+  }
 
   static double getParameter(const DenseDoubleVectorPtr& parameters, size_t index)
     {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
@@ -109,9 +76,13 @@ public:
 
   }
 
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
+    {return currentParameters;}
+
 protected:
   std::vector<Example> examples;
   double regularizer;
+  DenseDoubleVectorPtr currentParameters;
 };
 
 class LogLinearActionCodeSearchSampler : public SearchSampler
@@ -150,8 +121,10 @@ public:
     std::vector<Example> dataset;
     makeDatasetRecursively(*(const std::vector<SearchTrajectoryPtr>* )&objects, indices, 0, dataset);
 
-    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, 0.1);
-    // todo: optimize with lbfgs
+    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, 0.1, parameters);
+    OptimizerPtr optimizer = lbfgsOptimizer();
+    ParetoFrontPtr front = optimizer->optimize(context, learningProblem, Optimizer::verbosityAll);
+    parameters = front->getSolution(0)->getObject().staticCast<DenseDoubleVector>();
   }
 
   void makeDatasetRecursively(const std::vector<SearchTrajectoryPtr>& trajectories, const std::vector<size_t>& indices, size_t step, std::vector<Example>& res)

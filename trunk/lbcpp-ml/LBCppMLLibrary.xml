@@ -50,7 +50,9 @@
 
   <!-- Problems -->
   <class name="Problem" abstract="yes"/>
-  
+  <class name="ContinuousProblem" base="Problem" abstract="yes"/>
+  <class name="ContinuousDerivableProblem" base="ContinuousProblem" abstract="yes"/>
+
   <class name="DecoratorProblem" base="Problem" abstract="yes">
     <variable type="Problem" name="problem"/>
   </class>

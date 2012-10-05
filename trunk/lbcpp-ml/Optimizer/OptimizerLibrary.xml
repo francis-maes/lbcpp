@@ -57,4 +57,9 @@
     <variable type="Double" name="explorationCoefficient"/>
   </class>
   
+  <!-- Gradient-based optimizers -->
+  <class name="LBFGSOptimizer" base="IterativeOptimizer">
+    <constructor/>
+  </class>
+  
 </library>
