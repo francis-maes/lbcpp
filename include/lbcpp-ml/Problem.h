@@ -54,15 +54,10 @@ class ContinuousDerivableProblem : public ContinuousProblem
 public:
   virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, size_t objectiveNumber, double* value, DoubleVectorPtr* gradient) = 0;
 
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
+  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
 
-    std::vector<double> values(limits->getNumObjectives());
-    for (size_t i = 0; i < values.size(); ++i)
-      evaluate(context, parameters, i, &values[i], NULL);
-    return new Fitness(values, limits);
-  }
+  bool testDerivativeWithRandomDirection(ExecutionContext& context, const DenseDoubleVectorPtr& parameters);
+  bool testDerivative(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, const DoubleVectorPtr& direction);
 };
 
 typedef ReferenceCountedObjectPtr<ContinuousDerivableProblem> ContinuousDerivableProblemPtr;

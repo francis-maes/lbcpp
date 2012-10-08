@@ -147,6 +147,10 @@ public:
       parameters->ensureSize(highestActionCode + 1);
 
     ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, regularizer, parameters);
+
+    for (size_t i = 0; i < 10; ++i)
+      learningProblem->testDerivativeWithRandomDirection(context, parameters);
+
     OptimizerPtr optimizer = lbfgsOptimizer();
     context.enterScope("LBFGS");
     ParetoFrontPtr front = optimizer->optimize(context, learningProblem, Optimizer::verbosityAll);

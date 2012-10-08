@@ -11,6 +11,61 @@
 using namespace lbcpp;
 
 /*
+** ContinuousDerivableProblem
+*/
+FitnessPtr ContinuousDerivableProblem::evaluate(ExecutionContext& context, const ObjectPtr& object)
+{
+  DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
+
+  std::vector<double> values(limits->getNumObjectives());
+  for (size_t i = 0; i < values.size(); ++i)
+    evaluate(context, parameters, i, &values[i], NULL);
+  return new Fitness(values, limits);
+}
+
+bool ContinuousDerivableProblem::testDerivativeWithRandomDirection(ExecutionContext& context, const DenseDoubleVectorPtr& parameters)
+{
+  DenseDoubleVectorPtr direction = new DenseDoubleVector(parameters->getClass());
+  size_t n = parameters->getNumValues();
+  direction->ensureSize(n);
+  for (size_t i = 0; i < n; ++i)
+    direction->setValue(i, context.getRandomGenerator()->sampleDoubleFromGaussian());
+  return testDerivative(context, parameters, direction);
+}
+
+bool ContinuousDerivableProblem::testDerivative(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, const DoubleVectorPtr& direction)
+{
+  double dirNorm = direction->l2norm();
+  if (!dirNorm)
+  {
+    context.errorCallback("Empty direction");
+    jassert(false);
+    return false;
+  }
+  DoubleVectorPtr gradient;
+  evaluate(context, parameters, 0, NULL, &gradient);
+  double analyticDerivative = gradient->dotProduct(direction) / dirNorm;
+
+  double eps = 5e-6 / dirNorm;
+  double v1, v2;
+
+  DenseDoubleVectorPtr x = parameters->cloneAndCast<DenseDoubleVector>();
+  direction->addWeightedTo(x, 0, -eps);
+  evaluate(context, x, 0, &v1, NULL);
+  direction->addWeightedTo(x, 0, 2 * eps);
+  evaluate(context, x, 0, &v2, NULL);
+  double numericDerivative = (v2 - v1) / (2.0 * eps * dirNorm);
+    
+  bool res = fabs(numericDerivative - analyticDerivative) < 0.0001;
+  if (!res)
+  {
+    context.errorCallback("Inconsistent gradient: eps = " + String(eps) + " Numeric: " + String(numericDerivative) + " Analytic: " + String(analyticDerivative));
+    jassertfalse;
+  }
+  return res;
+}
+
+/*
 ** DecoratorProblem
 */
 DecoratorProblem::DecoratorProblem(ProblemPtr problem)
