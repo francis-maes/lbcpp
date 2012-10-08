@@ -428,11 +428,22 @@ SearchStatePtr ExpressionRPNSearchDomain::createInitialState() const
 
 size_t ExpressionRPNSearchDomain::getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const
 {
+  ActionCodeMap::const_iterator it = actionCodes.find(action);
+  if (it == actionCodes.end())
+  {
+    size_t res = actionCodes.size();
+    const_cast<ExpressionRPNSearchDomain* >(this)->actionCodes[action] = res;
+    return res * 10 + state.staticCast<ExpressionRPNSearchState>()->getCurrentStep();
+  }
+  else
+    return it->second * 10 + state.staticCast<ExpressionRPNSearchState>()->getCurrentStep();
+  /*
   ExpressionRPNSearchStatePtr s = state.staticCast<ExpressionRPNSearchState>();
   std::vector<ExpressionPtr> stack = s->getStack();
   if (action)
     ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
   return stack.back()->getAllocationIndex();
+  */
 }
 
 DoubleVectorPtr ExpressionRPNSearchDomain::getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const

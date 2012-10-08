@@ -160,6 +160,9 @@ public:
 protected:
   ExpressionDomainPtr domain;
   ExpressionRPNTypeSpacePtr typeSearchSpace;
+
+  typedef std::map<ObjectPtr, size_t, ObjectComparator> ActionCodeMap;
+  ActionCodeMap actionCodes;
 };
 
 }; /* namespace lbcpp */
