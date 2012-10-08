@@ -236,7 +236,12 @@ protected:
 struct ObjectComparator
 {
   bool operator ()(const ObjectPtr& object1, const ObjectPtr& object2) const
-    {return object1->compare(object2) < 0;}
+  {
+    if (object1 && object2)
+      return object1->compare(object2) < 0;
+    else
+      return !object1 && object2;
+  }
 };
 
 class NameableObject : public Object
