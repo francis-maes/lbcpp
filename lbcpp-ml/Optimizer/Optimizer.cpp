@@ -52,6 +52,7 @@ FitnessPtr Optimizer::evaluate(ExecutionContext& context, const ObjectPtr& objec
   FitnessPtr fitness = problem->evaluate(context, object);
   for (size_t i = 0; i < fitness->getNumValues(); ++i)
     jassert(isNumberValid(fitness->getValue(i)));
+  jassert(fitness->getNumValues() == problem->getFitnessLimits()->getNumDimensions());
   front->addSolutionAndUpdateFront(object, fitness);
   return fitness;
 }
@@ -106,6 +107,7 @@ void IterativeOptimizer::optimize(ExecutionContext& context)
       {
         if (problem->getNumObjectives() == 1)
         {
+          // single-objective
           context.resultCallback("fitness", front->getSolution(0)->getFitness()->getValue(0));
           DoubleVectorPtr doubleVector = front->getSolution(0)->getObject().dynamicCast<DoubleVector>();
           if (doubleVector)
@@ -115,7 +117,17 @@ void IterativeOptimizer::optimize(ExecutionContext& context)
             context.resultCallback("l2norm", doubleVector->l2norm());
           }
         }
-        context.resultCallback("hyperVolume", computeHyperVolume());
+        else
+        {
+          // multi-objective
+          FitnessLimitsPtr empiricalLimits = front->getEmpiricalLimits();
+          for (size_t i = 0; i < empiricalLimits->getNumDimensions(); ++i)
+          {
+            context.resultCallback("objective" + String((int)i) + "lower", empiricalLimits->getLowerLimit(i));
+            context.resultCallback("objective" + String((int)i) + "upper", empiricalLimits->getUpperLimit(i));
+          }
+          context.resultCallback("hyperVolume", computeHyperVolume());
+        }
       }
       context.leaveScope();
     }

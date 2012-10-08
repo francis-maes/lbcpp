@@ -122,6 +122,7 @@ public:
       state->performTransition(context, action);
     }
     res->setFinalState(state);
+    //context.informationCallback(state->toShortString());
     const_cast<LogLinearActionCodeSearchSampler* >(this)->deterministic = det;
     return res;
   }

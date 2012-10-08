@@ -16,6 +16,11 @@
   </class>
 
   <class name="SearchSampler" base="Sampler" abstract="yes"/>
+  
+  <class name="RandomSearchSampler" base="SearchSampler">
+    <constructor/>
+  </class>
+  
   <class name="LogLinearActionCodeSearchSampler" base="SearchSampler">
     <constructor arguments="double regularizer, double learningRate"/>
     <variable type="Double" name="regularizer"/>

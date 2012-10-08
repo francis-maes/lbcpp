@@ -47,6 +47,7 @@ SET(LBCPP_ML_OPTIMIZER_SOURCES
 SET(LBCPP_ML_SAMPLER_SOURCES
   Sampler/UniformContinuousSampler.h
   Sampler/DiagonalGaussianSampler.h
+  Sampler/RandomSearchSampler.h
   Sampler/LogLinearActionCodeSearchSampler.h
   Sampler/SamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
@@ -80,6 +81,7 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/Expression.cpp
   Expression/ExpressionDomain.cpp
   Expression/ExpressionRPN.cpp
+  Expression/ExpressionRPNSearchState.h
   Expression/ExpressionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
 )

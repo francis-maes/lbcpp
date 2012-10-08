@@ -2,18 +2,34 @@
 
 <library name="MCGP" dynamic="yes">
 
+
+  <class name="SearchNode" base="Object">
+    <variable type="SearchState" name="state"/>
+    <variable type="ObjectVector[SearchNode]" name="successors"/>
+    <variable type="DiscreteDomain" name="actions"/>
+    <variable type="Boolean" name="fullyVisited"/>
+  </class>
+
+  <class name="PrunedSearchState" base="SearchState">
+    <variable type="SearchNode" name="node"/>
+  </class>
+
+  <class name="ExpressionToExpressionRPNProblem" base="DecoratorProblem"/>
+
+  <!-- Expression Problems -->
   <class name="ExpressionProblem" base="Problem" abstract="yes"/>
   <class name="F8SymbolicRegressionProblem" base="ExpressionProblem">
     <variable type="PositiveInteger" name="functionIndex"/>
   </class>
 
-
+  <!-- Specific to expressions -->
   <class name="ExpressionSampler" base="Sampler" abstract="yes"/>
   <class name="RPNExpressionSampler" base="ExpressionSampler" abstract="yes">
     <variable type="PositiveInteger" name="expressionSize"/>
   </class>
   <class name="RandomRPNExpressionSampler" base="RPNExpressionSampler"/>
 
+  <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="verbosity"/>
