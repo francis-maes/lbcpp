@@ -26,20 +26,28 @@ public:
     std::map<size_t, size_t> countsPerAction;
   };
 
-  LogLinearActionCodeLearningProblem(const std::vector<Example>& examples, double regularizer, const DenseDoubleVectorPtr& currentParameters)
-    : examples(examples), regularizer(regularizer), currentParameters(currentParameters)
+  LogLinearActionCodeLearningProblem(const std::vector<Example>& examples, double regularizer, const DenseDoubleVectorPtr& initialParameters)
+    : examples(examples), regularizer(regularizer), initialParameters(initialParameters)
   {
-    domain = new ContinuousDomain(std::vector<std::pair<double, double> >(currentParameters->getNumValues(), std::make_pair(-DBL_MAX, DBL_MAX)));
+    domain = new ContinuousDomain(std::vector<std::pair<double, double> >(initialParameters->getNumValues(), std::make_pair(-DBL_MAX, DBL_MAX)));
     limits = new FitnessLimits(std::vector<std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // minimization problem
   }
 
-  static double getParameter(const DenseDoubleVectorPtr& parameters, size_t index)
-    {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
-
+  // minimize sum_examples (-sum_selectedActions (actionSelectedCount * theta[selectedAction])
+  //                        +sum_selectedActions (actionSelectedCount) * log sum_i exp(theta[example.availableAction[i])) / num_examples
+  //                + lambda * sumOfSquares(theta) / 2
   virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, size_t objectiveNumber, double* value, DoubleVectorPtr* gradient)
   {
     jassert(objectiveNumber == 0);
     jassert(!value || *value == 0.0);
+
+    DenseDoubleVectorPtr denseGradient;
+    if (gradient)
+    {
+      denseGradient = new DenseDoubleVector(parameters->getClass());
+      denseGradient->ensureSize(parameters->getNumValues());
+      *gradient = denseGradient;
+    }
 
     size_t totalNumExamples = 0;
     for (size_t i = 0; i < examples.size(); ++i)
@@ -51,6 +59,8 @@ public:
       {
         if (value)
           *value -= getParameter(parameters, it->first) * it->second;
+        if (denseGradient)
+          denseGradient->decrementValue(it->first, it->second);
         totalCount += it->second;
       }
       totalNumExamples += totalCount;
@@ -62,34 +72,43 @@ public:
 
       if (value)
         *value += totalCount * logSumExp;
+      if (denseGradient)
+      {
+        for (size_t j = 0; j < example.availableActions.size(); ++j)
+          denseGradient->incrementValue(example.availableActions[j], totalCount * exp(activations->getValue(j) - logSumExp));
+      }
     }
 
     if (value)
     {
       *value /= (double)totalNumExamples;
-      *value += regularizer * parameters->l2norm();
+      *value += regularizer * parameters->sumOfSquares() / 2.0;
     }
-
-    // todo: minimize sum_examples (-sum_selectedActions (actionSelectedCount * theta[selectedAction])
-    //                              +sum_selectedActions (actionSelectedCount) * log sum_i exp(theta[example.availableAction[i])) / num_examples
-    //                + regularizer
-
+    if (denseGradient)
+    {
+      denseGradient->multiplyByScalar(1.0 / (double)totalNumExamples);
+      if (regularizer)
+        parameters->addWeightedTo(denseGradient, 0, regularizer);
+    }
   }
 
   virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
-    {return currentParameters;}
+    {return initialParameters;}
 
 protected:
   std::vector<Example> examples;
   double regularizer;
-  DenseDoubleVectorPtr currentParameters;
+  DenseDoubleVectorPtr initialParameters;
+
+  static double getParameter(const DenseDoubleVectorPtr& parameters, size_t index)
+    {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
 };
 
 class LogLinearActionCodeSearchSampler : public SearchSampler
 {
 public:
-  LogLinearActionCodeSearchSampler(double learningRate = 1.0)
-    : learningRate(learningRate), deterministic(false) {}
+  LogLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0)
+    : regularizer(regularizer), learningRate(learningRate), deterministic(false) {}
 
   virtual ObjectPtr sample(ExecutionContext& context) const
   {
@@ -119,43 +138,21 @@ public:
       indices[i] = i;
     
     std::vector<Example> dataset;
-    makeDatasetRecursively(*(const std::vector<SearchTrajectoryPtr>* )&objects, indices, 0, dataset);
+    size_t highestActionCode = 0;
+    makeDatasetRecursively(*(const std::vector<SearchTrajectoryPtr>* )&objects, indices, 0, dataset, highestActionCode);
 
-    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, 0.1, parameters);
+    if (!parameters)
+      parameters = new DenseDoubleVector(highestActionCode + 1, 0.0);
+    else
+      parameters->ensureSize(highestActionCode + 1);
+
+    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, regularizer, parameters);
     OptimizerPtr optimizer = lbfgsOptimizer();
+    context.enterScope("LBFGS");
     ParetoFrontPtr front = optimizer->optimize(context, learningProblem, Optimizer::verbosityAll);
-    parameters = front->getSolution(0)->getObject().staticCast<DenseDoubleVector>();
-  }
-
-  void makeDatasetRecursively(const std::vector<SearchTrajectoryPtr>& trajectories, const std::vector<size_t>& indices, size_t step, std::vector<Example>& res)
-  {
-    if (step == trajectories[indices[0]]->getLength())
-      return;
-
-    jassert(indices.size());
-    SearchStatePtr state = trajectories[indices[0]]->getState(step);
-    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
-
-    typedef std::map<size_t, std::vector<size_t> > DispatchMap; // action code -> trajectory indices
-    
-    Example example;
-    example.availableActions.resize(actionDomain->getNumElements());
-    for (size_t i = 0; i < example.availableActions.size(); ++i)
-      example.availableActions[i] = domain->getActionCode(state, actionDomain->getElement(i));
-
-    DispatchMap m;
-    for (size_t i = 0; i < indices.size(); ++i)
-    {
-      ObjectPtr action = trajectories[indices[i]]->getAction(step);
-      size_t actionCode = domain->getActionCode(state, action);
-      m[actionCode].push_back(indices[i]);
-    }
-    for (DispatchMap::const_iterator it = m.begin(); it != m.end(); ++it)
-    {
-      example.countsPerAction[it->first] = it->second.size();
-      makeDatasetRecursively(trajectories, it->second, step + 1, res);
-    }
-    res.push_back(example);
+    context.leaveScope();
+    if (front->getNumSolutions())
+      parameters = front->getSolution(0)->getObject().staticCast<DenseDoubleVector>();
   }
 
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
@@ -203,6 +200,7 @@ public:
 protected:
   friend class LogLinearActionCodeSearchSamplerClass;
 
+  double regularizer;
   double learningRate;
 
   DenseDoubleVectorPtr parameters;
@@ -233,6 +231,42 @@ protected:
 
     size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
     return actionDomain->getElement(index);
+  }
+  
+  void makeDatasetRecursively(const std::vector<SearchTrajectoryPtr>& trajectories, const std::vector<size_t>& indices, size_t step, std::vector<Example>& res, size_t& highestActionCode)
+  {
+    if (step == trajectories[indices[0]]->getLength())
+      return;
+
+    jassert(indices.size());
+    SearchStatePtr state = trajectories[indices[0]]->getState(step);
+    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
+
+    typedef std::map<size_t, std::vector<size_t> > DispatchMap; // action code -> trajectory indices
+    
+    Example example;
+    example.availableActions.resize(actionDomain->getNumElements());
+    for (size_t i = 0; i < example.availableActions.size(); ++i)
+    {
+      size_t code = domain->getActionCode(state, actionDomain->getElement(i));
+      if (code > highestActionCode)
+        highestActionCode = code;
+      example.availableActions[i] = code;
+    }
+
+    DispatchMap m;
+    for (size_t i = 0; i < indices.size(); ++i)
+    {
+      ObjectPtr action = trajectories[indices[i]]->getAction(step);
+      size_t actionCode = domain->getActionCode(state, action);
+      m[actionCode].push_back(indices[i]);
+    }
+    for (DispatchMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    {
+      example.countsPerAction[it->first] = it->second.size();
+      makeDatasetRecursively(trajectories, it->second, step + 1, res, highestActionCode);
+    }
+    res.push_back(example);
   }
 };
 

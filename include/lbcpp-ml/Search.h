@@ -92,7 +92,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SearchSampler> SearchSamplerPtr;
 
-extern SearchSamplerPtr logLinearActionCodeSearchSampler(double learningRate = 1.0);
+extern SearchSamplerPtr logLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0);
 
 }; /* namespace lbcpp */
 
