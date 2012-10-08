@@ -6,8 +6,7 @@
   <include file="lbcpp-ml/ExpressionDomain.h"/>
   <include file="lbcpp-ml/ExpressionUniverse.h"/>
     
- 
-  <!-- Nodes -->
+  <!-- Expressions-->
   <class name="Expression" base="Object" abstract="yes">
     <variable type="Type" name="type"/>
     <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
@@ -58,4 +57,15 @@
   </class>
   <class name="ExpressionRPNTypeSpace"/>
 
+  <!-- Expression RPN Search State -->
+  <class name="ExpressionRPNSearchState" base="SearchState">
+    <variable type="ExpressionDomain" name="domain"/>
+    <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
+    <variable type="ExpressionRPNTypeState" name="typeState"/>
+    <variable type="DiscreteDomain" name="availableActions"/>
+    <variable type="ObjectVector[Expression]" name="stack"/>
+    <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="Boolean" name="isYielded"/>
+  </class>
+  
 </library>

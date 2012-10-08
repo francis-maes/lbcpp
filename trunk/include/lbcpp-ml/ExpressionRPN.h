@@ -11,6 +11,7 @@
 
 # include "Expression.h"
 # include "ExpressionUniverse.h"
+# include "Search.h"
 
 namespace lbcpp
 {
@@ -145,6 +146,20 @@ private:
   void applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const ExpressionRPNTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
   bool acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const;
   bool prune(ExpressionRPNTypeStatePtr state); // return true if state is prunable
+};
+
+class ExpressionRPNSearchDomain : public SearchDomain
+{
+public:
+  ExpressionRPNSearchDomain(const ExpressionDomainPtr& domain, size_t expressionSize);
+
+  virtual SearchStatePtr createInitialState() const;
+  virtual size_t getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const;
+  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const;
+
+protected:
+  ExpressionDomainPtr domain;
+  ExpressionRPNTypeSpacePtr typeSearchSpace;
 };
 
 }; /* namespace lbcpp */

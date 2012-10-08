@@ -18,10 +18,160 @@
 # include <lbcpp-ml/SolutionSet.h>
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionSampler.h>
+# include <lbcpp-ml/ExpressionRPN.h>
 # include <lbcpp-ml/Search.h>
 
 namespace lbcpp
 {
+
+///////////////////////////////////////////////////////////
+
+class SearchNode;
+typedef ReferenceCountedObjectPtr<SearchNode> SearchNodePtr;
+
+class SearchNode : public Object
+{
+public:
+  SearchNode(SearchNode* parent, const SearchStatePtr& state)
+    : parent(parent), state(state), actions(state->getActionDomain().staticCast<DiscreteDomain>())
+  {
+    if (actions && actions->getNumElements())
+    {
+      successors.resize(actions->getNumElements(), NULL);
+      fullyVisited = false;
+    }
+    else
+      fullyVisited = true;
+  }
+  SearchNode() : parent(NULL) {}
+
+  DiscreteDomainPtr getPrunedActionDomain() const
+  {
+    DiscreteDomainPtr res = new DiscreteDomain();
+    std::vector<size_t> candidates;
+    for (size_t i = 0; i < successors.size(); ++i)
+      if (!successors[i] || !successors[i]->fullyVisited)
+        res->addElement(actions->getElement(i));
+    return res;
+  }
+
+  SearchNodePtr getSuccessor(ExecutionContext& context, const ObjectPtr& action)
+  {
+    for (size_t i = 0; i < actions->getNumElements(); ++i)
+      if (isSameAction(actions->getElement(i), action))
+      {
+        SearchNodePtr& succ = successors[i];
+        if (!succ)
+        {
+          SearchStatePtr nextState = state->cloneAndCast<SearchState>();
+          nextState->performTransition(context, action);
+          succ = new SearchNode(this, nextState);
+          updateIsFullyVisited();
+        }
+        return succ;
+      }
+
+    jassertfalse;
+    return NULL;
+  }
+
+  const SearchStatePtr& getState() const
+    {return state;}
+
+  bool isFinalState() const
+    {return state->isFinalState();}
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class SearchNodeClass;
+
+  SearchNode* parent;
+  SearchStatePtr state;
+  std::vector<SearchNodePtr> successors;
+  DiscreteDomainPtr actions;
+  bool fullyVisited;
+
+  bool isSameAction(const ObjectPtr& action1, const ObjectPtr& action2) const
+    {return Variable(action1) == Variable(action2);}
+
+  void updateIsFullyVisited()
+  {
+    bool previousValue = fullyVisited;
+    fullyVisited = true;
+    for (size_t i = 0; i < successors.size(); ++i)
+      if (!successors[i] || !successors[i]->fullyVisited)
+      {
+        fullyVisited = false;
+        break;
+      }
+    if (parent && previousValue != fullyVisited)
+      parent->updateIsFullyVisited();
+  }
+};
+
+class PrunedSearchState : public SearchState
+{
+public:
+  PrunedSearchState(SearchNodePtr node = SearchNodePtr())
+    : node(node) {}
+
+  virtual DomainPtr getActionDomain() const
+    {return node->getPrunedActionDomain();}
+
+  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
+  {
+    jassert(node);
+    if (stateBackup)
+      *stateBackup = node;
+    node = node->getSuccessor(context, action);
+  }
+
+  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
+    {node = stateBackup.getObjectAndCast<SearchNode>();}
+
+  virtual bool isFinalState() const
+    {return node->isFinalState();}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+    {target.staticCast<PrunedSearchState>()->node = node;}
+  
+  virtual ObjectPtr getConstructedObject() const
+    {return node->getState()->getConstructedObject();}
+
+  virtual String toShortString() const
+    {return node->getState()->toShortString();}
+
+  const SearchNodePtr& getNode() const
+    {return node;}
+
+protected:
+  friend class PrunedSearchStateClass;
+
+  SearchNodePtr node;
+};
+
+class PrunedSearchDomain : public SearchDomain
+{
+public:
+  PrunedSearchDomain(SearchDomainPtr domain) : domain(domain)
+    {rootNode = new SearchNode(NULL, domain->createInitialState());}
+
+  virtual SearchStatePtr createInitialState() const
+    {return new PrunedSearchState(rootNode);}
+
+  virtual size_t getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const
+    {return domain->getActionCode(state.staticCast<PrunedSearchState>()->getNode()->getState(), action);}
+
+  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
+    {return domain->getActionFeatures(state.staticCast<PrunedSearchState>()->getNode()->getState(), action);}
+
+protected:
+  SearchDomainPtr domain;
+  SearchNodePtr rootNode;
+};
+
+///////////////////////////////////////////////////////////
 
 class ExpressionProblem : public Problem
 {
@@ -30,9 +180,9 @@ public:
   {
     domain = new ExpressionDomain();
 
-    std::vector< std::pair<double, double> > limits(2);
+    std::vector< std::pair<double, double> > limits(1);
     limits[0] = std::make_pair(-DBL_MAX, DBL_MAX);
-    limits[1] = std::make_pair(DBL_MAX, 0); // expression size: should be minimized
+    //limits[1] = std::make_pair(DBL_MAX, 0); // expression size: should be minimized
     this->limits = new FitnessLimits(limits);
   }
 
@@ -49,6 +199,8 @@ protected:
   ExpressionDomainPtr domain;
   FitnessLimitsPtr limits;
 };
+
+typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 
 class F8SymbolicRegressionProblem : public ExpressionProblem
 {
@@ -113,9 +265,9 @@ public:
     }
 
     // construct the Fitness
-    std::vector<double> fitness(2);
+    std::vector<double> fitness(1);
     fitness[0] = res.getMean();
-    fitness[1] = expression->getTreeSize();
+    //fitness[1] = expression->getTreeSize();
     return new Fitness(fitness, limits);
   }
 
@@ -170,6 +322,36 @@ protected:
 	}
 };
 
+/////////////////////////////////////////
+
+class ExpressionToExpressionRPNProblem : public DecoratorProblem
+{
+public:
+  ExpressionToExpressionRPNProblem(ExpressionProblemPtr expressionProblem = ProblemPtr(), size_t expressionSize = 10)
+    : DecoratorProblem(expressionProblem)
+  {
+    domain = new PrunedSearchDomain(new ExpressionRPNSearchDomain(expressionProblem->getDomain().staticCast<ExpressionDomain>(), expressionSize));
+  }
+
+  virtual DomainPtr getDomain() const
+    {return domain;}
+  
+  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
+    ExpressionPtr expression = trajectory->getFinalState()->getConstructedObject().staticCast<Expression>();
+    return problem->evaluate(context, expression);
+  }
+
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
+    {jassertfalse; return ExpressionPtr();} // FIXME if required
+
+protected:
+  SearchDomainPtr domain;
+};
+
+//////////////////
+
 class MCGPSandBox : public WorkUnit
 {
 public:
@@ -177,11 +359,56 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    ProblemPtr problem = new F8SymbolicRegressionProblem(1);
-    SamplerPtr sampler = new RandomRPNExpressionSampler(10);
-    OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
-    ParetoFrontPtr pareto = optimizer->optimize(context, problem, (Optimizer::Verbosity)verbosity);
-    context.resultCallback("pareto", pareto);
+    {
+      context.enterScope("random-1");
+      ScalarVariableMean scores;
+      for (size_t j=0;j<5;++j)
+      for (size_t i = 1; i <= 8; ++i)
+      {
+        ProblemPtr problem = new F8SymbolicRegressionProblem(i);
+        SamplerPtr sampler = new RandomRPNExpressionSampler(10);
+        OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
+        ParetoFrontPtr pareto = optimizer->optimize(context, problem, (Optimizer::Verbosity)verbosity);
+        scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
+      }
+      context.leaveScope(scores.getMean());
+    }
+
+    {
+      context.enterScope("random-2");
+      ScalarVariableMean scores;
+      for (size_t j=0;j<5;++j)
+      for (size_t i = 1; i <= 8; ++i)
+      {
+        ProblemPtr problem = new F8SymbolicRegressionProblem(i);
+        SamplerPtr sampler = randomSearchSampler();
+        ProblemPtr decoratedProblem = new ExpressionToExpressionRPNProblem(problem, 10);
+        OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
+        ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, (Optimizer::Verbosity)verbosity);
+        scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
+      }
+      context.leaveScope(scores.getMean());
+    }
+
+    for (size_t level = 1; level < 4; ++level)
+      for (size_t iterPerLevel = 10; iterPerLevel <= 320; iterPerLevel *= 2)
+      {
+        context.enterScope("nrpa-"+String((int)level)+"-"+String((int)iterPerLevel));
+        ScalarVariableMean scores;
+        for (size_t j=0;j<5;++j)
+        for (size_t i = 1; i <= 8; ++i)
+        {
+          ProblemPtr problem = new F8SymbolicRegressionProblem(i);
+          SamplerPtr sampler = logLinearActionCodeSearchSampler(0.1, 1.0);
+          ProblemPtr decoratedProblem = new MaxIterationsDecoratorProblem(new ExpressionToExpressionRPNProblem(problem, 10), numEvaluations);
+
+          OptimizerPtr optimizer = nrpaOptimizer(sampler, level, iterPerLevel);
+          ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, (Optimizer::Verbosity)verbosity);
+          scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
+        }
+        context.leaveScope(scores.getMean());
+      }
+    
     return true;
   }
 

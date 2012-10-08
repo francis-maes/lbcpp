@@ -26,6 +26,9 @@ public:
 
   virtual bool isFinalState() const = 0;
 
+  virtual ObjectPtr getConstructedObject() const
+    {jassertfalse; return ObjectPtr();}
+
   lbcpp_UseDebuggingNewOperator
 };
 
@@ -85,6 +88,12 @@ class SearchSampler : public Sampler
 public:
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
     {this->domain = domain.staticCast<SearchDomain>();}
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<SearchSampler>& target = t.staticCast<SearchSampler>();
+    target->domain = domain;
+  }
 
 protected:
   SearchDomainPtr domain;
@@ -92,6 +101,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SearchSampler> SearchSamplerPtr;
 
+extern SearchSamplerPtr randomSearchSampler();
 extern SearchSamplerPtr logLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0);
 
 }; /* namespace lbcpp */

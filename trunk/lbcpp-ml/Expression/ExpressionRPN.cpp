@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp-ml/ExpressionRPN.h>
 #include <lbcpp-ml/ExpressionDomain.h>
+#include "ExpressionRPNSearchState.h"
 using namespace lbcpp;
 
 /*
@@ -412,3 +413,28 @@ bool ExpressionRPNTypeSpace::prune(ExpressionRPNTypeStatePtr state) // return tr
   state->canBePrunedComputed = true;
   return state->canBePruned;
 }
+
+/*
+** ExpressionRPNSearchDomain
+*/
+ExpressionRPNSearchDomain::ExpressionRPNSearchDomain(const ExpressionDomainPtr& domain, size_t expressionSize)
+  : domain(domain)
+{
+  typeSearchSpace = domain->getSearchSpace(defaultExecutionContext(), expressionSize);
+}
+
+SearchStatePtr ExpressionRPNSearchDomain::createInitialState() const
+  {return new ExpressionRPNSearchState(domain, typeSearchSpace);}
+
+size_t ExpressionRPNSearchDomain::getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const
+{
+  ExpressionRPNSearchStatePtr s = state.staticCast<ExpressionRPNSearchState>();
+  std::vector<ExpressionPtr> stack = s->getStack();
+  if (action)
+    ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
+  return stack.back()->getAllocationIndex();
+}
+
+DoubleVectorPtr ExpressionRPNSearchDomain::getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
+  {jassertfalse; return DoubleVectorPtr();}
+
