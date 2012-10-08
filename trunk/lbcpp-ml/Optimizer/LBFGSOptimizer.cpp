@@ -226,7 +226,7 @@ static int mcstep_(doublereal* stx, doublereal* fx, doublereal* dx, doublereal* 
 /*     LBFGS SUBROUTINE */
 /*     **************** */
 
-/* Subroutine */ int lbfgs(integer* n, integer* m, doublereal* x, doublereal* f, doublereal* g, integer* diagco, doublereal* diag, integer* iprint, doublereal* xtol, doublereal* w, integer* iflag)
+/* Subroutine */ int lbfgs(integer* n, integer* m, doublereal* x, doublereal* f, doublereal* g, integer* diagco, doublereal* diag, integer* iprint, doublereal *eps, doublereal* xtol, doublereal* w, integer* iflag)
 /*      *n, *m;
       *x, *f, *g;
       *diagco;
@@ -255,6 +255,7 @@ static int mcstep_(doublereal* stx, doublereal* fx, doublereal* dx, doublereal* 
   static doublereal gnorm;
 
   static integer point;
+  static doublereal xnorm;
   static integer cp;
   static doublereal sq, yr, ys;
   static logical finish;
@@ -478,7 +479,7 @@ static int mcstep_(doublereal* stx, doublereal* fx, doublereal* dx, doublereal* 
   }
 
   /*     TERMINATION TEST */
-  /*     ---------------- *
+  /*     ---------------- */
 
   gnorm = sqrt(ddot_(n, &g[1], &c__1, &g[1], &c__1));
   xnorm = sqrt(ddot_(n, &x[1], &c__1, &x[1], &c__1));
@@ -486,7 +487,7 @@ static int mcstep_(doublereal* stx, doublereal* fx, doublereal* dx, doublereal* 
   if (gnorm / xnorm <= *eps) {
     finish = TRUE_;
   }
-  */
+  
 
   /*    if (iprint[1] >= 0) {
 	lb1_(&iprint[1], &iter, &nfun, &gnorm, n, m, &x[1], f, &g[1], &stp, &

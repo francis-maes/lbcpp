@@ -21,6 +21,7 @@ extern int lbfgs(
     double* diag,         // in, only if diagco=true, length = num_variables
     int* iprint,          // in, iprint[0] < 0: no output, = 0: minimal output, = n: print every n iterations
                           //     iprint[1]: output type in range [0..3]
+    double* eps,
     double* xtolerance,   // in: DBL_EPSILON
     double* w,            // working array of length N(2M+1)+2M
     int* iflag            // in: 0 at beggining and 1 for restart, out: error code
@@ -43,9 +44,10 @@ public:
 
   virtual bool iteration(ExecutionContext& context, size_t iter) // returns false if the optimizer has converged
   {
-    double value;
+    double value = 0.0;
     DoubleVectorPtr gradient;
     problem->evaluate(context, parameters, 0, &value, &gradient);
+    front->addSolutionAndUpdateFront(parameters->cloneAndCast<DenseDoubleVector>(), new Fitness(std::vector<double>(1, value), problem->getFitnessLimits()));
     DenseDoubleVectorPtr denseGradient = gradient->toDenseDoubleVector();
     int res = lbfgsStep(parameters->getValuePointer(0), value, denseGradient->getValuePointer(0));
     return (res == 1);
@@ -64,6 +66,7 @@ private:
   
   void lbfgsInitialize(int numVariables)
   {
+    this->numVariables = numVariables;
     numCorrections = 5;
     iflag = 0;
     iprint[0] = -1;
@@ -75,8 +78,9 @@ private:
   int lbfgsStep(double* x, double f, const double* g)
   {
     static double tolerance = DBL_EPSILON;
+    static double epsilon = 1e-9;
     static int diagco = 0;
-    lbfgs(&numVariables, &numCorrections, x, &f, const_cast<double* >(g), &diagco, &diagonal[0], iprint, &tolerance, &memory[0], &iflag);
+    lbfgs(&numVariables, &numCorrections, x, &f, const_cast<double* >(g), &diagco, &diagonal[0], iprint, &epsilon, &tolerance, &memory[0], &iflag);
     return iflag;
   }
 };

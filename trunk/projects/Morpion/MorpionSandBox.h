@@ -26,14 +26,16 @@ public:
   {
     ProblemPtr problem = new MorpionProblem(4, true);
     
-    /*testOptimizer(context, randomOptimizer(logLinearActionCodeSearchSampler(), numEvaluations), problem);
-    testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(), 100, 30, numEvaluations / 100, false), problem);
-    testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(), 100, 30, numEvaluations / 100, true), problem);
+    testOptimizer(context, randomOptimizer(logLinearActionCodeSearchSampler(), numEvaluations), problem);
+    for (int r = -8; r <= 0; ++r)
+    {
+      double regularizer = pow(10.0, (double)r);
+      testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(regularizer), 100, 30, numEvaluations / 100, false), problem);
+      testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(regularizer), 100, 30, numEvaluations / 100, true), problem);
+    }
     testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 1, 100), problem);
-    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 2, 100), problem);*/
+    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 2, 100), problem);
     testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 3, 100), problem);
-
-    // todo: cross-entropy with logLinearActionCodeSearchSampler
 
     return true;
   }

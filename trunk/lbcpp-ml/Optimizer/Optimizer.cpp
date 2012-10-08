@@ -102,7 +102,21 @@ void IterativeOptimizer::optimize(ExecutionContext& context)
 
     if (verbosity >= verbosityDetailed)
     {
-      context.resultCallback("hyperVolume", computeHyperVolume());
+      if (front->getNumSolutions() > 0)
+      {
+        if (problem->getNumObjectives() == 1)
+        {
+          context.resultCallback("fitness", front->getSolution(0)->getFitness()->getValue(0));
+          DoubleVectorPtr doubleVector = front->getSolution(0)->getObject().dynamicCast<DoubleVector>();
+          if (doubleVector)
+          {
+            context.resultCallback("l0norm", doubleVector->l0norm());
+            context.resultCallback("l1norm", doubleVector->l1norm());
+            context.resultCallback("l2norm", doubleVector->l2norm());
+          }
+        }
+        context.resultCallback("hyperVolume", computeHyperVolume());
+      }
       context.leaveScope();
     }
     if (verbosity >= verbosityProgressAndResult)
