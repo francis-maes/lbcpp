@@ -27,9 +27,9 @@ public:
     verbosityAll
   };
 
-  ParetoFrontPtr optimize(ExecutionContext& context, ProblemPtr problem, Verbosity verbosity = verbosityQuiet);
+  ParetoFrontPtr optimize(ExecutionContext& context, ProblemPtr problem, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet);
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity = verbosityQuiet);
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet);
   virtual void optimize(ExecutionContext& context) = 0;
   virtual void clear(ExecutionContext& context);
   

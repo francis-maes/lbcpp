@@ -26,10 +26,10 @@ public:
     std::map<size_t, size_t> countsPerAction;
   };
 
-  LogLinearActionCodeLearningProblem(const std::vector<Example>& examples, double regularizer, const DenseDoubleVectorPtr& initialParameters)
-    : examples(examples), regularizer(regularizer), initialParameters(initialParameters)
+  LogLinearActionCodeLearningProblem(size_t numParameters, const std::vector<Example>& examples, double regularizer)
+    : examples(examples), regularizer(regularizer)
   {
-    domain = new ContinuousDomain(std::vector<std::pair<double, double> >(initialParameters->getNumValues(), std::make_pair(-DBL_MAX, DBL_MAX)));
+    domain = new ContinuousDomain(std::vector<std::pair<double, double> >(numParameters, std::make_pair(-DBL_MAX, DBL_MAX)));
     limits = new FitnessLimits(std::vector<std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // minimization problem
   }
 
@@ -92,13 +92,9 @@ public:
     }
   }
 
-  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
-    {return initialParameters;}
-
 protected:
   std::vector<Example> examples;
   double regularizer;
-  DenseDoubleVectorPtr initialParameters;
 
   static double getParameter(const DenseDoubleVectorPtr& parameters, size_t index)
     {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
@@ -147,14 +143,14 @@ public:
     else
       parameters->ensureSize(highestActionCode + 1);
 
-    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, regularizer, parameters);
+    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(highestActionCode + 1, dataset, regularizer);
 
     for (size_t i = 0; i < 10; ++i)
       learningProblem->testDerivativeWithRandomDirection(context, parameters);
 
     OptimizerPtr optimizer = lbfgsOptimizer();
     context.enterScope("LBFGS");
-    ParetoFrontPtr front = optimizer->optimize(context, learningProblem, Optimizer::verbosityAll);
+    ParetoFrontPtr front = optimizer->optimize(context, learningProblem, parameters, Optimizer::verbosityAll);
     context.leaveScope();
     if (front->getNumSolutions())
       parameters = front->getSolution(0)->getObject().staticCast<DenseDoubleVector>();

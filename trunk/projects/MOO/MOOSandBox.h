@@ -120,7 +120,7 @@ protected:
     SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, (Optimizer::Verbosity)verbosity);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Optimizer::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("front", front);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
@@ -198,7 +198,7 @@ protected:
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, (Optimizer::Verbosity)verbosity);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Optimizer::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 

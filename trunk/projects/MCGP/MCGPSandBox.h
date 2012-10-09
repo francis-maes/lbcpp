@@ -350,6 +350,156 @@ protected:
   SearchDomainPtr domain;
 };
 
+///////////////////
+
+class RepeatOptimizer : public IterativeOptimizer
+{
+public:
+  RepeatOptimizer(OptimizerPtr optimizer, size_t numIterations = 0)
+    : IterativeOptimizer(numIterations), optimizer(optimizer) {}
+  RepeatOptimizer() {}
+  
+  virtual bool iteration(ExecutionContext& context, size_t iter)
+  {
+    ParetoFrontPtr front = optimizer->optimize(context, problem, ObjectPtr(), verbosity > verbosityQuiet ? (Verbosity)(verbosity - 1) : verbosityQuiet);
+    for (size_t i = 0; i < front->getNumSolutions(); ++i)
+      this->front->addSolutionAndUpdateFront(front->getSolution(i)->getObject(), front->getSolution(i)->getFitness());
+    return true;
+  }
+
+protected:
+  friend class RepeatOptimizerClass;
+
+  OptimizerPtr optimizer;
+};
+
+//////////////////
+
+class SearchAlgorithm : public Optimizer
+{
+public:
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
+  {
+    Optimizer::configure(context, problem, front, initialSolution, verbosity);
+    domain = problem->getDomain().staticCast<SearchDomain>();
+    trajectory = initialSolution.staticCast<SearchTrajectory>();
+    if (!trajectory)
+    {
+      trajectory = new SearchTrajectory();
+      trajectory->setFinalState(domain->createInitialState());
+    }
+  }
+
+  virtual void clear(ExecutionContext& context)
+  {
+    Optimizer::clear(context);
+    domain = SearchDomainPtr();
+    trajectory = SearchTrajectoryPtr();
+  }
+
+protected:
+  SearchDomainPtr domain;
+  SearchTrajectoryPtr trajectory;
+};
+
+typedef ReferenceCountedObjectPtr<SearchAlgorithm> SearchAlgorithmPtr;
+
+class RolloutSearchAlgorithm : public SearchAlgorithm
+{
+public:
+  virtual void optimize(ExecutionContext& context)
+  {
+    SearchTrajectoryPtr trajectory = this->trajectory->cloneAndCast<SearchTrajectory>();
+    SearchStatePtr state = trajectory->getFinalState();
+    while (!state->isFinalState())
+    {
+      if (problem->shouldStop())
+        return;
+      DiscreteDomainPtr availableActions = state->getActionDomain().staticCast<DiscreteDomain>();
+      size_t n = availableActions->getNumElements();
+      ObjectPtr action = availableActions->getElement(context.getRandomGenerator()->sampleSize(n));
+      trajectory->append(action);
+      state->performTransition(context, action);
+    }
+    trajectory->setFinalState(state);
+    evaluate(context, trajectory);
+  }
+};
+
+class DecoratorSearchAlgorithm : public SearchAlgorithm
+{
+public:
+  DecoratorSearchAlgorithm(SearchAlgorithmPtr algorithm = SearchAlgorithmPtr())
+    : algorithm(algorithm) {}
+   
+protected:
+  friend class DecoratorSearchAlgorithmClass;
+
+  SearchAlgorithmPtr algorithm;
+
+  /*double subSearch(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr state, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
+  {
+    if (state->isFinalState())
+      return submitFinalState(context, objective, actions, state);
+    else
+    {
+      double res = algorithm->search(context, objective, state, actions, finalState);
+      if (res != -DBL_MAX)
+        submitFinalState(context, objective, actions, finalState, res);
+      return res;
+    }
+  }*/
+};
+
+
+class LookAheadSearchAlgorithm : public DecoratorSearchAlgorithm
+{
+public:
+  LookAheadSearchAlgorithm(SearchAlgorithmPtr algorithm, double numActions = 1.0)
+    : DecoratorSearchAlgorithm(algorithm), numActions(numActions) {}
+  LookAheadSearchAlgorithm() : numActions(0.0) {}
+
+protected:
+  friend class LookAheadSearchAlgorithmClass;
+
+  double numActions;
+
+  virtual void optimize(ExecutionContext& context)
+  {
+    SearchTrajectoryPtr trajectory = this->trajectory->cloneAndCast<SearchTrajectory>();
+    SearchStatePtr state = trajectory->getFinalState();
+    DiscreteDomainPtr actions = state->getActionDomain();
+    size_t n = actions->getNumElements();
+
+    std::vector<size_t> order;
+    context.getRandomGenerator()->sampleOrder(n, order);
+    std::vector<ObjectPtr> selectedActions((size_t)(juce::jmax(1.0, n * numActions)));
+    for (size_t i = 0; i < selectedActions.size(); ++i)
+      selectedActions[i] = actions->getElement(order[i]);
+
+    for (size_t i = 0; i < selectedActions.size(); ++i)
+    {
+      if (problem->shouldStop())
+        break;
+      ObjectPtr action = selectedActions[i];
+      Variable stateBackup;
+      state->performTransition(context, action, &stateBackup);
+
+      trajectory->append(action);
+
+      //DecisionProblemStatePtr finalState;
+      //subSearch(context, objective, state, actions, finalState);
+
+      trajectory->pop();      
+
+      state->undoTransition(context, stateBackup);
+    }
+  }
+};
+
+// todo: finish look-ahead
+// todo: step 
+
 //////////////////
 
 class MCGPSandBox : public WorkUnit
@@ -368,7 +518,7 @@ public:
         ProblemPtr problem = new F8SymbolicRegressionProblem(i);
         SamplerPtr sampler = new RandomRPNExpressionSampler(10);
         OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
-        ParetoFrontPtr pareto = optimizer->optimize(context, problem, (Optimizer::Verbosity)verbosity);
+        ParetoFrontPtr pareto = optimizer->optimize(context, problem, ObjectPtr(), (Optimizer::Verbosity)verbosity);
         scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
       }
       context.leaveScope(scores.getMean());
@@ -384,7 +534,7 @@ public:
         SamplerPtr sampler = randomSearchSampler();
         ProblemPtr decoratedProblem = new ExpressionToExpressionRPNProblem(problem, 10);
         OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
-        ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, (Optimizer::Verbosity)verbosity);
+        ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Optimizer::Verbosity)verbosity);
         scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
       }
       context.leaveScope(scores.getMean());
@@ -403,7 +553,7 @@ public:
           ProblemPtr decoratedProblem = new MaxIterationsDecoratorProblem(new ExpressionToExpressionRPNProblem(problem, 10), numEvaluations);
 
           OptimizerPtr optimizer = nrpaOptimizer(sampler, level, iterPerLevel);
-          ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, (Optimizer::Verbosity)verbosity);
+          ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Optimizer::Verbosity)verbosity);
           scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
         }
         context.leaveScope(scores.getMean());

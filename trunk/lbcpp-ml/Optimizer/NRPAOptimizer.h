@@ -22,9 +22,9 @@ public:
     : sampler(sampler), level(level), numIterationsPerLevel(numIterationsPerLevel) {}
   NRPAOptimizer() : level(0), numIterationsPerLevel(0) {}
   
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    Optimizer::configure(context, problem, front, verbosity);
+    Optimizer::configure(context, problem, front, initialSolution, verbosity);
     sampler->initialize(context, problem->getDomain());
   }
 
