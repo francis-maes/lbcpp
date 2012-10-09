@@ -33,13 +33,16 @@ namespace lbcpp
 class LBFGSOptimizer : public IterativeOptimizer
 {
 public:
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, verbosity);
+    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
     this->problem = problem.staticCast<ContinuousDerivableProblem>();
     ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
     lbfgsInitialize(domain->getNumDimensions());
-    parameters = problem->proposeStartingSolution(context)->cloneAndCast<DenseDoubleVector>();
+    parameters = initialSolution.staticCast<DenseDoubleVector>();
+    if (!parameters)
+      parameters = problem->proposeStartingSolution(context);
+    parameters = parameters->cloneAndCast<DenseDoubleVector>();
   }
 
   virtual bool iteration(ExecutionContext& context, size_t iter) // returns false if the optimizer has converged

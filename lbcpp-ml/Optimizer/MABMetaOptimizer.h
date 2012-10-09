@@ -36,9 +36,9 @@ public:
     return true;
   }
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, verbosity);
+    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
 
     FitnessLimitsPtr limits = problem->getFitnessLimits();
     pool = new BanditPool(new Objective(), explorationCoefficient);
@@ -46,7 +46,7 @@ public:
     for (size_t i = 0; i < numInstances; ++i)
     {
       IterativeOptimizerPtr optimizer = baseOptimizer->cloneAndCast<IterativeOptimizer>();
-      optimizer->configure(context, problem, front, verbosityQuiet);
+      optimizer->configure(context, problem, front, initialSolution, verbosityQuiet);
       pool->createArm(optimizer);
     }
   }

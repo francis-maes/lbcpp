@@ -262,7 +262,7 @@ public:
 
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, Optimizer::verbosityProgressAndResult);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), Optimizer::verbosityProgressAndResult);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
     std::vector<double> hyperVolumes = decorator->getHyperVolumes();

@@ -92,9 +92,9 @@ public:
   NSGA2MOOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9)
     : PopulationBasedOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    PopulationBasedOptimizer::configure(context, problem, front, verbosity);
+    PopulationBasedOptimizer::configure(context, problem, front, initialSolution, verbosity);
     objective = new SharkObjectiveFunctionFromProblem(context, problem);
     nsga2 = new NSGA2Search();
   }
@@ -134,9 +134,9 @@ public:
   CMAESMOOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
     : PopulationBasedOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    PopulationBasedOptimizer::configure(context, problem, front, verbosity);
+    PopulationBasedOptimizer::configure(context, problem, front, initialSolution, verbosity);
     objective = new SharkObjectiveFunctionFromProblem(context, problem);
     mocma = new MOCMASearch();
   }

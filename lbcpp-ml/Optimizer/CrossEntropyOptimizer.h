@@ -24,9 +24,9 @@ public:
     : PopulationBasedOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropyOptimizer() : elitist(false) {}
   
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, verbosity);
+    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
     currentSampler = this->sampler;
     currentSampler->initialize(context, problem->getDomain());
     currentParents = SolutionSetPtr();

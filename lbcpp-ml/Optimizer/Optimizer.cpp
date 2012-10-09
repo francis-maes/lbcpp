@@ -14,7 +14,7 @@ using namespace lbcpp;
 /*
 ** Optimizer
 */
-void Optimizer::configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+void Optimizer::configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
 {
   this->front = front;
   this->problem = problem;
@@ -28,11 +28,11 @@ void Optimizer::clear(ExecutionContext& context)
   verbosity = verbosityQuiet;
 }
 
-ParetoFrontPtr Optimizer::optimize(ExecutionContext& context, ProblemPtr problem, Verbosity verbosity)
+ParetoFrontPtr Optimizer::optimize(ExecutionContext& context, ProblemPtr problem, ObjectPtr initialSolution, Verbosity verbosity)
 {
   ParetoFrontPtr res = new ParetoFront(problem->getFitnessLimits());
   
-  configure(context, problem, res, verbosity);
+  configure(context, problem, res, initialSolution, verbosity);
   optimize(context);
   if (verbosity >= verbosityProgressAndResult)
   {

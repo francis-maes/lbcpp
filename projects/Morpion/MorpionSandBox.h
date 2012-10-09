@@ -52,7 +52,7 @@ protected:
 
     MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problem, numEvaluations));
 
-    ParetoFrontPtr pareto = optimizer->optimize(context, decorator, (Optimizer::Verbosity)verbosity);
+    ParetoFrontPtr pareto = optimizer->optimize(context, decorator, ObjectPtr(), (Optimizer::Verbosity)verbosity);
     context.resultCallback("pareto", pareto);
 
     context.leaveScope(pareto->getSolution(0)->getFitness()->getValue(0));

@@ -22,9 +22,9 @@ public:
     : IterativeOptimizer(numIterations), sampler(sampler) {}
   RandomOptimizer() {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, verbosity);
+    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
     sampler->initialize(context, problem->getDomain());
   }
 

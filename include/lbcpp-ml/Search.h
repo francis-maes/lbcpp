@@ -40,8 +40,18 @@ typedef ReferenceCountedObjectPtr<SearchTrajectory> SearchTrajectoryPtr;
 class SearchTrajectory : public Object
 {
 public:
+  void append(const ObjectPtr& action)
+    {actions.push_back(action);}
+
   void append(const SearchStatePtr& state, const ObjectPtr& action)
     {states.push_back(state); actions.push_back(action);}
+
+  void pop()
+  {
+    if (states.size() == actions.size())
+      states.pop_back();
+    actions.pop_back();
+  }
 
   size_t getLength() const
     {return actions.size();}
