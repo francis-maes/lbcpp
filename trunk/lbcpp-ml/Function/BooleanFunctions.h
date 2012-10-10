@@ -23,6 +23,9 @@ public:
     : HomogeneousBinaryFunction(booleanType) {}
 
   virtual bool computeBoolean(bool first, bool second) const = 0;
+  
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+    {return "(" + inputs[0]->toShortString() + " " + toShortString() + " " + inputs[1]->toShortString() + ")";}
 
   virtual Flags getFlags() const
     {return (Flags)(commutativeFlag | allSameArgIrrelevantFlag);}
@@ -65,11 +68,38 @@ public:
   virtual String toShortString() const
     {return "&&";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + " && " + inputs[1]->toShortString();}
-
   virtual bool computeBoolean(bool first, bool second) const
     {return first && second;}
+};
+
+class OrBooleanFunction : public BinaryBooleanFunction
+{
+public:
+  virtual String toShortString() const
+    {return "||";}
+
+  virtual bool computeBoolean(bool first, bool second) const
+    {return first || second;}
+};
+
+class NandBooleanFunction : public BinaryBooleanFunction
+{
+public:
+  virtual String toShortString() const
+    {return "!&&";}
+
+  virtual bool computeBoolean(bool first, bool second) const
+    {return !(first && second);}
+};
+
+class NorBooleanFunction : public BinaryBooleanFunction
+{
+public:
+  virtual String toShortString() const
+    {return "!||";}
+
+  virtual bool computeBoolean(bool first, bool second) const
+    {return !(first || second);}
 };
 
 class EqualBooleanFunction : public BinaryBooleanFunction
@@ -77,9 +107,6 @@ class EqualBooleanFunction : public BinaryBooleanFunction
 public:
   virtual String toShortString() const
     {return "==";}
-
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + " == " + inputs[1]->toShortString();}
 
   virtual bool computeBoolean(bool first, bool second) const
     {return first == second;}

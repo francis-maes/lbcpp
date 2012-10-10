@@ -20,6 +20,7 @@
 # include <lbcpp-ml/ExpressionSampler.h>
 # include <lbcpp-ml/ExpressionRPN.h>
 # include <lbcpp-ml/Search.h>
+# include "F8SymbolicRegressionProblem.h"
 
 namespace lbcpp
 {
@@ -161,171 +162,6 @@ protected:
 
 ///////////////////////////////////////////////////////////
 
-class ExpressionProblem : public Problem
-{
-public:
-  ExpressionProblem()
-  {
-    domain = new ExpressionDomain();
-
-    std::vector< std::pair<double, double> > limits(1);
-    limits[0] = std::make_pair(-DBL_MAX, DBL_MAX);
-    //limits[1] = std::make_pair(DBL_MAX, 0); // expression size: should be minimized
-    this->limits = new FitnessLimits(limits);
-  }
-
-  virtual DomainPtr getDomain() const
-    {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
-    {return limits;}
-
-  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
-    {jassertfalse; return ExpressionPtr();}
-
-protected:
-  ExpressionDomainPtr domain;
-  FitnessLimitsPtr limits;
-};
-
-typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
-
-class F8SymbolicRegressionProblem : public ExpressionProblem
-{
-public:
-  F8SymbolicRegressionProblem(size_t functionIndex)
-    : functionIndex(functionIndex)
-  {
-    initialize();
-  }
-  F8SymbolicRegressionProblem() {}
-
-  void initialize()
-  {
-    jassert(functionIndex >= 0 && functionIndex < 8);
-    // domain
-		input = domain->addInput(doubleType, "x");
-
-		domain->addConstant(1.0);
-
-		domain->addFunction(logDoubleFunction());
-		domain->addFunction(expDoubleFunction());
-		domain->addFunction(sinDoubleFunction());
-		domain->addFunction(cosDoubleFunction());
-
-		domain->addFunction(addDoubleFunction());
-		domain->addFunction(subDoubleFunction());
-		domain->addFunction(mulDoubleFunction());
-		domain->addFunction(divDoubleFunction());
-
-    output = domain->createSupervision(doubleType, "y");
-    
-    // fitness limits
-    limits->setLimits(0, getWorstError(), 0.0); // absolute error: should be minimized
-
-    // data
-    const size_t numSamples = 20;
-    cache = domain->createCache(numSamples);
-    DenseDoubleVectorPtr supervisionValues = new DenseDoubleVector(numSamples, 0.0);
-    double lowerLimit, upperLimit;
-    getInputDomain(lowerLimit, upperLimit);
-		for (size_t i = 0; i < numSamples; ++i)
-		{
-			double x = lowerLimit + (upperLimit - lowerLimit) * i / (numSamples - 1.0);// random->sampleDouble(lowerLimit, upperLimit);
-      double y = computeFunction(x);
-
-      cache->setInputObject(domain->getInputs(), i, new DenseDoubleVector(1, x));
-			supervisionValues->setValue(i, y);
-		}
-    cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
-    cache->recomputeCacheSize();
-  }
-
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    // retrieve predictions and supervisions
-    ExpressionPtr expression = object.staticCast<Expression>();
-    LuapeSampleVectorPtr predictions = cache->getSamples(context, expression);
-    DenseDoubleVectorPtr supervisions = cache->getNodeCache(output);
-    
-    // compute mean absolute error
-    ScalarVariableMean res;
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
-    {
-      double prediction = it.getRawDouble();
-      if (prediction == doubleMissingValue || !isNumberValid(prediction))
-        prediction = 0.0;
-      res.push(fabs(supervisions->getValue(it.getIndex()) - prediction));
-    }
-
-    // construct the Fitness
-    std::vector<double> fitness(1);
-    fitness[0] = res.getMean();
-    //fitness[1] = expression->getTreeSize();
-    return new Fitness(fitness, limits);
-  }
-  
-  virtual bool loadFromString(ExecutionContext& context, const String& str)
-  {
-    if (!ExpressionProblem::loadFromString(context, str))
-      return false;
-    initialize();
-    return true;
-  }
-
-protected:
-  friend class F8SymbolicRegressionProblemClass;
-
-  size_t functionIndex;
-
-  LuapeSamplesCachePtr cache;
-  VariableExpressionPtr input;
-  VariableExpressionPtr output;
-
-  void getInputDomain(double& lowerLimit, double& upperLimit) const
-  {
-    lowerLimit = -1.0;
-		upperLimit = 1.0;
-		if (functionIndex == 6)
-			lowerLimit = 0.0, upperLimit = 2.0;
-		if (functionIndex == 7)
-			lowerLimit = 0.0, upperLimit = 4.0;
-  }
-
-  double getWorstError() const
-    {return 1.0;}
-
-	double computeFunction(double x) const
-	{
-		double x2 = x * x;
-		switch (functionIndex)
-		{
-		case 0: return x * x2 + x2 + x;
-		case 1: return x2 * x2 + x * x2 + x2 + x;
-		case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 3: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 4: return sin(x2) * cos(x) - 1.0;
-		case 5: return sin(x) + sin(x + x2);
-		case 6: return log(x + 1) + log(x2 + 1);
-		case 7: return sqrt(x);
-
-/*
-                case 1: return x*x2-x2-x;
-                case 2: return x2*x2-x2*x-x2-x;
-                case 3: return x2*x2 + sin(x);
-                case 4: return cos(x2*x)+sin(x+1);
-                case 5: return sqrt(x)+x2;
-                case 6: return x2*x2*x2 +1;
-                case 7: return sin(x2*x+x2);
-                case 8: return log(x2*x+1)+x;
-*/
-		default: jassert(false); return 0.0;
-		};
-	}
-};
-
-/////////////////////////////////////////
-
 class ExpressionToExpressionRPNProblem : public DecoratorProblem
 {
 public:
@@ -440,16 +276,18 @@ public:
   {
     std::vector< std::pair<SolverPtr, String> > solvers;
     //solvers.push_back(std::make_pair(new RepeatSolver(rolloutSearchAlgorithm(), numEvaluations), "repeat(rollout)"));
-    solvers.push_back(std::make_pair(stepLaSolver(1, 3), "step(1)la(3)"));
-    solvers.push_back(std::make_pair(stepLaSolver(2, 3), "step(2)la(3)"));
 
+    solvers.push_back(std::make_pair(nmcSolver(0), "random"));
     solvers.push_back(std::make_pair(nmcSolver(1), "nmc(1)"));
     solvers.push_back(std::make_pair(nmcSolver(2), "nmc(2)"));
     solvers.push_back(std::make_pair(nmcSolver(3), "nmc(3)"));
 
-    solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 1, numEvaluations), "nrpa(1)"));
-    solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 2, (size_t)pow((double)numEvaluations, 1.0/2.0)), "nrpa(2)"));
-    solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 3, (size_t)pow((double)numEvaluations, 1.0/3.0)), "nrpa(3)"));
+    solvers.push_back(std::make_pair(stepLaSolver(1, 3), "step(1)la(3)"));
+    solvers.push_back(std::make_pair(stepLaSolver(2, 3), "step(2)la(3)"));
+
+    solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
+    solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
+    solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
     //solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 4, (size_t)pow((double)numEvaluations, 1.0/4.0)), "nrpa(4)"));
     
     std::vector<SolverInfo> infos(solvers.size());
@@ -499,16 +337,10 @@ protected:
 
   SolverPtr nmcSolver(size_t level) const
   {
-    jassert(level >= 1);
-    return new RepeatSolver(nmcSolverRec(level));
-  }
-
-  SolverPtr nmcSolverRec(size_t level) const
-  {
-    if (level == 1)
-      return rolloutSearchAlgorithm();
-    else
-      return stepSearchAlgorithm(lookAheadSearchAlgorithm(nmcSolverRec(level - 1)));
+    SolverPtr res = rolloutSearchAlgorithm();
+    for (size_t i = 0; i < level; ++i)
+      res = stepSearchAlgorithm(lookAheadSearchAlgorithm(res));
+    return new RepeatSolver(res);
   }
 
   SolverPtr stepLaSolver(size_t numSteps, size_t numLookAheads) const
@@ -520,6 +352,9 @@ protected:
       res = stepSearchAlgorithm(res);
     return new RepeatSolver(res);
   }
+
+  SolverPtr nrpaSolver(size_t level) const
+    {return new RepeatSolver(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
 
   void runSolver(ExecutionContext& context, SolverPtr solver, SolverInfo& info)
   {
