@@ -119,6 +119,9 @@ public:
   virtual DomainPtr getActionDomain() const
     {return node->getPrunedActionDomain();}
 
+  virtual size_t getActionCode(const ObjectPtr& action) const
+    {return node->getState()->getActionCode(action);}
+
   virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
   {
     jassert(node);
@@ -149,26 +152,6 @@ protected:
   friend class PrunedSearchStateClass;
 
   SearchNodePtr node;
-};
-
-class PrunedSearchDomain : public SearchDomain
-{
-public:
-  PrunedSearchDomain(SearchDomainPtr domain) : domain(domain)
-    {rootNode = new SearchNode(NULL, domain->createInitialState());}
-
-  virtual SearchStatePtr createInitialState() const
-    {return new PrunedSearchState(rootNode);}
-
-  virtual size_t getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const
-    {return domain->getActionCode(state.staticCast<PrunedSearchState>()->getNode()->getState(), action);}
-
-  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
-    {return domain->getActionFeatures(state.staticCast<PrunedSearchState>()->getNode()->getState(), action);}
-
-protected:
-  SearchDomainPtr domain;
-  SearchNodePtr rootNode;
 };
 
 ///////////////////////////////////////////////////////////
@@ -330,7 +313,10 @@ public:
   ExpressionToExpressionRPNProblem(ExpressionProblemPtr expressionProblem = ProblemPtr(), size_t expressionSize = 10)
     : DecoratorProblem(expressionProblem)
   {
-    domain = new PrunedSearchDomain(new ExpressionRPNSearchDomain(expressionProblem->getDomain().staticCast<ExpressionDomain>(), expressionSize));
+    ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
+    SearchStatePtr rpnState = expressionRPNSearchState(expressionDomain, expressionDomain->getSearchSpace(defaultExecutionContext(), expressionSize));
+    SearchNodePtr rootNode = new SearchNode(NULL, rpnState);
+    domain = new SearchDomain(new PrunedSearchState(rootNode));
   }
 
   virtual DomainPtr getDomain() const

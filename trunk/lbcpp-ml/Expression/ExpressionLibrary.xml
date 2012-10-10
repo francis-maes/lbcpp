@@ -59,6 +59,8 @@
 
   <!-- Expression RPN Search State -->
   <class name="ExpressionRPNSearchState" base="SearchState">
+    <constructor arguments="ExpressionDomainPtr domain, ExpressionRPNTypeSpacePtr typeSearchSpace"/>
+
     <variable type="ExpressionDomain" name="domain"/>
     <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
     <variable type="ExpressionRPNTypeState" name="typeState"/>

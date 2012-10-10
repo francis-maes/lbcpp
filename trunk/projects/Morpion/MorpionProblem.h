@@ -129,6 +129,44 @@ public:
 
   virtual DomainPtr getActionDomain() const
     {return availableActions;}
+  
+  virtual size_t getActionCode(const ObjectPtr& ac) const
+  {
+    MorpionActionPtr action = ac.staticCast<MorpionAction>();
+    int x = action->getPosition().getX();
+    int y = action->getPosition().getY();
+    int position = (x + 25) * 100 + (y + 25);
+    int d = (int)(MorpionDirection::Direction)(action->getDirection());
+    int indexInLine = action->getRequestedIndexInLine();
+    return (size_t)(indexInLine + crossLength * (d + 4 * position));
+  }
+  
+#if 0
+  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
+  {
+    /* enum {featuresComplexity = 2};
+
+    MorpionFeatures features;
+
+    SparseDoubleVectorPtr stateFeatures = features.compute(board, featuresComplexity);
+
+    size_t n = actions->getNumElements();
+    ObjectVectorPtr res = new ObjectVector(simpleSparseDoubleVectorClass, n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      MorpionActionPtr action = actions->getElement(i).getObjectAndCast<MorpionAction>();
+      const_cast<MorpionState* >(this)->addLineOnBoard(action);
+      SparseDoubleVectorPtr actionFeatures = features.compute(board, featuresComplexity);
+      const_cast<MorpionState* >(this)->removeLineFromBoard(action);
+      stateFeatures->addWeightedTo(actionFeatures, 0, -1.0);
+      actionFeatures->pruneValues();
+      res->set(i, actionFeatures);
+    }
+    return res;*/
+    jassertfalse;
+    return DoubleVectorPtr();
+  }
+#endif // 0
 
 	virtual void performTransition(ExecutionContext& context, const ObjectPtr& ac, Variable* stateBackup = NULL)
 	{
@@ -540,68 +578,13 @@ protected:
 
 extern ClassPtr morpionStateClass;
 
-/*
-** Domain
-*/
-class MorpionDomain : public SearchDomain
-{
-public:
-  MorpionDomain(size_t crossLength = 5, bool isDisjoint = false)
-    : crossLength(crossLength), isDisjoint(isDisjoint) {}
-
-  virtual SearchStatePtr createInitialState() const
-    {return new MorpionState(crossLength, isDisjoint);}
-
-  virtual size_t getActionCode(const SearchStatePtr& state, const ObjectPtr& ac) const
-  {
-    MorpionActionPtr action = ac.staticCast<MorpionAction>();
-    int x = action->getPosition().getX();
-    int y = action->getPosition().getY();
-    int position = (x + 25) * 100 + (y + 25);
-    int d = (int)(MorpionDirection::Direction)(action->getDirection());
-    int indexInLine = action->getRequestedIndexInLine();
-    return (size_t)(indexInLine + crossLength * (d + 4 * position));
-  }
-
-  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
-  {
-    /* enum {featuresComplexity = 2};
-
-    MorpionFeatures features;
-
-    SparseDoubleVectorPtr stateFeatures = features.compute(board, featuresComplexity);
-
-    size_t n = actions->getNumElements();
-    ObjectVectorPtr res = new ObjectVector(simpleSparseDoubleVectorClass, n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      MorpionActionPtr action = actions->getElement(i).getObjectAndCast<MorpionAction>();
-      const_cast<MorpionState* >(this)->addLineOnBoard(action);
-      SparseDoubleVectorPtr actionFeatures = features.compute(board, featuresComplexity);
-      const_cast<MorpionState* >(this)->removeLineFromBoard(action);
-      stateFeatures->addWeightedTo(actionFeatures, 0, -1.0);
-      actionFeatures->pruneValues();
-      res->set(i, actionFeatures);
-    }
-    return res;*/
-    jassertfalse;
-    return DoubleVectorPtr();
-  }
-
-protected:
-  friend class MorpionDomainClass;
-
-  size_t crossLength;
-  bool isDisjoint;
-};
-
 class MorpionProblem : public Problem
 {
 public:
   MorpionProblem(size_t crossLength = 5, bool isDisjoint = false)
     : crossLength(crossLength), isDisjoint(isDisjoint)
   {
-    domain = new MorpionDomain(crossLength, isDisjoint);
+    domain = new SearchDomain(new MorpionState(crossLength, isDisjoint));
     limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(0.0, 200.0)));
   }
 

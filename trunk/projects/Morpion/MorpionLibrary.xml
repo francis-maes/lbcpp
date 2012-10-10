@@ -13,11 +13,6 @@
     <variable type="PositiveInteger" name="indexInLine"/>
   </class>
 
-  <class name="MorpionDomain" base="SearchDomain">
-    <variable type="PositiveInteger" name="crossLength"/>
-    <variable type="Boolean" name="isDisjoint"/>
-  </class>
-  
   <class name="MorpionProblem" base="Problem" shortName="morpion">
     <variable type="PositiveInteger" name="crossLength"/>
     <variable type="Boolean" name="isDisjoint"/>

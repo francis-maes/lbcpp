@@ -413,39 +413,3 @@ bool ExpressionRPNTypeSpace::prune(ExpressionRPNTypeStatePtr state) // return tr
   state->canBePrunedComputed = true;
   return state->canBePruned;
 }
-
-/*
-** ExpressionRPNSearchDomain
-*/
-ExpressionRPNSearchDomain::ExpressionRPNSearchDomain(const ExpressionDomainPtr& domain, size_t expressionSize)
-  : domain(domain)
-{
-  typeSearchSpace = domain->getSearchSpace(defaultExecutionContext(), expressionSize);
-}
-
-SearchStatePtr ExpressionRPNSearchDomain::createInitialState() const
-  {return new ExpressionRPNSearchState(domain, typeSearchSpace);}
-
-size_t ExpressionRPNSearchDomain::getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const
-{
-  ActionCodeMap::const_iterator it = actionCodes.find(action);
-  if (it == actionCodes.end())
-  {
-    size_t res = actionCodes.size();
-    const_cast<ExpressionRPNSearchDomain* >(this)->actionCodes[action] = res;
-    return res * 10 + state.staticCast<ExpressionRPNSearchState>()->getCurrentStep();
-  }
-  else
-    return it->second * 10 + state.staticCast<ExpressionRPNSearchState>()->getCurrentStep();
-  /*
-  ExpressionRPNSearchStatePtr s = state.staticCast<ExpressionRPNSearchState>();
-  std::vector<ExpressionPtr> stack = s->getStack();
-  if (action)
-    ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
-  return stack.back()->getAllocationIndex();
-  */
-}
-
-DoubleVectorPtr ExpressionRPNSearchDomain::getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
-  {jassertfalse; return DoubleVectorPtr();}
-

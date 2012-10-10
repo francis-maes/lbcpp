@@ -98,6 +98,25 @@ public:
       res->addElement(ObjectPtr());
     return res;
   }
+  
+  virtual size_t getActionCode(const ObjectPtr& action) const
+  {
+    ActionCodeMap::const_iterator it = actionCodes.find(action);
+    if (it == actionCodes.end())
+    {
+      size_t res = actionCodes.size();
+      const_cast<ExpressionRPNSearchState* >(this)->actionCodes[action] = res;
+      return res * 10 + getCurrentStep();
+    }
+    else
+      return it->second * 10 + getCurrentStep();
+    /*
+    std::vector<ExpressionPtr> stack = getStack();
+    if (action)
+      ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
+    return stack.back()->getAllocationIndex();
+    */
+  }
 
   struct Backup : public Object
   {
@@ -172,6 +191,9 @@ protected:
   std::vector<ExpressionPtr> stack;
   size_t numSteps;
   bool isYielded;
+  
+  typedef std::map<ObjectPtr, size_t, ObjectComparator> ActionCodeMap;
+  ActionCodeMap actionCodes;
 
   void updateTypeState()
   {

@@ -15,7 +15,6 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/predeclarations.h
   ../include/lbcpp-ml/Domain.h
   ../include/lbcpp-ml/Fitness.h
-  ../include/lbcpp-ml/Solution.h
   ../include/lbcpp-ml/SolutionContainer.h
   ../include/lbcpp-ml/SolutionComparator.h
   ../include/lbcpp-ml/Problem.h

@@ -27,14 +27,9 @@
     <variable type="FitnessLimits" name="limits"/>
   </class>
 
-  <class name="Solution">
-    <variable type="Object" name="object"/>
-    <variable type="Fitness" name="fitness"/>
-  </class>
-
   <class name="SolutionVector">
     <variable type="FitnessLimits" name="limits"/>
-    <variable type="ObjectVector[Solution]" name="solutions"/>
+    <variable type="ObjectVector[Pair[Object,Fitness]]" name="solutions"/>
   </class>
   <class name="ParetoFront" base="SolutionVector"/>
 
@@ -46,7 +41,9 @@
     <variable type="ObjectVector[Object]" name="actions"/>
     <variable type="SearchState" name="finalState"/>
   </class>
-  <class name="SearchDomain" base="Domain" abstract="yes"/>
+  <class name="SearchDomain" base="Domain">
+    <variable type="SearchState" name="initialState"/>
+  </class>
 
   <!-- Problems -->
   <class name="Problem" abstract="yes"/>
