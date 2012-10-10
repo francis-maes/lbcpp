@@ -44,8 +44,9 @@ void SearchTrajectory::clone(ExecutionContext& context, const ObjectPtr& target)
   SearchTrajectoryPtr t = target.staticCast<SearchTrajectory>();
   t->states = states;
   t->actions = actions;
-  t->finalState = finalState;
+  t->finalState = finalState ? finalState->cloneAndCast<SearchState>() : SearchStatePtr();
 }
+
 /*
 ** SearchSampler
 */

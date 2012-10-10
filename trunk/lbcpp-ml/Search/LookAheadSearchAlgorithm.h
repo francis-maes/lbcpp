@@ -31,6 +31,8 @@ protected:
     SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actions = state->getActionDomain();
     size_t n = actions->getNumElements();
+    if (n == 0)
+      return;
 
     std::vector<size_t> order;
     context.getRandomGenerator()->sampleOrder(n, order);

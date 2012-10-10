@@ -18,7 +18,7 @@
 
   <!-- Expression Problems -->
   <class name="ExpressionProblem" base="Problem" abstract="yes"/>
-  <class name="F8SymbolicRegressionProblem" base="ExpressionProblem">
+  <class name="F8SymbolicRegressionProblem" base="ExpressionProblem" shortName="symbreg">
     <variable type="PositiveInteger" name="functionIndex"/>
   </class>
 
@@ -31,8 +31,10 @@
 
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
+    <variable type="Problem" name="problem"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
-    <variable type="PositiveInteger" name="verbosity"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
   
 </library>
