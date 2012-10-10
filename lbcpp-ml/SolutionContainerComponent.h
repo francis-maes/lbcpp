@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SolutionSetComponent.h         | User Interface for Solution sets|
+| Filename: SolutionVectorComponent.h         | User Interface for Solution sets|
 | Author  : Francis Maes                   |                                 |
 | Started : 11/09/2012 19:04               |                                 |
 `------------------------------------------/                                 |
@@ -10,7 +10,7 @@
 # define LBCPP_ML_SOLUTION_SET_COMPONENT_H_
 
 # include <lbcpp-ml/SolutionComparator.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include "../lbcpp-core/UserInterface/Plot/TwoDimensionalPlotDrawable.h"
@@ -18,20 +18,20 @@
 namespace lbcpp
 {
 
-class SolutionSetDrawable : public TwoDimensionalPlotDrawable
+class SolutionVectorDrawable : public TwoDimensionalPlotDrawable
 {
 public:
-  SolutionSetDrawable(SolutionSetPtr solutions) : solutions(solutions)
+  SolutionVectorDrawable(SolutionVectorPtr solutions) : solutions(solutions)
   {
     FitnessLimitsPtr fitnessLimits = solutions->getFitnessLimits();
-    FitnessLimitsPtr empiricalLimits = solutions->getEmpiricalLimits();
+    FitnessLimitsPtr empiricalLimits = solutions->getEmpiricalFitnessLimits();
     xAxis = makeAxis(fitnessLimits, empiricalLimits, 0);
     yAxis = makeAxis(fitnessLimits, empiricalLimits, 1);
     computeBounds();
   }
 
   virtual Drawable* createCopy() const
-    {return new SolutionSetDrawable(solutions);}
+    {return new SolutionVectorDrawable(solutions);}
 
   virtual PlotAxisPtr getXAxis() const
     {return xAxis;}
@@ -101,7 +101,7 @@ public:
     {return currentFitness;}
 
 protected:
-  SolutionSetPtr solutions;
+  SolutionVectorPtr solutions;
   PlotAxisPtr xAxis, yAxis;
   FitnessPtr currentFitness;
 
@@ -156,17 +156,17 @@ protected:
   }
 };
 
-class SolutionSetComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
+class SolutionVectorComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
-  SolutionSetComponent(SolutionSetPtr solutions, const String& name)
+  SolutionVectorComponent(SolutionVectorPtr solutions, const String& name)
     : solutions(solutions->sort(lexicographicComparator())), drawable(NULL), selectedIndex(-1)
   {
     setWantsKeyboardFocus(true);
     if (solutions->getNumObjectives() == 2)
-      drawable = new SolutionSetDrawable(this->solutions);
+      drawable = new SolutionVectorDrawable(this->solutions);
   }
-  virtual ~SolutionSetComponent()
+  virtual ~SolutionVectorComponent()
     {if (drawable) delete drawable;}
 
   virtual int getDefaultWidth() const
@@ -214,8 +214,8 @@ public:
   }
 
 protected:
-  SolutionSetPtr solutions;
-  SolutionSetDrawable* drawable;
+  SolutionVectorPtr solutions;
+  SolutionVectorDrawable* drawable;
   int selectedIndex;
 
   void paintText(juce::Graphics& g, const String& text)

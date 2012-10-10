@@ -17,9 +17,9 @@ namespace lbcpp
 class ParetoRankAndCrowdingDistanceComparator : public SolutionComparator
 {
 public:
-  virtual void initialize(const SolutionSetPtr& solutions)
+  virtual void initialize(const SolutionContainerPtr& solutions)
   {
-    subFronts = solutions->nonDominatedSort(&mapping);
+    subFronts = solutions.staticCast<SolutionVector>()->nonDominatedSort(&mapping);
     crowdingDistances.resize(subFronts.size());
     for (size_t i = 0; i < crowdingDistances.size(); ++i)
       subFronts[i]->computeCrowdingDistances(crowdingDistances[i]);

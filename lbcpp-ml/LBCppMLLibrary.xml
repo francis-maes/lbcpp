@@ -32,13 +32,13 @@
     <variable type="Fitness" name="fitness"/>
   </class>
 
-  <class name="SolutionSet">
+  <class name="SolutionVector">
     <variable type="FitnessLimits" name="limits"/>
     <variable type="ObjectVector[Solution]" name="solutions"/>
   </class>
-  <class name="ParetoFront" base="SolutionSet"/>
+  <class name="ParetoFront" base="SolutionVector"/>
 
-  <uicomponent name="SolutionSetComponent" type="SolutionSet"/>
+  <uicomponent name="SolutionVectorComponent" type="SolutionVector"/>
 
   <!-- Search -->
   <class name="SearchState" base="Object" abstract="yes"/>

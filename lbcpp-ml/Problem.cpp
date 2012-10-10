@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp-ml/Problem.h>
-#include <lbcpp-ml/SolutionSet.h>
+#include <lbcpp-ml/SolutionContainer.h>
 using namespace lbcpp;
 
 /*
@@ -164,7 +164,7 @@ HyperVolumeEvaluatorDecoratorProblem::HyperVolumeEvaluatorDecoratorProblem(Probl
 FitnessPtr HyperVolumeEvaluatorDecoratorProblem::decoratedEvaluate(ExecutionContext& context, const ObjectPtr& object)
 {
   FitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, object);
-  front->addSolutionAndUpdateFront(object, res);
+  front->insertSolution(object, res);
   return res;
 }
  

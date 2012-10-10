@@ -9,27 +9,27 @@
 #ifndef LBCPP_ML_OPTIMIZER_CROSS_ENTROPY_H_
 # define LBCPP_ML_OPTIMIZER_CROSS_ENTROPY_H_
 
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 # include <lbcpp-ml/SolutionComparator.h>
 
 namespace lbcpp
 {
 
-class CrossEntropyOptimizer : public PopulationBasedOptimizer
+class CrossEntropyOptimizer : public PopulationBasedSolver
 {
 public:
   CrossEntropyOptimizer(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr())
-    : PopulationBasedOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
+    : PopulationBasedSolver(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropyOptimizer() : elitist(false) {}
   
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
+    IterativeSolver::configure(context, problem, front, initialSolution, verbosity);
     currentSampler = this->sampler;
     currentSampler->initialize(context, problem->getDomain());
-    currentParents = SolutionSetPtr();
+    currentParents = SolutionVectorPtr();
   }
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
@@ -37,10 +37,10 @@ public:
     if (verbosity >= verbosityDetailed)
       context.resultCallback("currentSampler", currentSampler->cloneAndCast<Sampler>());
 
-    SolutionSetPtr population = sampleAndEvaluatePopulation(context, currentSampler, populationSize);
+    SolutionVectorPtr population = sampleAndEvaluatePopulation(context, currentSampler, populationSize);
     if (currentParents)
-      population->addSolutions(currentParents);
-    SolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
+      population->insertSolutions(currentParents);
+    SolutionVectorPtr selectedPopulation = select(population, numTrainingSamples);
 
     currentSampler = currentSampler->cloneAndCast<Sampler>();
     learnSampler(context, selectedPopulation, currentSampler);
@@ -55,7 +55,7 @@ public:
   {
     if (verbosity >= verbosityProgressAndResult)
       context.resultCallback("sampler", currentSampler);
-    Optimizer::clear(context);
+    Solver::clear(context);
   }
 
  protected:
@@ -67,7 +67,7 @@ public:
   SolutionComparatorPtr comparator;
 
   SamplerPtr currentSampler;
-  SolutionSetPtr currentParents;
+  SolutionVectorPtr currentParents;
 
   SolutionComparatorPtr createDefaultComparator() const
   {
@@ -77,7 +77,7 @@ public:
       return paretoRankAndCrowdingDistanceComparator(); // multi-objective
   }
   
-  SolutionSetPtr select(const SolutionSetPtr& population, size_t count) const
+  SolutionVectorPtr select(const SolutionVectorPtr& population, size_t count) const
     {return population->selectNBests(comparator ? comparator : createDefaultComparator(), count);}
 };
 

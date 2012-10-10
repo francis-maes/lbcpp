@@ -16,11 +16,11 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Domain.h
   ../include/lbcpp-ml/Fitness.h
   ../include/lbcpp-ml/Solution.h
-  ../include/lbcpp-ml/SolutionSet.h
+  ../include/lbcpp-ml/SolutionContainer.h
   ../include/lbcpp-ml/SolutionComparator.h
   ../include/lbcpp-ml/Problem.h
   ../include/lbcpp-ml/Sampler.h
-  ../include/lbcpp-ml/Optimizer.h
+  ../include/lbcpp-ml/Solver.h
   ../include/lbcpp-ml/Search.h
   ../include/lbcpp-ml/Function.h
   ../include/lbcpp-ml/Expression.h
@@ -31,7 +31,7 @@ SET(LBCPP_ML_INCLUDES
 )
 
 SET(LBCPP_ML_OPTIMIZER_SOURCES
-  Optimizer/Optimizer.cpp
+  Optimizer/Solver.cpp
   Optimizer/RandomOptimizer.h
   Optimizer/NRPAOptimizer.h
   Optimizer/CrossEntropyOptimizer.h
@@ -87,8 +87,8 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
 )
 
 SET(LBCPP_ML_TOPLEVEL_SOURCES
-  SolutionSet.cpp
-  SolutionSetComponent.h
+  SolutionContainer.cpp
+  SolutionContainerComponent.h
   Domain.cpp
   Fitness.cpp
   Problem.cpp

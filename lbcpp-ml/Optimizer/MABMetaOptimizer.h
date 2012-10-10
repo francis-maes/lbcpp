@@ -9,17 +9,17 @@
 #ifndef LBCPP_ML_OPTIMIZER_MAB_META_H_
 # define LBCPP_ML_OPTIMIZER_MAB_META_H_
 
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp/Optimizer/BanditPool.h>
 
 namespace lbcpp
 {
 
-class MABMetaOptimizer : public IterativeOptimizer
+class MABMetaOptimizer : public IterativeSolver
 {
 public:
-  MABMetaOptimizer(IterativeOptimizerPtr baseOptimizer, size_t numInstances, double explorationCoefficient, size_t numIterations = 0)
-    : IterativeOptimizer(numIterations), baseOptimizer(baseOptimizer), numInstances(numInstances), explorationCoefficient(explorationCoefficient) {}
+  MABMetaOptimizer(IterativeSolverPtr baseOptimizer, size_t numInstances, double explorationCoefficient, size_t numIterations = 0)
+    : IterativeSolver(numIterations), baseOptimizer(baseOptimizer), numInstances(numInstances), explorationCoefficient(explorationCoefficient) {}
   MABMetaOptimizer() {}
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
@@ -38,14 +38,14 @@ public:
 
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
+    IterativeSolver::configure(context, problem, front, initialSolution, verbosity);
 
     FitnessLimitsPtr limits = problem->getFitnessLimits();
     pool = new BanditPool(new Objective(), explorationCoefficient);
     pool->reserveArms(numInstances);
     for (size_t i = 0; i < numInstances; ++i)
     {
-      IterativeOptimizerPtr optimizer = baseOptimizer->cloneAndCast<IterativeOptimizer>();
+      IterativeSolverPtr optimizer = baseOptimizer->cloneAndCast<IterativeSolver>();
       optimizer->configure(context, problem, front, initialSolution, verbosityQuiet);
       pool->createArm(optimizer);
     }
@@ -62,7 +62,7 @@ public:
     }
     for (size_t i = 0; i < numInstances; ++i)
     {
-      IterativeOptimizerPtr optimizer = pool->getArmParameter(i).getObjectAndCast<IterativeOptimizer>();
+      IterativeSolverPtr optimizer = pool->getArmParameter(i).getObjectAndCast<IterativeSolver>();
       jassert(optimizer);
       optimizer->clear(context);
     }
@@ -72,7 +72,7 @@ public:
 protected:
   friend class MABMetaOptimizerClass;
 
-  IterativeOptimizerPtr baseOptimizer;
+  IterativeSolverPtr baseOptimizer;
   size_t numInstances;
   double explorationCoefficient;
 
@@ -87,11 +87,11 @@ protected:
 
     virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
     {
-      IterativeOptimizerPtr optimizer = parameter.getObjectAndCast<IterativeOptimizer>();
+      IterativeSolverPtr optimizer = parameter.getObjectAndCast<IterativeSolver>();
       jassert(optimizer);
       double score = currentScore;
       bool shouldContinue = optimizer->iteration(context, instanceIndex);
-      currentScore = optimizer->computeHyperVolume();
+      currentScore = optimizer->getSolutions().staticCast<ParetoFront>()->computeHyperVolume();
       if (!shouldContinue)
         return -DBL_MAX; // optimizer has converged, kill the arm
       else

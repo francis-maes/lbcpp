@@ -10,9 +10,9 @@
 # define LBCPP_ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
 
 # include <lbcpp-ml/Search.h>
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Problem.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 
 namespace lbcpp
 {
@@ -148,12 +148,12 @@ public:
     for (size_t i = 0; i < 10; ++i)
       learningProblem->testDerivativeWithRandomDirection(context, parameters);
 
-    OptimizerPtr optimizer = lbfgsOptimizer();
+    SolverPtr optimizer = lbfgsOptimizer();
     context.enterScope("LBFGS");
-    ParetoFrontPtr front = optimizer->optimize(context, learningProblem, parameters, Optimizer::verbosityAll);
+    ParetoFrontPtr front = optimizer->optimize(context, learningProblem, parameters, Solver::verbosityAll);
     context.leaveScope();
     if (front->getNumSolutions())
-      parameters = front->getSolution(0)->getObject().staticCast<DenseDoubleVector>();
+      parameters = front->getSolution(0).staticCast<DenseDoubleVector>();
   }
 
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)

@@ -35,20 +35,23 @@ typedef ReferenceCountedObjectPtr<SolutionComparator> SolutionComparatorPtr;
 class Problem;
 typedef ReferenceCountedObjectPtr<Problem> ProblemPtr;
 
-class SolutionSet;
-typedef ReferenceCountedObjectPtr<SolutionSet> SolutionSetPtr;
+class SolutionContainer;
+typedef ReferenceCountedObjectPtr<SolutionContainer> SolutionContainerPtr;
+
+class SolutionVector;
+typedef ReferenceCountedObjectPtr<SolutionVector> SolutionVectorPtr;
 
 class ParetoFront;
 typedef ReferenceCountedObjectPtr<ParetoFront> ParetoFrontPtr;
 
-class Optimizer;
-typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
+class Solver;
+typedef ReferenceCountedObjectPtr<Solver> SolverPtr;
 
-class IterativeOptimizer;
-typedef ReferenceCountedObjectPtr<IterativeOptimizer> IterativeOptimizerPtr;
+class IterativeSolver;
+typedef ReferenceCountedObjectPtr<IterativeSolver> IterativeSolverPtr;
 
-class PopulationBasedOptimizer;
-typedef ReferenceCountedObjectPtr<PopulationBasedOptimizer> PopulationBasedOptimizerPtr;
+class PopulationBasedSolver;
+typedef ReferenceCountedObjectPtr<PopulationBasedSolver> PopulationBasedSolverPtr;
 
 class Sampler;
 typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;

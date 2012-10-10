@@ -9,13 +9,13 @@
 #ifndef LBCPP_ML_OPTIMIZER_NRPA_H_
 # define LBCPP_ML_OPTIMIZER_NRPA_H_
 
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
 
 namespace lbcpp
 {
 
-class NRPAOptimizer : public Optimizer
+class NRPAOptimizer : public Solver
 {
 public:
   NRPAOptimizer(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel)
@@ -24,7 +24,7 @@ public:
   
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    Optimizer::configure(context, problem, front, initialSolution, verbosity);
+    Solver::configure(context, problem, front, initialSolution, verbosity);
     sampler->initialize(context, problem->getDomain());
   }
 

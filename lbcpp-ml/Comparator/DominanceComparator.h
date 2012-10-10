@@ -10,7 +10,7 @@
 # define LBCPP_ML_COMPARATOR_DOMINANCE_H_
 
 # include <lbcpp-ml/SolutionComparator.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 
 namespace lbcpp
 {
@@ -18,7 +18,7 @@ namespace lbcpp
 class DominanceComparator : public SolutionComparator
 {
 public:
-  virtual void initialize(const SolutionSetPtr& solutions)
+  virtual void initialize(const SolutionContainerPtr& solutions)
     {this->solutions = solutions;}
 
   virtual int compare(size_t index1, size_t index2)
@@ -40,7 +40,7 @@ public:
   }
 
 private:
-  SolutionSetPtr solutions;
+  SolutionContainerPtr solutions;
 };
 
 }; /* namespace lbcpp */
