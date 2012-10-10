@@ -293,7 +293,7 @@ class RunMCAlgorithmWorkUnit : public WorkUnit
 {
 public:
   RunMCAlgorithmWorkUnit() : budget(1000), numRuns(10), seed(16645186) {}
-  RunMCAlgorirhmWorkUnit(size_t seed) : budget(1000), numRuns(10), seed(seed) {}
+//  RunMCAlgorirhmWorkUnit(size_t seed) : budget(1000), numRuns(10), seed(seed) {}
 
   virtual Variable run(ExecutionContext& context)
   {

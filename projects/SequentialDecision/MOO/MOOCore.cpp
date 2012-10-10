@@ -39,7 +39,7 @@ ObjectPtr ContinuousDomain::projectIntoDomain(const ObjectPtr& object) const
       res->setValue(i, projectedValue);
     }
   }
-  return res ? res : object;
+  return res ? (ObjectPtr)res : object;
 }
 
 void ContinuousDomain::clone(ExecutionContext& context, const ObjectPtr& target) const
