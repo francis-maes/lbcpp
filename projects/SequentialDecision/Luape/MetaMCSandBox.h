@@ -292,15 +292,12 @@ private:
 class RunMCAlgorithmWorkUnit : public WorkUnit
 {
 public:
-  RunMCAlgorithmWorkUnit() : budget(1000), numRuns(10), seed(16645186) {}
-//  RunMCAlgorirhmWorkUnit(size_t seed) : budget(1000), numRuns(10), seed(seed) {}
+  RunMCAlgorithmWorkUnit() : budget(1000), numRuns(10) {}
 
   virtual Variable run(ExecutionContext& context)
   {
     if (!problem || !algorithm)
       return false;
-
-    context.getRandomGenerator()->setSeed(seed);
 
     CompositeWorkUnitPtr wu(new CompositeWorkUnit(algorithm->toShortString(), numRuns));
     for (size_t run = 0; run < numRuns; ++run)
@@ -326,7 +323,7 @@ protected:
   MCAlgorithmPtr algorithm;
   size_t budget;
   size_t numRuns;
-  size_t seed;
+  
   struct RunAlgorithmWorkUnit : public WorkUnit
   {
     RunAlgorithmWorkUnit(MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex, const String& description)
