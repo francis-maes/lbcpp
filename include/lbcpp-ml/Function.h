@@ -60,6 +60,9 @@ extern ClassPtr luapeFunctionClass;
 
 // Boolean
 extern FunctionPtr andBooleanFunction();
+extern FunctionPtr orBooleanFunction();
+extern FunctionPtr nandBooleanFunction();
+extern FunctionPtr norBooleanFunction();
 extern FunctionPtr equalBooleanFunction();
 
 // Integer

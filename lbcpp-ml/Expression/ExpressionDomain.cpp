@@ -223,3 +223,26 @@ void ExpressionDomain::setRootNode(ExecutionContext& context, const ExpressionPt
 
 void ExpressionDomain::clearRootNode(ExecutionContext& context)
   {if (node) setRootNode(context, ExpressionPtr());}
+
+/*
+** ExpressionProblem
+*/
+ExpressionProblem::ExpressionProblem()
+{
+  domain = new ExpressionDomain();
+  std::vector< std::pair<double, double> > limits(1);
+  limits[0] = std::make_pair(-DBL_MAX, DBL_MAX);
+  //limits[1] = std::make_pair(DBL_MAX, 0); // expression size: should be minimized
+  this->limits = new FitnessLimits(limits);
+}
+
+ObjectPtr ExpressionProblem::proposeStartingSolution(ExecutionContext& context) const
+  {jassertfalse; return ExpressionPtr();}
+    
+bool ExpressionProblem::loadFromString(ExecutionContext& context, const String& str)
+{
+  if (!Problem::loadFromString(context, str))
+    return false;
+  initialize();
+  return true;
+}

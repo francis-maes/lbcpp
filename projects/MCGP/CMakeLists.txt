@@ -9,6 +9,8 @@ SET(LBCPP_MCGP_SOURCES
   precompiled.h
   precompiled.cpp
   TestDomain.h
+  BooleanParityProblem.h
+  F8SymbolicRegressionProblem.h
   MCGPSandBox.h
   MCGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MCGPLibrary.cpp

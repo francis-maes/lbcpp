@@ -106,7 +106,7 @@ void ExpressionUniverse::cacheFunctionExpression(const FunctionExpressionKey& ke
       if (it->second->getDepth() >= maxFunctionDepth)
         functionNodes.erase(it);
     }
-    std::cout << "Too much function nodes, new maxDepth = " << maxFunctionDepth << " => " << functionNodes.size() << " functions" << std::endl;
+    std::cout << "Too many function nodes, new maxDepth = " << maxFunctionDepth << " => " << functionNodes.size() << " functions" << std::endl;
   }
 }
 

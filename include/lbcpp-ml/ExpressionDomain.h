@@ -13,6 +13,7 @@
 # include "Expression.h"
 # include "ExpressionUniverse.h"
 # include "ExpressionRPN.h"
+# include "Problem.h"
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
@@ -162,6 +163,30 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 extern ClassPtr expressionDomainClass;
+
+
+class ExpressionProblem : public Problem
+{
+public:
+  ExpressionProblem();
+
+  virtual DomainPtr getDomain() const
+    {return domain;}
+
+  virtual FitnessLimitsPtr getFitnessLimits() const
+    {return limits;}
+
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const;
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
+
+protected:
+  ExpressionDomainPtr domain;
+  FitnessLimitsPtr limits;
+
+  virtual void initialize() = 0;
+};
+
+typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 
 }; /* namespace lbcpp */
 

@@ -12,6 +12,15 @@
   <class name="AndBooleanFunction" base="BinaryBooleanFunction">
     <constructor returnType="Function"/>
   </class>
+  <class name="OrBooleanFunction" base="BinaryBooleanFunction">
+    <constructor returnType="Function"/>
+  </class>
+  <class name="NandBooleanFunction" base="BinaryBooleanFunction">
+    <constructor returnType="Function"/>
+  </class>
+  <class name="NorBooleanFunction" base="BinaryBooleanFunction">
+    <constructor returnType="Function"/>
+  </class>
   <class name="EqualBooleanFunction" base="BinaryBooleanFunction">
     <constructor returnType="Function"/>
   </class>
