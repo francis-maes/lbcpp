@@ -13,9 +13,9 @@
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Luape/LuapeCache.h>
 # include <lbcpp/Luape/ExpressionBuilder.h>
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionSampler.h>
 # include <lbcpp-ml/ExpressionRPN.h>
@@ -352,35 +352,34 @@ protected:
 
 ///////////////////
 
-class RepeatOptimizer : public IterativeOptimizer
+class RepeatSolver : public IterativeSolver
 {
 public:
-  RepeatOptimizer(OptimizerPtr optimizer, size_t numIterations = 0)
-    : IterativeOptimizer(numIterations), optimizer(optimizer) {}
-  RepeatOptimizer() {}
+  RepeatSolver(SolverPtr solver, size_t numIterations = 0)
+    : IterativeSolver(numIterations), solver(solver) {}
+  RepeatSolver() {}
   
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
-    ParetoFrontPtr front = optimizer->optimize(context, problem, ObjectPtr(), verbosity > verbosityQuiet ? (Verbosity)(verbosity - 1) : verbosityQuiet);
-    for (size_t i = 0; i < front->getNumSolutions(); ++i)
-      this->front->addSolutionAndUpdateFront(front->getSolution(i)->getObject(), front->getSolution(i)->getFitness());
+    SolutionContainerPtr solutions = solver->optimize(context, problem, ObjectPtr(), verbosity > verbosityQuiet ? (Verbosity)(verbosity - 1) : verbosityQuiet);
+    this->solutions->insertSolutions(solutions);
     return true;
   }
 
 protected:
   friend class RepeatOptimizerClass;
 
-  OptimizerPtr optimizer;
+  SolverPtr solver;
 };
 
 //////////////////
 
-class SearchAlgorithm : public Optimizer
+class SearchAlgorithm : public Solver
 {
 public:
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    Optimizer::configure(context, problem, front, initialSolution, verbosity);
+    Solver::configure(context, problem, front, initialSolution, verbosity);
     domain = problem->getDomain().staticCast<SearchDomain>();
     trajectory = initialSolution.staticCast<SearchTrajectory>();
     if (!trajectory)
@@ -392,7 +391,7 @@ public:
 
   virtual void clear(ExecutionContext& context)
   {
-    Optimizer::clear(context);
+    Solver::clear(context);
     domain = SearchDomainPtr();
     trajectory = SearchTrajectoryPtr();
   }
@@ -517,9 +516,9 @@ public:
       {
         ProblemPtr problem = new F8SymbolicRegressionProblem(i);
         SamplerPtr sampler = new RandomRPNExpressionSampler(10);
-        OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
-        ParetoFrontPtr pareto = optimizer->optimize(context, problem, ObjectPtr(), (Optimizer::Verbosity)verbosity);
-        scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
+        SolverPtr optimizer = randomOptimizer(sampler, numEvaluations);
+        ParetoFrontPtr pareto = optimizer->optimize(context, problem, ObjectPtr(), (Solver::Verbosity)verbosity);
+        scores.push(pareto->getFitness(0)->getValue(0));
       }
       context.leaveScope(scores.getMean());
     }
@@ -533,9 +532,9 @@ public:
         ProblemPtr problem = new F8SymbolicRegressionProblem(i);
         SamplerPtr sampler = randomSearchSampler();
         ProblemPtr decoratedProblem = new ExpressionToExpressionRPNProblem(problem, 10);
-        OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
-        ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Optimizer::Verbosity)verbosity);
-        scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
+        SolverPtr optimizer = randomOptimizer(sampler, numEvaluations);
+        ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Solver::Verbosity)verbosity);
+        scores.push(pareto->getFitness(0)->getValue(0));
       }
       context.leaveScope(scores.getMean());
     }
@@ -552,9 +551,9 @@ public:
           SamplerPtr sampler = logLinearActionCodeSearchSampler(0.1, 1.0);
           ProblemPtr decoratedProblem = new MaxIterationsDecoratorProblem(new ExpressionToExpressionRPNProblem(problem, 10), numEvaluations);
 
-          OptimizerPtr optimizer = nrpaOptimizer(sampler, level, iterPerLevel);
-          ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Optimizer::Verbosity)verbosity);
-          scores.push(pareto->getSolution(0)->getFitness()->getValue(0));
+          SolverPtr optimizer = nrpaOptimizer(sampler, level, iterPerLevel);
+          ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Solver::Verbosity)verbosity);
+          scores.push(pareto->getFitness(0)->getValue(0));
         }
         context.leaveScope(scores.getMean());
       }

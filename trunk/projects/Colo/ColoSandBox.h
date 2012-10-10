@@ -11,9 +11,9 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp-ml/Problem.h>
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 
 namespace lbcpp
 {
@@ -256,13 +256,13 @@ public:
     return true;
   }
 
-  void runOptimizer(ExecutionContext& context, ProblemPtr problem, OptimizerPtr optimizer)
+  void runOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
     context.enterScope(optimizer->toShortString());
 
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), Optimizer::verbosityProgressAndResult);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), Solver::verbosityProgressAndResult);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
     std::vector<double> hyperVolumes = decorator->getHyperVolumes();

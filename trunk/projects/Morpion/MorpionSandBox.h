@@ -10,8 +10,8 @@
 # define LBCPP_MORPION_SANDBOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp-ml/Optimizer.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/Solver.h>
+# include <lbcpp-ml/SolutionContainer.h>
 # include "MorpionProblem.h"
 
 namespace lbcpp
@@ -46,16 +46,16 @@ protected:
   size_t numEvaluations;
   size_t verbosity;
 
-  void testOptimizer(ExecutionContext& context, OptimizerPtr optimizer, ProblemPtr problem)
+  void testOptimizer(ExecutionContext& context, SolverPtr optimizer, ProblemPtr problem)
   {
     context.enterScope(optimizer->toShortString());
 
     MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problem, numEvaluations));
 
-    ParetoFrontPtr pareto = optimizer->optimize(context, decorator, ObjectPtr(), (Optimizer::Verbosity)verbosity);
+    ParetoFrontPtr pareto = optimizer->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
     context.resultCallback("pareto", pareto);
 
-    context.leaveScope(pareto->getSolution(0)->getFitness()->getValue(0));
+    context.leaveScope(pareto->getFitness(0)->getValue(0));
   }
 };
 

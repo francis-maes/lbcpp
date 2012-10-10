@@ -11,9 +11,9 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/RandomVariable.h>
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
-# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/SolutionContainer.h>
 # include "SharkProblems.h"
 
 namespace lbcpp
@@ -28,7 +28,7 @@ public:
   {
     testSingleObjectiveOptimizers(context);
     testBiObjectiveOptimizers(context);
-    //testSolutionSetComponent(context);
+    //testSolutionVectorComponent(context);
     return true;
   }
 
@@ -78,7 +78,7 @@ protected:
 
       /*
       double explorationCoefficient = 5.0;
-      IterativeOptimizerPtr baseOptimizer = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, 0, true);
+      IterativeSolverPtr baseOptimizer = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, 0, true);
       solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
       solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
       solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
@@ -100,7 +100,7 @@ protected:
     }
   }
 
-  double evaluateSingleObjectiveOptimizer(ExecutionContext& context, const std::vector<ProblemPtr>& problems, OptimizerPtr optimizer, size_t numRuns = 5)
+  double evaluateSingleObjectiveOptimizer(ExecutionContext& context, const std::vector<ProblemPtr>& problems, SolverPtr optimizer, size_t numRuns = 5)
   {
     ScalarVariableMeanAndVariance stats;
     for (size_t i = 0; i < numRuns; ++i)
@@ -110,17 +110,17 @@ protected:
 
         ParetoFrontPtr front = optimizer->optimize(context, decorator);
         jassert(!front->isEmpty());
-        stats.push(front->getSolution(0)->getFitness()->getValue(0));
+        stats.push(front->getFitness(0)->getValue(0));
       }
     return stats.getMean();
   }
 
-  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, OptimizerPtr optimizer)
+  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
     SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Optimizer::Verbosity)verbosity);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("front", front);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
@@ -144,7 +144,7 @@ protected:
     }
 
     jassert(!front->isEmpty());
-    double score = front->getSolution(0)->getFitness()->getValue(0);
+    double score = front->getFitness(0)->getValue(0);
     context.resultCallback("score", score);
     context.leaveScope(score);
     return score;
@@ -175,7 +175,7 @@ protected:
       solveWithMultiObjectiveOptimizer(context, problem, crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
       /*
       double explorationCoefficient = 5.0;
-      IterativeOptimizerPtr baseOptimizer = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, 0, true);
+      IterativeSolverPtr baseOptimizer = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, 0, true);
       solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
       solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
       solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
@@ -193,12 +193,12 @@ protected:
     }
   }
 
-  void solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, OptimizerPtr optimizer)
+  void solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Optimizer::Verbosity)verbosity);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
@@ -223,18 +223,18 @@ protected:
     context.leaveScope(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
   }
 
-  void testSolutionSetComponent(ExecutionContext& context)
+  void testSolutionVectorComponent(ExecutionContext& context)
   {
     ProblemPtr problem = new ZDT1MOProblem();
     SamplerPtr sampler = uniformContinuousSampler();
     sampler->initialize(context, problem->getDomain());
 
-    SolutionSetPtr solutions = new SolutionSet(problem->getFitnessLimits());
+    SolutionVectorPtr solutions = new SolutionVector(problem->getFitnessLimits());
     for (size_t i = 0; i < 100; ++i)
     {
-      ObjectPtr object = sampler->sample(context);
-      FitnessPtr fitness = problem->evaluate(context, object);
-      solutions->addSolution(object, fitness);
+      ObjectPtr solution = sampler->sample(context);
+      FitnessPtr fitness = problem->evaluate(context, solution);
+      solutions->insertSolution(solution, fitness);
     }
     ParetoFrontPtr front = solutions->getParetoFront();
     context.resultCallback("solutions", solutions);

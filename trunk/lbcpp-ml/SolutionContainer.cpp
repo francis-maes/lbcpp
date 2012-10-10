@@ -1,51 +1,92 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SolutionSet.cpp                | Set of solutions                |
+| Filename: SolutionContainer.cpp          | Containers of solutions         |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/09/2012 20:10               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp-ml/SolutionSet.h>
+#include <lbcpp-ml/SolutionContainer.h>
 #include <lbcpp-ml/SolutionComparator.h>
 #include <MOO-EALib/Hypervolume.h>
 #include <algorithm>
 using namespace lbcpp;
 
 /*
-** SolutionSet
+** SolutionContainer
 */
-SolutionSet::SolutionSet(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator)
+size_t SolutionContainer::getNumObjectives() const
+  {return getFitnessLimits()->getNumObjectives();}
+
+FitnessLimitsPtr SolutionContainer::getEmpiricalFitnessLimits() const
+{
+  FitnessLimitsPtr limits = getFitnessLimits();
+  size_t n = limits->getNumDimensions();
+  std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
+
+  size_t numSolutions = getNumSolutions();
+  for (size_t i = 0; i < numSolutions; ++i)
+  {
+    FitnessPtr fitness = getFitness(i);
+    for (size_t j = 0; j < n; ++j)
+    {
+      double value = fitness->getValue(j);
+      if (value < res[j].first)
+        res[j].first = value;
+      if (value > res[j].second)
+        res[j].second = value;
+    }
+  }
+  return new FitnessLimits(res);
+}
+
+void SolutionContainer::insertSolutions(SolutionContainerPtr solutions)
+{
+  size_t n = solutions->getNumSolutions();
+  for (size_t i = 0; i < n; ++i)
+    insertSolution(solutions->getSolution(i), solutions->getFitness(i));
+}
+
+/*
+** SolutionVector
+*/
+SolutionVector::SolutionVector(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator)
   : limits(limits), solutions(solutions), comparator(comparator)
 {
 }
 
-SolutionSet::SolutionSet(FitnessLimitsPtr limits)
+SolutionVector::SolutionVector(FitnessLimitsPtr limits)
   : limits(limits)
 {
 }
 
-void SolutionSet::addSolution(const SolutionPtr& solution)
+void SolutionVector::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
-  solutions.push_back(solution);
+  solutions.push_back(new Solution(solution, fitness));
   comparator = SolutionComparatorPtr(); // mark as unsorted
 }
 
-void SolutionSet::addSolution(const ObjectPtr& object, const FitnessPtr& fitness)
-  {addSolution(new Solution(object, fitness));}
-
-void SolutionSet::addSolutions(const SolutionSetPtr& otherSolutions)
+void SolutionVector::insertSolutions(SolutionContainerPtr otherSolutions)
 {
   jassert(otherSolutions);
   size_t offset = solutions.size();
   size_t n = otherSolutions->getNumSolutions();
   solutions.resize(offset + n);
-  for (size_t i = 0; i < n; ++i)
-    solutions[i + offset] = otherSolutions->solutions[i];
+  SolutionVectorPtr other = otherSolutions.dynamicCast<SolutionVector>();
+  if (other)
+  {
+    for (size_t i = 0; i < n; ++i)
+      solutions[i + offset] = other->solutions[i];
+  }
+  else
+  {
+    for (size_t i = 0; i < n; ++i)
+      solutions[i + offset] = new Solution(otherSolutions->getSolution(i), otherSolutions->getFitness(i));
+  }
   comparator = SolutionComparatorPtr(); // mark as unsorted
 }
 
-std::vector<ObjectPtr> SolutionSet::getObjects() const
+std::vector<ObjectPtr> SolutionVector::getObjects() const
 {
   std::vector<ObjectPtr> res(solutions.size());
   for (size_t i = 0; i < res.size(); ++i)
@@ -64,7 +105,7 @@ struct WrapSolutionComparator
     {return comparator->compare(a, b) < 0;}
 };
 
-SolutionSetPtr SolutionSet::sort(const SolutionComparatorPtr& comparator, std::vector<size_t>* mapping) const
+SolutionVectorPtr SolutionVector::sort(const SolutionComparatorPtr& comparator, std::vector<size_t>* mapping) const
 {
   if (this->comparator == comparator)
     return refCountedPointerFromThis(this);
@@ -81,7 +122,7 @@ SolutionSetPtr SolutionSet::sort(const SolutionComparatorPtr& comparator, std::v
   std::sort(mapping->begin(), mapping->end(), WrapSolutionComparator(comparator));
 
   // copy and re-order
-  SolutionSetPtr res = new SolutionSet(limits);
+  SolutionVectorPtr res = new SolutionVector(limits);
   res->solutions.resize(n);
   for (size_t i = 0; i < n; ++i)
     res->solutions[i] = solutions[(*mapping)[i]];
@@ -89,7 +130,7 @@ SolutionSetPtr SolutionSet::sort(const SolutionComparatorPtr& comparator, std::v
   return res;
 }
 
-int SolutionSet::findBestSolution(const SolutionComparatorPtr& comparator) const
+int SolutionVector::findBestSolution(const SolutionComparatorPtr& comparator) const
 {
   if (solutions.empty())
     return -1;
@@ -105,43 +146,23 @@ int SolutionSet::findBestSolution(const SolutionComparatorPtr& comparator) const
   return (int)bestSolutionIndex;
 }
 
-SolutionPtr SolutionSet::getBestSolution(const SolutionComparatorPtr& comparator) const
+SolutionPtr SolutionVector::getBestSolution(const SolutionComparatorPtr& comparator) const
 {
   int index = findBestSolution(comparator);
   return index >= 0 ? solutions[index] : SolutionPtr();
 }
 
-SolutionSetPtr SolutionSet::selectNBests(const SolutionComparatorPtr& comparator, size_t n) const
+SolutionVectorPtr SolutionVector::selectNBests(const SolutionComparatorPtr& comparator, size_t n) const
 {
   if (n >= solutions.size())
     return refCountedPointerFromThis(this);
 
-  SolutionSetPtr res = sort(comparator);
+  SolutionVectorPtr res = sort(comparator);
   res->solutions.resize(n);
   return res;
 }
 
-FitnessLimitsPtr SolutionSet::getEmpiricalLimits() const
-{
-  size_t n = limits->getNumDimensions();
-  std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
-
-  for (size_t i = 0; i < solutions.size(); ++i)
-  {
-    FitnessPtr fitness = solutions[i]->getFitness();
-    for (size_t j = 0; j < n; ++j)
-    {
-      double value = fitness->getValue(j);
-      if (value < res[j].first)
-        res[j].first = value;
-      if (value > res[j].second)
-        res[j].second = value;
-    }
-  }
-  return new FitnessLimits(res);
-}
-
-bool SolutionSet::strictlyDominates(const FitnessPtr& fitness) const
+bool SolutionVector::strictlyDominates(const FitnessPtr& fitness) const
 {
   for (size_t i = 0; i < solutions.size(); ++i)
     if (solutions[i]->getFitness()->strictlyDominates(fitness))
@@ -149,7 +170,7 @@ bool SolutionSet::strictlyDominates(const FitnessPtr& fitness) const
   return false;
 }
 
-ParetoFrontPtr SolutionSet::getParetoFront() const
+ParetoFrontPtr SolutionVector::getParetoFront() const
 {
   std::vector<SolutionPtr> res;
   for (size_t i = 0; i < solutions.size(); ++i)
@@ -158,7 +179,7 @@ ParetoFrontPtr SolutionSet::getParetoFront() const
   return new ParetoFront(limits, res, comparator);
 }
 
-void SolutionSet::computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const
+void SolutionVector::computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const
 {
   size_t n = solutions.size();
   if (!n)
@@ -227,7 +248,7 @@ void SolutionSet::computeParetoRanks(std::vector< std::pair<size_t, size_t> >& m
 #endif // JUCE_DEBUG
 }
 
-std::vector<ParetoFrontPtr> SolutionSet::nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping) const
+std::vector<ParetoFrontPtr> SolutionVector::nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping) const
 {
   std::vector< std::pair<size_t, size_t> > localMapping;
   if (!mapping)
@@ -249,7 +270,7 @@ std::vector<ParetoFrontPtr> SolutionSet::nonDominatedSort(std::vector< std::pair
   return res;
 }
 
-void SolutionSet::computeCrowdingDistances(std::vector<double>& res) const
+void SolutionVector::computeCrowdingDistances(std::vector<double>& res) const
 {
   size_t n = solutions.size();
 
@@ -268,7 +289,7 @@ void SolutionSet::computeCrowdingDistances(std::vector<double>& res) const
   for (size_t i = 0; i < limits->getNumObjectives(); ++i)
   {
     std::vector<size_t> mapping;
-    SolutionSetPtr ordered = sort(objectiveComparator(i), &mapping);
+    SolutionVectorPtr ordered = sort(objectiveComparator(i), &mapping);
     double bestValue = ordered->getFitness(0)->getValue(i);
     double worstValue = ordered->getFitness(n - 1)->getValue(i);
     double invRange = 1.0 / (worstValue - bestValue);
@@ -279,9 +300,9 @@ void SolutionSet::computeCrowdingDistances(std::vector<double>& res) const
   }
 }
 
-void SolutionSet::clone(ExecutionContext& context, const ObjectPtr& t) const
+void SolutionVector::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
-  const SolutionSetPtr& target = t.staticCast<SolutionSet>();
+  const SolutionVectorPtr& target = t.staticCast<SolutionVector>();
   target->limits = limits;
   target->solutions = solutions;
   target->comparator = comparator;
@@ -290,7 +311,7 @@ void SolutionSet::clone(ExecutionContext& context, const ObjectPtr& t) const
 /*
 ** ParetoFront
 */
-void ParetoFront::addSolutionAndUpdateFront(const ObjectPtr& object, const FitnessPtr& fitness)
+void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
   std::vector<SolutionPtr> newSolutions;
   newSolutions.reserve(solutions.size());
@@ -299,20 +320,23 @@ void ParetoFront::addSolutionAndUpdateFront(const ObjectPtr& object, const Fitne
     FitnessPtr solutionFitness = solutions[i]->getFitness();
     if (solutionFitness->strictlyDominates(fitness))
       return; // dominated
-    if (solutions[i]->getObject()->compare(object) == 0 ||  // already in the front
+    if (solutions[i]->getObject()->compare(solution) == 0 ||  // already in the front
         solutions[i]->getFitness()->compare(fitness) == 0)  // already a solution that has the same fitness  (this test may become flagable in the future)
       return; 
     if (!fitness->strictlyDominates(solutionFitness))
       newSolutions.push_back(solutions[i]);
   }
-  newSolutions.push_back(new Solution(object, fitness));
+  newSolutions.push_back(new Solution(solution, fitness));
   solutions.swap(newSolutions);
 }
 
-double ParetoFront::computeHyperVolume(const FitnessPtr& referenceFitness) const
+double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
 {
   if (isEmpty())
     return 0.0;
+
+  if (!referenceFitness)
+    referenceFitness = limits->getWorstPossibleFitness();
 
   size_t numObjectives = limits->getNumObjectives();
   if (numObjectives == 1)

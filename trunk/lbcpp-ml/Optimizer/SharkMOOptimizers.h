@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_OPTIMIZER_SHARK_H_
 # define LBCPP_ML_OPTIMIZER_SHARK_H_
 
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # undef T
 # include <MOO-EALib/NSGA2.h>
 # include <MOO-EALib/MO-CMA.h>
@@ -67,34 +67,34 @@ protected:
 };
 
 template<class SearchAlgorithmClass>
-static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, ProblemPtr problem, ParetoFrontPtr front)
+static void sharkFillSolutions(SearchAlgorithmClass& searchAlgorithm, ProblemPtr problem, SolutionContainerPtr solutions)
 {
   ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
   size_t n = domain->getNumDimensions();
-  std::vector<double* > solutions;
-  Array<double> fitnesses;
-  searchAlgorithm.bestSolutions(solutions);
-  searchAlgorithm.bestSolutionsFitness(fitnesses);
-  for (size_t i = 0; i < solutions.size(); ++i)
+  std::vector<double* > sharkSolutions;
+  Array<double> sharkFitnesses;
+  searchAlgorithm.bestSolutions(sharkSolutions);
+  searchAlgorithm.bestSolutionsFitness(sharkFitnesses);
+  for (size_t i = 0; i < sharkSolutions.size(); ++i)
   {
     DenseDoubleVectorPtr sol(new DenseDoubleVector(n, 0.0));
-    memcpy(sol->getValuePointer(0), solutions[i], sizeof (double) * n);
+    memcpy(sol->getValuePointer(0), sharkSolutions[i], sizeof (double) * n);
     std::vector<double> fitness(problem->getNumObjectives());
     for (size_t j = 0; j < fitness.size(); ++j)
-      fitness[j] = fitnesses(i, j);
-    front->addSolutionAndUpdateFront(sol, new Fitness(fitness, problem->getFitnessLimits()));
+      fitness[j] = sharkFitnesses(i, j);
+    solutions->insertSolution(sol, new Fitness(fitness, problem->getFitnessLimits()));
   }
 }
 
-class NSGA2MOOptimizer : public PopulationBasedOptimizer
+class NSGA2MOOptimizer : public PopulationBasedSolver
 {
 public:
   NSGA2MOOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9)
-    : PopulationBasedOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
+    : PopulationBasedSolver(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
 
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    PopulationBasedOptimizer::configure(context, problem, front, initialSolution, verbosity);
+    PopulationBasedSolver::configure(context, problem, front, initialSolution, verbosity);
     objective = new SharkObjectiveFunctionFromProblem(context, problem);
     nsga2 = new NSGA2Search();
   }
@@ -111,10 +111,10 @@ public:
 
   virtual void clear(ExecutionContext& context)
   {
-    sharkFillParetoFront(*nsga2, problem, front);
+    sharkFillSolutions(*nsga2, problem, solutions);
     deleteAndZero(nsga2);
     deleteAndZero(objective);
-    PopulationBasedOptimizer::clear(context);
+    PopulationBasedSolver::clear(context);
   }
 
 protected:
@@ -128,15 +128,15 @@ protected:
   NSGA2Search* nsga2;
 };
 
-class CMAESMOOptimizer : public PopulationBasedOptimizer
+class CMAESMOOptimizer : public PopulationBasedSolver
 {
 public:
   CMAESMOOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
-    : PopulationBasedOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
+    : PopulationBasedSolver(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
 
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    PopulationBasedOptimizer::configure(context, problem, front, initialSolution, verbosity);
+    PopulationBasedSolver::configure(context, problem, front, initialSolution, verbosity);
     objective = new SharkObjectiveFunctionFromProblem(context, problem);
     mocma = new MOCMASearch();
   }
@@ -153,10 +153,10 @@ public:
 
   virtual void clear(ExecutionContext& context)
   {
-    sharkFillParetoFront(*mocma, problem, front);
+    sharkFillSolutions(*mocma, problem, solutions);
     deleteAndZero(mocma);
     deleteAndZero(objective);
-    PopulationBasedOptimizer::clear(context);
+    PopulationBasedSolver::clear(context);
   }
 
 protected:

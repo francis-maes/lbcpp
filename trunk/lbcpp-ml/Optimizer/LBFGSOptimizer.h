@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_OPTIMIZER_LBFGS_H_
 # define LBCPP_ML_OPTIMIZER_LBFGS_H_
 
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 
 extern int lbfgs(
     int* num_variables,   // in
@@ -30,12 +30,12 @@ extern int lbfgs(
 namespace lbcpp
 {
 
-class LBFGSOptimizer : public IterativeOptimizer
+class LBFGSOptimizer : public IterativeSolver
 {
 public:
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
+    IterativeSolver::configure(context, problem, front, initialSolution, verbosity);
     this->problem = problem.staticCast<ContinuousDerivableProblem>();
     ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
     lbfgsInitialize(domain->getNumDimensions());
@@ -50,7 +50,7 @@ public:
     double value = 0.0;
     DoubleVectorPtr gradient;
     problem->evaluate(context, parameters, 0, &value, &gradient);
-    front->addSolutionAndUpdateFront(parameters->cloneAndCast<DenseDoubleVector>(), new Fitness(std::vector<double>(1, value), problem->getFitnessLimits()));
+    solutions->insertSolution(parameters->cloneAndCast<DenseDoubleVector>(), new Fitness(std::vector<double>(1, value), problem->getFitnessLimits()));
     DenseDoubleVectorPtr denseGradient = gradient->toDenseDoubleVector();
     int res = lbfgsStep(parameters->getValuePointer(0), value, denseGradient->getValuePointer(0));
     return (res == 1);

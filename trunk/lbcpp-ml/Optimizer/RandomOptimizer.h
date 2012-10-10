@@ -9,30 +9,30 @@
 #ifndef LBCPP_ML_OPTIMIZER_RANDOM_H_
 # define LBCPP_ML_OPTIMIZER_RANDOM_H_
 
-# include <lbcpp-ml/Optimizer.h>
+# include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
 
 namespace lbcpp
 {
 
-class RandomOptimizer : public IterativeOptimizer
+class RandomOptimizer : public IterativeSolver
 {
 public:
   RandomOptimizer(SamplerPtr sampler, size_t numIterations = 0)
-    : IterativeOptimizer(numIterations), sampler(sampler) {}
+    : IterativeSolver(numIterations), sampler(sampler) {}
   RandomOptimizer() {}
 
   virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeOptimizer::configure(context, problem, front, initialSolution, verbosity);
+    IterativeSolver::configure(context, problem, front, initialSolution, verbosity);
     sampler->initialize(context, problem->getDomain());
   }
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
-    ObjectPtr object = sampleSolution(context, sampler); 
+    ObjectPtr object = sampler->sample(context);
     FitnessPtr fitness = evaluate(context, object);
-    if (verbosity >= Optimizer::verbosityDetailed)
+    if (verbosity >= verbosityDetailed)
     {
       context.resultCallback("object", object);
       context.resultCallback("fitness", fitness);

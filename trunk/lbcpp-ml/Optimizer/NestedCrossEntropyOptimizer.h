@@ -28,17 +28,17 @@ public:
     context.resultCallback("sampler", sampler);
   }
 
-  SolutionSetPtr optimizeRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
+  SolutionVectorPtr optimizeRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
   {
     sampler->initialize(context, problem->getDomain());
-    SolutionSetPtr lastPopulation;
+    SolutionVectorPtr lastPopulation;
 
     bool isTopLevel = (level == this->level);
     for (size_t i = 0; (isTopLevel || i < numGenerations) && !problem->shouldStop(); ++i)
     {
       startGeneration(context, i, sampler);
 
-      SolutionSetPtr population = new SolutionSet(problem->getFitnessLimits());
+      SolutionVectorPtr population = new SolutionVector(problem->getFitnessLimits());
       for (size_t j = 0; j < populationSize; ++j)
       {
         if (level == 0)
@@ -50,7 +50,7 @@ public:
         {
           if (verbosity >= verbosityAll)
             context.enterScope("Sub-optimize " + String((int)j+1));
-          SolutionSetPtr subSolutions = optimizeRecursively(context, sampler, level - 1);
+          SolutionVectorPtr subSolutions = optimizeRecursively(context, sampler, level - 1);
           if (subSolutions)
             population->addSolutions(subSolutions->getParetoFront());
           if (verbosity >= verbosityAll)
@@ -60,7 +60,7 @@ public:
       
       if (elitist && lastPopulation)
         population->addSolutions(lastPopulation);
-      SolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
+      SolutionVectorPtr selectedPopulation = select(population, numTrainingSamples);
 
       sampler = sampler->cloneAndCast<Sampler>();
       learnSampler(context, selectedPopulation, sampler);
