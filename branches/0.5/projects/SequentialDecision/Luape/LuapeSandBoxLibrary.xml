@@ -90,6 +90,7 @@
     <variable type="MCAlgorithm" name="algorithm"/>
     <variable type="PositiveInteger" name="budget"/>
     <variable type="PositiveInteger" name="numRuns"/>  
+    <variable type="PositiveInteger" name="seed"/>
   </class>
 
   <class name="LuapeSandBox" base="WorkUnit">
