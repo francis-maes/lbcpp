@@ -50,7 +50,7 @@ void SolutionContainer::insertSolutions(SolutionContainerPtr solutions)
 /*
 ** SolutionVector
 */
-SolutionVector::SolutionVector(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator)
+SolutionVector::SolutionVector(FitnessLimitsPtr limits, const std::vector<SolutionAndFitness>& solutions, SolutionComparatorPtr comparator)
   : limits(limits), solutions(solutions), comparator(comparator)
 {
 }
@@ -62,7 +62,7 @@ SolutionVector::SolutionVector(FitnessLimitsPtr limits)
 
 void SolutionVector::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
-  solutions.push_back(new Solution(solution, fitness));
+  solutions.push_back(SolutionAndFitness(solution, fitness));
   comparator = SolutionComparatorPtr(); // mark as unsorted
 }
 
@@ -81,7 +81,7 @@ void SolutionVector::insertSolutions(SolutionContainerPtr otherSolutions)
   else
   {
     for (size_t i = 0; i < n; ++i)
-      solutions[i + offset] = new Solution(otherSolutions->getSolution(i), otherSolutions->getFitness(i));
+      solutions[i + offset] = SolutionAndFitness(otherSolutions->getSolution(i), otherSolutions->getFitness(i));
   }
   comparator = SolutionComparatorPtr(); // mark as unsorted
 }
@@ -90,7 +90,7 @@ std::vector<ObjectPtr> SolutionVector::getObjects() const
 {
   std::vector<ObjectPtr> res(solutions.size());
   for (size_t i = 0; i < res.size(); ++i)
-    res[i] = solutions[i]->getObject();
+    res[i] = solutions[i].first;
   return res;
 }
 
@@ -146,10 +146,10 @@ int SolutionVector::findBestSolution(const SolutionComparatorPtr& comparator) co
   return (int)bestSolutionIndex;
 }
 
-SolutionPtr SolutionVector::getBestSolution(const SolutionComparatorPtr& comparator) const
+SolutionContainer::SolutionAndFitness SolutionVector::getBestSolution(const SolutionComparatorPtr& comparator) const
 {
   int index = findBestSolution(comparator);
-  return index >= 0 ? solutions[index] : SolutionPtr();
+  return index >= 0 ? solutions[index] : SolutionAndFitness();
 }
 
 SolutionVectorPtr SolutionVector::selectNBests(const SolutionComparatorPtr& comparator, size_t n) const
@@ -165,16 +165,16 @@ SolutionVectorPtr SolutionVector::selectNBests(const SolutionComparatorPtr& comp
 bool SolutionVector::strictlyDominates(const FitnessPtr& fitness) const
 {
   for (size_t i = 0; i < solutions.size(); ++i)
-    if (solutions[i]->getFitness()->strictlyDominates(fitness))
+    if (solutions[i].second->strictlyDominates(fitness))
       return true;
   return false;
 }
 
 ParetoFrontPtr SolutionVector::getParetoFront() const
 {
-  std::vector<SolutionPtr> res;
+  std::vector<SolutionAndFitness> res;
   for (size_t i = 0; i < solutions.size(); ++i)
-    if (!strictlyDominates(solutions[i]->getFitness()))
+    if (!strictlyDominates(solutions[i].second))
       res.push_back(solutions[i]);
   return new ParetoFront(limits, res, comparator);
 }
@@ -313,20 +313,20 @@ void SolutionVector::clone(ExecutionContext& context, const ObjectPtr& t) const
 */
 void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
-  std::vector<SolutionPtr> newSolutions;
+  std::vector<SolutionAndFitness> newSolutions;
   newSolutions.reserve(solutions.size());
   for (size_t i = 0; i < solutions.size(); ++i)
   {
-    FitnessPtr solutionFitness = solutions[i]->getFitness();
+    FitnessPtr solutionFitness = solutions[i].second;
     if (solutionFitness->strictlyDominates(fitness))
       return; // dominated
-    if (solutions[i]->getObject()->compare(solution) == 0 ||  // already in the front
-        solutions[i]->getFitness()->compare(fitness) == 0)  // already a solution that has the same fitness  (this test may become flagable in the future)
+    if (solutions[i].first->compare(solution) == 0 ||  // already in the front
+        solutions[i].second->compare(fitness) == 0)  // already a solution that has the same fitness  (this test may become flagable in the future)
       return; 
     if (!fitness->strictlyDominates(solutionFitness))
       newSolutions.push_back(solutions[i]);
   }
-  newSolutions.push_back(new Solution(solution, fitness));
+  newSolutions.push_back(SolutionAndFitness(solution, fitness));
   solutions.swap(newSolutions);
 }
 
@@ -341,7 +341,7 @@ double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
   size_t numObjectives = limits->getNumObjectives();
   if (numObjectives == 1)
   {
-    double bestValue = getBestSolution(objectiveComparator(0))->getFitness()->getValue(0);
+    double bestValue = getBestSolution(objectiveComparator(0)).second->getValue(0);
     double res = limits->getObjectiveSign(0) * (bestValue - referenceFitness->getValue(0));
     return res > 0.0 ? res : 0.0;
   }
@@ -352,7 +352,7 @@ double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
     size_t numPoints = 0;
     for (size_t i = 0; i < solutions.size(); ++i)
     {
-      FitnessPtr fitness = solutions[i]->getFitness();
+      FitnessPtr fitness = solutions[i].second;
       if (!referenceFitness->isBetterForAtLeastOneObjectiveThan(fitness))
       {
         std::vector<double> val = fitness->getValuesToBeMinimized();

@@ -26,9 +26,6 @@ typedef ReferenceCountedObjectPtr<FitnessLimits> FitnessLimitsPtr;
 class Fitness;
 typedef ReferenceCountedObjectPtr<Fitness> FitnessPtr;
 
-class Solution;
-typedef ReferenceCountedObjectPtr<Solution> SolutionPtr;
-
 class SolutionComparator;
 typedef ReferenceCountedObjectPtr<SolutionComparator> SolutionComparatorPtr;
 

@@ -26,6 +26,9 @@ public:
 
   virtual bool isFinalState() const = 0;
 
+  virtual size_t getActionCode(const ObjectPtr& action) const
+    {jassertfalse; return 0;}
+
   virtual ObjectPtr getConstructedObject() const
     {jassertfalse; return ObjectPtr();}
 
@@ -82,13 +85,19 @@ protected:
 class SearchDomain : public Domain
 {
 public:
-  virtual SearchStatePtr createInitialState() const = 0;
+  SearchDomain(SearchStatePtr initialState = SearchStatePtr())
+    : initialState(initialState) {}
 
-  virtual size_t getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const
-    {jassertfalse; return 0;}
+  SearchStatePtr getInitialState() const
+    {return initialState;}
 
-  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
-    {jassertfalse; return DoubleVectorPtr();}
+  SearchStatePtr createInitialState() const
+    {return initialState->cloneAndCast<SearchState>();}
+
+protected:
+  friend class SearchDomainClass;
+
+  SearchStatePtr initialState;
 };
 
 typedef ReferenceCountedObjectPtr<SearchDomain> SearchDomainPtr;

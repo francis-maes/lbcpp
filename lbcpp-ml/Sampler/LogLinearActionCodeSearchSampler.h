@@ -168,7 +168,7 @@ public:
       ObjectPtr action = trajectory->getAction(i);
       DiscreteDomainPtr actionDomain = state->getActionDomain();
 
-      size_t code = domain->getActionCode(state, action);
+      size_t code = state->getActionCode(action);
       gradient->incrementValue(code, 1.0);
 
       size_t numActions = actionDomain->getNumElements();
@@ -176,7 +176,7 @@ public:
       double Z = 0.0;
       for (size_t j = 0; j < numActions; ++j)
       {
-        size_t code = domain->getActionCode(state, actionDomain->getElement(j));
+        size_t code = state->getActionCode(actionDomain->getElement(j));
         double probability = exp(getParameter(code));
         codesAndProbabilities[j] = std::make_pair(code, probability);
         Z += probability;
@@ -220,7 +220,7 @@ protected:
     double highestProbability = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
-      size_t code = domain->getActionCode(state, actionDomain->getElement(i));
+      size_t code = state->getActionCode(actionDomain->getElement(i));
       double p = exp(getParameter(code));
       probabilities[i] = p;
       highestProbability = juce::jmax(p, highestProbability);
@@ -249,7 +249,7 @@ protected:
     example.availableActions.resize(actionDomain->getNumElements());
     for (size_t i = 0; i < example.availableActions.size(); ++i)
     {
-      size_t code = domain->getActionCode(state, actionDomain->getElement(i));
+      size_t code = state->getActionCode(actionDomain->getElement(i));
       if (code > highestActionCode)
         highestActionCode = code;
       example.availableActions[i] = code;
@@ -259,7 +259,7 @@ protected:
     for (size_t i = 0; i < indices.size(); ++i)
     {
       ObjectPtr action = trajectories[indices[i]]->getAction(step);
-      size_t actionCode = domain->getActionCode(state, action);
+      size_t actionCode = state->getActionCode(action);
       m[actionCode].push_back(indices[i]);
     }
     for (DispatchMap::const_iterator it = m.begin(); it != m.end(); ++it)

@@ -148,22 +148,7 @@ private:
   bool prune(ExpressionRPNTypeStatePtr state); // return true if state is prunable
 };
 
-class ExpressionRPNSearchDomain : public SearchDomain
-{
-public:
-  ExpressionRPNSearchDomain(const ExpressionDomainPtr& domain, size_t expressionSize);
-
-  virtual SearchStatePtr createInitialState() const;
-  virtual size_t getActionCode(const SearchStatePtr& state, const ObjectPtr& action) const;
-  virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const;
-
-protected:
-  ExpressionDomainPtr domain;
-  ExpressionRPNTypeSpacePtr typeSearchSpace;
-
-  typedef std::map<ObjectPtr, size_t, ObjectComparator> ActionCodeMap;
-  ActionCodeMap actionCodes;
-};
+extern SearchStatePtr expressionRPNSearchState(ExpressionDomainPtr domain, ExpressionRPNTypeSpacePtr typeSearchSpace);
 
 }; /* namespace lbcpp */
 

@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_SOLUTION_CONTAINER_H_
 # define LBCPP_ML_SOLUTION_CONTAINER_H_
 
-# include "Solution.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {
@@ -17,6 +17,8 @@ namespace lbcpp
 class SolutionContainer : public Object
 {
 public:
+  typedef std::pair<ObjectPtr, FitnessPtr> SolutionAndFitness;
+
   virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness) = 0;
   virtual void insertSolutions(SolutionContainerPtr solutions) = 0;
 
@@ -32,7 +34,7 @@ public:
 class SolutionVector : public SolutionContainer
 {
 public:
-  SolutionVector(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr());
+  SolutionVector(FitnessLimitsPtr limits, const std::vector<SolutionAndFitness>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr());
   SolutionVector(FitnessLimitsPtr limits);
   SolutionVector() {}
   
@@ -46,10 +48,10 @@ public:
     {return solutions.size();}
 
   ObjectPtr getSolution(size_t index) const
-    {jassert(index < solutions.size()); return solutions[index]->getObject();}
+    {jassert(index < solutions.size()); return solutions[index].first;}
 
   FitnessPtr getFitness(size_t index) const
-    {jassert(index < solutions.size()); return solutions[index]->getFitness();}
+    {jassert(index < solutions.size()); return solutions[index].second;}
 
   std::vector<ObjectPtr> getObjects() const;
 
@@ -68,7 +70,7 @@ public:
   SolutionVectorPtr sort(const SolutionComparatorPtr& comparator, std::vector<size_t>* mapping = NULL) const; // sort from the most prefered solution to the least prefered one
 
   int findBestSolution(const SolutionComparatorPtr& comparator) const;
-  SolutionPtr getBestSolution(const SolutionComparatorPtr& comparator) const;
+  SolutionAndFitness getBestSolution(const SolutionComparatorPtr& comparator) const;
   SolutionVectorPtr selectNBests(const SolutionComparatorPtr& comparator, size_t n) const;
   
   void computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const;
@@ -94,14 +96,14 @@ protected:
   friend class SolutionVectorClass;
 
   FitnessLimitsPtr limits;
-  std::vector<SolutionPtr> solutions;
+  std::vector<SolutionAndFitness> solutions;
   SolutionComparatorPtr comparator;
 };
 
 class ParetoFront : public SolutionVector
 {
 public:
-  ParetoFront(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr())
+  ParetoFront(FitnessLimitsPtr limits, const std::vector<SolutionAndFitness>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr())
     : SolutionVector(limits, solutions, comparator) {}
   ParetoFront(FitnessLimitsPtr limits) : SolutionVector(limits) {}
   ParetoFront() {}

@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_SOLUTION_COMPARATOR_H_
 # define LBCPP_ML_SOLUTION_COMPARATOR_H_
 
-# include "Solution.h"
+# include "Fitness.h"
 
 namespace lbcpp
 {
