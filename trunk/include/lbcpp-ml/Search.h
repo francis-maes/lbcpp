@@ -11,6 +11,7 @@
 
 # include "Sampler.h"
 # include "Domain.h"
+# include "Solver.h"
 
 namespace lbcpp
 {
@@ -49,12 +50,10 @@ public:
   void append(const SearchStatePtr& state, const ObjectPtr& action)
     {states.push_back(state); actions.push_back(action);}
 
-  void pop()
-  {
-    if (states.size() == actions.size())
-      states.pop_back();
-    actions.pop_back();
-  }
+  void pop();
+
+  bool areStatesComputed() const;
+  void ensureStatesAreComputed(ExecutionContext& context, SearchStatePtr initialState);
 
   size_t getLength() const
     {return actions.size();}
@@ -71,9 +70,9 @@ public:
   SearchStatePtr getFinalState() const
     {return finalState;}
     
-  virtual int compare(const ObjectPtr& otherObject) const
-    {return finalState->compare(otherObject.staticCast<SearchTrajectory>()->finalState);}
-
+  virtual int compare(const ObjectPtr& otherObject) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+  
 protected:
   friend class SearchTrajectoryClass;
 
@@ -105,14 +104,8 @@ typedef ReferenceCountedObjectPtr<SearchDomain> SearchDomainPtr;
 class SearchSampler : public Sampler
 {
 public:
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-    {this->domain = domain.staticCast<SearchDomain>();}
-  
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
-  {
-    const ReferenceCountedObjectPtr<SearchSampler>& target = t.staticCast<SearchSampler>();
-    target->domain = domain;
-  }
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain);
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
 protected:
   SearchDomainPtr domain;
@@ -122,6 +115,39 @@ typedef ReferenceCountedObjectPtr<SearchSampler> SearchSamplerPtr;
 
 extern SearchSamplerPtr randomSearchSampler();
 extern SearchSamplerPtr logLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0);
+
+class SearchAlgorithm : public Solver
+{
+public:
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity);
+  virtual void clear(ExecutionContext& context);
+
+protected:
+  SearchDomainPtr domain;
+  SearchTrajectoryPtr trajectory;
+};
+
+typedef ReferenceCountedObjectPtr<SearchAlgorithm> SearchAlgorithmPtr;
+
+extern SearchAlgorithmPtr rolloutSearchAlgorithm();
+
+class DecoratorSearchAlgorithm : public SearchAlgorithm
+{
+public:
+  DecoratorSearchAlgorithm(SearchAlgorithmPtr algorithm = SearchAlgorithmPtr())
+    : algorithm(algorithm) {}
+   
+protected:
+  friend class DecoratorSearchAlgorithmClass;
+
+  SearchAlgorithmPtr algorithm;
+
+  void subSearch(ExecutionContext& context);
+};
+
+typedef ReferenceCountedObjectPtr<DecoratorSearchAlgorithm> DecoratorSearchAlgorithmPtr;
+
+extern DecoratorSearchAlgorithmPtr lookAheadSearchAlgorithm(SearchAlgorithmPtr algorithm, double numActions = 1.0);
 
 }; /* namespace lbcpp */
 

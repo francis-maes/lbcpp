@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Search" directory="Search">
+
+  <include file="lbcpp-ml/Search.h"/>
+  
+  <class name="SearchState" base="Object" abstract="yes"/>
+  <class name="SearchTrajectory" base="Object">
+    <variable type="ObjectVector[Object]" name="actions"/>
+    <variable type="SearchState" name="finalState"/>
+  </class>
+  <class name="SearchDomain" base="Domain">
+    <variable type="SearchState" name="initialState"/>
+  </class>
+
+  <class name="SearchAlgorithm" base="Solver" abstract="yes"/>
+  <class name="DecoratorSearchAlgorithm" base="SearchAlgorithm" abstract="yes"/>
+
+  <class name="RolloutSearchAlgorithm" base="SearchAlgorithm">
+    <constructor/>
+  </class>
+  
+  <class name="LookAheadSearchAlgorithm" base="DecoratorSearchAlgorithm">
+    <constructor arguments="SearchAlgorithmPtr algorithm, double numActions"/>
+    <variable type="Double" name="numActions"/>
+  </class>
+
+</library>

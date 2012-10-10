@@ -10,6 +10,7 @@ GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
@@ -85,6 +86,15 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
 )
 
+SET(LBCPP_ML_SEARCH_SOURCES
+  Search/Search.cpp
+  Search/RolloutSearchAlgorithm.h
+  Search/LookAheadSearchAlgorithm.h
+  Search/StepSearchAlgorithm.h
+  Search/SearchLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SearchLibrary.cpp
+)
+
 SET(LBCPP_ML_TOPLEVEL_SOURCES
   SolutionContainer.cpp
   SolutionContainerComponent.h
@@ -107,6 +117,7 @@ SET(LBCPP_ML_SOURCES
   ${LBCPP_ML_COMPARATOR_SOURCES}
   ${LBCPP_ML_FUNCTION_SOURCES}
   ${LBCPP_ML_EXPRESSION_SOURCES}
+  ${LBCPP_ML_SEARCH_SOURCES}
   ${LBCPP_ML_TOPLEVEL_SOURCES}
   ${LBCPP_ML_MAIN_SOURCES}
 )
@@ -118,6 +129,7 @@ SOURCE_GROUP(Sampler FILES ${LBCPP_ML_SAMPLER_SOURCES})
 SOURCE_GROUP(Comparator FILES ${LBCPP_ML_COMPARATOR_SOURCES})
 SOURCE_GROUP(Function FILES ${LBCPP_ML_FUNCTION_SOURCES})
 SOURCE_GROUP(Expression FILES ${LBCPP_ML_EXPRESSION_SOURCES})
+SOURCE_GROUP(Search FILES ${LBCPP_ML_SEARCH_SOURCES})
 SOURCE_GROUP(Main FILES ${LBCPP_ML_MAIN_SOURCES})
 
 IF (UNIX)
