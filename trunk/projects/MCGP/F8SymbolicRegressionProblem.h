@@ -82,6 +82,8 @@ public:
     std::vector<double> fitness(1);
     fitness[0] = res.getMean();
     //fitness[1] = expression->getTreeSize();
+
+    //std::cout << ExpressionRPNSequence::fromNode(expression)->toShortString() << " => " << res.getMean() << std::endl;
     return new Fitness(fitness, limits);
   }
 

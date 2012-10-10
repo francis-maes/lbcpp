@@ -25,8 +25,6 @@
 namespace lbcpp
 {
 
-///////////////////////////////////////////////////////////
-
 class SearchNode;
 typedef ReferenceCountedObjectPtr<SearchNode> SearchNodePtr;
 
@@ -140,7 +138,7 @@ public:
     {return node->isFinalState();}
 
   virtual int compare(const ObjectPtr& otherObject) const
-    {return (int)node - (int)otherObject.staticCast<PrunedSearchState>()->node;}
+    {return (int)node.get() - (int)otherObject.staticCast<PrunedSearchState>()->node.get();}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<PrunedSearchState>()->node = node;}
@@ -275,7 +273,6 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     std::vector< std::pair<SolverPtr, String> > solvers;
-    //solvers.push_back(std::make_pair(new RepeatSolver(rolloutSearchAlgorithm(), numEvaluations), "repeat(rollout)"));
 
     solvers.push_back(std::make_pair(nmcSolver(0), "random"));
     solvers.push_back(std::make_pair(nmcSolver(1), "nmc(1)"));
@@ -288,7 +285,6 @@ public:
     solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
     solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
     solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
-    //solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 4, (size_t)pow((double)numEvaluations, 1.0/4.0)), "nrpa(4)"));
     
     std::vector<SolverInfo> infos(solvers.size());
     context.enterScope("Running");
