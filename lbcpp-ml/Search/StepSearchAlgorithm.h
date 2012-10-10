@@ -10,6 +10,7 @@
 # define LBCPP_ML_SEARCH_ALGORITHM_STEP_H_
 
 # include <lbcpp-ml/Search.h>
+# include <lbcpp-ml/SolutionContainer.h>
 
 namespace lbcpp
 {
@@ -29,50 +30,30 @@ protected:
     SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actions = state->getActionDomain();
     size_t n = actions->getNumElements();
-#if 0
-    state = state->cloneAndCast<DecisionProblemState>();
-    std::vector<Variable> actions(previousActions);
-//    context.informationCallback(T("----"));
-    while (!state->isFinalState() && !objective->shouldStop())
+
+    while (!state->isFinalState() && !problem->shouldStop())
     {
-      std::vector<Variable> bestActions(actions);
-      DecisionProblemStatePtr bestFinalState;
-      /*double score = */subSearch(context, objective, state, bestActions, bestFinalState);
+      subSearch(context);
 
-      /*if (bestFinalState)
-      {
-        String info = "Best Actions:";
-        for (size_t i = 0; i < bestActions.size(); ++i)
-          info += " " + bestActions[i].toShortString();
-        context.informationCallback(info + T(" (") + String(score) + T(")"));
-      }
-      else
-        context.informationCallback("No Best Final State");*/
-
-      // select action
-      Variable selectedAction;
-      if (useGlobalBest && this->bestFinalState)
-        selectedAction = this->bestActions[actions.size()];  // global best
-      else if (bestFinalState)
-        selectedAction = bestActions[actions.size()];       // local best
-      if (!selectedAction.exists())
+      SearchTrajectoryPtr bestTrajectory = this->solutions->getSolution(0).staticCast<SearchTrajectory>();
+      if (!bestTrajectory)
         break;
+      ObjectPtr selectedAction = bestTrajectory->getAction(trajectory->getLength());
 
-      double reward;
-      actions.push_back(selectedAction);
-      state->performTransition(context, selectedAction, reward);
-      
+      state->performTransition(context, selectedAction);
+      trajectory->append(selectedAction);
+
       while (!state->isFinalState())
       {
-        ContainerPtr availableActions = state->getAvailableActions();
-        if (availableActions->getNumElements() > 1)
+        DiscreteDomainPtr availableActions = state->getActionDomain().staticCast<DiscreteDomain>();
+        if (availableActions->getNumElements() != 1)
           break;
-        Variable action = availableActions->getElement(0);
-        actions.push_back(action);
-        state->performTransition(context, action, reward);
+        ObjectPtr action = availableActions->getElement(0);
+
+        state->performTransition(context, action);
+        trajectory->append(action);
       }
     }
-#endif // 0
   }
 };
 

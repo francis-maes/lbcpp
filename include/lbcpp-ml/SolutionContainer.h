@@ -109,6 +109,7 @@ public:
   ParetoFront() {}
 
   virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness);
+  virtual void insertSolutions(SolutionContainerPtr solutions);
 
   double computeHyperVolume(FitnessPtr referenceFitness = FitnessPtr()) const;
 };

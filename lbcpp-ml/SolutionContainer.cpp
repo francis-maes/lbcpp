@@ -330,6 +330,11 @@ void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
   solutions.swap(newSolutions);
 }
 
+void ParetoFront::insertSolutions(SolutionContainerPtr solutions)
+{
+  SolutionContainer::insertSolutions(solutions);
+}
+
 double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
 {
   if (isEmpty())

@@ -1,1 +1,3 @@
-* Search{State|Domain|Problem} for expressions
+1- WorkUnit
+2- Probleme: Parity
+3- Algo: Infix expression search domain

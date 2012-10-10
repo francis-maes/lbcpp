@@ -57,6 +57,8 @@ public:
 
   SearchNodePtr getSuccessor(ExecutionContext& context, const ObjectPtr& action)
   {
+    jassert(!state->isFinalState());
+    jassert(actions);
     for (size_t i = 0; i < actions->getNumElements(); ++i)
       if (isSameAction(actions->getElement(i), action))
       {
@@ -136,6 +138,9 @@ public:
   virtual bool isFinalState() const
     {return node->isFinalState();}
 
+  virtual int compare(const ObjectPtr& otherObject) const
+    {return (int)node - (int)otherObject.staticCast<PrunedSearchState>()->node;}
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<PrunedSearchState>()->node = node;}
   
@@ -188,10 +193,16 @@ typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 class F8SymbolicRegressionProblem : public ExpressionProblem
 {
 public:
-  F8SymbolicRegressionProblem(size_t functionIndex = 0)
+  F8SymbolicRegressionProblem(size_t functionIndex)
     : functionIndex(functionIndex)
   {
-    jassert(functionIndex >= 1 && functionIndex <= 8);
+    initialize();
+  }
+  F8SymbolicRegressionProblem() {}
+
+  void initialize()
+  {
+    jassert(functionIndex >= 0 && functionIndex < 8);
     // domain
 		input = domain->addInput(doubleType, "x");
 
@@ -253,6 +264,14 @@ public:
     //fitness[1] = expression->getTreeSize();
     return new Fitness(fitness, limits);
   }
+  
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    if (!ExpressionProblem::loadFromString(context, str))
+      return false;
+    initialize();
+    return true;
+  }
 
 protected:
   friend class F8SymbolicRegressionProblemClass;
@@ -267,9 +286,9 @@ protected:
   {
     lowerLimit = -1.0;
 		upperLimit = 1.0;
-		if (functionIndex == 7)
+		if (functionIndex == 6)
 			lowerLimit = 0.0, upperLimit = 2.0;
-		if (functionIndex == 8)
+		if (functionIndex == 7)
 			lowerLimit = 0.0, upperLimit = 4.0;
   }
 
@@ -281,14 +300,14 @@ protected:
 		double x2 = x * x;
 		switch (functionIndex)
 		{
-		case 1: return x * x2 + x2 + x;
-		case 2: return x2 * x2 + x * x2 + x2 + x;
-		case 3: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 4: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 5: return sin(x2) * cos(x) - 1.0;
-		case 6: return sin(x) + sin(x + x2);
-		case 7: return log(x + 1) + log(x2 + 1);
-		case 8: return sqrt(x);
+		case 0: return x * x2 + x2 + x;
+		case 1: return x2 * x2 + x * x2 + x2 + x;
+		case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+		case 3: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+		case 4: return sin(x2) * cos(x) - 1.0;
+		case 5: return sin(x) + sin(x + x2);
+		case 6: return log(x + 1) + log(x2 + 1);
+		case 7: return sqrt(x);
 
 /*
                 case 1: return x*x2-x2-x;
@@ -360,71 +379,207 @@ protected:
 
 //////////////////
 
+class MCGPEvaluationDecoratorProblem : public MaxIterationsDecoratorProblem
+{
+public:
+  MCGPEvaluationDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations)
+    : MaxIterationsDecoratorProblem(problem, maxNumEvaluations)
+  {
+    nextEvaluationCount = 1;
+    startingTime = Time::getMillisecondCounterHiRes() / 1000.0;
+    nextEvaluationDeltaTime = 0.001;
+  }
+
+  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+  {
+    FitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
+
+    if (!bestFitness || res->strictlyDominates(bestFitness))
+      bestFitness = res;
+
+    if (numEvaluations == nextEvaluationCount)
+    {
+      fitnessPerEvaluationCount.push_back(bestFitness->getValue(0));
+      nextEvaluationCount *= 2;
+    }
+
+    double deltaTime = Time::getMillisecondCounterHiRes() / 1000.0 - startingTime;
+    while (deltaTime >= nextEvaluationDeltaTime)
+    {
+      fitnessPerCpuTime.push_back(bestFitness->getValue(0));
+      nextEvaluationDeltaTime *= 2.0;
+    }
+
+    return res;
+  }
+  
+  const std::vector<double>& getFitnessPerEvaluationCount() const
+    {return fitnessPerEvaluationCount;}
+
+  const std::vector<double>& getFitnessPerCpuTime() const
+    {return fitnessPerCpuTime;}
+
+protected:
+  std::vector<double> fitnessPerEvaluationCount;  
+  std::vector<double> fitnessPerCpuTime;
+  size_t nextEvaluationCount;
+  double startingTime;
+  double nextEvaluationDeltaTime;
+
+  FitnessPtr bestFitness;
+};
+
+typedef ReferenceCountedObjectPtr<MCGPEvaluationDecoratorProblem> MCGPEvaluationDecoratorProblemPtr;
+
 class MCGPSandBox : public WorkUnit
 {
 public:
-  MCGPSandBox() : numEvaluations(1000), verbosity(1) {}
+  MCGPSandBox() : numEvaluations(1000), numRuns(100), maxExpressionSize(10) {}
 
   virtual Variable run(ExecutionContext& context)
   {
-    {
-      context.enterScope("random-1");
-      ScalarVariableMean scores;
-      for (size_t j=0;j<100;++j)
-      for (size_t i = 1; i <= 8; ++i)
-      {
-        ProblemPtr problem = new F8SymbolicRegressionProblem(i);
-        SamplerPtr sampler = new RandomRPNExpressionSampler(10);
-        SolverPtr optimizer = randomOptimizer(sampler, numEvaluations);
-        ParetoFrontPtr pareto = optimizer->optimize(context, problem, ObjectPtr(), (Solver::Verbosity)verbosity);
-        scores.push(pareto->getFitness(0)->getValue(0));
-      }
-      context.leaveScope(scores.getMean());
-    }
+    std::vector< std::pair<SolverPtr, String> > solvers;
+    //solvers.push_back(std::make_pair(new RepeatSolver(rolloutSearchAlgorithm(), numEvaluations), "repeat(rollout)"));
+    solvers.push_back(std::make_pair(stepLaSolver(1, 3), "step(1)la(3)"));
+    solvers.push_back(std::make_pair(stepLaSolver(2, 3), "step(2)la(3)"));
 
-    {
-      context.enterScope("random-2");
-      ScalarVariableMean scores;
-      for (size_t j=0;j<100;++j)
-      for (size_t i = 1; i <= 8; ++i)
-      {
-        ProblemPtr problem = new F8SymbolicRegressionProblem(i);
-        SamplerPtr sampler = randomSearchSampler();
-        ProblemPtr decoratedProblem = new ExpressionToExpressionRPNProblem(problem, 10);
-        SolverPtr optimizer = randomOptimizer(sampler, numEvaluations);
-        ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Solver::Verbosity)verbosity);
-        scores.push(pareto->getFitness(0)->getValue(0));
-      }
-      context.leaveScope(scores.getMean());
-    }
+    solvers.push_back(std::make_pair(nmcSolver(1), "nmc(1)"));
+    solvers.push_back(std::make_pair(nmcSolver(2), "nmc(2)"));
+    solvers.push_back(std::make_pair(nmcSolver(3), "nmc(3)"));
 
-    for (size_t level = 1; level < 4; ++level)
-      for (size_t iterPerLevel = 10; iterPerLevel <= 320; iterPerLevel *= 2)
-      {
-        context.enterScope("nrpa-"+String((int)level)+"-"+String((int)iterPerLevel));
-        ScalarVariableMean scores;
-        for (size_t j=0;j<100;++j)
-        for (size_t i = 1; i <= 8; ++i)
-        {
-          ProblemPtr problem = new F8SymbolicRegressionProblem(i);
-          SamplerPtr sampler = logLinearActionCodeSearchSampler(0.1, 1.0);
-          ProblemPtr decoratedProblem = new MaxIterationsDecoratorProblem(new ExpressionToExpressionRPNProblem(problem, 10), numEvaluations);
-
-          SolverPtr optimizer = nrpaOptimizer(sampler, level, iterPerLevel);
-          ParetoFrontPtr pareto = optimizer->optimize(context, decoratedProblem, ObjectPtr(), (Solver::Verbosity)verbosity);
-          scores.push(pareto->getFitness(0)->getValue(0));
-        }
-        context.leaveScope(scores.getMean());
-      }
+    solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 1, numEvaluations), "nrpa(1)"));
+    solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 2, (size_t)pow((double)numEvaluations, 1.0/2.0)), "nrpa(2)"));
+    solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 3, (size_t)pow((double)numEvaluations, 1.0/3.0)), "nrpa(3)"));
+    //solvers.push_back(std::make_pair(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), 4, (size_t)pow((double)numEvaluations, 1.0/4.0)), "nrpa(4)"));
     
+    std::vector<SolverInfo> infos(solvers.size());
+    context.enterScope("Running");
+    for (size_t i = 0; i < solvers.size(); ++i)
+    {
+      context.enterScope(solvers[i].second);
+      infos[i].name = solvers[i].second;
+      runSolver(context, solvers[i].first, infos[i]);
+      context.leaveScope(infos[i].fitnessPerEvaluationCount.back());
+    }
+    context.leaveScope();
+
+    context.enterScope("Results vs. evaluations");
+    displayResults(context, infos, false);
+    context.leaveScope();
+
+    context.enterScope("Results vs. time");
+    displayResults(context, infos, true);
+    context.leaveScope();
     return true;
   }
 
 protected:
   friend class MCGPSandBoxClass;
 
+  ProblemPtr problem;
   size_t numEvaluations;
-  size_t verbosity;
+  size_t numRuns;
+  size_t maxExpressionSize;
+  
+  struct SolverInfo
+  {
+    String name;
+    std::vector<double> fitnessPerEvaluationCount;
+    std::vector<double> fitnessPerCpuTime;
+
+    const std::vector<double>& getResults(bool inFunctionOfCpuTime) const
+      {return inFunctionOfCpuTime ? fitnessPerCpuTime : fitnessPerEvaluationCount;}
+
+    double getResult(bool inFunctionOfCpuTime, size_t index) const
+    {
+      const std::vector<double>& results = getResults(inFunctionOfCpuTime);
+      return index < results.size() ? results[index] : results.back();
+    }
+  };
+
+  SolverPtr nmcSolver(size_t level) const
+  {
+    jassert(level >= 1);
+    return new RepeatSolver(nmcSolverRec(level));
+  }
+
+  SolverPtr nmcSolverRec(size_t level) const
+  {
+    if (level == 1)
+      return rolloutSearchAlgorithm();
+    else
+      return stepSearchAlgorithm(lookAheadSearchAlgorithm(nmcSolverRec(level - 1)));
+  }
+
+  SolverPtr stepLaSolver(size_t numSteps, size_t numLookAheads) const
+  {
+    SolverPtr res = rolloutSearchAlgorithm();
+    for (size_t i = 0; i < numLookAheads; ++i)
+      res = lookAheadSearchAlgorithm(res);
+    for (size_t i = 0; i < numSteps; ++i)
+      res = stepSearchAlgorithm(res);
+    return new RepeatSolver(res);
+  }
+
+  void runSolver(ExecutionContext& context, SolverPtr solver, SolverInfo& info)
+  {
+    std::vector<SolverInfo> runInfos(numRuns);
+    size_t longest1 = 0, longest2 = 0;
+    for (size_t i = 0; i < numRuns; ++i)
+    {
+      runSolverOnce(context, solver, runInfos[i]);
+      if (runInfos[i].fitnessPerEvaluationCount.size() > longest1)
+        longest1 = runInfos[i].fitnessPerEvaluationCount.size();
+      if (runInfos[i].fitnessPerCpuTime.size() > longest2)
+        longest2 = runInfos[i].fitnessPerCpuTime.size();
+      context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
+    }
+
+    info.fitnessPerEvaluationCount.resize(longest1);
+    mergeResults(info.fitnessPerEvaluationCount, runInfos, false);
+    info.fitnessPerCpuTime.resize(longest2);
+    mergeResults(info.fitnessPerCpuTime, runInfos, true);
+  }
+  
+  void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info)
+  {
+    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToExpressionRPNProblem(problem, maxExpressionSize), numEvaluations);
+    solver->optimize(context, decoratedProblem);
+    info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
+    info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();
+  }
+
+  void mergeResults(std::vector<double>& res, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
+  {
+    for (size_t i = 0; i < res.size(); ++i)
+    {
+      ScalarVariableMean mean;
+      for (size_t j = 0; j < infos.size(); ++j)
+        mean.push(infos[j].getResult(inFunctionOfCpuTime, i));
+      res[i] = mean.getMean();
+    }
+  }
+
+  void displayResults(ExecutionContext& context, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
+  {
+    size_t longestLength = 0;
+    for (size_t i = 0; i < infos.size(); ++i)
+    {
+      size_t length = infos[i].getResults(inFunctionOfCpuTime).size();
+      if (length > longestLength)
+        longestLength = length;
+    }
+    size_t x = 4;
+    for (size_t i = 2; i < longestLength; ++i)
+    {
+      context.enterScope(String((int)x));
+      context.resultCallback("log2(x)", i);
+      for (size_t j = 0; j < infos.size(); ++j)
+        context.resultCallback(infos[j].name, infos[j].getResult(inFunctionOfCpuTime, i));
+      context.leaveScope();
+      x *= 2;
+    }
+  }
 };
 
 }; /* namespace lbcpp */

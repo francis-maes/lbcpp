@@ -134,20 +134,21 @@ extern SearchAlgorithmPtr rolloutSearchAlgorithm();
 class DecoratorSearchAlgorithm : public SearchAlgorithm
 {
 public:
-  DecoratorSearchAlgorithm(SearchAlgorithmPtr algorithm = SearchAlgorithmPtr())
+  DecoratorSearchAlgorithm(SolverPtr algorithm = SolverPtr())
     : algorithm(algorithm) {}
    
 protected:
   friend class DecoratorSearchAlgorithmClass;
 
-  SearchAlgorithmPtr algorithm;
+  SolverPtr algorithm;
 
   void subSearch(ExecutionContext& context);
 };
 
 typedef ReferenceCountedObjectPtr<DecoratorSearchAlgorithm> DecoratorSearchAlgorithmPtr;
 
-extern DecoratorSearchAlgorithmPtr lookAheadSearchAlgorithm(SearchAlgorithmPtr algorithm, double numActions = 1.0);
+extern DecoratorSearchAlgorithmPtr stepSearchAlgorithm(SolverPtr algorithm);
+extern DecoratorSearchAlgorithmPtr lookAheadSearchAlgorithm(SolverPtr algorithm, double numActions = 1.0);
 
 }; /* namespace lbcpp */
 
