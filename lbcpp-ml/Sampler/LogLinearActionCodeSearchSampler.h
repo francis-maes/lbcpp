@@ -114,7 +114,7 @@ public:
     while (!state->isFinalState())
     {
       ObjectPtr action = sampleAction(context, state, det);
-      res->append(state->cloneAndCast<SearchState>(), action);
+      res->append(action);
       state->performTransition(context, action);
     }
     res->setFinalState(state);
@@ -132,8 +132,11 @@ public:
   {
     std::vector<size_t> indices(objects.size());
     for (size_t i = 0; i < indices.size(); ++i)
+    {
       indices[i] = i;
-    
+      objects[i].staticCast<SearchTrajectory>()->ensureStatesAreComputed(context, domain->getInitialState());
+    }
+
     std::vector<Example> dataset;
     size_t highestActionCode = 0;
     makeDatasetRecursively(*(const std::vector<SearchTrajectoryPtr>* )&objects, indices, 0, dataset, highestActionCode);
@@ -159,7 +162,8 @@ public:
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
   {
     SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
-    
+    trajectory->ensureStatesAreComputed(context, domain->getInitialState());
+
     SparseDoubleVectorPtr gradient = new SparseDoubleVector();
     size_t n = trajectory->getLength();
     for (size_t i = 0; i < n; ++i)

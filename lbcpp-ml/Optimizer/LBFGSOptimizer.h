@@ -33,9 +33,9 @@ namespace lbcpp
 class LBFGSOptimizer : public IterativeSolver
 {
 public:
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
   {
-    IterativeSolver::configure(context, problem, front, initialSolution, verbosity);
+    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
     this->problem = problem.staticCast<ContinuousDerivableProblem>();
     ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
     lbfgsInitialize(domain->getNumDimensions());

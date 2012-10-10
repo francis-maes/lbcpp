@@ -242,7 +242,7 @@ public:
     for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       double prediction = it.getRawDouble();
-      if (prediction == doubleMissingValue)
+      if (prediction == doubleMissingValue || !isNumberValid(prediction))
         prediction = 0.0;
       res.push(fabs(supervisions->getValue(it.getIndex()) - prediction));
     }
@@ -360,133 +360,6 @@ protected:
 
 //////////////////
 
-class SearchAlgorithm : public Solver
-{
-public:
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, ObjectPtr initialSolution, Verbosity verbosity)
-  {
-    Solver::configure(context, problem, front, initialSolution, verbosity);
-    domain = problem->getDomain().staticCast<SearchDomain>();
-    trajectory = initialSolution.staticCast<SearchTrajectory>();
-    if (!trajectory)
-    {
-      trajectory = new SearchTrajectory();
-      trajectory->setFinalState(domain->createInitialState());
-    }
-  }
-
-  virtual void clear(ExecutionContext& context)
-  {
-    Solver::clear(context);
-    domain = SearchDomainPtr();
-    trajectory = SearchTrajectoryPtr();
-  }
-
-protected:
-  SearchDomainPtr domain;
-  SearchTrajectoryPtr trajectory;
-};
-
-typedef ReferenceCountedObjectPtr<SearchAlgorithm> SearchAlgorithmPtr;
-
-class RolloutSearchAlgorithm : public SearchAlgorithm
-{
-public:
-  virtual void optimize(ExecutionContext& context)
-  {
-    SearchTrajectoryPtr trajectory = this->trajectory->cloneAndCast<SearchTrajectory>();
-    SearchStatePtr state = trajectory->getFinalState();
-    while (!state->isFinalState())
-    {
-      if (problem->shouldStop())
-        return;
-      DiscreteDomainPtr availableActions = state->getActionDomain().staticCast<DiscreteDomain>();
-      size_t n = availableActions->getNumElements();
-      ObjectPtr action = availableActions->getElement(context.getRandomGenerator()->sampleSize(n));
-      trajectory->append(action);
-      state->performTransition(context, action);
-    }
-    trajectory->setFinalState(state);
-    evaluate(context, trajectory);
-  }
-};
-
-class DecoratorSearchAlgorithm : public SearchAlgorithm
-{
-public:
-  DecoratorSearchAlgorithm(SearchAlgorithmPtr algorithm = SearchAlgorithmPtr())
-    : algorithm(algorithm) {}
-   
-protected:
-  friend class DecoratorSearchAlgorithmClass;
-
-  SearchAlgorithmPtr algorithm;
-
-  /*double subSearch(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr state, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
-  {
-    if (state->isFinalState())
-      return submitFinalState(context, objective, actions, state);
-    else
-    {
-      double res = algorithm->search(context, objective, state, actions, finalState);
-      if (res != -DBL_MAX)
-        submitFinalState(context, objective, actions, finalState, res);
-      return res;
-    }
-  }*/
-};
-
-
-class LookAheadSearchAlgorithm : public DecoratorSearchAlgorithm
-{
-public:
-  LookAheadSearchAlgorithm(SearchAlgorithmPtr algorithm, double numActions = 1.0)
-    : DecoratorSearchAlgorithm(algorithm), numActions(numActions) {}
-  LookAheadSearchAlgorithm() : numActions(0.0) {}
-
-protected:
-  friend class LookAheadSearchAlgorithmClass;
-
-  double numActions;
-
-  virtual void optimize(ExecutionContext& context)
-  {
-    SearchTrajectoryPtr trajectory = this->trajectory->cloneAndCast<SearchTrajectory>();
-    SearchStatePtr state = trajectory->getFinalState();
-    DiscreteDomainPtr actions = state->getActionDomain();
-    size_t n = actions->getNumElements();
-
-    std::vector<size_t> order;
-    context.getRandomGenerator()->sampleOrder(n, order);
-    std::vector<ObjectPtr> selectedActions((size_t)(juce::jmax(1.0, n * numActions)));
-    for (size_t i = 0; i < selectedActions.size(); ++i)
-      selectedActions[i] = actions->getElement(order[i]);
-
-    for (size_t i = 0; i < selectedActions.size(); ++i)
-    {
-      if (problem->shouldStop())
-        break;
-      ObjectPtr action = selectedActions[i];
-      Variable stateBackup;
-      state->performTransition(context, action, &stateBackup);
-
-      trajectory->append(action);
-
-      //DecisionProblemStatePtr finalState;
-      //subSearch(context, objective, state, actions, finalState);
-
-      trajectory->pop();      
-
-      state->undoTransition(context, stateBackup);
-    }
-  }
-};
-
-// todo: finish look-ahead
-// todo: step 
-
-//////////////////
-
 class MCGPSandBox : public WorkUnit
 {
 public:
@@ -497,7 +370,7 @@ public:
     {
       context.enterScope("random-1");
       ScalarVariableMean scores;
-      for (size_t j=0;j<5;++j)
+      for (size_t j=0;j<100;++j)
       for (size_t i = 1; i <= 8; ++i)
       {
         ProblemPtr problem = new F8SymbolicRegressionProblem(i);
@@ -512,7 +385,7 @@ public:
     {
       context.enterScope("random-2");
       ScalarVariableMean scores;
-      for (size_t j=0;j<5;++j)
+      for (size_t j=0;j<100;++j)
       for (size_t i = 1; i <= 8; ++i)
       {
         ProblemPtr problem = new F8SymbolicRegressionProblem(i);
@@ -530,7 +403,7 @@ public:
       {
         context.enterScope("nrpa-"+String((int)level)+"-"+String((int)iterPerLevel));
         ScalarVariableMean scores;
-        for (size_t j=0;j<5;++j)
+        for (size_t j=0;j<100;++j)
         for (size_t i = 1; i <= 8; ++i)
         {
           ProblemPtr problem = new F8SymbolicRegressionProblem(i);

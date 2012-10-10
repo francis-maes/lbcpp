@@ -7,6 +7,7 @@
   <import name="Optimizer"/>
   <import name="Function"/>
   <import name="Expression"/>
+  <import name="Search"/>
   
   <include file="lbcpp-ml/Problem.h"/>
   <include file="lbcpp-ml/Search.h"/>
@@ -34,16 +35,6 @@
   <class name="ParetoFront" base="SolutionVector"/>
 
   <uicomponent name="SolutionVectorComponent" type="SolutionVector"/>
-
-  <!-- Search -->
-  <class name="SearchState" base="Object" abstract="yes"/>
-  <class name="SearchTrajectory" base="Object">
-    <variable type="ObjectVector[Object]" name="actions"/>
-    <variable type="SearchState" name="finalState"/>
-  </class>
-  <class name="SearchDomain" base="Domain">
-    <variable type="SearchState" name="initialState"/>
-  </class>
 
   <!-- Problems -->
   <class name="Problem" abstract="yes"/>

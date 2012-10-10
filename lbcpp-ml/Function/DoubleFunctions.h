@@ -27,7 +27,11 @@ public:
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
     double value = inputs[0].getDouble();
-    return (value == doubleMissingValue ? value : computeDouble(value));
+    if (value == doubleMissingValue)
+      return doubleMissingValue;
+    double res = computeDouble(value);
+    jassert(res == doubleMissingValue || isNumberValid(res));
+    return res;
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& in, TypePtr outputType) const
@@ -142,7 +146,11 @@ public:
   {
     double v1 = inputs[0].getDouble();
     double v2 = inputs[1].getDouble();
-    return v1 == doubleMissingValue || v2 == doubleMissingValue ? doubleMissingValue : computeDouble(v1, v2);
+    if (v1 == doubleMissingValue || v2 == doubleMissingValue)
+      return doubleMissingValue;
+    double res = computeDouble(v1, v2);
+    jassert(res == doubleMissingValue || isNumberValid(res));
+    return res;
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const

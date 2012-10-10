@@ -45,7 +45,7 @@ SolutionContainerPtr Solver::optimize(ExecutionContext& context, ProblemPtr prob
 
 FitnessPtr Solver::evaluate(ExecutionContext& context, const ObjectPtr& solution)
 {
-  jassert(problem && front);
+  jassert(problem && solutions);
   FitnessPtr fitness = problem->evaluate(context, solution);
   for (size_t i = 0; i < fitness->getNumValues(); ++i)
     jassert(isNumberValid(fitness->getValue(i)));
