@@ -37,6 +37,9 @@ public:
   void addElement(const ObjectPtr& object)
     {elements.push_back(object);}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+    {target.staticCast<DiscreteDomain>()->elements = elements;}
+
 private:
   friend class DiscreteDomainClass;
 

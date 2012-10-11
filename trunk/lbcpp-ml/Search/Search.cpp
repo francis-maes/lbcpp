@@ -36,6 +36,20 @@ void SearchTrajectory::ensureStatesAreComputed(ExecutionContext& context, Search
   }
 }
 
+String SearchTrajectory::toShortString() const
+{
+  if (actions.empty())
+    return "<empty trajectory>";
+  String res;
+  for (size_t i = 0; i < actions.size(); ++i)
+  {
+    res += actions[i]->toShortString();
+    if (i < actions.size() - 1)
+      res += ", ";
+  }
+  return res;
+}
+
 int SearchTrajectory::compare(const ObjectPtr& otherObject) const
   {return finalState->compare(otherObject.staticCast<SearchTrajectory>()->finalState);}
   
