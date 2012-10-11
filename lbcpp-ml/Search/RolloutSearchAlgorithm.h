@@ -26,6 +26,8 @@ public:
         return;
       DiscreteDomainPtr availableActions = state->getActionDomain().staticCast<DiscreteDomain>();
       size_t n = availableActions->getNumElements();
+      if (!n)
+        return;
       ObjectPtr action = availableActions->getElement(context.getRandomGenerator()->sampleSize(n));
       trajectory->append(action);
       state->performTransition(context, action);

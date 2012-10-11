@@ -194,20 +194,21 @@ void ExpressionRPNTypeState::setApplyTransition(const FunctionPtr& function, con
 /*
 ** ExpressionRPNTypeSpace
 */
-ExpressionRPNTypeSpace::ExpressionRPNTypeSpace(const ExpressionDomainPtr& problem, const std::vector<TypePtr>& initialState, size_t maxDepth)
+ExpressionRPNTypeSpace::ExpressionRPNTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth)
 {
+  jassert(domain->getNumFunctions());
   std::vector<TypePtr> nodeTypes;
-  for (size_t i = 0; i < problem->getNumInputs(); ++i)
-    insertType(nodeTypes, problem->getInput(i)->getType());
-  for (size_t i = 0; i < problem->getNumConstants(); ++i)
-    insertType(nodeTypes, problem->getConstant(i)->getType());
+  for (size_t i = 0; i < domain->getNumInputs(); ++i)
+    insertType(nodeTypes, domain->getInput(i)->getType());
+  for (size_t i = 0; i < domain->getNumConstants(); ++i)
+    insertType(nodeTypes, domain->getConstant(i)->getType());
   //insertType(nodeTypes, booleanType); // automatically included since boosting methods may create stump nodes that output booleans
 
-  this->initialState = getOrCreateState(problem, 0, initialState);
+  this->initialState = getOrCreateState(domain, 0, initialState);
   size_t numTypes = nodeTypes.size();
   while (true)
   {
-    buildSuccessors(problem, this->initialState, nodeTypes, maxDepth);
+    buildSuccessors(domain, this->initialState, nodeTypes, maxDepth);
     size_t newNumTypes = nodeTypes.size();
     if (newNumTypes != numTypes)
     { 
@@ -255,13 +256,13 @@ ExpressionRPNTypeStatePtr ExpressionRPNTypeSpace::getState(size_t depth, const s
   return it == states.end() ? ExpressionRPNTypeStatePtr() : it->second;
 }
 
-ExpressionRPNTypeStatePtr ExpressionRPNTypeSpace::getOrCreateState(const ExpressionDomainPtr& problem, size_t depth, const std::vector<TypePtr>& stack)
+ExpressionRPNTypeStatePtr ExpressionRPNTypeSpace::getOrCreateState(const ExpressionDomainPtr& domain, size_t depth, const std::vector<TypePtr>& stack)
 {
   StateKey key(depth, stack);
   StateMap::const_iterator it = states.find(key);
   if (it == states.end())
   { 
-    bool yieldable = (stack.size() == 1 && problem->isTargetTypeAccepted(stack[0]));
+    bool yieldable = (stack.size() == 1 && domain->isTargetTypeAccepted(stack[0]));
     ExpressionRPNTypeStatePtr res = new ExpressionRPNTypeState(depth, stack, yieldable);
     states[key] = res;
     return res;
@@ -278,7 +279,7 @@ void ExpressionRPNTypeSpace::insertType(std::vector<TypePtr>& types, const TypeP
   types.push_back(type);
 }
 
-void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& problem, const ExpressionRPNTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, const ExpressionRPNTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
 {
   if (maxDepth == state->getDepth())
   {
@@ -299,7 +300,7 @@ void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& problem,
       TypePtr type = nodeTypes[i];
       ExpressionRPNTypeStatePtr nextState = state->getPushTransition(type);
       if (nextState)
-        buildSuccessors(problem, nextState, nodeTypes, maxDepth);
+        buildSuccessors(domain, nextState, nodeTypes, maxDepth);
       else
       {
         // compute new stack
@@ -307,16 +308,16 @@ void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& problem,
         newStack.push_back(type);
 
         // create successor state and call recursively
-        ExpressionRPNTypeStatePtr newState = getOrCreateState(problem, state->getDepth() + 1, newStack);
+        ExpressionRPNTypeStatePtr newState = getOrCreateState(domain, state->getDepth() + 1, newStack);
         state->setPushTransition(type, newState);
-        buildSuccessors(problem, newState, nodeTypes, maxDepth);
+        buildSuccessors(domain, newState, nodeTypes, maxDepth);
       }
     }
   }
 
-  for (size_t i = 0; i < problem->getNumFunctions(); ++i)
+  for (size_t i = 0; i < domain->getNumFunctions(); ++i)
   {
-    FunctionPtr function = problem->getFunction(i);
+    FunctionPtr function = domain->getFunction(i);
     if (acceptInputTypes(function, state->getStack()))
     {
       size_t numInputs = function->getNumInputs();
@@ -327,10 +328,10 @@ void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& problem,
         inputTypes[i] = state->stack[state->getStackSize() - numInputs + i];
 
       std::vector<FunctionPtr> functions;
-      enumerateFunctionVariables(problem->getUniverse(), function, inputTypes, tmp, 0, functions);
+      enumerateFunctionVariables(domain->getUniverse(), function, inputTypes, tmp, 0, functions);
 
       for (size_t j = 0; j < functions.size(); ++j)
-        applyFunctionAndBuildSuccessor(problem, state, functions[j], nodeTypes, maxDepth);
+        applyFunctionAndBuildSuccessor(domain, state, functions[j], nodeTypes, maxDepth);
     }
   }
 }
@@ -354,7 +355,7 @@ void ExpressionRPNTypeSpace::enumerateFunctionVariables(const ExpressionUniverse
   }
 }
 
-void ExpressionRPNTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const ExpressionRPNTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+void ExpressionRPNTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& domain, const ExpressionRPNTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
 {
   // compute output type given input types
   size_t numInputs = function->getNumInputs();
@@ -373,9 +374,9 @@ void ExpressionRPNTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDoma
   newStack.back() = outputType;
 
   // create successor state and call recursively
-  ExpressionRPNTypeStatePtr newState = getOrCreateState(problem, state->getDepth() + 1, newStack);
+  ExpressionRPNTypeStatePtr newState = getOrCreateState(domain, state->getDepth() + 1, newStack);
   state->setApplyTransition(function, newState);
-  buildSuccessors(problem, newState, nodeTypes, maxDepth);
+  buildSuccessors(domain, newState, nodeTypes, maxDepth);
 }
 
 bool ExpressionRPNTypeSpace::acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const
