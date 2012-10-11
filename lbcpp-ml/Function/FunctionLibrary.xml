@@ -6,8 +6,13 @@
   <class name="Function" abstract="yes"/>
   <class name="HomogeneousUnaryFunction" base="Function" abstract="yes"/>
   <class name="HomogeneousBinaryFunction" base="Function" abstract="yes"/>
+  <class name="HomogeneousTernaryFunction" base="Function" abstract="yes"/>
 
   <!-- Boolean Functions -->
+  <class name="NotBooleanFunction" base="HomogeneousUnaryFunction">
+    <constructor returnType="Function"/>
+  </class>
+  
   <class name="BinaryBooleanFunction" base="HomogeneousBinaryFunction" abstract="yes"/>
   <class name="AndBooleanFunction" base="BinaryBooleanFunction">
     <constructor returnType="Function"/>
@@ -22,6 +27,10 @@
     <constructor returnType="Function"/>
   </class>
   <class name="EqualBooleanFunction" base="BinaryBooleanFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+  <class name="IfThenElseBooleanFunction" base="HomogeneousTernaryFunction">
     <constructor returnType="Function"/>
   </class>
 

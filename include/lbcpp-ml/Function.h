@@ -59,11 +59,15 @@ typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 extern ClassPtr luapeFunctionClass;
 
 // Boolean
+extern FunctionPtr notBooleanFunction();
+
 extern FunctionPtr andBooleanFunction();
 extern FunctionPtr orBooleanFunction();
 extern FunctionPtr nandBooleanFunction();
 extern FunctionPtr norBooleanFunction();
 extern FunctionPtr equalBooleanFunction();
+
+extern FunctionPtr ifThenElseBooleanFunction();
 
 // Integer
 extern FunctionPtr addIntegerFunction();
@@ -142,6 +146,25 @@ public:
 
   virtual size_t getNumInputs() const
     {return 2;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type->inheritsFrom(this->type);}
+
+  virtual TypePtr initialize(const TypePtr* inputTypes)
+    {return type;}
+
+private:
+  TypePtr type;
+};
+
+class HomogeneousTernaryFunction : public Function
+{
+public:
+  HomogeneousTernaryFunction(TypePtr type = anyType)
+    : type(type) {}
+
+  virtual size_t getNumInputs() const
+    {return 3;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(this->type);}
