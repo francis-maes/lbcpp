@@ -21,8 +21,12 @@
   <class name="F8SymbolicRegressionProblem" base="ExpressionProblem" shortName="symbreg">
     <variable type="PositiveInteger" name="functionIndex"/>
   </class>
-  <class name="BooleanParityProblem" base="ExpressionProblem" shortName="parity">
+  <class name="BooleanExpressionProblem" base="ExpressionProblem" abstract="yes"/>
+  <class name="BooleanParityProblem" base="BooleanExpressionProblem" shortName="parity">
     <variable type="PositiveInteger" name="numBits"/>
+  </class>
+  <class name="BooleanMultiplexerProblem" base="BooleanExpressionProblem" shortName="multiplexer">
+    <variable type="PositiveInteger" name="numAddressBits"/>
   </class>
 
   <!-- Specific to expressions -->

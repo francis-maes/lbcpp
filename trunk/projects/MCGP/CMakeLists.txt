@@ -10,6 +10,7 @@ SET(LBCPP_MCGP_SOURCES
   precompiled.cpp
   TestDomain.h
   BooleanParityProblem.h
+  BooleanMultiplexerProblem.h
   F8SymbolicRegressionProblem.h
   MCGPSandBox.h
   MCGPLibrary.xml

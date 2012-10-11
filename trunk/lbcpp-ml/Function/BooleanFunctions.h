@@ -16,6 +16,45 @@
 namespace lbcpp
 {
 
+/*
+** Unary function
+*/
+class NotBooleanFunction : public HomogeneousUnaryFunction
+{
+public:
+  NotBooleanFunction()
+    : HomogeneousUnaryFunction(booleanType) {}
+  
+  virtual String toShortString() const
+    {return "!";}
+
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+    {return "!" + inputs[0]->toShortString();}
+  
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+    {return inputs[0].isMissingValue() ? Variable::missingValue(booleanType) : Variable(!inputs[0].getBoolean(), booleanType);}
+
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  {
+    LuapeSampleVector::const_iterator it = inputs[0]->begin();
+    size_t n = inputs[0]->size();
+
+    BooleanVectorPtr res = new BooleanVector(n);
+    unsigned char* dest = res->getData();
+    const unsigned char* lim = dest + n;
+    while (dest < lim)
+    {
+      unsigned char b = it.getRawBoolean();
+      *dest++ = (b == 2 ? 2 : 1 - b);
+      ++it;
+    }
+    return new LuapeSampleVector(inputs[0]->getIndices(), res);
+  }
+};
+
+/*
+** Binary functions
+*/
 class BinaryBooleanFunction : public HomogeneousBinaryFunction
 {
 public:
@@ -110,6 +149,53 @@ public:
 
   virtual bool computeBoolean(bool first, bool second) const
     {return first == second;}
+};
+
+
+/*
+** Ternary function
+*/
+class IfThenElseBooleanFunction : public HomogeneousTernaryFunction
+{
+public:
+  IfThenElseBooleanFunction() : HomogeneousTernaryFunction(booleanType) {}
+  
+  virtual String toShortString() const
+    {return "if-then-else";}
+
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+    {return "(" + inputs[0]->toShortString() + " ? " + inputs[1]->toShortString() + " : " + inputs[2]->toShortString() + ")";}
+  
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    if (inputs[0].isMissingValue())
+      return Variable::missingValue(booleanType);
+    return inputs[0].getBoolean() ? inputs[1] : inputs[2];
+  }
+
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  {
+    LuapeSampleVector::const_iterator it1 = inputs[0]->begin();
+    LuapeSampleVector::const_iterator it2 = inputs[1]->begin();
+    LuapeSampleVector::const_iterator it3 = inputs[2]->begin();
+    size_t n = inputs[0]->size();
+    jassert(n == inputs[1]->size() && n == inputs[2]->size());
+
+    BooleanVectorPtr res = new BooleanVector(n);
+    unsigned char* dest = res->getData();
+    const unsigned char* lim = dest + n;
+    while (dest < lim)
+    {
+      unsigned char b = it1.getRawBoolean();
+      if (b == 2)
+        *dest++ = 2;
+      else
+        *dest++ = (b == 1 ? it2.getRawBoolean() : it3.getRawBoolean());
+      ++it1, ++it2, ++it3;
+    }
+
+    return new LuapeSampleVector(inputs[0]->getIndices(), res);
+  }
 };
 
 }; /* namespace lbcpp */

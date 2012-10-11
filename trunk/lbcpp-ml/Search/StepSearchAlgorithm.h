@@ -40,9 +40,15 @@ protected:
         break;
       ObjectPtr selectedAction = bestTrajectory->getAction(trajectory->getLength());
 
+#ifdef JUCE_DEBUG
+      for (size_t i = 0; i < trajectory->getLength(); ++i)
+        jassert(trajectory->getAction(i) == bestTrajectory->getAction(i));
+#endif // JUCE_DEBUG
+
       state->performTransition(context, selectedAction);
       trajectory->append(selectedAction);
 
+#if 0
       while (!state->isFinalState())
       {
         DiscreteDomainPtr availableActions = state->getActionDomain().staticCast<DiscreteDomain>();
@@ -53,6 +59,7 @@ protected:
         state->performTransition(context, action);
         trajectory->append(action);
       }
+#endif // 0
     }
   }
 };
