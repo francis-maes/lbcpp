@@ -12,6 +12,7 @@ SET(LBCPP_MCGP_SOURCES
   BooleanParityProblem.h
   BooleanMultiplexerProblem.h
   F8SymbolicRegressionProblem.h
+  SantaFeTrailProblem.h
   MCGPSandBox.h
   MCGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MCGPLibrary.cpp

@@ -163,14 +163,15 @@ protected:
 class ExpressionToExpressionRPNProblem : public DecoratorProblem
 {
 public:
-  ExpressionToExpressionRPNProblem(ExpressionProblemPtr expressionProblem = ProblemPtr(), size_t expressionSize = 10)
+  ExpressionToExpressionRPNProblem(ExecutionContext& context, ExpressionProblemPtr expressionProblem, size_t expressionSize)
     : DecoratorProblem(expressionProblem)
   {
     ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
-    SearchStatePtr rpnState = expressionRPNSearchState(expressionDomain, expressionDomain->getSearchSpace(defaultExecutionContext(), expressionSize));
+    SearchStatePtr rpnState = expressionRPNSearchState(expressionDomain, expressionDomain->getSearchSpace(context, expressionSize, true));
     SearchNodePtr rootNode = new SearchNode(NULL, rpnState);
     domain = new SearchDomain(new PrunedSearchState(rootNode));
   }
+  ExpressionToExpressionRPNProblem() {}
 
   virtual DomainPtr getDomain() const
     {return domain;}
@@ -374,7 +375,7 @@ protected:
   
   void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info)
   {
-    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToExpressionRPNProblem(problem, maxExpressionSize), numEvaluations);
+    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToExpressionRPNProblem(context, problem, maxExpressionSize), numEvaluations);
     solver->optimize(context, decoratedProblem);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();

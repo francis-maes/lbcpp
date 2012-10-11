@@ -21,12 +21,43 @@
   <class name="F8SymbolicRegressionProblem" base="ExpressionProblem" shortName="symbreg">
     <variable type="PositiveInteger" name="functionIndex"/>
   </class>
+
+  <!-- Boolean Problems -->
   <class name="BooleanExpressionProblem" base="ExpressionProblem" abstract="yes"/>
   <class name="BooleanParityProblem" base="BooleanExpressionProblem" shortName="parity">
     <variable type="PositiveInteger" name="numBits"/>
   </class>
   <class name="BooleanMultiplexerProblem" base="BooleanExpressionProblem" shortName="multiplexer">
     <variable type="PositiveInteger" name="numAddressBits"/>
+  </class>
+
+  <!-- Sante Fe Trail Problem -->
+  <class name="SantaFeTrailWorld" base="Object"/>
+  
+  <class name="SantaFeTrailState" base="Object">
+    <variable type="SantaFeTrailWorld" name="world"/>
+    <variable type="PositiveInteger" name="maxNumSteps"/>
+  </class>
+  
+  <class name="SantaFeTrailAction" base="Object" abstract="yes"/>
+  <class name="MoveSantaFeTrailAction" base="SantaFeTrailAction"/>
+  <class name="LeftSantaFeTrailAction" base="SantaFeTrailAction"/>
+  <class name="RightSantaFeTrailAction" base="SantaFeTrailAction"/>
+  <class name="IfFoodAheadSantaFeTrailAction" base="SantaFeTrailAction">
+    <variable type="SantaFeTrailAction" name="thenAction"/>
+    <variable type="SantaFeTrailAction" name="elseAction"/>
+  </class>
+  <class name="SequenceSantaFeTrailAction" base="SantaFeTrailAction">
+    <variable type="ObjectVector[SantaFeTrailAction]" name="actions"/>
+  </class>
+
+  <class name="SantaFeTrailFunction" base="Function" abstract="yes"/>
+  <class name="Progn2SantaFeTrailFunction" base="SantaFeTrailFunction"/>
+  <class name="Progn3SantaFeTrailFunction" base="SantaFeTrailFunction"/>
+  <class name="IfFoodAheadSantaFeTrailFunction" base="SantaFeTrailFunction"/>
+
+  <class name="SantaFeTrailProblem" base="ExpressionProblem" shortName="ant">
+    <variable type="PositiveInteger" name="maxNumSteps"/>
   </class>
 
   <!-- Specific to expressions -->
