@@ -2,7 +2,6 @@
 
 <library name="MCGP" dynamic="yes">
 
-
   <class name="SearchNode" base="Object">
     <variable type="SearchState" name="state"/>
     <variable type="ObjectVector[SearchNode]" name="successors"/>
@@ -13,8 +12,15 @@
   <class name="PrunedSearchState" base="SearchState">
     <variable type="SearchNode" name="node"/>
   </class>
+  
+  <class name="PrefixExpressionSearchState" base="SearchState">
+    <variable type="ExpressionDomain" name="domain"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="ObjectVector[Object]" name="sequence"/>
+    <variable type="PositiveInteger" name="numLeafs"/>
+  </class>
 
-  <class name="ExpressionToExpressionRPNProblem" base="DecoratorProblem"/>
+  <class name="ExpressionToSearchProblem" base="DecoratorProblem"/>
 
   <!-- Expression Problems -->
   <class name="ExpressionProblem" base="Problem" abstract="yes"/>

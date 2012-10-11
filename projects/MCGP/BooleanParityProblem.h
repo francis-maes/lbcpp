@@ -19,6 +19,8 @@ class BooleanExpressionProblem : public ExpressionProblem
 public:
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
+    jassert(cache);
+
     // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
     LuapeSampleVectorPtr predictions = cache->getSamples(context, expression);
@@ -98,9 +100,6 @@ protected:
   friend class BooleanParityProblemClass;
 
   size_t numBits;
-
-  LuapeSamplesCachePtr cache;
-  VariableExpressionPtr output;
 };
 
 }; /* namespace lbcpp */

@@ -296,7 +296,7 @@ public:
     String res = toShortString() + "(";
     for (size_t i = 0; i < inputs.size(); ++i)
     {
-      res += inputs[0]->toShortString();
+      res += inputs[i]->toShortString();
       if (i < inputs.size() - 1)
         res += ", ";
     }

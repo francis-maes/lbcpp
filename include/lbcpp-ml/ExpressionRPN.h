@@ -150,6 +150,34 @@ private:
 
 extern SearchStatePtr expressionRPNSearchState(ExpressionDomainPtr domain, ExpressionRPNTypeSpacePtr typeSearchSpace);
 
+
+// FIXME: move somewhere and do better design
+class ExpressionActionCodeGenerator : public Object
+{
+public:
+  size_t getActionCode(ObjectPtr symbol, size_t step, size_t maxNumSteps)
+  {
+    size_t symbolCode;
+    SymbolCodeMap::const_iterator it = symbolCodes.find(symbol);
+    if (it == symbolCodes.end())
+    {
+      size_t res = symbolCodes.size();
+      symbolCodes[symbol] = res;
+      symbolCode = res;
+    }
+    else
+      symbolCode = it->second;
+    return symbolCode * maxNumSteps + step;
+  }
+
+private:
+  typedef std::map<ObjectPtr, size_t> SymbolCodeMap;
+  SymbolCodeMap symbolCodes;
+};
+
+typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActionCodeGeneratorPtr;
+
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_EXPRESSION_RPN_H_

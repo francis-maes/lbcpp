@@ -1,3 +1,15 @@
 ok- WorkUnit
 ok- Probleme: Parity
-3- Algo: Infix expression search domain
+ok- Infix expression search domain
+
+* Rename ExpressionRPNSearchState into TypedPostfixExpressionSearchState
+* New: PostfixExpressionSearchState (without typing constraints)
+* Move PrefixExpressionSearchState into lbcpp-ml / better computation of the action sets depending on the arity of the functions
+* Rename ExpressionRPN related stuff
+* Make ExpressionActionCodeGenerator abstract and implement some simple variants
+* Reproduce Cazenave's results
+* Evaluate the impact of pruning the action space
+* Remove all forms of caching
+* Finalize the symbolic regression problem(s)
+-
+* Launch big experiments

@@ -27,6 +27,7 @@ public:
       for (size_t i = 0; i < subSequence->getLength(); ++i)
         ExpressionRPNSequence::apply(domain->getUniverse(), stack, subSequence->getElement(i));
     }
+    actionCodeGenerator = new ExpressionActionCodeGenerator();
   }
   ExpressionRPNSearchState() : numSteps(0), isYielded(false) {}
 
@@ -100,23 +101,7 @@ public:
   }
   
   virtual size_t getActionCode(const ObjectPtr& action) const
-  {
-    ActionCodeMap::const_iterator it = actionCodes.find(action);
-    if (it == actionCodes.end())
-    {
-      size_t res = actionCodes.size();
-      const_cast<ExpressionRPNSearchState* >(this)->actionCodes[action] = res;
-      return res * 10 + getCurrentStep();
-    }
-    else
-      return it->second * 10 + getCurrentStep();
-    /*
-    std::vector<ExpressionPtr> stack = getStack();
-    if (action)
-      ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
-    return stack.back()->getAllocationIndex();
-    */
-  }
+    {return actionCodeGenerator->getActionCode(action, getCurrentStep(), 100);}
 
   struct Backup : public Object
   {
@@ -177,6 +162,19 @@ public:
   virtual ObjectPtr getConstructedObject() const
     {jassert(stack.size() == 1); return stack[0];}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    const ReferenceCountedObjectPtr<ExpressionRPNSearchState>& t = target.staticCast<ExpressionRPNSearchState>();
+    t->domain = domain;
+    t->typeSearchSpace = typeSearchSpace;
+    t->typeState = typeState;
+    t->availableActions = availableActions;
+    t->stack = stack;
+    t->numSteps = numSteps;
+    t->isYielded = isYielded;
+    t->actionCodeGenerator = actionCodeGenerator;
+  }
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -186,14 +184,12 @@ protected:
   ExpressionRPNTypeSpacePtr typeSearchSpace;
   ExpressionRPNTypeStatePtr typeState;
   DiscreteDomainPtr availableActions;
-  //ExpressionKeysMapPtr nodeKeys;
 
   std::vector<ExpressionPtr> stack;
   size_t numSteps;
   bool isYielded;
   
-  typedef std::map<ObjectPtr, size_t, ObjectComparator> ActionCodeMap;
-  ActionCodeMap actionCodes;
+  ExpressionActionCodeGeneratorPtr actionCodeGenerator;
 
   void updateTypeState()
   {

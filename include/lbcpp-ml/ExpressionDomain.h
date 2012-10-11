@@ -40,6 +40,18 @@ public:
     {return inputs;}
 
   VariableExpressionPtr addInput(const TypePtr& type, const String& name);
+  
+  /*
+  ** Available Constants
+  */
+  size_t getNumConstants() const
+    {return constants.size();}
+
+  const ConstantExpressionPtr& getConstant(size_t index) const
+    {jassert(index < constants.size()); return constants[index];}
+
+  void addConstant(const Variable& value)
+    {constants.push_back(new ConstantExpression(value));}
 
   /*
   ** Active variables
@@ -77,18 +89,6 @@ public:
 
   void addFunction(const FunctionPtr& function)
     {functions.push_back(function);}
-
-  /*
-  ** Available Constants
-  */
-  size_t getNumConstants() const
-    {return constants.size();}
-
-  const ConstantExpressionPtr& getConstant(size_t index) const
-    {jassert(index < constants.size()); return constants[index];}
-
-  void addConstant(const Variable& value)
-    {constants.push_back(new ConstantExpression(value));}
 
   /*
   ** Accepted target types
