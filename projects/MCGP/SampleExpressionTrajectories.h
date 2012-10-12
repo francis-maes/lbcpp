@@ -49,7 +49,7 @@ protected:
     sampler->initialize(context, new SearchDomain(initialState));
 
     context.enterScope(name);
-
+    context.resultCallback("initialState", initialState);
     context.enterScope("Sampling");
     for (size_t i = 0; i < numExpressions; ++i)
     {
