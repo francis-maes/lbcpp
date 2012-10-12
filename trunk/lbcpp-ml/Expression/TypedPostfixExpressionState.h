@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExpressionRPNSearchState.h     | Expression RPN Search State     |
-| Author  : Francis Maes                   |                                 |
+| Filename: TypedPostfixExpressionState.h  | Postfix Expression Search State |
+| Author  : Francis Maes                   | With typing constraints         |
 | Started : 08/10/2012 15:25               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_RPN_SEARCH_STATE_H_
-# define LBCPP_ML_EXPRESSION_RPN_SEARCH_STATE_H_
+#ifndef LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
+# define LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
 
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionRPN.h>
@@ -16,20 +16,17 @@
 namespace lbcpp
 {
 
-class ExpressionRPNSearchState : public SearchState
+class TypedPostfixExpressionState : public ExpressionState
 {
 public:
-  ExpressionRPNSearchState(const ExpressionDomainPtr& domain, ExpressionRPNTypeSpacePtr typeSearchSpace, const ExpressionRPNSequencePtr& subSequence = ExpressionRPNSequencePtr())
-    : domain(domain), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isYielded(false)
+  TypedPostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize)
+    : ExpressionState(domain, maxSize), numSteps(0), isYielded(false)
   {
-    if (subSequence)
-    {
-      for (size_t i = 0; i < subSequence->getLength(); ++i)
-        ExpressionRPNSequence::apply(domain->getUniverse(), stack, subSequence->getElement(i));
-    }
+    typeSearchSpace = domain->getSearchSpace(defaultExecutionContext(), maxSize);
+    typeState = typeSearchSpace->getInitialState();
     actionCodeGenerator = new ExpressionActionCodeGenerator();
   }
-  ExpressionRPNSearchState() : numSteps(0), isYielded(false) {}
+  TypedPostfixExpressionState() : numSteps(0), isYielded(false) {}
 
   virtual String toShortString() const
   {
@@ -57,7 +54,7 @@ public:
       return DomainPtr();
 
     DiscreteDomainPtr res = new DiscreteDomain();
-    const_cast<ExpressionRPNSearchState* >(this)->availableActions = res;
+    const_cast<TypedPostfixExpressionState* >(this)->availableActions = res;
 
     if (typeState->hasPushActions())
     {
@@ -164,8 +161,9 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
-    const ReferenceCountedObjectPtr<ExpressionRPNSearchState>& t = target.staticCast<ExpressionRPNSearchState>();
+    const ReferenceCountedObjectPtr<TypedPostfixExpressionState>& t = target.staticCast<TypedPostfixExpressionState>();
     t->domain = domain;
+    t->maxSize = maxSize;
     t->typeSearchSpace = typeSearchSpace;
     t->typeState = typeState;
     t->availableActions = availableActions;
@@ -178,9 +176,8 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class ExpressionRPNSearchStateClass;
+  friend class TypedPostfixExpressionStateClass;
 
-  ExpressionDomainPtr domain;
   ExpressionRPNTypeSpacePtr typeSearchSpace;
   ExpressionRPNTypeStatePtr typeState;
   DiscreteDomainPtr availableActions;
@@ -207,8 +204,8 @@ protected:
   }
 };
 
-typedef ReferenceCountedObjectPtr<ExpressionRPNSearchState> ExpressionRPNSearchStatePtr;
+typedef ReferenceCountedObjectPtr<TypedPostfixExpressionState> TypedPostfixExpressionStatePtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_RPN_SEARCH_STATE_H_
+#endif // !LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_

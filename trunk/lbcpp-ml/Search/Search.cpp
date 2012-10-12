@@ -111,3 +111,71 @@ void DecoratorSearchAlgorithm::subSearch(ExecutionContext& context)
     solutions->insertSolutions(subSolutions);
   }
 }
+
+/*
+** SearchNode
+*/
+SearchNode::SearchNode(SearchNode* parent, const SearchStatePtr& state)
+  : parent(parent), state(state), actions(state->getActionDomain().staticCast<DiscreteDomain>())
+{
+  if (actions && actions->getNumElements())
+  {
+    successors.resize(actions->getNumElements(), NULL);
+    fullyVisited = false;
+  }
+  else
+    fullyVisited = true;
+}
+
+SearchNode::SearchNode() : parent(NULL)
+{
+}
+
+DiscreteDomainPtr SearchNode::getPrunedActionDomain() const
+{
+  DiscreteDomainPtr res = new DiscreteDomain();
+  std::vector<size_t> candidates;
+  for (size_t i = 0; i < successors.size(); ++i)
+    if (!successors[i] || !successors[i]->fullyVisited)
+      res->addElement(actions->getElement(i));
+  return res;
+}
+
+static bool isSameAction(const ObjectPtr& action1, const ObjectPtr& action2)
+  {return Variable(action1) == Variable(action2);}
+
+SearchNodePtr SearchNode::getSuccessor(ExecutionContext& context, const ObjectPtr& action)
+{
+  jassert(!state->isFinalState());
+  jassert(actions);
+  for (size_t i = 0; i < actions->getNumElements(); ++i)
+    if (isSameAction(actions->getElement(i), action))
+    {
+      SearchNodePtr& succ = successors[i];
+      if (!succ)
+      {
+        SearchStatePtr nextState = state->cloneAndCast<SearchState>();
+        nextState->performTransition(context, action);
+        succ = new SearchNode(this, nextState);
+        updateIsFullyVisited();
+      }
+      return succ;
+    }
+
+  jassertfalse;
+  return NULL;
+}
+
+void SearchNode::updateIsFullyVisited()
+{
+  bool previousValue = fullyVisited;
+  fullyVisited = true;
+  for (size_t i = 0; i < successors.size(); ++i)
+    if (!successors[i] || !successors[i]->fullyVisited)
+    {
+      fullyVisited = false;
+      break;
+    }
+  if (parent && previousValue != fullyVisited)
+    parent->updateIsFullyVisited();
+}

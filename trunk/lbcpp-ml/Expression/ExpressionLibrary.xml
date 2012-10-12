@@ -57,11 +57,15 @@
   </class>
   <class name="ExpressionRPNTypeSpace"/>
 
-  <!-- Expression RPN Search State -->
-  <class name="ExpressionRPNSearchState" base="SearchState">
-    <constructor arguments="ExpressionDomainPtr domain, ExpressionRPNTypeSpacePtr typeSearchSpace"/>
-
+  <!-- Expression Search States -->
+  <class name="ExpressionState" base="SearchState" abstract="yes">
     <variable type="ExpressionDomain" name="domain"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+  </class>
+    
+  <class name="TypedPostfixExpressionState" base="ExpressionState">
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+
     <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
     <variable type="ExpressionRPNTypeState" name="typeState"/>
     <variable type="DiscreteDomain" name="availableActions"/>
@@ -69,5 +73,12 @@
     <variable type="PositiveInteger" name="numSteps"/>
     <variable type="Boolean" name="isYielded"/>
   </class>
-  
+
+  <class name="PrefixExpressionState" base="ExpressionState">
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+        
+    <variable type="ObjectVector[Object]" name="sequence"/>
+    <variable type="PositiveInteger" name="numLeafs"/>
+  </class>
+
 </library>
