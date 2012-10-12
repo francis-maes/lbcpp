@@ -68,12 +68,12 @@ ExpressionPtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const
   jassert(typeSearchSpace);
 
   std::vector<ExpressionPtr> stack;
-  ExpressionRPNTypeStatePtr typeState;
+  PostfixExpressionTypeStatePtr typeState;
 
   for (size_t i = 0; i < complexity; ++i)
   {
     // Retrieve type-state index
-    ExpressionRPNTypeStatePtr typeState = getTypeState(i, stack);
+    PostfixExpressionTypeStatePtr typeState = getTypeState(i, stack);
     jassert(typeState);
 
     // Sample action
@@ -106,7 +106,7 @@ bool SequentialNodeBuilder::isActionAvailable(ObjectPtr action, const std::vecto
     action.staticCast<Function>()->acceptInputsStack(stack);
 }
 
-ExpressionRPNTypeStatePtr SequentialNodeBuilder::getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const
+PostfixExpressionTypeStatePtr SequentialNodeBuilder::getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const
 {
   jassert(typeSearchSpace);
   std::vector<TypePtr> typeStack(stack.size());

@@ -44,12 +44,12 @@ public:
     jassert(typeSearchSpace);
 
     std::vector<ExpressionPtr> stack;
-    ExpressionRPNTypeStatePtr typeState;
+    PostfixExpressionTypeStatePtr typeState;
 
     for (size_t i = 0; i < expressionSize; ++i)
     {
       // Retrieve type-state index
-      ExpressionRPNTypeStatePtr typeState = getTypeState(i, stack);
+      PostfixExpressionTypeStatePtr typeState = getTypeState(i, stack);
       jassert(typeState);
 
       // Sample action
@@ -79,14 +79,14 @@ protected:
   friend class RPNExpressionSamplerClass;
 
   size_t expressionSize;
-  ExpressionRPNTypeSpacePtr typeSearchSpace;
+  PostfixExpressionTypeSpacePtr typeSearchSpace;
 
-  virtual bool sampleAction(ExecutionContext& context, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const = 0;
+  virtual bool sampleAction(ExecutionContext& context, PostfixExpressionTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
   static bool isActionAvailable(ObjectPtr action, const std::vector<ExpressionPtr>& stack)
     {return !action || !action.isInstanceOf<Function>() || action.staticCast<Function>()->acceptInputsStack(stack);}
 
-  ExpressionRPNTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const
+  PostfixExpressionTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const
   {
     jassert(typeSearchSpace);
     std::vector<TypePtr> typeStack(stack.size());
@@ -129,7 +129,7 @@ public:
   RandomRPNExpressionSampler(size_t expressionSize = 0)
     : RPNExpressionSampler(expressionSize) {}
 
-  virtual bool sampleAction(ExecutionContext& context, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, PostfixExpressionTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (!typeState)
@@ -169,7 +169,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;

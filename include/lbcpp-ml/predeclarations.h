@@ -110,14 +110,14 @@ typedef ReferenceCountedObjectPtr<CreateSparseVectorExpression> CreateSparseVect
 class ExpressionDomain;
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 
-class ExpressionRPNSequence;
-typedef ReferenceCountedObjectPtr<ExpressionRPNSequence> ExpressionRPNSequencePtr;
+class PostfixExpressionSequence;
+typedef ReferenceCountedObjectPtr<PostfixExpressionSequence> PostfixExpressionSequencePtr;
 
-class ExpressionRPNTypeState;
-typedef ReferenceCountedObjectPtr<ExpressionRPNTypeState> ExpressionRPNTypeStatePtr;
+class PostfixExpressionTypeState;
+typedef ReferenceCountedObjectPtr<PostfixExpressionTypeState> PostfixExpressionTypeStatePtr;
 
-class ExpressionRPNTypeSpace;
-typedef ReferenceCountedObjectPtr<ExpressionRPNTypeSpace> ExpressionRPNTypeSpacePtr;
+class PostfixExpressionTypeSpace;
+typedef ReferenceCountedObjectPtr<PostfixExpressionTypeSpace> PostfixExpressionTypeSpacePtr;
 
 }; /* namespace lbcpp */
 

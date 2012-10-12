@@ -10,7 +10,7 @@
 # define LBCPP_ML_EXPRESSION_POSTFIX_STATE_H_
 
 # include <lbcpp-ml/ExpressionDomain.h>
-# include <lbcpp-ml/ExpressionRPN.h>
+# include <lbcpp-ml/PostfixExpression.h>
 # include <lbcpp-ml/Search.h>
 # include "ExpressionActionDomainsCache.h"
 
@@ -56,7 +56,7 @@ public:
     if (stateBackup)
       *stateBackup = Variable(new Backup(stack), objectClass);
     if (action)
-      ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
+      PostfixExpressionSequence::apply(domain->getUniverse(), stack, action);
     else
       isYielded = true;
     ++numSteps;

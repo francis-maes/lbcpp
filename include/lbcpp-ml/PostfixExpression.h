@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExpressionRPN.h                | Reverse Polish Notation         |
-| Author  : Francis Maes                   |  Type Search space              |
+| Filename: PostfixExpression.h            | Expressions in postfix notation |
+| Author  : Francis Maes                   |                                 |
 | Started : 20/11/2011 16:40               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_RPN_H_
-# define LBCPP_ML_EXPRESSION_RPN_H_
+#ifndef LBCPP_ML_EXPRESSION_POSTFIX_H_
+# define LBCPP_ML_EXPRESSION_POSTFIX_H_
 
 # include "Expression.h"
 # include "ExpressionUniverse.h"
@@ -16,13 +16,13 @@
 namespace lbcpp
 {
  
-class ExpressionRPNSequence : public Object
+class PostfixExpressionSequence : public Object
 {
 public:
-  ExpressionRPNSequence(const std::vector<ObjectPtr>& sequence);
-  ExpressionRPNSequence() {}
-
-  static ExpressionRPNSequencePtr fromNode(const ExpressionPtr& node);
+  PostfixExpressionSequence(const std::vector<ObjectPtr>& sequence);
+  PostfixExpressionSequence() {}
+  
+  static PostfixExpressionSequencePtr fromNode(const ExpressionPtr& node);
   ExpressionPtr toNode(const ExpressionUniversePtr& universe) const;
 
   static void apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element);
@@ -37,23 +37,23 @@ public:
   const ObjectPtr& getElement(size_t index) const
     {jassert(index < sequence.size()); return sequence[index];}
 
-  bool startsWith(const ExpressionRPNSequencePtr& start) const;
+  bool startsWith(const PostfixExpressionSequencePtr& start) const;
 
   virtual String toShortString() const;
 
   std::vector<TypePtr> computeTypeState(const std::vector<TypePtr>& initialState = std::vector<TypePtr>()) const;
 
 private:
-  friend class ExpressionRPNSequenceClass;
+  friend class PostfixExpressionSequenceClass;
 
   std::vector<ObjectPtr> sequence;
 };
 
-class ExpressionRPNTypeState : public Object
+class PostfixExpressionTypeState : public Object
 {
 public:
-  ExpressionRPNTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable);
-  ExpressionRPNTypeState();
+  PostfixExpressionTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable);
+  PostfixExpressionTypeState();
 
   virtual String toShortString() const;
 
@@ -69,18 +69,18 @@ public:
   bool hasPushActions() const
     {return push.size() > 0;}
 
-  const std::vector<std::pair<TypePtr, ExpressionRPNTypeStatePtr> >& getPushActions() const
+  const std::vector<std::pair<TypePtr, PostfixExpressionTypeStatePtr> >& getPushActions() const
     {return push;}
 
   bool hasPushAction(const TypePtr& type) const;
-  ExpressionRPNTypeStatePtr getPushTransition(const TypePtr& type) const;
+  PostfixExpressionTypeStatePtr getPushTransition(const TypePtr& type) const;
 
   bool hasApplyActions() const
     {return apply.size() > 0;}
 
   bool hasApplyAction(const FunctionPtr& function) const;
 
-  const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& getApplyActions() const
+  const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& getApplyActions() const
     {return apply;}
 
   bool hasYieldAction() const
@@ -93,13 +93,13 @@ public:
     {return stateIndex;}
 
 private:
-  friend class ExpressionRPNTypeStateClass;
-  friend class ExpressionRPNTypeSpace;
+  friend class PostfixExpressionTypeStateClass;
+  friend class PostfixExpressionTypeSpace;
 
   size_t depth;
   std::vector<TypePtr> stack;
-  std::vector<std::pair<TypePtr, ExpressionRPNTypeStatePtr> > push;
-  std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> > apply;
+  std::vector<std::pair<TypePtr, PostfixExpressionTypeStatePtr> > push;
+  std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> > apply;
   bool yieldable;
   size_t stateIndex;
   
@@ -107,47 +107,47 @@ private:
   bool canBePruned;
   bool canBePrunedComputed;
   
-  void setPushTransition(const TypePtr& type, const ExpressionRPNTypeStatePtr& nextState);
-  void setApplyTransition(const FunctionPtr& function, const ExpressionRPNTypeStatePtr& nextState);
+  void setPushTransition(const TypePtr& type, const PostfixExpressionTypeStatePtr& nextState);
+  void setApplyTransition(const FunctionPtr& function, const PostfixExpressionTypeStatePtr& nextState);
 };
 
-class ExpressionRPNTypeSpace : public Object
+class PostfixExpressionTypeSpace : public Object
 {
 public:
-  ExpressionRPNTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth);
-  ExpressionRPNTypeSpace() {}
+  PostfixExpressionTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth);
+  PostfixExpressionTypeSpace() {}
 
   void pruneStates(ExecutionContext& context, bool verbose);
   void assignStateIndices(ExecutionContext& context);
 
-  ExpressionRPNTypeStatePtr getInitialState() const
+  PostfixExpressionTypeStatePtr getInitialState() const
     {return initialState;}
 
   size_t getNumStates() const
     {return states.size();}
 
-  ExpressionRPNTypeStatePtr getState(size_t depth, const std::vector<TypePtr>& stack) const;
+  PostfixExpressionTypeStatePtr getState(size_t depth, const std::vector<TypePtr>& stack) const;
 
   typedef std::pair<size_t, std::vector<TypePtr> > StateKey;
-  typedef std::map<StateKey, ExpressionRPNTypeStatePtr> StateMap;
+  typedef std::map<StateKey, PostfixExpressionTypeStatePtr> StateMap;
 
   const StateMap& getStates() const
     {return states;}
 
 private:
-  ExpressionRPNTypeStatePtr initialState;
+  PostfixExpressionTypeStatePtr initialState;
   StateMap states;
 
-  ExpressionRPNTypeStatePtr getOrCreateState(const ExpressionDomainPtr& problem, size_t depth, const std::vector<TypePtr>& stack);
+  PostfixExpressionTypeStatePtr getOrCreateState(const ExpressionDomainPtr& problem, size_t depth, const std::vector<TypePtr>& stack);
   static void insertType(std::vector<TypePtr>& types, const TypePtr& type);
 
-  void buildSuccessors(const ExpressionDomainPtr& problem, const ExpressionRPNTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
+  void buildSuccessors(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
   void enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res);
-  void applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const ExpressionRPNTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
+  void applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
   bool acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const;
-  bool prune(ExpressionRPNTypeStatePtr state); // return true if state is prunable
+  bool prune(PostfixExpressionTypeStatePtr state); // return true if state is prunable
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_RPN_H_
+#endif // !LBCPP_ML_EXPRESSION_POSTFIX_H_

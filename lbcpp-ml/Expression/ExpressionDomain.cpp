@@ -112,7 +112,7 @@ size_t ExpressionDomain::getMaxFunctionArity() const
   return res;
 }
 
-ExpressionRPNTypeSpacePtr ExpressionDomain::getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose) const
+PostfixExpressionTypeSpacePtr ExpressionDomain::getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose) const
 {
   ScopedLock _(typeSearchSpacesLock);
 
@@ -126,9 +126,9 @@ ExpressionRPNTypeSpacePtr ExpressionDomain::getSearchSpace(ExecutionContext& con
   return (pthis->typeSearchSpaces[complexity] = createTypeSearchSpace(context, std::vector<TypePtr>(), complexity, verbose));
 }
 
-ExpressionRPNTypeSpacePtr ExpressionDomain::createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const
+PostfixExpressionTypeSpacePtr ExpressionDomain::createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const
 {
-  ExpressionRPNTypeSpacePtr res = new ExpressionRPNTypeSpace(refCountedPointerFromThis(this), initialState, complexity);
+  PostfixExpressionTypeSpacePtr res = new PostfixExpressionTypeSpace(refCountedPointerFromThis(this), initialState, complexity);
   res->pruneStates(context, verbose);
   res->assignStateIndices(context);
   return res;
@@ -159,9 +159,9 @@ static void enumerateExhaustively(ExecutionContext& context, ExpressionBuilderSt
   }
 }
 
-void ExpressionDomain::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose, const ExpressionRPNSequencePtr& subSequence) const
+void ExpressionDomain::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose, const PostfixExpressionSequencePtr& subSequence) const
 {
-  ExpressionRPNTypeSpacePtr typeSearchSpace;
+  PostfixExpressionTypeSpacePtr typeSearchSpace;
   if (subSequence)
     typeSearchSpace = createTypeSearchSpace(context, subSequence->computeTypeState(), complexity, verbose); // create on-demand
   else

@@ -9,6 +9,7 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
 # define LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
 
+# include <lbcpp-ml/PostfixExpression.h>
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp/DecisionProblem/DecisionProblem.h>
 
@@ -18,13 +19,13 @@ namespace lbcpp
 class ExpressionBuilderState : public DecisionProblemState
 {
 public:
-  ExpressionBuilderState(const ExpressionDomainPtr& function, ExpressionRPNTypeSpacePtr typeSearchSpace, const ExpressionRPNSequencePtr& subSequence = ExpressionRPNSequencePtr())
+  ExpressionBuilderState(const ExpressionDomainPtr& function, PostfixExpressionTypeSpacePtr typeSearchSpace, const PostfixExpressionSequencePtr& subSequence = PostfixExpressionSequencePtr())
     : function(function), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
     if (subSequence)
     {
       for (size_t i = 0; i < subSequence->getLength(); ++i)
-        ExpressionRPNSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
+        PostfixExpressionSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
     }
   }
   ExpressionBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
@@ -79,7 +80,7 @@ public:
     }
     if (typeState->hasApplyActions())
     {
-      const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& apply = typeState->getApplyActions();
       for (size_t i = 0; i < apply.size(); ++i)
       {
         FunctionPtr function = apply[i].first;
@@ -117,7 +118,7 @@ public:
     if (stateBackup)
       *stateBackup = Variable(new Backup(stack), objectClass);
     if (action)
-      ExpressionRPNSequence::apply(function->getUniverse(), stack, action);
+      PostfixExpressionSequence::apply(function->getUniverse(), stack, action);
 
     reward = 0.0;
     ++numSteps;
@@ -125,7 +126,7 @@ public:
     if (action == ObjectPtr()) // yield
     {
       isYielded = true;
-      typeState = ExpressionRPNTypeStatePtr();
+      typeState = PostfixExpressionTypeStatePtr();
     }
     else
       updateTypeState();
@@ -165,8 +166,8 @@ protected:
   friend class ExpressionBuilderStateClass;
 
   ExpressionDomainPtr function;
-  ExpressionRPNTypeSpacePtr typeSearchSpace;
-  ExpressionRPNTypeStatePtr typeState;
+  PostfixExpressionTypeSpacePtr typeSearchSpace;
+  PostfixExpressionTypeStatePtr typeState;
   ContainerPtr availableActions;
   //ExpressionKeysMapPtr nodeKeys;
 

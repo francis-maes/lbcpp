@@ -12,8 +12,8 @@
 # include "Domain.h"
 # include "Expression.h"
 # include "ExpressionUniverse.h"
-# include "ExpressionRPN.h"
 # include "Problem.h"
+# include "Search.h"
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
@@ -109,10 +109,10 @@ public:
   /*
   ** Search space - bof
   */
-  ExpressionRPNTypeSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<TypePtr>()
+  PostfixExpressionTypeSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<TypePtr>()
 
-  ExpressionRPNTypeSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const;
-  void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose = false, const ExpressionRPNSequencePtr& subSequence = ExpressionRPNSequencePtr()) const;
+  PostfixExpressionTypeSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const;
+  void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose = false, const PostfixExpressionSequencePtr& subSequence = PostfixExpressionSequencePtr()) const;
 
   LuapeSamplesCachePtr createCache(size_t size, size_t maxCacheSizeInMb = 512) const;
 
@@ -128,7 +128,7 @@ protected:
   std::set<ExpressionPtr> activeVariables;
 
   CriticalSection typeSearchSpacesLock;
-  std::vector<ExpressionRPNTypeSpacePtr> typeSearchSpaces;
+  std::vector<PostfixExpressionTypeSpacePtr> typeSearchSpaces;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;

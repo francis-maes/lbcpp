@@ -24,7 +24,7 @@ public:
 
   virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    ExpressionRPNTypeSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
+    PostfixExpressionTypeSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
     ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);
