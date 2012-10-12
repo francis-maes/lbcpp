@@ -20,7 +20,7 @@ public:
   SingletonNodeBuilder(const ExpressionPtr& node = ExpressionPtr())
     : node(node) {}
 
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
     {res.push_back(node);}
 
 protected:

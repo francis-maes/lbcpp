@@ -85,7 +85,7 @@ public:
     : SequentialNodeBuilder(numNodes, complexity), initialImportance(initialImportance), counter((size_t)-1) {}
   BiasedRandomSequentialNodeBuilder() : counter((size_t)-1) {}
 
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     if (!function->getRootNode() || function->getRootNode()->getNumSubNodes() != counter)
     {

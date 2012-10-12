@@ -21,13 +21,13 @@ public:
    : BoostingLearner(objective, weakLearner, maxIterations, treeDepth) {}
   WeightBoostingLearner() {}
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const ExpressionDomainPtr& problem, double& logLoss) const = 0;
-  virtual void updateSampleWeights(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
-  virtual Variable computeVote(ExecutionContext& context, const ExpressionDomainPtr& problem, const LuapeSampleVectorPtr& weakPredictions) const = 0;
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const = 0;
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const = 0;
   virtual Variable negateVote(const Variable& vote) const = 0;
   virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const ExpressionDomainPtr& problem, const Variable& vote) const = 0;
   
-  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (!BoostingLearner::initialize(context, node, problem, examples))
       return false;
@@ -38,14 +38,14 @@ public:
   virtual void contributionAdded(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& contribution)
     {updateSampleWeights(context, problem, contribution, objective.staticCast<SupervisedLearningObjective>()->getWeights(), logLoss);}
 
-  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     context.resultCallback(T("logLoss"), logLoss);
     context.resultCallback(T("loss"), pow(10.0, logLoss));
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double weakObjective) const
+  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
   {
     const ExpressionUniversePtr& universe = problem->getUniverse();
 

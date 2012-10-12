@@ -14,6 +14,7 @@
 # include <lbcpp-ml/ExpressionUniverse.h>
 # include <lbcpp-ml/ExpressionRPN.h>
 # include <lbcpp/DecisionProblem/Policy.h>
+# include "LuapeInference.h"
 
 namespace lbcpp
 {
@@ -21,7 +22,7 @@ namespace lbcpp
 class ExpressionBuilder : public Object
 {
 public:
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& domain, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& domain, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionBuilder> ExpressionBuilderPtr;
@@ -39,7 +40,7 @@ public:
 
   virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& domain) = 0;
 
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& domain, size_t maxCount, std::vector<ExpressionPtr>& res);
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& domain, size_t maxCount, std::vector<ExpressionPtr>& res);
 
 protected:
   friend class StochasticNodeBuilderClass;

@@ -18,7 +18,7 @@ StochasticNodeBuilder::StochasticNodeBuilder(size_t numNodes)
 {
 }
 
-void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
 {
   size_t numTrialsAllowed = 5 * numNodes;
   

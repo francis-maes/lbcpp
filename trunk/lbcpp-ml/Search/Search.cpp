@@ -43,7 +43,7 @@ String SearchTrajectory::toShortString() const
   String res;
   for (size_t i = 0; i < actions.size(); ++i)
   {
-    res += actions[i]->toShortString();
+    res += actions[i] ? actions[i]->toShortString() : "<null>";
     if (i < actions.size() - 1)
       res += ", ";
   }

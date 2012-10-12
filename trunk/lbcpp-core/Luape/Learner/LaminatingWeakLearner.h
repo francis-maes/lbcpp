@@ -22,7 +22,7 @@ public:
     : NodeBuilderBasedLearner(nodeBuilder), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
   LaminatingWeakLearner() {}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make initial weak learners
     std::vector<ExpressionPtr> weakNodes;

@@ -16,7 +16,7 @@ namespace lbcpp
 class AdaBoostMHLearningObjective : public ClassificationLearningObjective
 {
 public:
-  virtual void initialize(const ExpressionDomainPtr& problem)
+  virtual void initialize(const LuapeInferencePtr& problem)
   {
     ClassificationLearningObjective::initialize(problem);
     for (size_t i = 0; i < 3; ++i)
@@ -181,7 +181,7 @@ public:
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const ExpressionDomainPtr& problem, double& logLoss) const
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const
   {
     ObjectVectorPtr predictions = problem->getTrainingPredictions().staticCast<ObjectVector>();
 
@@ -220,7 +220,7 @@ public:
     return res;
   }
 
-  virtual void updateSampleWeights(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
     LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
 
@@ -294,7 +294,7 @@ public:
     : AdaBoostMHLearner(new DiscreteAdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
-  virtual Variable computeVote(ExecutionContext& context, const ExpressionDomainPtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
@@ -389,7 +389,7 @@ public:
     : AdaBoostMHLearner(new RealAdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 
-  virtual Variable computeVote(ExecutionContext& context, const ExpressionDomainPtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 

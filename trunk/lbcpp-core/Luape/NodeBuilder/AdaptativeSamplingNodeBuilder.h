@@ -28,7 +28,7 @@ public:
   virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<ExpressionPtr>& stack, const ObjectPtr& object, double weakObjective, double weight) = 0;
   
   // FIXME: this function is never called !!!
-  void observeBestWeakNode(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  void observeBestWeakNode(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
     if (weakObjective == -DBL_MAX)
       return;
@@ -171,7 +171,7 @@ public:
     yieldActions.addAction(ObjectPtr());
   }
  
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     jassert(false); // initialize should only be called once
     initialize(context, function);

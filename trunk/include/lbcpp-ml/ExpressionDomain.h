@@ -100,44 +100,19 @@ public:
     {targetTypes.clear();}
 
   /*
-  ** Search space
+  ** Object
+  */
+  virtual String toShortString() const;
+
+  /*
+  ** Search space - bof
   */
   ExpressionRPNTypeSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<TypePtr>()
 
   ExpressionRPNTypeSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const;
   void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose = false, const ExpressionRPNSequencePtr& subSequence = ExpressionRPNSequencePtr()) const;
 
-  /*
-  ** Samples cache
-  */
-  virtual void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>());
-
-  const LuapeSamplesCachePtr& getTrainingCache() const
-    {return trainingCache;}
-
-  const LuapeSamplesCachePtr& getValidationCache() const
-    {return validationCache;}
-
-  std::vector<LuapeSamplesCachePtr> getSamplesCaches() const;
-
-  VectorPtr getTrainingPredictions() const;
-  VectorPtr getTrainingSupervisions() const;
-  VectorPtr getValidationPredictions() const;
-  VectorPtr getValidationSupervisions() const;
-
   LuapeSamplesCachePtr createCache(size_t size, size_t maxCacheSizeInMb = 512) const;
-
-  /*
-  ** Deprecated
-  */
-  const ExpressionPtr& getRootNode() const
-    {return node;}
-  void setRootNode(ExecutionContext& context, const ExpressionPtr& node);
-  void clearRootNode(ExecutionContext& context);
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
-    {jassert(false); return 0.0;}
-//void setLearner(const LuapeLearnerPtr& learner, bool verbose = false);
 
 protected:
   friend class ExpressionDomainClass;
@@ -149,16 +124,9 @@ protected:
   std::vector<FunctionPtr> functions;
   std::set<TypePtr> targetTypes;
   std::set<ExpressionPtr> activeVariables;
-  ExpressionPtr node;
-  LuapeSamplesCachePtr trainingCache;
-  LuapeSamplesCachePtr validationCache;
 
   CriticalSection typeSearchSpacesLock;
   std::vector<ExpressionRPNTypeSpacePtr> typeSearchSpaces;
-
-  Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;
-
-  LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
@@ -211,7 +179,6 @@ typedef ReferenceCountedObjectPtr<ExpressionState> ExpressionStatePtr;
 
 extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
 extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
-
 
 // FIXME: move somewhere and do better design
 class ExpressionActionCodeGenerator : public Object

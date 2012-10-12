@@ -27,7 +27,7 @@ public:
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
 
-  virtual Variable computeVote(ExecutionContext& context, const ExpressionDomainPtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     BinaryClassificationLearningObjectivePtr objective = this->objective.staticCast<BinaryClassificationLearningObjective>();
     objective->setPredictions(weakPredictions);
@@ -49,7 +49,7 @@ public:
   virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const ExpressionDomainPtr& problem, const Variable& vote) const
     {return scalarVoteFunction(vote.getDouble());}
   
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const ExpressionDomainPtr& problem, double& logLoss) const
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const
   {
     DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();
     DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
@@ -79,7 +79,7 @@ public:
     return res;
   }
 
-  virtual void updateSampleWeights(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
     LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
     DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
