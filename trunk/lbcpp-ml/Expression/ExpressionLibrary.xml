@@ -62,7 +62,15 @@
     <variable type="ExpressionDomain" name="domain"/>
     <variable type="PositiveInteger" name="maxSize"/>
   </class>
-    
+
+  <class name="PrefixExpressionState" base="ExpressionState">
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+
+    <variable type="ObjectVector[Object]" name="sequence"/>
+    <variable type="PositiveInteger" name="numLeafs"/>
+    <variable type="ObjectVector[DiscreteDomain]" name="actionsByMaxArity"/>
+  </class>
+
   <class name="TypedPostfixExpressionState" base="ExpressionState">
     <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
 
@@ -72,13 +80,6 @@
     <variable type="ObjectVector[Expression]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
     <variable type="Boolean" name="isYielded"/>
-  </class>
-
-  <class name="PrefixExpressionState" base="ExpressionState">
-    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
-        
-    <variable type="ObjectVector[Object]" name="sequence"/>
-    <variable type="PositiveInteger" name="numLeafs"/>
   </class>
 
 </library>

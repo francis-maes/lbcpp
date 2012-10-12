@@ -21,7 +21,7 @@ public:
   PrefixExpressionState(ExpressionDomainPtr domain, size_t maxSize)
     : ExpressionState(domain, maxSize), numLeafs(1)
   {
-    terminalActions = new DiscreteDomain();
+    DiscreteDomainPtr terminalActions = new DiscreteDomain();
 
     // constants
     for (size_t i = 0; i < domain->getNumConstants(); ++i)
@@ -36,12 +36,31 @@ public:
     for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
       terminalActions->addElement(*it);
 
-    allActions = terminalActions->cloneAndCast<DiscreteDomain>();
+    jassert(terminalActions->getNumElements());
+    actionsByMaxArity.push_back(terminalActions);
+
+    // compute max arity
+    size_t maxArity = 0;
     for (size_t i = 0; i < domain->getNumFunctions(); ++i)
     {
-      FunctionPtr function = domain->getFunction(i);
-      jassert(function->getNumVariables() == 0); // parameterized functions are not supported yet
-      allActions->addElement(function);
+      size_t arity = domain->getFunction(i)->getNumInputs();
+      if (arity > maxArity)
+        maxArity = arity;
+    }
+
+    // fill actions by max arity
+    actionsByMaxArity.resize(maxArity + 1);
+    for (size_t arity = 1; arity <= maxArity; ++arity)
+    {
+      DiscreteDomainPtr actions = actionsByMaxArity[arity - 1]->cloneAndCast<DiscreteDomain>();
+      for (size_t i = 0; i < domain->getNumFunctions(); ++i)
+      {
+        FunctionPtr function = domain->getFunction(i);
+        jassert(function->getNumVariables() == 0); // parameterized functions are not supported yet
+        if (function->getNumInputs() == arity)
+          actions->addElement(function);
+      }
+      actionsByMaxArity[arity] = actions;
     }
 
     actionCodeGenerator = new ExpressionActionCodeGenerator();
@@ -49,7 +68,11 @@ public:
   PrefixExpressionState() {}
 
   virtual DomainPtr getActionDomain() const
-    {return sequence.size() + numLeafs < maxSize ? allActions : terminalActions;}
+  {
+    size_t maxArity = maxSize - sequence.size() - numLeafs;
+    jassert(maxArity >= 0);
+    return maxArity < actionsByMaxArity.size() ? actionsByMaxArity[maxArity] : actionsByMaxArity.back();
+  }
 
   virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
   {
@@ -87,8 +110,7 @@ public:
     t->maxSize = maxSize;
     t->sequence = sequence;
     t->numLeafs = numLeafs;
-    t->terminalActions = terminalActions;
-    t->allActions = allActions;
+    t->actionsByMaxArity = actionsByMaxArity;
     t->actionCodeGenerator = actionCodeGenerator;
   }
 
@@ -99,8 +121,7 @@ private:
 
   std::vector<ObjectPtr> sequence;
   size_t numLeafs;
-  DiscreteDomainPtr terminalActions;
-  DiscreteDomainPtr allActions;
+  std::vector<DiscreteDomainPtr> actionsByMaxArity; // actionsByMaxArity[i] = all actions up to arity i (first: constants, second: constants + unary functions, third: constants + unary functions + binary functions ...
 
   ExpressionActionCodeGeneratorPtr actionCodeGenerator;
 
