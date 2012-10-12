@@ -56,7 +56,7 @@ public:
     // apply actions
     if (typeState->hasApplyActions())
     {
-      const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& apply = typeState->getApplyActions();
       for (size_t i = 0; i < apply.size(); ++i)
       {
         FunctionPtr function = apply[i].first;
@@ -76,7 +76,7 @@ public:
     PostfixExpressionStateBase::performTransition(context, action, stateBackup);
     availableActions = DiscreteDomainPtr();
     if (action == ObjectPtr())
-      typeState = ExpressionRPNTypeStatePtr();
+      typeState = PostfixExpressionTypeStatePtr();
     else
       updateTypeState();
   }
@@ -103,8 +103,8 @@ public:
 protected:
   friend class TypedPostfixExpressionStateClass;
 
-  ExpressionRPNTypeSpacePtr typeSearchSpace;
-  ExpressionRPNTypeStatePtr typeState;
+  PostfixExpressionTypeSpacePtr typeSearchSpace;
+  PostfixExpressionTypeStatePtr typeState;
   DiscreteDomainPtr availableActions;
   
   void updateTypeState()

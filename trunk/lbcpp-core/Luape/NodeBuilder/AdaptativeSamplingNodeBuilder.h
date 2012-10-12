@@ -159,10 +159,10 @@ public:
       pushActions.addAction(function->getInput(i));
     pushActions.normalizeProbabilities();
 
-    for (ExpressionRPNTypeSpace::StateMap::const_iterator it = typeSearchSpace->getStates().begin();
+    for (PostfixExpressionTypeSpace::StateMap::const_iterator it = typeSearchSpace->getStates().begin();
           it != typeSearchSpace->getStates().end(); ++it)
     {
-      const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& applyActions = it->second->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& applyActions = it->second->getApplyActions();
       for (size_t i = 0; i < applyActions.size(); ++i)
         this->applyActions.addAction(applyActions[i].first);
     }
@@ -288,7 +288,7 @@ public:
   ActionsInfo applyActions;
   ActionsInfo yieldActions; // contains a single action
 
-  bool isActionAvailable(ExpressionRPNTypeStatePtr typeState, ObjectPtr action) const
+  bool isActionAvailable(PostfixExpressionTypeStatePtr typeState, ObjectPtr action) const
   {
     if (action == ObjectPtr())
       return typeState->hasYieldAction();
@@ -300,7 +300,7 @@ public:
     return false;
   }
 
-  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, PostfixExpressionTypeStatePtr typeState, ObjectPtr& res) const
   {
     std::vector<double> probabilities(3, 0.0);
     double Z = 0.0;

@@ -9,7 +9,7 @@
 #include <lbcpp/Luape/LearningObjective.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include <lbcpp/Luape/LuapeInference.h>
-#include <lbcpp-ml/ExpressionRPN.h>
+#include <lbcpp-ml/PostfixExpression.h>
 #include "../../lbcpp-ml/Function/SpecialFunctions.h" // for StumpFunction
 using namespace lbcpp;
 

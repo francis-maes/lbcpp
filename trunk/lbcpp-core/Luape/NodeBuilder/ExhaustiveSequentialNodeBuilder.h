@@ -48,7 +48,7 @@ protected:
 
   void enumerateCandidates(ExecutionContext& context, const ExpressionDomainPtr& function, std::vector<ExpressionPtr>& candidates) const
   {
-    ExpressionRPNTypeSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity, true);
+    PostfixExpressionTypeSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity, true);
     ExpressionBuilderStatePtr builder = new ExpressionBuilderState(function, typeSearchSpace);
     std::set<ExpressionPtr> weakNodes;
     enumerateWeakNodes(context, builder, weakNodes);

@@ -132,7 +132,7 @@ public:
 
   virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& function)
   {
-    ExpressionRPNTypeSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
+    PostfixExpressionTypeSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
     ExpressionBuilderStatePtr builder = new ExpressionBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;

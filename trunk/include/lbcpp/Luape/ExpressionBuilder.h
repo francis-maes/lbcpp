@@ -12,7 +12,7 @@
 # include "predeclarations.h"
 # include <lbcpp-ml/Expression.h>
 # include <lbcpp-ml/ExpressionUniverse.h>
-# include <lbcpp-ml/ExpressionRPN.h>
+# include <lbcpp-ml/PostfixExpression.h>
 # include <lbcpp/DecisionProblem/Policy.h>
 # include "LuapeInference.h"
 
@@ -62,7 +62,7 @@ public:
   SequentialNodeBuilder(size_t numNodes, size_t complexity);
   SequentialNodeBuilder() {}
 
-  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const = 0;
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, PostfixExpressionTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
   virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& problem);
 
@@ -76,10 +76,10 @@ protected:
   size_t complexity;
 
   ExpressionUniversePtr universe;
-  ExpressionRPNTypeSpacePtr typeSearchSpace;
+  PostfixExpressionTypeSpacePtr typeSearchSpace;
 
   static bool isActionAvailable(ObjectPtr action, const std::vector<ExpressionPtr>& stack);
-  ExpressionRPNTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const;
+  PostfixExpressionTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const;
   void executeAction(std::vector<ExpressionPtr>& stack, const ObjectPtr& action) const;
 };
 

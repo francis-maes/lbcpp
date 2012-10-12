@@ -8,7 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeInference.h>
 #include <lbcpp/Luape/LuapeLearner.h>
-#include <lbcpp-ml/ExpressionRPN.h>
+#include <lbcpp-ml/PostfixExpression.h>
 #include "NodeBuilder/NodeBuilderDecisionProblem.h"
 using namespace lbcpp;
 

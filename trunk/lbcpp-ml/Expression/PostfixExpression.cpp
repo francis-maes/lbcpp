@@ -1,23 +1,23 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExpressionRPN.cpp              | Reverse Polish Notation         |
-| Author  : Francis Maes                   |  Type Search space              |
+| Filename: PostfixExpression.cpp          | Expressions in postfix notation |
+| Author  : Francis Maes                   |                                 |
 | Started : 04/10/2012 15:09               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp-ml/ExpressionRPN.h>
+#include <lbcpp-ml/PostfixExpression.h>
 #include <lbcpp-ml/ExpressionDomain.h>
 #include "TypedPostfixExpressionState.h"
 using namespace lbcpp;
 
 /*
-** ExpressionRPNSequence
+** PostfixExpressionSequence
 */
-ExpressionRPNSequence::ExpressionRPNSequence(const std::vector<ObjectPtr>& sequence)
+PostfixExpressionSequence::PostfixExpressionSequence(const std::vector<ObjectPtr>& sequence)
   : sequence(sequence) {}
 
-String ExpressionRPNSequence::toShortString() const
+String PostfixExpressionSequence::toShortString() const
 {
   String res;
   for (size_t i = 0; i < sequence.size(); ++i)
@@ -29,14 +29,14 @@ String ExpressionRPNSequence::toShortString() const
   return res;
 }
 
-ExpressionRPNSequencePtr ExpressionRPNSequence::fromNode(const ExpressionPtr& node)
+PostfixExpressionSequencePtr PostfixExpressionSequence::fromNode(const ExpressionPtr& node)
 {
-  ExpressionRPNSequencePtr res = new ExpressionRPNSequence();
+  PostfixExpressionSequencePtr res = new PostfixExpressionSequence();
   res->appendNode(node);
   return res;
 }
 
-void ExpressionRPNSequence::appendNode(const ExpressionPtr& node)
+void PostfixExpressionSequence::appendNode(const ExpressionPtr& node)
 {
   if (node.isInstanceOf<VariableExpression>() || node.isInstanceOf<ConstantExpression>())
     append(node);
@@ -52,7 +52,7 @@ void ExpressionRPNSequence::appendNode(const ExpressionPtr& node)
     jassert(false);
 }
 
-bool ExpressionRPNSequence::startsWith(const ExpressionRPNSequencePtr& start) const
+bool PostfixExpressionSequence::startsWith(const PostfixExpressionSequencePtr& start) const
 {
   size_t n = start->sequence.size();
   if (sequence.size() < n)
@@ -63,7 +63,7 @@ bool ExpressionRPNSequence::startsWith(const ExpressionRPNSequencePtr& start) co
   return true;
 }
 
-std::vector<TypePtr> ExpressionRPNSequence::computeTypeState(const std::vector<TypePtr>& initialState) const
+std::vector<TypePtr> PostfixExpressionSequence::computeTypeState(const std::vector<TypePtr>& initialState) const
 {
   std::vector<TypePtr> state(initialState);
   for (size_t i = 0; i < sequence.size(); ++i)
@@ -83,7 +83,7 @@ std::vector<TypePtr> ExpressionRPNSequence::computeTypeState(const std::vector<T
   return state;
 }
 
-void ExpressionRPNSequence::apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element)
+void PostfixExpressionSequence::apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element)
 {
    if (element.isInstanceOf<Expression>()) // push action
     stack.push_back(element.staticCast<Expression>());
@@ -102,7 +102,7 @@ void ExpressionRPNSequence::apply(const ExpressionUniversePtr& universe, std::ve
     jassert(false);
 }
 
-ExpressionPtr ExpressionRPNSequence::toNode(const ExpressionUniversePtr& universe) const
+ExpressionPtr PostfixExpressionSequence::toNode(const ExpressionUniversePtr& universe) const
 {
   std::vector<ExpressionPtr> stack;
   for (size_t i = 0; i < sequence.size(); ++i)
@@ -112,13 +112,13 @@ ExpressionPtr ExpressionRPNSequence::toNode(const ExpressionUniversePtr& univers
 }
 
 /*
-** ExpressionRPNTypeState
+** PostfixExpressionTypeState
 */
-ExpressionRPNTypeState::ExpressionRPNTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable)
+PostfixExpressionTypeState::PostfixExpressionTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable)
   : depth(depth), stack(stack), yieldable(yieldable), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
-ExpressionRPNTypeState::ExpressionRPNTypeState() : depth(0), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
+PostfixExpressionTypeState::PostfixExpressionTypeState() : depth(0), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 
-String ExpressionRPNTypeState::toShortString() const
+String PostfixExpressionTypeState::toShortString() const
 {
   String res = T("[") + String((int)depth) + T("] {");
   for (size_t i = 0; i < stack.size(); ++i)
@@ -145,7 +145,7 @@ String ExpressionRPNTypeState::toShortString() const
   return res;
 }
 
-bool ExpressionRPNTypeState::hasPushAction(const TypePtr& type) const
+bool PostfixExpressionTypeState::hasPushAction(const TypePtr& type) const
 {
   for (size_t i = 0; i < push.size(); ++i)
     if (push[i].first == type)
@@ -153,15 +153,15 @@ bool ExpressionRPNTypeState::hasPushAction(const TypePtr& type) const
   return false;
 }
 
-ExpressionRPNTypeStatePtr ExpressionRPNTypeState::getPushTransition(const TypePtr& type) const
+PostfixExpressionTypeStatePtr PostfixExpressionTypeState::getPushTransition(const TypePtr& type) const
 {
   for (size_t i = 0; i < push.size(); ++i)
     if (push[i].first == type)
       return push[i].second;
-  return ExpressionRPNTypeStatePtr();
+  return PostfixExpressionTypeStatePtr();
 }
 
-bool ExpressionRPNTypeState::hasApplyAction(const FunctionPtr& function) const
+bool PostfixExpressionTypeState::hasApplyAction(const FunctionPtr& function) const
 {
   for (size_t i = 0; i < apply.size(); ++i)
     if (apply[i].first == function)
@@ -169,7 +169,7 @@ bool ExpressionRPNTypeState::hasApplyAction(const FunctionPtr& function) const
   return false;
 }
 
-void ExpressionRPNTypeState::setPushTransition(const TypePtr& type, const ExpressionRPNTypeStatePtr& nextState)
+void PostfixExpressionTypeState::setPushTransition(const TypePtr& type, const PostfixExpressionTypeStatePtr& nextState)
 {
   for (size_t i = 0; i < push.size(); ++i)
     if (push[i].first == type)
@@ -180,7 +180,7 @@ void ExpressionRPNTypeState::setPushTransition(const TypePtr& type, const Expres
   push.push_back(std::make_pair(type, nextState));
 }
   
-void ExpressionRPNTypeState::setApplyTransition(const FunctionPtr& function, const ExpressionRPNTypeStatePtr& nextState)
+void PostfixExpressionTypeState::setApplyTransition(const FunctionPtr& function, const PostfixExpressionTypeStatePtr& nextState)
 {
   for (size_t i = 0; i < apply.size(); ++i)
     if (apply[i].first == function)
@@ -192,9 +192,9 @@ void ExpressionRPNTypeState::setApplyTransition(const FunctionPtr& function, con
 }
 
 /*
-** ExpressionRPNTypeSpace
+** PostfixExpressionTypeSpace
 */
-ExpressionRPNTypeSpace::ExpressionRPNTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth)
+PostfixExpressionTypeSpace::PostfixExpressionTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth)
 {
   jassert(domain->getNumFunctions());
   std::vector<TypePtr> nodeTypes;
@@ -220,7 +220,7 @@ ExpressionRPNTypeSpace::ExpressionRPNTypeSpace(const ExpressionDomainPtr& domain
   }
 }
 
-void ExpressionRPNTypeSpace::pruneStates(ExecutionContext& context, bool verbose)
+void PostfixExpressionTypeSpace::pruneStates(ExecutionContext& context, bool verbose)
 {
 //    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
   prune(initialState);
@@ -243,27 +243,27 @@ void ExpressionRPNTypeSpace::pruneStates(ExecutionContext& context, bool verbose
   }
 }
 
-void ExpressionRPNTypeSpace::assignStateIndices(ExecutionContext& context)
+void PostfixExpressionTypeSpace::assignStateIndices(ExecutionContext& context)
 {
   size_t index = 0;
   for (StateMap::iterator it = states.begin(); it != states.end(); ++it)
     it->second->stateIndex = index++;
 }
 
-ExpressionRPNTypeStatePtr ExpressionRPNTypeSpace::getState(size_t depth, const std::vector<TypePtr>& stack) const
+PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getState(size_t depth, const std::vector<TypePtr>& stack) const
 {
   StateMap::const_iterator it = states.find(std::make_pair(depth, stack));
-  return it == states.end() ? ExpressionRPNTypeStatePtr() : it->second;
+  return it == states.end() ? PostfixExpressionTypeStatePtr() : it->second;
 }
 
-ExpressionRPNTypeStatePtr ExpressionRPNTypeSpace::getOrCreateState(const ExpressionDomainPtr& domain, size_t depth, const std::vector<TypePtr>& stack)
+PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getOrCreateState(const ExpressionDomainPtr& domain, size_t depth, const std::vector<TypePtr>& stack)
 {
   StateKey key(depth, stack);
   StateMap::const_iterator it = states.find(key);
   if (it == states.end())
   { 
     bool yieldable = (stack.size() == 1 && domain->isTargetTypeAccepted(stack[0]));
-    ExpressionRPNTypeStatePtr res = new ExpressionRPNTypeState(depth, stack, yieldable);
+    PostfixExpressionTypeStatePtr res = new PostfixExpressionTypeState(depth, stack, yieldable);
     states[key] = res;
     return res;
   }
@@ -271,7 +271,7 @@ ExpressionRPNTypeStatePtr ExpressionRPNTypeSpace::getOrCreateState(const Express
     return it->second;
 }
 
-void ExpressionRPNTypeSpace::insertType(std::vector<TypePtr>& types, const TypePtr& type)
+void PostfixExpressionTypeSpace::insertType(std::vector<TypePtr>& types, const TypePtr& type)
 {
   for (size_t i = 0; i < types.size(); ++i)
     if (types[i] == type)
@@ -279,7 +279,7 @@ void ExpressionRPNTypeSpace::insertType(std::vector<TypePtr>& types, const TypeP
   types.push_back(type);
 }
 
-void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, const ExpressionRPNTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, const PostfixExpressionTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
 {
   if (maxDepth == state->getDepth())
   {
@@ -298,7 +298,7 @@ void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, 
     for (size_t i = 0; i < nodeTypes.size(); ++i)
     {
       TypePtr type = nodeTypes[i];
-      ExpressionRPNTypeStatePtr nextState = state->getPushTransition(type);
+      PostfixExpressionTypeStatePtr nextState = state->getPushTransition(type);
       if (nextState)
         buildSuccessors(domain, nextState, nodeTypes, maxDepth);
       else
@@ -308,7 +308,7 @@ void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, 
         newStack.push_back(type);
 
         // create successor state and call recursively
-        ExpressionRPNTypeStatePtr newState = getOrCreateState(domain, state->getDepth() + 1, newStack);
+        PostfixExpressionTypeStatePtr newState = getOrCreateState(domain, state->getDepth() + 1, newStack);
         state->setPushTransition(type, newState);
         buildSuccessors(domain, newState, nodeTypes, maxDepth);
       }
@@ -336,7 +336,7 @@ void ExpressionRPNTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, 
   }
 }
 
-void ExpressionRPNTypeSpace::enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
+void PostfixExpressionTypeSpace::enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
 {
   if (variableIndex == variables.size())
     res.push_back(universe->makeFunction(function->getClass(), variables));
@@ -355,7 +355,7 @@ void ExpressionRPNTypeSpace::enumerateFunctionVariables(const ExpressionUniverse
   }
 }
 
-void ExpressionRPNTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& domain, const ExpressionRPNTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+void PostfixExpressionTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& domain, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
 {
   // compute output type given input types
   size_t numInputs = function->getNumInputs();
@@ -374,12 +374,12 @@ void ExpressionRPNTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDoma
   newStack.back() = outputType;
 
   // create successor state and call recursively
-  ExpressionRPNTypeStatePtr newState = getOrCreateState(domain, state->getDepth() + 1, newStack);
+  PostfixExpressionTypeStatePtr newState = getOrCreateState(domain, state->getDepth() + 1, newStack);
   state->setApplyTransition(function, newState);
   buildSuccessors(domain, newState, nodeTypes, maxDepth);
 }
 
-bool ExpressionRPNTypeSpace::acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const
+bool PostfixExpressionTypeSpace::acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const
 {
   size_t numInputs = function->getNumInputs();
   if (numInputs > stack.size())
@@ -391,20 +391,20 @@ bool ExpressionRPNTypeSpace::acceptInputTypes(const FunctionPtr& function, const
   return true;
 }
 
-bool ExpressionRPNTypeSpace::prune(ExpressionRPNTypeStatePtr state) // return true if state is prunable
+bool PostfixExpressionTypeSpace::prune(PostfixExpressionTypeStatePtr state) // return true if state is prunable
 {
   if (state->canBePrunedComputed)
     return state->canBePruned;
 
   {
-    std::vector<std::pair<TypePtr, ExpressionRPNTypeStatePtr> > remainingTransitions;
+    std::vector<std::pair<TypePtr, PostfixExpressionTypeStatePtr> > remainingTransitions;
     for (size_t i = 0; i < state->push.size(); ++i)
       if (!prune(state->push[i].second))
         remainingTransitions.push_back(state->push[i]);
     state->push.swap(remainingTransitions);
   }
   {
-    std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> > remainingTransitions;
+    std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> > remainingTransitions;
     for (size_t i = 0; i < state->apply.size(); ++i)
       if (!prune(state->apply[i].second))
         remainingTransitions.push_back(state->apply[i]);

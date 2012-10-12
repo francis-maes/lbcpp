@@ -21,7 +21,7 @@ public:
     : SequentialNodeBuilder(numNodes, complexity) {}
   RandomSequentialNodeBuilder() {}
 
-  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, PostfixExpressionTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (!typeState)
@@ -61,7 +61,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;
@@ -120,7 +120,7 @@ public:
     SequentialNodeBuilder::buildNodes(context, function, maxCount, res);
   }
 
-  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, PostfixExpressionTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (!typeState)
@@ -157,7 +157,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;
