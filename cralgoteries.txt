@@ -1,8 +1,7 @@
 ok Rename TypedPostfixExpressionState into TypedPostfixExpressionSearchState
 ok Move PrefixExpressionState into lbcpp-ml
 ok PrefixExpressionState: better computation of the action sets depending on the arity of the functions
-
-* New: PostfixExpressionSearchState (without typing constraints)
+ok New: PostfixExpressionSearchState (without typing constraints)
 
 * Rename ExpressionRPN related stuff
 * Make ExpressionActionCodeGenerator abstract and implement some simple variants

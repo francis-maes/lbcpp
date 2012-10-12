@@ -58,9 +58,10 @@ bool Function::acceptInputsStack(const std::vector<ExpressionPtr>& stack) const
   for (size_t i = 0; i < n; ++i)
     if (!doAcceptInputType(i, stack[stackFirstIndex + i]->getType()))
       return false;
+  return true; 
 
-  return true; // !!! DISCARDS FLAGS for the moment
-
+#if 0
+  // FIXME: move these somewhere
   if (n)
   {
     if (hasFlags(commutativeFlag))
@@ -88,4 +89,5 @@ bool Function::acceptInputsStack(const std::vector<ExpressionPtr>& stack) const
     }
   }
   return true;
+#endif // 0
 }

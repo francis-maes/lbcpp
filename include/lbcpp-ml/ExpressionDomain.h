@@ -90,6 +90,8 @@ public:
   void addFunction(const FunctionPtr& function)
     {functions.push_back(function);}
 
+  size_t getMaxFunctionArity() const;
+
   /*
   ** Accepted target types
   */
@@ -155,31 +157,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 
-class ExpressionState : public SearchState
-{
-public:
-  ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
-    : domain(domain), maxSize(maxSize) {}
-  ExpressionState() {}
-
-  const ExpressionDomainPtr& getDomain() const
-    {return domain;}
-
-  size_t getMaxSize() const
-    {return maxSize;}
-
-protected:
-  friend class ExpressionStateClass;
-
-  ExpressionDomainPtr domain;
-  size_t maxSize;
-};
-
-typedef ReferenceCountedObjectPtr<ExpressionState> ExpressionStatePtr;
-
-extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
-extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
-
 // FIXME: move somewhere and do better design
 class ExpressionActionCodeGenerator : public Object
 {
@@ -206,6 +183,43 @@ private:
 
 typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActionCodeGeneratorPtr;
 
+class ExpressionState : public SearchState
+{
+public:
+  ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
+    : domain(domain), maxSize(maxSize)
+  {
+    actionCodeGenerator = new ExpressionActionCodeGenerator();
+  }
+  ExpressionState() {}
+
+  const ExpressionDomainPtr& getDomain() const
+    {return domain;}
+
+  size_t getMaxSize() const
+    {return maxSize;}
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    const ReferenceCountedObjectPtr<ExpressionState>& t = target.staticCast<ExpressionState>();
+    t->domain = domain;
+    t->maxSize = maxSize;
+    t->actionCodeGenerator = actionCodeGenerator;
+  }
+
+protected:
+  friend class ExpressionStateClass;
+
+  ExpressionDomainPtr domain;
+  size_t maxSize;
+  ExpressionActionCodeGeneratorPtr actionCodeGenerator;
+};
+
+typedef ReferenceCountedObjectPtr<ExpressionState> ExpressionStatePtr;
+
+extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+extern ExpressionStatePtr postfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
 
 }; /* namespace lbcpp */
 

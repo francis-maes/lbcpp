@@ -11,6 +11,7 @@
 
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/Search.h>
+# include "ExpressionActionDomainsCache.h"
 
 namespace lbcpp
 {
@@ -21,49 +22,14 @@ public:
   PrefixExpressionState(ExpressionDomainPtr domain, size_t maxSize)
     : ExpressionState(domain, maxSize), numLeafs(1)
   {
-    DiscreteDomainPtr terminalActions = new DiscreteDomain();
-
-    // constants
-    for (size_t i = 0; i < domain->getNumConstants(); ++i)
-      terminalActions->addElement(domain->getConstant(i));
-
-    // inputs
-    for (size_t i = 0; i < domain->getNumInputs(); ++i)
-      terminalActions->addElement(domain->getInput(i));
-    
-    // active variables
-    const std::set<ExpressionPtr>& activeVariables = domain->getActiveVariables();
-    for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
-      terminalActions->addElement(*it);
-
-    jassert(terminalActions->getNumElements());
-    actionsByMaxArity.push_back(terminalActions);
-
-    // compute max arity
-    size_t maxArity = 0;
-    for (size_t i = 0; i < domain->getNumFunctions(); ++i)
+    ExpressionActionDomainsCachePtr actionsCache = new ExpressionActionDomainsCache(domain);
+    actionsByMaxArity.resize(actionsCache->getMaxFunctionArity() + 1);
+    std::vector<size_t> actionsSubset;
+    for (size_t i = 0; i < actionsByMaxArity.size(); ++i)
     {
-      size_t arity = domain->getFunction(i)->getNumInputs();
-      if (arity > maxArity)
-        maxArity = arity;
+      actionsSubset.push_back(i);
+      actionsByMaxArity[i] = actionsCache->getActions(actionsSubset);
     }
-
-    // fill actions by max arity
-    actionsByMaxArity.resize(maxArity + 1);
-    for (size_t arity = 1; arity <= maxArity; ++arity)
-    {
-      DiscreteDomainPtr actions = actionsByMaxArity[arity - 1]->cloneAndCast<DiscreteDomain>();
-      for (size_t i = 0; i < domain->getNumFunctions(); ++i)
-      {
-        FunctionPtr function = domain->getFunction(i);
-        jassert(function->getNumVariables() == 0); // parameterized functions are not supported yet
-        if (function->getNumInputs() == arity)
-          actions->addElement(function);
-      }
-      actionsByMaxArity[arity] = actions;
-    }
-
-    actionCodeGenerator = new ExpressionActionCodeGenerator();
   }
   PrefixExpressionState() {}
 
@@ -105,13 +71,12 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
+    ExpressionState::clone(context, target);
+
     const ReferenceCountedObjectPtr<PrefixExpressionState>& t = target.staticCast<PrefixExpressionState>();
-    t->domain = domain;
-    t->maxSize = maxSize;
     t->sequence = sequence;
     t->numLeafs = numLeafs;
     t->actionsByMaxArity = actionsByMaxArity;
-    t->actionCodeGenerator = actionCodeGenerator;
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -121,9 +86,9 @@ private:
 
   std::vector<ObjectPtr> sequence;
   size_t numLeafs;
-  std::vector<DiscreteDomainPtr> actionsByMaxArity; // actionsByMaxArity[i] = all actions up to arity i (first: constants, second: constants + unary functions, third: constants + unary functions + binary functions ...
 
-  ExpressionActionCodeGeneratorPtr actionCodeGenerator;
+  // actionsByMaxArity[i] = all actions up to arity i (first: constants, second: constants + unary functions, third: constants + unary functions + binary functions ...
+  std::vector<DiscreteDomainPtr> actionsByMaxArity;
 
   ExpressionPtr makeExpression(const std::vector<ObjectPtr>& sequence, size_t& position) const
   {

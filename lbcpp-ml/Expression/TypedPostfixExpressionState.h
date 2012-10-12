@@ -9,41 +9,21 @@
 #ifndef LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
 # define LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
 
-# include <lbcpp-ml/ExpressionDomain.h>
-# include <lbcpp-ml/ExpressionRPN.h>
-# include <lbcpp-ml/Search.h>
+# include "PostfixExpressionState.h"
 
 namespace lbcpp
 {
 
-class TypedPostfixExpressionState : public ExpressionState
+class TypedPostfixExpressionState : public PostfixExpressionStateBase
 {
 public:
   TypedPostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize)
-    : ExpressionState(domain, maxSize), numSteps(0), isYielded(false)
+    : PostfixExpressionStateBase(domain, maxSize)
   {
     typeSearchSpace = domain->getSearchSpace(defaultExecutionContext(), maxSize);
     typeState = typeSearchSpace->getInitialState();
-    actionCodeGenerator = new ExpressionActionCodeGenerator();
   }
-  TypedPostfixExpressionState() : numSteps(0), isYielded(false) {}
-
-  virtual String toShortString() const
-  {
-    String seps = isFinalState() ? T("[]") : T("{}");
-
-    String res = isYielded ? "yielded - " : String::empty;
-    res += seps[0];
-    res += String((int)numSteps) + T(": ");
-    for (size_t i = 0; i < stack.size(); ++i)
-    {
-      res += stack[i]->toShortString();
-      if (i < stack.size() - 1)
-        res += T(", ");
-    }
-    res += seps[1];
-    return res;
-  }
+  TypedPostfixExpressionState() {}
 
   virtual DomainPtr getActionDomain() const
   {
@@ -56,6 +36,7 @@ public:
     DiscreteDomainPtr res = new DiscreteDomain();
     const_cast<TypedPostfixExpressionState* >(this)->availableActions = res;
 
+    // push actions
     if (typeState->hasPushActions())
     {
       // constants
@@ -71,106 +52,50 @@ public:
       for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
         addPushActionIfAvailable(res, *it);
     }
+
+    // apply actions
     if (typeState->hasApplyActions())
     {
       const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
       for (size_t i = 0; i < apply.size(); ++i)
       {
         FunctionPtr function = apply[i].first;
-        if (function->acceptInputsStack(stack))
-        {
-          res->addElement(function);
-          /*size_t numInputs = function->getNumInputs();
-          std::vector<ExpressionPtr> inputs(numInputs);
-          for (size_t i = 0; i < numInputs; ++i)
-            inputs[i] = stack[stack.size() - numInputs + i];
-
-          ExpressionBuilderActionPtr action = ExpressionBuilderAction::apply(this->function->getUniverse(), function, inputs);
-          // if (!action->isUseless(graph)) // useless == the created node already exists in the graph
-            res->append(action);*/
-        }
+        jassert(function->acceptInputsStack(stack));
+        res->addElement(function);
       }
     }
 
+    // yield action
     if (typeState->hasYieldAction())
       res->addElement(ObjectPtr());
     return res;
   }
   
-  virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(action, getCurrentStep(), 100);}
-
-  struct Backup : public Object
-  {
-    Backup(const std::vector<ExpressionPtr>& stack)
-      : stack(stack) {}
-
-    std::vector<ExpressionPtr> stack;
-  };
-  
   virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
   {
-    if (stateBackup)
-      *stateBackup = Variable(new Backup(stack), objectClass);
-    if (action)
-      ExpressionRPNSequence::apply(domain->getUniverse(), stack, action);
-
-    ++numSteps;
+    PostfixExpressionStateBase::performTransition(context, action, stateBackup);
     availableActions = DiscreteDomainPtr();
-    if (action == ObjectPtr()) // yield
-    {
-      isYielded = true;
+    if (action == ObjectPtr())
       typeState = ExpressionRPNTypeStatePtr();
-    }
     else
       updateTypeState();
   }
 
   virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    isYielded = false;
-    --numSteps;
-    stack = stateBackup.getObjectAndCast<Backup>()->stack;
+    PostfixExpressionStateBase::undoTransition(context, stateBackup);
     availableActions = DiscreteDomainPtr();
     updateTypeState();
   }
 
-  virtual bool isFinalState() const
-    {return isYielded || !typeState || !typeState->hasAnyAction();}
-
-  ExpressionDomainPtr getDomain() const
-    {return domain;}
-
-  size_t getCurrentStep() const
-    {return numSteps;}
-    
-  const std::vector<ExpressionPtr>& getStack() const
-    {return stack;}
-
-  size_t getStackSize() const
-    {return stack.size();}
-
-  const ExpressionPtr& getStackElement(size_t index) const
-    {jassert(index < stack.size()); return stack[index];}
-
-  void setStackElement(size_t index, const ExpressionPtr& node)
-    {jassert(index < stack.size()); stack[index] = node;}
-
-  virtual ObjectPtr getConstructedObject() const
-    {jassert(stack.size() == 1); return stack[0];}
-
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
+    PostfixExpressionStateBase::clone(context, target);
+
     const ReferenceCountedObjectPtr<TypedPostfixExpressionState>& t = target.staticCast<TypedPostfixExpressionState>();
-    t->domain = domain;
-    t->maxSize = maxSize;
     t->typeSearchSpace = typeSearchSpace;
     t->typeState = typeState;
     t->availableActions = availableActions;
-    t->stack = stack;
-    t->numSteps = numSteps;
-    t->isYielded = isYielded;
-    t->actionCodeGenerator = actionCodeGenerator;
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -181,20 +106,14 @@ protected:
   ExpressionRPNTypeSpacePtr typeSearchSpace;
   ExpressionRPNTypeStatePtr typeState;
   DiscreteDomainPtr availableActions;
-
-  std::vector<ExpressionPtr> stack;
-  size_t numSteps;
-  bool isYielded;
   
-  ExpressionActionCodeGeneratorPtr actionCodeGenerator;
-
   void updateTypeState()
   {
     std::vector<TypePtr> types(stack.size());
     for (size_t i = 0; i < types.size(); ++i)
       types[i] = stack[i]->getType();
     typeState = typeSearchSpace->getState(numSteps, types);
-    jassert(typeState);
+    jassert(typeState && typeState->hasAnyAction());
   }
 
   void addPushActionIfAvailable(DiscreteDomainPtr availableActions, const ExpressionPtr& expression) const
@@ -203,8 +122,6 @@ protected:
       availableActions->addElement(expression);
   }
 };
-
-typedef ReferenceCountedObjectPtr<TypedPostfixExpressionState> TypedPostfixExpressionStatePtr;
 
 }; /* namespace lbcpp */
 

@@ -20,6 +20,9 @@ namespace lbcpp
 class Domain;
 typedef ReferenceCountedObjectPtr<Domain> DomainPtr;
 
+class DiscreteDomain;
+typedef ReferenceCountedObjectPtr<DiscreteDomain> DiscreteDomainPtr;
+
 class ContinuousDomain;
 typedef ReferenceCountedObjectPtr<ContinuousDomain> ContinuousDomainPtr;
 

@@ -10,6 +10,24 @@
 using namespace lbcpp;
 
 /*
+** DiscreteDomain
+*/
+void DiscreteDomain::addElement(const ObjectPtr& object)
+  {elements.push_back(object);}
+
+void DiscreteDomain::addElements(const DiscreteDomainPtr& domain)
+{
+  size_t s = elements.size();
+  size_t os = domain->elements.size();
+  elements.resize(s + os);
+  for (size_t i = 0; i < os; ++i)
+    elements[s + i] = domain->elements[i];
+}
+
+void DiscreteDomain::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<DiscreteDomain>()->elements = elements;}
+
+/*
 ** ContinuousDomain
 */
 DenseDoubleVectorPtr ContinuousDomain::sampleUniformly(RandomGeneratorPtr random) const
