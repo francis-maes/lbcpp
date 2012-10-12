@@ -13,6 +13,116 @@
 using namespace lbcpp;
 
 /*
+** LuapeInference
+*/
+LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
+{
+  size_t n = data.size();
+  LuapeSamplesCachePtr res = createCache(n, 512); // default: 512 Mb cache
+  VectorPtr supervisionValues = vector(data[0]->getVariableType(1), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
+    supervisionValues->setElement(i, data[i]->getVariable(1));
+  }
+  res->cacheNode(context, supervision, supervisionValues, T("Supervision"), false);
+  res->recomputeCacheSize();
+  return res;
+}
+
+void LuapeInference::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+{
+  createSupervision(trainingData[0]->getVariableType(1), T("supervision"));
+  trainingCache = createSamplesCache(context, trainingData);
+  if (validationData.size())
+    validationCache = createSamplesCache(context, validationData);
+}
+
+std::vector<LuapeSamplesCachePtr> LuapeInference::getSamplesCaches() const
+{
+  std::vector<LuapeSamplesCachePtr> res;
+  res.push_back(trainingCache);
+  if (validationCache)
+    res.push_back(validationCache);
+  return res;
+}
+
+VectorPtr LuapeInference::getTrainingPredictions() const
+{
+  jassert(trainingCache->isNodeDefinitivelyCached(node));
+  return trainingCache->getNodeCache(node);
+}
+
+VectorPtr LuapeInference::getTrainingSupervisions() const
+{
+  jassert(trainingCache->isNodeDefinitivelyCached(supervision));
+  return trainingCache->getNodeCache(supervision);
+}
+
+VectorPtr LuapeInference::getValidationPredictions() const
+{
+  if (!validationCache)
+    return VectorPtr();
+  jassert(validationCache->isNodeDefinitivelyCached(node));
+  return validationCache->getNodeCache(node);
+}
+
+VectorPtr LuapeInference::getValidationSupervisions() const
+{
+  if (!validationCache)
+    return VectorPtr();
+  jassert(validationCache->isNodeDefinitivelyCached(supervision));
+  return validationCache->getNodeCache(supervision);
+}
+
+/*
+** Rooot node
+*/
+Variable LuapeInference::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  return computeNode(context, inputs[0].getObject());
+}
+
+Variable LuapeInference::computeNode(ExecutionContext& context, const ObjectPtr& inputObject) const
+{
+  LuapeInstanceCachePtr cache = new LuapeInstanceCache();
+  cache->setInputObject(inputs, inputObject);
+  return cache->compute(context, node);
+}
+
+/*void ExpressionDomain::setLearner(const LuapeLearnerPtr& learner, bool verbose)
+{
+  learner->setVerbose(verbose);
+  //setBatchLearner(new LuapeBatchLearner(learner));
+}*/
+
+void LuapeInference::setRootNode(ExecutionContext& context, const ExpressionPtr& node)
+{
+  if (node != this->node)
+  {
+    if (this->node)
+    {
+      if (trainingCache)
+        trainingCache->uncacheNode(context, this->node);
+      if (validationCache)
+        validationCache->uncacheNode(context, this->node);
+    }
+    this->node = node;
+    if (this->node)
+    {
+      if (trainingCache)
+        trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+      if (validationCache)
+        validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+    }
+  }
+}
+
+void LuapeInference::clearRootNode(ExecutionContext& context)
+  {if (node) setRootNode(context, ExpressionPtr());}
+
+
+/*
 ** LuapeRegressor
 */
 size_t LuapeRegressor::getNumRequiredInputs() const

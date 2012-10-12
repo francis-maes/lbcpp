@@ -21,7 +21,7 @@ public:
     : NodeBuilderBasedLearner(nodeBuilder) {}
   ExactWeakLearner() {}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make weak nodes
     std::vector<ExpressionPtr> weakNodes;
@@ -54,7 +54,7 @@ public:
       return bestWeakNodes[context.getRandomGenerator()->sampleSize(bestWeakNodes.size())];
   }
 
-  virtual double computeObjective(ExecutionContext& context, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
+  virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
     {return objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples);}
 };
 
@@ -66,7 +66,7 @@ public:
     : ExactWeakLearner(nodeBuilder) {}
   RandomSplitWeakLearner() {}
 
-  virtual double computeObjective(ExecutionContext& context, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
+  virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
   {
     LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     if (samples->getElementsType() == booleanType)

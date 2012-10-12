@@ -20,7 +20,7 @@ public:
   ExhaustiveSequentialNodeBuilder(size_t complexity = 0)
     : complexity(complexity) {}
 
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     // FIXME: see why this do not work in release
     enumerateCandidates(context, function, res);

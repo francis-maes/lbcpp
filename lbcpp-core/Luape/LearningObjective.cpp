@@ -31,7 +31,7 @@ double LearningObjective::compute(const LuapeSampleVectorPtr& predictions)
   return computeObjective();
 }
 
-double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
+double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
 {
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
@@ -242,7 +242,7 @@ double BinaryClassificationLearningObjective::computeObjective()
 /*
 ** ClassificationLearningObjective
 */
-void ClassificationLearningObjective::initialize(const ExpressionDomainPtr& problem)
+void ClassificationLearningObjective::initialize(const LuapeInferencePtr& problem)
 {
   doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
   labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
@@ -256,7 +256,7 @@ void ClassificationLearningObjective::initialize(const ExpressionDomainPtr& prob
 InformationGainBinaryLearningObjective::InformationGainBinaryLearningObjective(bool normalize)
   : normalize(normalize) {}
 
-void InformationGainBinaryLearningObjective::initialize(const ExpressionDomainPtr& problem)
+void InformationGainBinaryLearningObjective::initialize(const LuapeInferencePtr& problem)
 {
   static const TypePtr denseVectorClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
   BinaryClassificationLearningObjective::initialize(problem);
@@ -354,7 +354,7 @@ Variable InformationGainBinaryLearningObjective::computeVote(const IndexSetPtr& 
 InformationGainLearningObjective::InformationGainLearningObjective(bool normalize)
   : normalize(normalize) {}
 
-void InformationGainLearningObjective::initialize(const ExpressionDomainPtr& problem)
+void InformationGainLearningObjective::initialize(const LuapeInferencePtr& problem)
 {
   ClassificationLearningObjective::initialize(problem);
   splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities

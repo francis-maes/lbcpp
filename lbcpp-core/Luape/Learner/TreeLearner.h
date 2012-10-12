@@ -21,7 +21,7 @@ public:
     : LuapeLearner(objective), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
   TreeLearner() {}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     objective->initialize(problem);
     conditionLearner->setObjective(objective);
@@ -56,7 +56,7 @@ protected:
   size_t minExamplesToSplit;
   size_t maxDepth;
 
-  bool isSupervisionConstant(const ExpressionDomainPtr& problem, const IndexSetPtr& examples) const
+  bool isSupervisionConstant(const LuapeInferencePtr& problem, const IndexSetPtr& examples) const
   {
     if (examples->size() <= 1)
       return true;
@@ -69,7 +69,7 @@ protected:
     return true;
   }
 
-  ExpressionPtr makeTree(ExecutionContext& context, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, size_t depth)
+  ExpressionPtr makeTree(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
     const ExpressionUniversePtr& universe = problem->getUniverse();
 

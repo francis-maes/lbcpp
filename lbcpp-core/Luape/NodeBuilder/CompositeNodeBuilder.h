@@ -23,7 +23,7 @@ public:
     : builders(2) {builders[0] = builder1; builders[1] = builder2;}
   CompositeNodeBuilder() {}
  
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     for (size_t i = 0; i < builders.size(); ++i)
     {

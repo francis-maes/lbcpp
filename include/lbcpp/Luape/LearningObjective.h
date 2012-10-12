@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNING_OBJECTIVE_H_
 # define LBCPP_LUAPE_LEARNING_OBJECTIVE_H_
 
-# include <lbcpp-ml/ExpressionDomain.h>
+# include "LuapeInference.h"
 # include "LuapeCache.h"
 
 namespace lbcpp
@@ -20,7 +20,7 @@ class LearningObjective : public Object
 public:
   LearningObjective() : upToDate(false) {}
 
-  virtual void initialize(const ExpressionDomainPtr& problem)
+  virtual void initialize(const LuapeInferencePtr& problem)
     {setSupervisions(problem->getTrainingSupervisions());}
 
   virtual void setSupervisions(const VectorPtr& supervisions) = 0;
@@ -39,7 +39,7 @@ public:
   // these three functions have side effects on the currently stored predictions
   double compute(const LuapeSampleVectorPtr& predictions);
 
-  double computeObjectiveWithEventualStump(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples);
+  double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples);
   double findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
 
   void ensureIsUpToDate();
@@ -139,7 +139,7 @@ class ClassificationLearningObjective : public SupervisedLearningObjective
 public:
   ClassificationLearningObjective() : numLabels(0) {}
 
-  virtual void initialize(const ExpressionDomainPtr& problem);
+  virtual void initialize(const LuapeInferencePtr& problem);
 
 protected:
   EnumerationPtr labels;
@@ -157,7 +157,7 @@ class InformationGainBinaryLearningObjective : public BinaryClassificationLearni
 public:
   InformationGainBinaryLearningObjective(bool normalize = true);
 
-  virtual void initialize(const ExpressionDomainPtr& problem);
+  virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
   virtual void update();
   virtual void flipPrediction(size_t index);
@@ -182,7 +182,7 @@ class InformationGainLearningObjective : public ClassificationLearningObjective
 public:
   InformationGainLearningObjective(bool normalize = true);
 
-  virtual void initialize(const ExpressionDomainPtr& problem);
+  virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
   virtual void update();
   virtual void flipPrediction(size_t index);

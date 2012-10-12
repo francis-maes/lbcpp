@@ -22,7 +22,7 @@ public:
     : IterativeLearner(objective, maxIterations), learningRate(learningRate) {}
   GradientDescentLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     SequenceExpressionPtr rootNode = node.staticCast<SequenceExpression>();
     featureFunction = new CreateSparseVectorExpression(rootNode->getNodes());
@@ -127,7 +127,7 @@ public:
     : GradientDescentLearner(discreteAdaBoostMHLearningObjective(), learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (!GradientDescentLearner::initialize(context, node, problem, examples))
       return false;
@@ -149,7 +149,7 @@ public:
     return true;
   }
   
-  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     static const double learningRate = 0.1;
 

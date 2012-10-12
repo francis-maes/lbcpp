@@ -12,16 +12,17 @@
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
   <!-- Inference 
-  <class name="LuapeBinaryClassifier" base="ExpressionDomain">
+  <class name="LuapeInference" base="ExpressionDomain"/>
+  <class name="LuapeBinaryClassifier" base="LuapeInference">
     <constructor/>
   </class>
-  <class name="LuapeClassifier" base="ExpressionDomain">
+  <class name="LuapeClassifier" base="LuapeInference">
     <constructor/>
   </class>
-  <class name="LuapeRanker" base="ExpressionDomain">
+  <class name="LuapeRanker" base="LuapeInference">
     <constructor/>
   </class>
-  <class name="LuapeRegressor" base="ExpressionDomain">
+  <class name="LuapeRegressor" base="LuapeInference">
     <constructor/>
   </class>-->
 

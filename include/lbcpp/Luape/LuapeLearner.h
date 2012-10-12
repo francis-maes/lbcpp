@@ -28,9 +28,9 @@ public:
   virtual ExpressionPtr createInitialNode(ExecutionContext& context, const ExpressionDomainPtr& problem)
     {return ExpressionPtr();}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples) = 0;
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
 
-  ExpressionPtr learn(ExecutionContext& context, const ExpressionDomainPtr& problem, const IndexSetPtr& examples = IndexSetPtr());
+  ExpressionPtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples = IndexSetPtr());
 
   void setObjective(const LearningObjectivePtr& objective)
     {this->objective = objective;}
@@ -56,7 +56,7 @@ protected:
   bool verbose;
   double bestObjectiveValue;
 
-  void evaluatePredictions(ExecutionContext& context, const ExpressionDomainPtr& problem, double& trainingScore, double& validationScore);
+  void evaluatePredictions(ExecutionContext& context, const LuapeInferencePtr& problem, double& trainingScore, double& validationScore);
 
   ExpressionPtr subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double* objectiveValue = NULL) const;
 };
@@ -71,14 +71,14 @@ public:
 
   void setPlotFile(ExecutionContext& context, const File& plotFile);
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples);
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
   
   OutputStream* getPlotOutputStream() const
     {return plotOutputStream;}
 
-  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {if (objective) objective->initialize(problem); return true;}
-  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
   virtual bool finalize(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
     {return true;}
 
@@ -114,7 +114,7 @@ public:
   DecoratorLearner(LuapeLearnerPtr decorated = LuapeLearnerPtr());
 
   virtual ExpressionPtr createInitialNode(ExecutionContext& context, const ExpressionDomainPtr& problem);
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples);
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:

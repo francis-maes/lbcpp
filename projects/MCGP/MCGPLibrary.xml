@@ -73,5 +73,11 @@
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
-  
+
+  <class name="SampleExpressionTrajectories" base="WorkUnit">
+    <variable type="ExpressionProblem" name="problem"/>
+    <variable type="PositiveInteger" name="numExpressions"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
+  </class>
+
 </library>

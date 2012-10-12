@@ -208,7 +208,7 @@ ExpressionRPNTypeSpace::ExpressionRPNTypeSpace(const ExpressionDomainPtr& domain
   size_t numTypes = nodeTypes.size();
   while (true)
   {
-    buildSuccessors(domain, this->initialState, nodeTypes, maxDepth);
+    buildSuccessors(domain, this->initialState, nodeTypes, maxDepth + 1); // add 1 to account for the "yield action"
     size_t newNumTypes = nodeTypes.size();
     if (newNumTypes != numTypes)
     { 

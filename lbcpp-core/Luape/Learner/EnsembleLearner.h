@@ -37,7 +37,7 @@ public:
   virtual IndexSetPtr getSubSamples(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& examples) const
     {return examples;}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     const SequenceExpressionPtr& sequenceNode = node.staticCast<SequenceExpression>();
     sequenceNode->clearNodes();
