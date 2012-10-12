@@ -58,6 +58,11 @@ Fitness::Fitness(const std::vector<double>& values, const FitnessLimitsPtr& limi
 {
 }
 
+Fitness::Fitness(double value, const FitnessLimitsPtr& limits)
+  : values(1, value), limits(limits)
+{
+}
+
 bool Fitness::dominates(const FitnessPtr& other, bool strictly) const
 {
   jassert(other->limits == limits);

@@ -50,7 +50,7 @@ public:
     double value = 0.0;
     DoubleVectorPtr gradient;
     problem->evaluate(context, parameters, 0, &value, &gradient);
-    solutions->insertSolution(parameters->cloneAndCast<DenseDoubleVector>(), new Fitness(std::vector<double>(1, value), problem->getFitnessLimits()));
+    solutions->insertSolution(parameters->cloneAndCast<DenseDoubleVector>(), new Fitness(value, problem->getFitnessLimits()));
     DenseDoubleVectorPtr denseGradient = gradient->toDenseDoubleVector();
     int res = lbfgsStep(parameters->getValuePointer(0), value, denseGradient->getValuePointer(0));
     return (res == 1);

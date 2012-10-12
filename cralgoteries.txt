@@ -1,13 +1,3 @@
-ok Rename TypedPostfixExpressionState into TypedPostfixExpressionSearchState
-ok Move PrefixExpressionState into lbcpp-ml
-ok PrefixExpressionState: better computation of the action sets depending on the arity of the functions
-ok New: PostfixExpressionSearchState (without typing constraints)
-ok Rename ExpressionRPN related stuff
-ok Evaluate the impact of pruning the action space
-ok Remove all forms of caching
-ok Reproduce Cazenave's results
-ok Finalize the quartic symbolic regression problem
-ok Make ExpressionActionCodeGenerator abstract and implement some simple variants
-
--
+* Solve the issue of too-big/too-small formulas
 * Launch big experiments
+* Compare with OpenBeagle
