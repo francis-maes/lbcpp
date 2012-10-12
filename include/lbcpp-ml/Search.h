@@ -16,6 +16,9 @@
 namespace lbcpp
 {
 
+/*
+** State
+*/
 class SearchState : public Object
 {
 public:
@@ -36,11 +39,9 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-typedef ReferenceCountedObjectPtr<SearchState> SearchStatePtr;
-
-class SearchTrajectory;
-typedef ReferenceCountedObjectPtr<SearchTrajectory> SearchTrajectoryPtr;
-
+/*
+** Trajectory
+*/
 class SearchTrajectory : public Object
 {
 public:
@@ -82,6 +83,9 @@ protected:
   SearchStatePtr finalState;
 };
 
+/*
+** Domain
+*/
 class SearchDomain : public Domain
 {
 public:
@@ -100,8 +104,9 @@ protected:
   SearchStatePtr initialState;
 };
 
-typedef ReferenceCountedObjectPtr<SearchDomain> SearchDomainPtr;
-
+/*
+** Sampler
+*/
 class SearchSampler : public Sampler
 {
 public:
@@ -112,11 +117,12 @@ protected:
   SearchDomainPtr domain;
 };
 
-typedef ReferenceCountedObjectPtr<SearchSampler> SearchSamplerPtr;
-
 extern SearchSamplerPtr randomSearchSampler();
 extern SearchSamplerPtr logLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0);
 
+/*
+** Solver
+*/
 class SearchAlgorithm : public Solver
 {
 public:
@@ -127,8 +133,6 @@ protected:
   SearchDomainPtr domain;
   SearchTrajectoryPtr trajectory;
 };
-
-typedef ReferenceCountedObjectPtr<SearchAlgorithm> SearchAlgorithmPtr;
 
 extern SearchAlgorithmPtr rolloutSearchAlgorithm();
 
@@ -146,10 +150,41 @@ protected:
   void subSearch(ExecutionContext& context);
 };
 
-typedef ReferenceCountedObjectPtr<DecoratorSearchAlgorithm> DecoratorSearchAlgorithmPtr;
-
 extern DecoratorSearchAlgorithmPtr stepSearchAlgorithm(SolverPtr algorithm);
 extern DecoratorSearchAlgorithmPtr lookAheadSearchAlgorithm(SolverPtr algorithm, double numActions = 1.0);
+
+/*
+** SearchNode
+*/
+class SearchNode : public Object
+{
+public:
+  SearchNode(SearchNode* parent, const SearchStatePtr& state);
+  SearchNode();
+
+  SearchNodePtr getSuccessor(ExecutionContext& context, const ObjectPtr& action);
+
+  const SearchStatePtr& getState() const
+    {return state;}
+
+  bool isFinalState() const
+    {return state->isFinalState();}
+
+  DiscreteDomainPtr getPrunedActionDomain() const;
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class SearchNodeClass;
+
+  SearchNode* parent;
+  SearchStatePtr state;
+  std::vector<SearchNodePtr> successors;
+  DiscreteDomainPtr actions;
+  bool fullyVisited;
+
+  void updateIsFullyVisited();
+};
 
 }; /* namespace lbcpp */
 

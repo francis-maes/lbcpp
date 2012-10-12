@@ -14,6 +14,9 @@
 namespace lbcpp
 {
 
+/*
+** Base
+*/
 class Domain;
 typedef ReferenceCountedObjectPtr<Domain> DomainPtr;
 
@@ -53,6 +56,33 @@ typedef ReferenceCountedObjectPtr<PopulationBasedSolver> PopulationBasedSolverPt
 class Sampler;
 typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
+/*
+** Search
+*/
+class SearchState;
+typedef ReferenceCountedObjectPtr<SearchState> SearchStatePtr;
+
+class SearchTrajectory;
+typedef ReferenceCountedObjectPtr<SearchTrajectory> SearchTrajectoryPtr;
+
+class SearchDomain;
+typedef ReferenceCountedObjectPtr<SearchDomain> SearchDomainPtr;
+
+class SearchSampler;
+typedef ReferenceCountedObjectPtr<SearchSampler> SearchSamplerPtr;
+
+class SearchAlgorithm;
+typedef ReferenceCountedObjectPtr<SearchAlgorithm> SearchAlgorithmPtr;
+
+class DecoratorSearchAlgorithm;
+typedef ReferenceCountedObjectPtr<DecoratorSearchAlgorithm> DecoratorSearchAlgorithmPtr;
+
+class SearchNode;
+typedef ReferenceCountedObjectPtr<SearchNode> SearchNodePtr;
+
+/*
+** Expression
+*/
 class Expression;
 typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
 

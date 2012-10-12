@@ -1,10 +1,9 @@
-ok- WorkUnit
-ok- Probleme: Parity
-ok- Infix expression search domain
+ok Rename TypedPostfixExpressionState into TypedPostfixExpressionSearchState
+ok Move PrefixExpressionState into lbcpp-ml
 
-* Rename ExpressionRPNSearchState into TypedPostfixExpressionSearchState
+* PrefixExpressionState: better computation of the action sets depending on the arity of the functions
 * New: PostfixExpressionSearchState (without typing constraints)
-* Move PrefixExpressionSearchState into lbcpp-ml / better computation of the action sets depending on the arity of the functions
+
 * Rename ExpressionRPN related stuff
 * Make ExpressionActionCodeGenerator abstract and implement some simple variants
 * Reproduce Cazenave's results

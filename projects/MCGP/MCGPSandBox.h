@@ -18,100 +18,10 @@
 # include <lbcpp-ml/SolutionContainer.h>
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionSampler.h>
-# include <lbcpp-ml/ExpressionRPN.h>
 # include <lbcpp-ml/Search.h>
-# include "F8SymbolicRegressionProblem.h"
-
-# include <list>  // PrefixExpressionSearchState
 
 namespace lbcpp
 {
-
-class SearchNode;
-typedef ReferenceCountedObjectPtr<SearchNode> SearchNodePtr;
-
-class SearchNode : public Object
-{
-public:
-  SearchNode(SearchNode* parent, const SearchStatePtr& state)
-    : parent(parent), state(state), actions(state->getActionDomain().staticCast<DiscreteDomain>())
-  {
-    if (actions && actions->getNumElements())
-    {
-      successors.resize(actions->getNumElements(), NULL);
-      fullyVisited = false;
-    }
-    else
-      fullyVisited = true;
-  }
-  SearchNode() : parent(NULL) {}
-
-  DiscreteDomainPtr getPrunedActionDomain() const
-  {
-    DiscreteDomainPtr res = new DiscreteDomain();
-    std::vector<size_t> candidates;
-    for (size_t i = 0; i < successors.size(); ++i)
-      if (!successors[i] || !successors[i]->fullyVisited)
-        res->addElement(actions->getElement(i));
-    return res;
-  }
-
-  SearchNodePtr getSuccessor(ExecutionContext& context, const ObjectPtr& action)
-  {
-    jassert(!state->isFinalState());
-    jassert(actions);
-    for (size_t i = 0; i < actions->getNumElements(); ++i)
-      if (isSameAction(actions->getElement(i), action))
-      {
-        SearchNodePtr& succ = successors[i];
-        if (!succ)
-        {
-          SearchStatePtr nextState = state->cloneAndCast<SearchState>();
-          nextState->performTransition(context, action);
-          succ = new SearchNode(this, nextState);
-          updateIsFullyVisited();
-        }
-        return succ;
-      }
-
-    jassertfalse;
-    return NULL;
-  }
-
-  const SearchStatePtr& getState() const
-    {return state;}
-
-  bool isFinalState() const
-    {return state->isFinalState();}
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  friend class SearchNodeClass;
-
-  SearchNode* parent;
-  SearchStatePtr state;
-  std::vector<SearchNodePtr> successors;
-  DiscreteDomainPtr actions;
-  bool fullyVisited;
-
-  bool isSameAction(const ObjectPtr& action1, const ObjectPtr& action2) const
-    {return Variable(action1) == Variable(action2);}
-
-  void updateIsFullyVisited()
-  {
-    bool previousValue = fullyVisited;
-    fullyVisited = true;
-    for (size_t i = 0; i < successors.size(); ++i)
-      if (!successors[i] || !successors[i]->fullyVisited)
-      {
-        fullyVisited = false;
-        break;
-      }
-    if (parent && previousValue != fullyVisited)
-      parent->updateIsFullyVisited();
-  }
-};
 
 class PrunedSearchState : public SearchState
 {
@@ -184,131 +94,18 @@ protected:
 
 //////////////////
 
-
-class PrefixExpressionSearchState : public SearchState
-{
-public:
-  PrefixExpressionSearchState(ExpressionDomainPtr domain, size_t maxSize)
-    : domain(domain), maxSize(maxSize), numLeafs(1)
-  {
-    terminalActions = new DiscreteDomain();
-
-    // constants
-    for (size_t i = 0; i < domain->getNumConstants(); ++i)
-      terminalActions->addElement(domain->getConstant(i));
-
-    // inputs
-    for (size_t i = 0; i < domain->getNumInputs(); ++i)
-      terminalActions->addElement(domain->getInput(i));
-    
-    // active variables
-    const std::set<ExpressionPtr>& activeVariables = domain->getActiveVariables();
-    for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
-      terminalActions->addElement(*it);
-
-    allActions = terminalActions->cloneAndCast<DiscreteDomain>();
-    for (size_t i = 0; i < domain->getNumFunctions(); ++i)
-    {
-      FunctionPtr function = domain->getFunction(i);
-      jassert(function->getNumVariables() == 0); // parameterized functions are not supported yet
-      allActions->addElement(function);
-    }
-
-    actionCodeGenerator = new ExpressionActionCodeGenerator();
-  }
-  PrefixExpressionSearchState() {}
-
-  virtual DomainPtr getActionDomain() const
-    {return sequence.size() + numLeafs < maxSize ? allActions : terminalActions;}
-
-  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
-  {
-    sequence.push_back(action);
-    FunctionPtr function = action.dynamicCast<Function>();
-    numLeafs += (function ? function->getNumInputs() : 0) - 1;
-  }
-
-  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
-  {
-    jassert(sequence.size());
-    FunctionPtr function = sequence.back().dynamicCast<Function>();
-    numLeafs -= (function ? function->getNumInputs() : 0) - 1;
-    sequence.pop_back();
-  }
-
-  virtual bool isFinalState() const
-    {return numLeafs == 0;}
-  
-  virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(action, sequence.size(), maxSize);}
-
-  virtual ObjectPtr getConstructedObject() const
-  {
-    size_t position = 0;
-    ExpressionPtr res = makeExpression(sequence, position);
-    jassert(position == sequence.size());
-    return res;
-  }
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-  {
-    const ReferenceCountedObjectPtr<PrefixExpressionSearchState>& t = target.staticCast<PrefixExpressionSearchState>();
-    t->domain = domain;
-    t->maxSize = maxSize;
-    t->sequence = sequence;
-    t->numLeafs = numLeafs;
-    t->terminalActions = terminalActions;
-    t->allActions = allActions;
-    t->actionCodeGenerator = actionCodeGenerator;
-  }
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  friend class PrefixExpressionSearchStateClass;
-  ExpressionDomainPtr domain;
-  size_t maxSize;
-
-  std::vector<ObjectPtr> sequence;
-  size_t numLeafs;
-  DiscreteDomainPtr terminalActions;
-  DiscreteDomainPtr allActions;
-
-  ExpressionActionCodeGeneratorPtr actionCodeGenerator;
-
-  ExpressionPtr makeExpression(const std::vector<ObjectPtr>& sequence, size_t& position) const
-  {
-    jassert(position < sequence.size());
-    ObjectPtr symbol = sequence[position];
-    ++position;
-    ExpressionPtr expression = symbol.dynamicCast<Expression>();
-    if (expression)
-      return expression;
-    else
-    {
-      FunctionPtr function = symbol.staticCast<Function>();
-      std::vector<ExpressionPtr> arguments(function->getNumInputs());
-      for (size_t i = 0; i < arguments.size(); ++i)
-        arguments[i] = makeExpression(sequence, position);
-      return domain->getUniverse()->makeFunctionExpression(function, arguments);
-    }
-  }
-};
-
-///////////////////////////////////////////////////////////
-
 class ExpressionToSearchProblem : public DecoratorProblem
 {
 public:
-  ExpressionToSearchProblem(ExecutionContext& context, ExpressionProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation, bool pruneActions)
+  ExpressionToSearchProblem(ExpressionProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation, bool pruneActions)
     : DecoratorProblem(expressionProblem)
   {
     ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
     SearchStatePtr initialState;
     if (usePostfixNotation)
-      initialState = expressionRPNSearchState(expressionDomain, expressionDomain->getSearchSpace(context, maxSize, true));
+      initialState = typedPostfixExpressionState(expressionDomain, maxSize);
     else
-      initialState = new PrefixExpressionSearchState(expressionDomain, maxSize);
+      initialState = prefixExpressionState(expressionDomain, maxSize);
     
     if (pruneActions)
       initialState = new PrunedSearchState(new SearchNode(NULL, initialState));
@@ -498,7 +295,7 @@ protected:
   
   void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation, bool pruneActions)
   {
-    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(context, problem, maxExpressionSize, usePostfixNotation, pruneActions), numEvaluations);
+    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation, pruneActions), numEvaluations);
     solver->optimize(context, decoratedProblem);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();

@@ -8,7 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp-ml/ExpressionRPN.h>
 #include <lbcpp-ml/ExpressionDomain.h>
-#include "ExpressionRPNSearchState.h"
+#include "TypedPostfixExpressionState.h"
 using namespace lbcpp;
 
 /*

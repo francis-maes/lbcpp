@@ -164,7 +164,6 @@ protected:
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 extern ClassPtr expressionDomainClass;
 
-
 class ExpressionProblem : public Problem
 {
 public:
@@ -187,6 +186,59 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
+
+class ExpressionState : public SearchState
+{
+public:
+  ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
+    : domain(domain), maxSize(maxSize) {}
+  ExpressionState() {}
+
+  const ExpressionDomainPtr& getDomain() const
+    {return domain;}
+
+  size_t getMaxSize() const
+    {return maxSize;}
+
+protected:
+  friend class ExpressionStateClass;
+
+  ExpressionDomainPtr domain;
+  size_t maxSize;
+};
+
+typedef ReferenceCountedObjectPtr<ExpressionState> ExpressionStatePtr;
+
+extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+
+
+// FIXME: move somewhere and do better design
+class ExpressionActionCodeGenerator : public Object
+{
+public:
+  size_t getActionCode(ObjectPtr symbol, size_t step, size_t maxNumSteps)
+  {
+    size_t symbolCode;
+    SymbolCodeMap::const_iterator it = symbolCodes.find(symbol);
+    if (it == symbolCodes.end())
+    {
+      size_t res = symbolCodes.size();
+      symbolCodes[symbol] = res;
+      symbolCode = res;
+    }
+    else
+      symbolCode = it->second;
+    return symbolCode * maxNumSteps + step;
+  }
+
+private:
+  typedef std::map<ObjectPtr, size_t> SymbolCodeMap;
+  SymbolCodeMap symbolCodes;
+};
+
+typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActionCodeGeneratorPtr;
+
 
 }; /* namespace lbcpp */
 
