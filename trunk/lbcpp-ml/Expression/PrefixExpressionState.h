@@ -19,8 +19,8 @@ namespace lbcpp
 class PrefixExpressionState : public ExpressionState
 {
 public:
-  PrefixExpressionState(ExpressionDomainPtr domain, size_t maxSize)
-    : ExpressionState(domain, maxSize), numLeafs(1)
+  PrefixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
+    : ExpressionState(domain, maxSize, codeGenerator), numLeafs(1)
   {
     ExpressionActionDomainsCachePtr actionsCache = new ExpressionActionDomainsCache(domain);
     actionsByMaxArity.resize(actionsCache->getMaxFunctionArity() + 1);
@@ -59,7 +59,7 @@ public:
     {return numLeafs == 0;}
   
   virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(action, sequence.size(), maxSize);}
+    {return actionCodeGenerator->getActionCode(action, sequence.size(), numLeafs, maxSize);}
 
   virtual ObjectPtr getConstructedObject() const
   {

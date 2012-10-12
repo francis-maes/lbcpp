@@ -19,14 +19,15 @@ class BooleanMultiplexerProblem : public BooleanExpressionProblem
 {
 public:
   BooleanMultiplexerProblem(size_t numAddressBits) : numAddressBits(numAddressBits)
-    {initialize();}
+    {initialize(defaultExecutionContext());}
   BooleanMultiplexerProblem() {}
 
-  virtual void initialize()
+  virtual void initialize(ExecutionContext& context)
   {
     size_t numDataBits = (1 << numAddressBits);
     size_t numBits = numAddressBits + numDataBits;
 
+    domain = new ExpressionDomain();
     for (size_t i = 0; i < numAddressBits; ++i)
 		  domain->addInput(booleanType, "a" + String((int)i));
     for (size_t i = 0; i < numDataBits; ++i)

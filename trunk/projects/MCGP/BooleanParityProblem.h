@@ -54,12 +54,12 @@ class BooleanParityProblem : public BooleanExpressionProblem
 {
 public:
   BooleanParityProblem(size_t numBits) : numBits(numBits)
-    {initialize();}
+    {initialize(defaultExecutionContext());}
   BooleanParityProblem() {}
 
-  virtual void initialize()
+  virtual void initialize(ExecutionContext& context)
   {
-    // domain
+    domain = new ExpressionDomain();
     for (size_t i = 0; i < numBits; ++i)
 		  domain->addInput(booleanType, "b" + String((int)i));
 

@@ -154,11 +154,11 @@ public:
   virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const;
   virtual bool loadFromString(ExecutionContext& context, const String& str);
 
+  virtual void initialize(ExecutionContext& context) = 0;
+
 protected:
   ExpressionDomainPtr domain;
   FitnessLimitsPtr limits;
-
-  virtual void initialize() = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
@@ -166,28 +166,51 @@ typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 /*
 ** Expression Search Spaces
 */
-// FIXME: move somewhere and do better design
 class ExpressionActionCodeGenerator : public Object
 {
 public:
-  size_t getActionCode(ObjectPtr symbol, size_t step, size_t maxNumSteps)
+  ExpressionActionCodeGenerator(int generator = 0)
+    : generator(generator) {}
+
+  enum
   {
-    size_t symbolCode;
+    symbolOnly = 0,
+    symbolAndStep,
+    symbolAndStackSize,
+    symbolAndStepAndStackSize,
+  };
+
+  size_t getActionCode(ObjectPtr symbol, size_t step, size_t stackSize, size_t maxNumSteps)
+  {
+    size_t symbolCode = getSymbolCode(symbol);
+    if (generator == symbolOnly)
+      return symbolCode;
+    else if (generator == symbolAndStep)
+      return symbolCode * maxNumSteps + step;
+    else if (generator == symbolAndStackSize)
+      return symbolCode * maxNumSteps + stackSize;
+    else
+      return (symbolCode * maxNumSteps + step) * maxNumSteps + stackSize;
+  }
+
+private:
+  int generator;
+
+  typedef std::map<ObjectPtr, size_t> SymbolCodeMap;
+  SymbolCodeMap symbolCodes;
+
+  size_t getSymbolCode(ObjectPtr symbol)
+  {
     SymbolCodeMap::const_iterator it = symbolCodes.find(symbol);
     if (it == symbolCodes.end())
     {
       size_t res = symbolCodes.size();
       symbolCodes[symbol] = res;
-      symbolCode = res;
+      return res;
     }
     else
-      symbolCode = it->second;
-    return symbolCode * maxNumSteps + step;
+      return it->second;
   }
-
-private:
-  typedef std::map<ObjectPtr, size_t> SymbolCodeMap;
-  SymbolCodeMap symbolCodes;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActionCodeGeneratorPtr;
@@ -195,7 +218,7 @@ typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActio
 class ExpressionState : public SearchState
 {
 public:
-  ExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+  ExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator);
   ExpressionState() {}
 
   const ExpressionDomainPtr& getDomain() const
@@ -216,9 +239,9 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ExpressionState> ExpressionStatePtr;
 
-extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
-extern ExpressionStatePtr postfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
-extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator = ExpressionActionCodeGeneratorPtr());
+extern ExpressionStatePtr postfixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator = ExpressionActionCodeGeneratorPtr());
+extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator = ExpressionActionCodeGeneratorPtr());
 
 }; /* namespace lbcpp */
 

@@ -362,12 +362,13 @@ class SantaFeTrailProblem : public ExpressionProblem
 {
 public:
   SantaFeTrailProblem(size_t maxNumSteps) : maxNumSteps(maxNumSteps)
-    {initialize();}
+    {initialize(defaultExecutionContext());}
   SantaFeTrailProblem() {}
 
-  virtual void initialize()
+  virtual void initialize(ExecutionContext& context)
   {
     // define domain
+    domain = new ExpressionDomain();
     domain->addConstant(Variable(new MoveSantaFeTrailAction(), santaFeTrailActionClass));
     domain->addConstant(Variable(new LeftSantaFeTrailAction(), santaFeTrailActionClass));
     domain->addConstant(Variable(new RightSantaFeTrailAction(), santaFeTrailActionClass));

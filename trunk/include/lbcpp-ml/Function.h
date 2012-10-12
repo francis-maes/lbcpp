@@ -80,6 +80,7 @@ extern FunctionPtr oppositeDoubleFunction();
 extern FunctionPtr inverseDoubleFunction();
 extern FunctionPtr absDoubleFunction();
 extern FunctionPtr logDoubleFunction();
+extern FunctionPtr protectedLogDoubleFunction();
 extern FunctionPtr expDoubleFunction();
 extern FunctionPtr sqrtDoubleFunction();
 extern FunctionPtr cosDoubleFunction();
@@ -89,6 +90,7 @@ extern FunctionPtr addDoubleFunction();
 extern FunctionPtr subDoubleFunction();
 extern FunctionPtr mulDoubleFunction();
 extern FunctionPtr divDoubleFunction();
+extern FunctionPtr protectedDivDoubleFunction();
 extern FunctionPtr powDoubleFunction();
 
 extern FunctionPtr minDoubleFunction();

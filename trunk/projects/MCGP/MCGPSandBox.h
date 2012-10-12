@@ -97,18 +97,18 @@ protected:
 class ExpressionToSearchProblem : public DecoratorProblem
 {
 public:
-  ExpressionToSearchProblem(ExpressionProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation, bool pruneActions)
+  ExpressionToSearchProblem(ExpressionProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation, size_t actionCodeGenerator)
     : DecoratorProblem(expressionProblem)
   {
     ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
     SearchStatePtr initialState;
     if (usePostfixNotation)
-      initialState = postfixExpressionState(expressionDomain, maxSize);
+      initialState = postfixExpressionState(expressionDomain, maxSize, new ExpressionActionCodeGenerator(actionCodeGenerator));
     else
-      initialState = prefixExpressionState(expressionDomain, maxSize);
+      initialState = prefixExpressionState(expressionDomain, maxSize, new ExpressionActionCodeGenerator(actionCodeGenerator));
     
-    if (pruneActions)
-      initialState = new PrunedSearchState(new SearchNode(NULL, initialState));
+    //if (pruneActions)
+    //  initialState = new PrunedSearchState(new SearchNode(NULL, initialState));
 
     domain = new SearchDomain(initialState);
   }
@@ -197,21 +197,26 @@ public:
     solvers.push_back(std::make_pair(nmcSolver(2), "nmc(2)"));
     solvers.push_back(std::make_pair(nmcSolver(3), "nmc(3)"));
 
+    solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
+    solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
+    solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
+    
     //solvers.push_back(std::make_pair(stepLaSolver(1, 3), "step(1)la(3)"));
     //solvers.push_back(std::make_pair(stepLaSolver(2, 3), "step(2)la(3)"));
-
-  //  solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
-  //  solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
-  //  solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
     
     std::vector<SolverInfo> infos;
     context.enterScope("Running");
     for (size_t i = 0; i < solvers.size(); ++i)
     {
-      //infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-prefix-prune", false, true)); // polish
-      //infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-postfix-prune", true, true)); // reverse polish
-      infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-prefix", false, false)); // polish
-    //  infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-postfix", true, false)); // reverse polish
+      size_t numCodeGenerators = solvers[i].second.startsWith(T("nrpa")) ? 4 : 1;
+      for (size_t j = 0; j < numCodeGenerators; ++j)
+      {
+        String name = solvers[i].second;
+        if (numCodeGenerators > 1)
+          name += "-code" + String((int)j);
+        infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false, j)); // polish
+        infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true, j)); // reverse polish
+      }
     }
     context.leaveScope();
 
@@ -228,7 +233,7 @@ public:
 protected:
   friend class MCGPSandBoxClass;
 
-  ProblemPtr problem;
+  ExpressionProblemPtr problem;
   size_t numEvaluations;
   size_t numRuns;
   size_t maxExpressionSize;
@@ -270,17 +275,18 @@ protected:
   SolverPtr nrpaSolver(size_t level) const
     {return new RepeatSolver(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
 
-  SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation, bool pruneActions)
+  SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation, size_t actionCodeGenerator)
   {
     context.enterScope(description);
 	  std::vector<SolverInfo> runInfos(numRuns);
-    size_t shortest1 = 0, shortest2 = 0;
+    size_t shortest1 = (size_t)-1;
+    size_t shortest2 = (size_t)-1;
     for (size_t i = 0; i < numRuns; ++i)
     {
-      runSolverOnce(context, solver, runInfos[i], usePostfixNotation, pruneActions);
-      if (runInfos[i].fitnessPerEvaluationCount.size() > shortest1)
+      runSolverOnce(context, solver, runInfos[i], usePostfixNotation, actionCodeGenerator);
+      if (runInfos[i].fitnessPerEvaluationCount.size() < shortest1)
         shortest1 = runInfos[i].fitnessPerEvaluationCount.size();
-      if (runInfos[i].fitnessPerCpuTime.size() > shortest2)
+      if (runInfos[i].fitnessPerCpuTime.size() < shortest2)
         shortest2 = runInfos[i].fitnessPerCpuTime.size();
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
@@ -295,9 +301,10 @@ protected:
     return res;
   }
   
-  void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation, bool pruneActions)
+  void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation, size_t actionCodeGenerator)
   {
-    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation, pruneActions), numEvaluations);
+    problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
+    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation, actionCodeGenerator), numEvaluations);
     solver->optimize(context, decoratedProblem);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();
@@ -316,15 +323,15 @@ protected:
 
   void displayResults(ExecutionContext& context, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
   {
-    size_t longestLength = 0;
+    size_t shortestLength = (size_t)-1;
     for (size_t i = 0; i < infos.size(); ++i)
     {
       size_t length = infos[i].getResults(inFunctionOfCpuTime).size();
-      if (length > longestLength)
-        longestLength = length;
+      if (length < shortestLength)
+        shortestLength = length;
     }
     size_t x = 4;
-    for (size_t i = 2; i < longestLength; ++i)
+    for (size_t i = 2; i < shortestLength; ++i)
     {
       context.enterScope(String((int)x));
       context.resultCallback("log2(x)", i);
