@@ -40,6 +40,7 @@ class Fitness : public Object
 {
 public:
   Fitness(const std::vector<double>& values, const FitnessLimitsPtr& limits);
+  Fitness(double value, const FitnessLimitsPtr& limits);
   Fitness() {}
 
   const FitnessLimitsPtr& getLimits() const

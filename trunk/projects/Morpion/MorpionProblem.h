@@ -597,7 +597,7 @@ public:
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
     size_t numLines = object.staticCast<SearchTrajectory>()->getLength();
-    return new Fitness(std::vector<double>(1, (double)numLines), limits);
+    return new Fitness((double)numLines, limits);
   }
 
 protected:

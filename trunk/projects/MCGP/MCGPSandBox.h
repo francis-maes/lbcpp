@@ -201,6 +201,9 @@ public:
     solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
     solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
     
+    //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
+    //solvers.push_back(std::make_pair(ceSolver(100, 30, true, 0.1), "ce(100, 30, true, 0.1"));
+
     //solvers.push_back(std::make_pair(stepLaSolver(1, 3), "step(1)la(3)"));
     //solvers.push_back(std::make_pair(stepLaSolver(2, 3), "step(2)la(3)"));
     
@@ -208,7 +211,7 @@ public:
     context.enterScope("Running");
     for (size_t i = 0; i < solvers.size(); ++i)
     {
-      size_t numCodeGenerators = solvers[i].second.startsWith(T("nrpa")) ? 4 : 1;
+      size_t numCodeGenerators = (solvers[i].second.startsWith(T("nrpa")) || solvers[i].second.startsWith(T("ce"))) ? 4 : 1;
       for (size_t j = 0; j < numCodeGenerators; ++j)
       {
         String name = solvers[i].second;
@@ -274,6 +277,9 @@ protected:
 
   SolverPtr nrpaSolver(size_t level) const
     {return new RepeatSolver(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
+
+  SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, double regularizer) const
+    {return crossEntropyOptimizer(logLinearActionCodeSearchSampler(regularizer), populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
 
   SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation, size_t actionCodeGenerator)
   {
