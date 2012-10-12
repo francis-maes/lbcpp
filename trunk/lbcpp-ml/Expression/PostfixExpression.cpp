@@ -96,7 +96,7 @@ void PostfixExpressionSequence::apply(const ExpressionUniversePtr& universe, std
     for (size_t i = 0; i < numInputs; ++i)
       inputs[i] = stack[stack.size() - numInputs + i];
     stack.resize(stack.size() - numInputs + 1);
-    stack.back() = universe->makeFunctionExpression(function, inputs);
+    stack.back() = new FunctionExpression(function, inputs);// universe->makeFunctionExpression(function, inputs);
   }
   else
     jassert(false);

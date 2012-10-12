@@ -103,7 +103,7 @@ public:
     ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
     SearchStatePtr initialState;
     if (usePostfixNotation)
-      initialState = typedPostfixExpressionState(expressionDomain, maxSize);
+      initialState = postfixExpressionState(expressionDomain, maxSize);
     else
       initialState = prefixExpressionState(expressionDomain, maxSize);
     
@@ -200,16 +200,18 @@ public:
     //solvers.push_back(std::make_pair(stepLaSolver(1, 3), "step(1)la(3)"));
     //solvers.push_back(std::make_pair(stepLaSolver(2, 3), "step(2)la(3)"));
 
-    solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
-    solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
-    solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
+  //  solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
+  //  solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
+  //  solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
     
     std::vector<SolverInfo> infos;
     context.enterScope("Running");
     for (size_t i = 0; i < solvers.size(); ++i)
     {
-      infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-prefix", false, true)); // polish
-      infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-postfix", true, true)); // reverse polish
+      //infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-prefix-prune", false, true)); // polish
+      //infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-postfix-prune", true, true)); // reverse polish
+      infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-prefix", false, false)); // polish
+    //  infos.push_back(runSolver(context, solvers[i].first, solvers[i].second + "-postfix", true, false)); // reverse polish
     }
     context.leaveScope();
 
@@ -272,22 +274,22 @@ protected:
   {
     context.enterScope(description);
 	  std::vector<SolverInfo> runInfos(numRuns);
-    size_t longest1 = 0, longest2 = 0;
+    size_t shortest1 = 0, shortest2 = 0;
     for (size_t i = 0; i < numRuns; ++i)
     {
       runSolverOnce(context, solver, runInfos[i], usePostfixNotation, pruneActions);
-      if (runInfos[i].fitnessPerEvaluationCount.size() > longest1)
-        longest1 = runInfos[i].fitnessPerEvaluationCount.size();
-      if (runInfos[i].fitnessPerCpuTime.size() > longest2)
-        longest2 = runInfos[i].fitnessPerCpuTime.size();
+      if (runInfos[i].fitnessPerEvaluationCount.size() > shortest1)
+        shortest1 = runInfos[i].fitnessPerEvaluationCount.size();
+      if (runInfos[i].fitnessPerCpuTime.size() > shortest2)
+        shortest2 = runInfos[i].fitnessPerCpuTime.size();
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
 
     SolverInfo res;
     res.name = description;
-    res.fitnessPerEvaluationCount.resize(longest1);
+    res.fitnessPerEvaluationCount.resize(shortest1);
     mergeResults(res.fitnessPerEvaluationCount, runInfos, false);
-    res.fitnessPerCpuTime.resize(longest2);
+    res.fitnessPerCpuTime.resize(shortest2);
     mergeResults(res.fitnessPerCpuTime, runInfos, true);
     context.leaveScope(res.fitnessPerEvaluationCount.back());
     return res;

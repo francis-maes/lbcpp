@@ -196,3 +196,20 @@ bool ExpressionProblem::loadFromString(ExecutionContext& context, const String& 
   initialize();
   return true;
 }
+
+/*
+** ExpressionState
+*/
+ExpressionState::ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
+  : domain(domain), maxSize(maxSize)
+{
+  actionCodeGenerator = new ExpressionActionCodeGenerator();
+}
+
+void ExpressionState::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  const ReferenceCountedObjectPtr<ExpressionState>& t = target.staticCast<ExpressionState>();
+  t->domain = domain;
+  t->maxSize = maxSize;
+  t->actionCodeGenerator = actionCodeGenerator;
+}

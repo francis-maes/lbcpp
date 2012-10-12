@@ -67,6 +67,7 @@ public:
 		}
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
     cache->recomputeCacheSize();
+    cache->disableCaching();
   }
 
 protected:

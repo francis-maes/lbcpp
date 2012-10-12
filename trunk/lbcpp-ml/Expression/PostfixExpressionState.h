@@ -70,7 +70,10 @@ public:
   }
 
   virtual bool isFinalState() const
-    {return isYielded;}
+  {
+    jassert(numSteps < maxSize || stack.size() == 1);
+    return isYielded || numSteps == maxSize;
+  }
   
   virtual ObjectPtr getConstructedObject() const
     {jassert(stack.size() == 1); return stack[0];}
@@ -116,7 +119,7 @@ public:
 
   virtual DomainPtr getActionDomain() const
   {
-    jassert(numSteps <= maxSize);
+    jassert(numSteps < maxSize);
     size_t maxArity = (size_t)juce::jmin((int)maxFunctionArity, (int)stack.size()); // cannot apply a n-ary operator if there are no n elements on the stack
     size_t minArity = (size_t)juce::jlimit(0, (int)maxFunctionArity, (int)stack.size() - (int)((maxSize - numSteps - 1) * (maxFunctionArity - 1)));
     bool isYieldable = stack.size() == 1;
