@@ -20,8 +20,8 @@ namespace lbcpp
 class PostfixExpressionStateBase : public ExpressionState
 {
 public:
-  PostfixExpressionStateBase(const ExpressionDomainPtr& domain, size_t maxSize)
-    : ExpressionState(domain, maxSize), numSteps(0), isYielded(false) {}
+  PostfixExpressionStateBase(const ExpressionDomainPtr& domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
+    : ExpressionState(domain, maxSize, codeGenerator), numSteps(0), isYielded(false) {}
   PostfixExpressionStateBase() : numSteps(0), isYielded(false) {}
   
   virtual String toShortString() const
@@ -41,7 +41,7 @@ public:
   }
   
   virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(action, numSteps, maxSize);}
+    {return actionCodeGenerator->getActionCode(action, numSteps, stack.size(), maxSize);}
   
   struct Backup : public Object
   {
@@ -96,8 +96,8 @@ protected:
 class PostfixExpressionState : public PostfixExpressionStateBase
 {
 public:
-  PostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize)
-    : PostfixExpressionStateBase(domain, maxSize)
+  PostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
+    : PostfixExpressionStateBase(domain, maxSize, codeGenerator)
   {
     ExpressionActionDomainsCachePtr actionsCache = new ExpressionActionDomainsCache(domain);
     maxFunctionArity = actionsCache->getMaxFunctionArity();

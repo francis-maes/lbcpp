@@ -17,9 +17,15 @@
 
   <!-- Expression Problems -->
   <class name="ExpressionProblem" base="Problem" abstract="yes"/>
-  <class name="F8SymbolicRegressionProblem" base="ExpressionProblem" shortName="symbreg">
+  
+  <!-- Symbolic Regression Problems -->
+  <class name="SymbolicRegressionProblem" base="ExpressionProblem" abstract="yes"/>
+  <class name="KozaSymbolicRegressionProblem" base="SymbolicRegressionProblem" abstract="yes"/>
+  <class name="QuarticSymbolicRegressionProblem" base="KozaSymbolicRegressionProblem" shortName="quartic"/>
+  <!--
+  <class name="F8SymbolicRegressionProblem" base="SymbolicRegressionProblem" shortName="symbreg">
     <variable type="PositiveInteger" name="functionIndex"/>
-  </class>
+  </class>-->
 
   <!-- Boolean Problems -->
   <class name="BooleanExpressionProblem" base="ExpressionProblem" abstract="yes"/>
@@ -68,7 +74,7 @@
 
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
-    <variable type="Problem" name="problem"/>
+    <variable type="ExpressionProblem" name="problem"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>

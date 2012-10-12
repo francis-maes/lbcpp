@@ -47,15 +47,15 @@
 
 
   <!-- Expression RPN -->
-  <class name="ExpressionRPNSequence" base="Object">
+  <class name="PostfixExpressionSequence" base="Object">
     <variable type="ObjectVector[Object]" name="sequence"/>
   </class>
   
-  <class name="ExpressionRPNTypeState">
+  <class name="PostfixExpressionTypeState">
     <variable type="PositiveInteger" name="depth"/>
     <variable type="ObjectVector[Type]" name="stack"/>
   </class>
-  <class name="ExpressionRPNTypeSpace"/>
+  <class name="PostfixExpressionTypeSpace"/>
 
   <!-- Expression Search States -->
   <class name="ExpressionState" base="SearchState" abstract="yes">
@@ -64,7 +64,7 @@
   </class>
 
   <class name="PrefixExpressionState" base="ExpressionState">
-    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator"/>
 
     <variable type="ObjectVector[Object]" name="sequence"/>
     <variable type="PositiveInteger" name="numLeafs"/>
@@ -72,16 +72,16 @@
   </class>
 
   <class name="PostfixExpressionState" base="ExpressionState">
-    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator"/>
     <variable type="PositiveInteger" name="maxFunctionArity"/>
     <variable type="ObjectVector[DiscreteDomain]" name="actionsCacheByCase"/>
   </class>
 
   <class name="TypedPostfixExpressionState" base="ExpressionState">
-    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator"/>
 
-    <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
-    <variable type="ExpressionRPNTypeState" name="typeState"/>
+    <variable type="PostfixExpressionTypeSpace" name="typeSearchSpace"/>
+    <variable type="PostfixExpressionTypeState" name="typeState"/>
     <variable type="DiscreteDomain" name="availableActions"/>
     <variable type="ObjectVector[Expression]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>

@@ -179,7 +179,6 @@ LuapeSamplesCachePtr ExpressionDomain::createCache(size_t size, size_t maxCacheS
 */
 ExpressionProblem::ExpressionProblem()
 {
-  domain = new ExpressionDomain();
   std::vector< std::pair<double, double> > limits(1);
   limits[0] = std::make_pair(-DBL_MAX, DBL_MAX);
   //limits[1] = std::make_pair(DBL_MAX, 0); // expression size: should be minimized
@@ -193,17 +192,16 @@ bool ExpressionProblem::loadFromString(ExecutionContext& context, const String& 
 {
   if (!Problem::loadFromString(context, str))
     return false;
-  initialize();
+  initialize(context);
   return true;
 }
 
 /*
 ** ExpressionState
 */
-ExpressionState::ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
-  : domain(domain), maxSize(maxSize)
+ExpressionState::ExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
+  : domain(domain), maxSize(maxSize), actionCodeGenerator(codeGenerator)
 {
-  actionCodeGenerator = new ExpressionActionCodeGenerator();
 }
 
 void ExpressionState::clone(ExecutionContext& context, const ObjectPtr& target) const

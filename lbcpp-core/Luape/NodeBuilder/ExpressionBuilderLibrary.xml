@@ -7,8 +7,8 @@
   <!-- Builder Decision Problem 
   <class name="ExpressionBuilderState" base="DecisionProblemState">
     <variable type="ExpressionDomain" name="function"/>
-    <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
-    <variable type="ExpressionExpressionRPNTypeState" name="typeState"/>
+    <variable type="PostfixExpressionTypeSpace" name="typeSearchSpace"/>
+    <variable type="PostfixExpressionTypeState" name="typeState"/>
     <variable type="ObjectVector[Object]" name="availableActions"/>
     <variable type="ObjectVector[Expression]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>

@@ -6,8 +6,8 @@ ok Rename ExpressionRPN related stuff
 ok Evaluate the impact of pruning the action space
 ok Remove all forms of caching
 ok Reproduce Cazenave's results
+ok Finalize the quartic symbolic regression problem
+ok Make ExpressionActionCodeGenerator abstract and implement some simple variants
 
-* Finalize the symbolic regression problem(s)
-* Make ExpressionActionCodeGenerator abstract and implement some simple variants
 -
 * Launch big experiments

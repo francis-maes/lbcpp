@@ -94,6 +94,16 @@ public:
     {return value <= 0.0 ? doubleMissingValue : log(value);}
 };
 
+class ProtectedLogDoubleFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual String toShortString() const
+    {return "plog";}
+
+  virtual double computeDouble(double value) const
+    {return value == 0.0 ? 0.0 : log(fabs(value));}
+};
+
 class ExpDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
@@ -228,6 +238,19 @@ public:
 
   virtual double computeDouble(double first, double second) const
     {return second ? first / second : doubleMissingValue;}
+
+  virtual Flags getFlags() const
+    {return (Flags)allSameArgIrrelevantFlag;}
+};
+
+class ProtectedDivDoubleFunction : public BinaryDoubleFunction
+{
+public:
+  virtual String toShortString() const
+    {return "p/";}
+
+  virtual double computeDouble(double first, double second) const
+    {return second ? first / second : 1.0;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}

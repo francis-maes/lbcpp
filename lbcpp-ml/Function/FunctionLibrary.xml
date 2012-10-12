@@ -64,6 +64,9 @@
   <class name="LogDoubleFunction" base="UnaryDoubleFunction">
     <constructor returnType="Function"/>
   </class>
+  <class name="ProtectedLogDoubleFunction" base="UnaryDoubleFunction">
+    <constructor returnType="Function"/>
+  </class>
   <class name="ExpDoubleFunction" base="UnaryDoubleFunction">
     <constructor returnType="Function"/>
   </class>
@@ -92,6 +95,9 @@
     <constructor returnType="Function"/>
   </class>
   <class name="DivDoubleFunction" base="BinaryDoubleFunction">
+    <constructor returnType="Function"/>
+  </class>
+  <class name="ProtectedDivDoubleFunction" base="BinaryDoubleFunction">
     <constructor returnType="Function"/>
   </class>
   <class name="PowDoubleFunction" base="BinaryDoubleFunction">

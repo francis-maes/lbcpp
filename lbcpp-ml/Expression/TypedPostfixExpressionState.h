@@ -17,8 +17,8 @@ namespace lbcpp
 class TypedPostfixExpressionState : public PostfixExpressionStateBase
 {
 public:
-  TypedPostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize)
-    : PostfixExpressionStateBase(domain, maxSize)
+  TypedPostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
+    : PostfixExpressionStateBase(domain, maxSize, codeGenerator)
   {
     typeSearchSpace = domain->getSearchSpace(defaultExecutionContext(), maxSize);
     typeState = typeSearchSpace->getInitialState();

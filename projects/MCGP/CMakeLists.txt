@@ -8,7 +8,7 @@ GENERATE_INTROSPECTION_CODE(MCGPLibrary.xml MCGPLibrary.cpp)
 SET(LBCPP_MCGP_PROBLEM_SOURCES
   BooleanParityProblem.h
   BooleanMultiplexerProblem.h
-  F8SymbolicRegressionProblem.h
+  SymbolicRegressionProblem.h
   SantaFeTrailProblem.h
 )
 
