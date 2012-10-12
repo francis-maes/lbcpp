@@ -361,8 +361,9 @@ public:
 class SantaFeTrailProblem : public ExpressionProblem
 {
 public:
-  SantaFeTrailProblem(size_t maxNumSteps = 400) : maxNumSteps(maxNumSteps)
+  SantaFeTrailProblem(size_t maxNumSteps) : maxNumSteps(maxNumSteps)
     {initialize();}
+  SantaFeTrailProblem() {}
 
   virtual void initialize()
   {

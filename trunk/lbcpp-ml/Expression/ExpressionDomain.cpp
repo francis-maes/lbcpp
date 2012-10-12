@@ -100,6 +100,18 @@ bool ExpressionDomain::isTargetTypeAccepted(TypePtr type)
   return false;
 }
 
+size_t ExpressionDomain::getMaxFunctionArity() const
+{
+  size_t res = 0;
+  for (size_t i = 0; i < functions.size(); ++i)
+  {
+    size_t arity = functions[i]->getNumInputs();
+    if (arity > res)
+      res = arity;
+  }
+  return res;
+}
+
 ExpressionRPNTypeSpacePtr ExpressionDomain::getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose) const
 {
   ScopedLock _(typeSearchSpacesLock);

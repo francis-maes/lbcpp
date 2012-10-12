@@ -34,19 +34,16 @@ public:
   const ObjectPtr& getElement(size_t index) const
     {jassert(index < elements.size()); return elements[index];}
 
-  void addElement(const ObjectPtr& object)
-    {elements.push_back(object);}
+  void addElement(const ObjectPtr& object);
+  void addElements(const DiscreteDomainPtr& domain);
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-    {target.staticCast<DiscreteDomain>()->elements = elements;}
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 private:
   friend class DiscreteDomainClass;
 
   std::vector<ObjectPtr> elements;
 };
-
-typedef ReferenceCountedObjectPtr<DiscreteDomain> DiscreteDomainPtr;
 
 class ContinuousDomain : public Domain
 {

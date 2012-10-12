@@ -31,6 +31,7 @@ public:
 
     context.informationCallback(domain->toShortString());
     sampleTrajectories(context, "prefix", prefixExpressionState(domain, maxExpressionSize));
+    sampleTrajectories(context, "postfix", postfixExpressionState(domain, maxExpressionSize));
     sampleTrajectories(context, "typed-postfix", typedPostfixExpressionState(domain, maxExpressionSize));
     return true;
   }

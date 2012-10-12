@@ -71,6 +71,12 @@
     <variable type="ObjectVector[DiscreteDomain]" name="actionsByMaxArity"/>
   </class>
 
+  <class name="PostfixExpressionState" base="ExpressionState">
+    <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
+    <variable type="PositiveInteger" name="maxFunctionArity"/>
+    <variable type="ObjectVector[DiscreteDomain]" name="actionsCacheByCase"/>
+  </class>
+
   <class name="TypedPostfixExpressionState" base="ExpressionState">
     <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
 
