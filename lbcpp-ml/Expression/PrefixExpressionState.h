@@ -104,7 +104,7 @@ private:
       std::vector<ExpressionPtr> arguments(function->getNumInputs());
       for (size_t i = 0; i < arguments.size(); ++i)
         arguments[i] = makeExpression(sequence, position);
-      return domain->getUniverse()->makeFunctionExpression(function, arguments);
+      return new FunctionExpression(function, arguments); //domain->getUniverse()->makeFunctionExpression(function, arguments);
     }
   }
 };

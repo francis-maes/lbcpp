@@ -19,6 +19,9 @@
 namespace lbcpp
 {
 
+/*
+** Expression Domain
+*/
 class ExpressionDomain : public Domain
 {
 public:
@@ -134,6 +137,9 @@ protected:
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 extern ClassPtr expressionDomainClass;
 
+/*
+** Expression Problems
+*/
 class ExpressionProblem : public Problem
 {
 public:
@@ -157,6 +163,9 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 
+/*
+** Expression Search Spaces
+*/
 // FIXME: move somewhere and do better design
 class ExpressionActionCodeGenerator : public Object
 {
@@ -186,11 +195,7 @@ typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActio
 class ExpressionState : public SearchState
 {
 public:
-  ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
-    : domain(domain), maxSize(maxSize)
-  {
-    actionCodeGenerator = new ExpressionActionCodeGenerator();
-  }
+  ExpressionState(ExpressionDomainPtr domain, size_t maxSize);
   ExpressionState() {}
 
   const ExpressionDomainPtr& getDomain() const
@@ -199,13 +204,7 @@ public:
   size_t getMaxSize() const
     {return maxSize;}
   
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-  {
-    const ReferenceCountedObjectPtr<ExpressionState>& t = target.staticCast<ExpressionState>();
-    t->domain = domain;
-    t->maxSize = maxSize;
-    t->actionCodeGenerator = actionCodeGenerator;
-  }
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
   friend class ExpressionStateClass;

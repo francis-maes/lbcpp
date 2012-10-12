@@ -59,6 +59,7 @@ public:
 		}
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
     cache->recomputeCacheSize();
+    cache->disableCaching();
   }
 
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
