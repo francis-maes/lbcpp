@@ -516,7 +516,7 @@ protected:
       if (ostr)
       {
         for (size_t i = 0; i < algorithms.size(); ++i)
-          *ostr << algorithms[i].first << " " << algorithms[i].second->toShortString().quoted() << "\n";
+          *ostr << algorithms[i].first.quoted() << " " << algorithms[i].second->toShortString().quoted() << "\n";
         delete ostr;
       }
     }
