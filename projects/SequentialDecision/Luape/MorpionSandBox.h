@@ -172,7 +172,7 @@ public:
       size_t numIterations = numIterationss[random->sampleSize(8)];
       double learningRate = learningRates[random->sampleSize(5)];*/
       MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(3, 100, 1.0);
-      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm, budget, run, algorithm->toShortString()));
+      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm, budget, useTimeBudget, run, algorithm->toShortString()));
     }
     wu->setProgressionUnit("Runs");
     wu->setPushChildrenIntoStackFlag(true);

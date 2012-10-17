@@ -280,7 +280,7 @@ class SudokuProblem : public DecisionProblem
 {
 public:
 	SudokuProblem(size_t baseSize = 3)
-	: DecisionProblem(FunctionPtr(), 1.0, baseSize * baseSize * baseSize * baseSize), baseSize(baseSize) {}
+	  : DecisionProblem(FunctionPtr(), 1.0, 2 * baseSize * baseSize * baseSize * baseSize / 3), baseSize(baseSize) {}
 
 	virtual double getMaxReward() const
 	  {return pow((double)baseSize, 4.0);}
@@ -311,6 +311,14 @@ public:
     while (state->isFinalState());
 		return state;
 	}
+
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    if (!DecisionProblem::loadFromString(context, str))
+      return false;
+    horizon = 2 * baseSize * baseSize * baseSize * baseSize / 3;
+    return true;
+  }
 
 protected:
 	friend class SudokuProblemClass;

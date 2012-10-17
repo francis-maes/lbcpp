@@ -163,28 +163,17 @@ public:
 class CacheAndFiniteBudgetMCObjective : public MCObjective
 {
 public:
-  CacheAndFiniteBudgetMCObjective(MCObjectivePtr objective, size_t budget, bool useCache)
-    : objective(objective), budget(budget), useCache(useCache), numEvaluations(0), numCachedEvaluations(0), bestScoreSoFar(-DBL_MAX), nextCurvePoint(1) {}
+  // if useTimeBudget then budget is expressed in milliseconds, otherwise budget is expressed in number of evaluations
+  CacheAndFiniteBudgetMCObjective(MCObjectivePtr objective, size_t budget, bool useTimeBudget)
+    : objective(objective), budget(budget), useTimeBudget(useTimeBudget), numEvaluations(0), bestScoreSoFar(-DBL_MAX), nextCurvePoint(1)
+  {
+    startingTime = Time::getMillisecondCounterHiRes();
+  }
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
     ++numEvaluations;
-    /*
-    LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
-    if (builder->getStackSize() != 1)
-      return -DBL_MAX;
-    LuapeNodePtr node = builder->getStackElement(0);
-    if (useCache)
-    {
-      std::map<LuapeNodePtr, double>::iterator it = cache.find(node);
-      if (it != cache.end())
-      {
-        ++numCachedEvaluations;
-        return it->second;
-      }
-    }*/
-    
-    //context.informationCallback(finalState->toShortString());
+  
     double res = objective->evaluate(context, finalState);
     if (res > bestScoreSoFar)
     {
@@ -201,14 +190,16 @@ public:
       curve.push_back(bestScoreSoFar);
       nextCurvePoint *= 2;
     }
-
-//    if (useCache)
-//      cache[node] = res;
     return res;
   }
 
   virtual bool shouldStop() const
-    {return numEvaluations >= budget || numCachedEvaluations >= 100 * budget;}
+  {
+    if (useTimeBudget)
+      return (Time::getMillisecondCounterHiRes() - startingTime) >= (double)budget;
+    else
+      return numEvaluations >= budget;
+  }
 
   virtual void getObjectiveRange(double& worst, double& best) const
     {objective->getObjectiveRange(worst, best);}
@@ -216,20 +207,16 @@ public:
   size_t getNumEvaluations() const
     {return numEvaluations;}
 
-  size_t getNumCachedEvaluations() const
-    {return numCachedEvaluations;}
-
   const std::vector<double>& getCurve() const
     {return curve;}
 
 protected:
   MCObjectivePtr objective;
   size_t budget;
-  bool useCache;
+  bool useTimeBudget;
   size_t numEvaluations;
-  size_t numCachedEvaluations;
-//  std::map<LuapeNodePtr, double> cache;
 
+  double startingTime;
   double bestScoreSoFar;
   size_t nextCurvePoint;
   std::vector<double> curve;
@@ -292,7 +279,7 @@ private:
 class RunMCAlgorithmWorkUnit : public WorkUnit
 {
 public:
-  RunMCAlgorithmWorkUnit() : budget(1000), numRuns(10) {}
+  RunMCAlgorithmWorkUnit() : budget(1000), useTimeBudget(false), numRuns(10) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -301,7 +288,7 @@ public:
 
     CompositeWorkUnitPtr wu(new CompositeWorkUnit(algorithm->toShortString(), numRuns));
     for (size_t run = 0; run < numRuns; ++run)
-      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm->cloneAndCast<MCAlgorithm>(), budget, run,  "Run " + String((int)run + 1)));
+      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm->cloneAndCast<MCAlgorithm>(), budget, useTimeBudget, run,  "Run " + String((int)run + 1)));
     wu->setProgressionUnit("Runs");
     wu->setPushChildrenIntoStackFlag(true);
 
@@ -322,18 +309,19 @@ protected:
   MCProblemPtr problem;
   MCAlgorithmPtr algorithm;
   size_t budget;
+  bool useTimeBudget;
   size_t numRuns;
   
   struct RunAlgorithmWorkUnit : public WorkUnit
   {
-    RunAlgorithmWorkUnit(MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex, const String& description)
-      : problem(problem), algorithm(algorithm), budget(budget), instanceIndex(instanceIndex), description(description) {}
+    RunAlgorithmWorkUnit(MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, bool useTimeBudget, size_t instanceIndex, const String& description)
+      : problem(problem), algorithm(algorithm), budget(budget), useTimeBudget(useTimeBudget), instanceIndex(instanceIndex), description(description) {}
 
     virtual Variable run(ExecutionContext& context)
     {
       context.getRandomGenerator()->setSeed(instanceIndex);
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
-      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, useTimeBudget);
 
       DecisionProblemStatePtr finalState;
       std::vector<Variable> actions;
@@ -352,6 +340,7 @@ protected:
     MCProblemPtr problem;
     MCAlgorithmPtr algorithm;
     size_t budget;
+    bool useTimeBudget;
     size_t instanceIndex;
     String description;
   };
@@ -363,16 +352,19 @@ class MetaMCSandBox : public WorkUnit
 {
 public:
   MetaMCSandBox()
-    : problem(new F8SymbolicRegressionMCProblem()), budget(1000),
-      maxAlgorithmSize(6), explorationCoefficient(5.0), useMultiThreading(false)
+    : problem(new F8SymbolicRegressionMCProblem()), budget(1000), useTimeBudget(false),
+      maxAlgorithmSize(6), explorationCoefficient(5.0), seed(1664), useMultiThreading(false)
   {
   }
 
   virtual Variable run(ExecutionContext& context)
   {
+    // set seed
+    context.getRandomGenerator()->setSeed((juce::uint32)seed);
+
     // create arms
     context.enterScope("Create arms");
-    BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(problem, budget), explorationCoefficient, false, useMultiThreading);
+    BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(problem, budget, useTimeBudget), explorationCoefficient, false, useMultiThreading);
     generateMCAlgorithms(context, pool);
     context.leaveScope((int)pool->getNumArms());
 
@@ -398,9 +390,12 @@ protected:
   
   MCProblemPtr problem;
   size_t budget;
+  bool useTimeBudget;
   size_t maxAlgorithmSize;
   double explorationCoefficient;
+  size_t seed;
   bool useMultiThreading;
+  File outputFile;
 
   void generateMCAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
   {
@@ -445,8 +440,8 @@ protected:
 
   struct AlgorithmObjective : public BanditPoolObjective
   {
-    AlgorithmObjective(MCProblemPtr problem, size_t budget)
-      : problem(problem), budget(budget)
+    AlgorithmObjective(MCProblemPtr problem, size_t budget, bool useTimeBudget)
+      : problem(problem), budget(budget), useTimeBudget(useTimeBudget)
       {problem->getInstance(defaultExecutionContext(), 0).second->getObjectiveRange(worstScore, bestScore);}
 
     virtual void getObjectiveRange(double& worst, double& best) const
@@ -456,7 +451,7 @@ protected:
     {
       MCAlgorithmPtr algorithm = parameter.getObjectAndCast<MCAlgorithm>();
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
-      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, useTimeBudget);
 
       DecisionProblemStatePtr finalState;
       std::vector<Variable> actions;
@@ -466,46 +461,21 @@ protected:
       algorithm->finishSearch(context);
 
       //Object::displayObjectAllocationInfo(std::cout);
-      return res;
+      return juce::jmax(worstScore, res); // avoid returning -DBL_MAX, which would kill the arm
     }
     
   private:
     MCProblemPtr problem;
     size_t budget;
+    bool useTimeBudget;
     double worstScore, bestScore;
   };
 
   void evaluateBaselinesAndDiscoveredAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
   {
-    // baselines
-    std::vector< std::pair<String, MCAlgorithmPtr> > baselines;
-    baselines.push_back(std::make_pair("RAND", rollout()));
-    baselines.push_back(std::make_pair("MCTS", select(rollout())));
-    baselines.push_back(std::make_pair("Step(MCTS)", step(iterate(select(rollout()), budget / 10))));
-
-    baselines.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
-    baselines.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
-    baselines.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
-    baselines.push_back(std::make_pair("LA4", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
-    baselines.push_back(std::make_pair("LA5", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
-    baselines.push_back(std::make_pair("LA6", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))));
+    std::vector< std::pair<String, MCAlgorithmPtr> > algorithms;
     
-    baselines.push_back(std::make_pair("NMC2", step(lookAhead(step(lookAhead(rollout()))))));
-    baselines.push_back(std::make_pair("NMC3", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
-    baselines.push_back(std::make_pair("NMC4", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
-    baselines.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
-    
-    baselines.push_back(std::make_pair("(step2la2rollout)", step(step(lookAhead(lookAhead(rollout()))))));
-    baselines.push_back(std::make_pair("(step3la2rollout)", step(step(step(lookAhead(lookAhead(rollout())))))));
-    
-    //baselines.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
-    //baselines.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
-    //baselines.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
-
-    for (size_t i = 0; i < baselines.size(); ++i)
-      evaluateAlgorithm(context, baselines[i].first, baselines[i].second);
-
-    // discovered
+     // discovered
     std::vector< std::pair<size_t, double> > armsOrder;
     pool->getArmsOrder(armsOrder);
     size_t numBests = 10;
@@ -514,8 +484,46 @@ protected:
     for (size_t i = 0; i < numBests; ++i)
     {
       MCAlgorithmPtr algorithm = pool->getArmParameter(armsOrder[i].first).getObjectAndCast<MCAlgorithm>();
-      evaluateAlgorithm(context, "Discovered " + String((int)i+1) + ": " + algorithm->toShortString(), algorithm);
+      algorithms.push_back(std::make_pair("Dis#" + String((int)i+1), algorithm));
     }
+
+    // generic
+    size_t bOverT = (size_t)(budget / (double)problem->getMaxHorizon() + 0.5);
+    algorithms.push_back(std::make_pair("is", rollout()));
+
+    algorithms.push_back(std::make_pair("uct(0)", step(iterate(select(rollout(), 0.0), bOverT))));
+    algorithms.push_back(std::make_pair("uct(0.3)", step(iterate(select(rollout(), 0.3), bOverT))));
+    algorithms.push_back(std::make_pair("uct(0.5)", step(iterate(select(rollout(), 0.5), bOverT))));
+    algorithms.push_back(std::make_pair("uct(1)", step(iterate(select(rollout(), 1.0), bOverT))));
+
+    algorithms.push_back(std::make_pair("la(1)", step(lookAhead(rollout()))));
+    algorithms.push_back(std::make_pair("la(2)", step(lookAhead(lookAhead(rollout())))));
+    algorithms.push_back(std::make_pair("la(3)", step(lookAhead(lookAhead(lookAhead(rollout()))))));
+    algorithms.push_back(std::make_pair("la(4)", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
+    algorithms.push_back(std::make_pair("la(5)", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
+    
+    algorithms.push_back(std::make_pair("nmc(2)", step(lookAhead(step(lookAhead(rollout()))))));
+    algorithms.push_back(std::make_pair("nmc(3)", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
+    algorithms.push_back(std::make_pair("nmc(4)", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
+    algorithms.push_back(std::make_pair("nmc(5)", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
+
+    // save algorithms
+    if (outputFile != File::nonexistent)
+    {
+      if (outputFile.existsAsFile())
+        outputFile.deleteFile();
+      OutputStream* ostr = outputFile.createOutputStream();
+      if (ostr)
+      {
+        for (size_t i = 0; i < algorithms.size(); ++i)
+          *ostr << algorithms[i].first << "\n" << algorithms[i].second->toShortString() << "\n";
+        delete ostr;
+      }
+    }
+
+    // evaluate algorithms
+    for (size_t i = 0; i < algorithms.size(); ++i)
+      evaluateAlgorithm(context, algorithms[i].first, algorithms[i].second);
   }
 
   void evaluateAlgorithm(ExecutionContext& context, const String& name, const MCAlgorithmPtr& algorithm)
@@ -527,7 +535,7 @@ protected:
     for (size_t i = 0; i < numEvaluationProblems; ++i)
     {
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, i);
-      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, useTimeBudget);
 
       DecisionProblemStatePtr finalState;
       std::vector<Variable> actions;
