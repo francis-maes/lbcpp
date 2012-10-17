@@ -58,15 +58,14 @@ public:
     enum {precision = 10000};
     DenseDoubleVectorPtr probabilities = normalizeProbabilities(object.staticCast<DenseDoubleVector>());
     DenseDoubleVectorPtr histogram = estimateHistogram(context, precision, probabilities->getValues());
-    return new Fitness(fabs(computeExpectation(histogram) - 15.0), limits);
+    return new Fitness(fabs(computeExpectation(histogram) - 15), limits);
   }
 
   double computeExpectation(const DenseDoubleVectorPtr& histogram) const
   {
     double res = 0.0;
-    for (size_t i = 0; i < histogram->getNumValues() - 1; ++i)
+    for (size_t i = 0; i < histogram->getNumValues(); ++i)
       res += (double)i * histogram->getValue(i);
-    res += 1000.0 * histogram->getValue(histogram->getNumValues() - 1);
     return res + 1.0;
   }
 
@@ -209,7 +208,7 @@ protected:
     context.enterScope(String("Optimizing probabilities with ") + (usePostfixNotation ? "postfix" : "prefix") + " notation");
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
     ExpressionSearchProbabilitiesProblemPtr problem = new ExpressionSearchProbabilitiesProblem(this->problem->getDomain(), maxExpressionSize, usePostfixNotation);
-    SolverPtr solver = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 30, 20, false);
+    SolverPtr solver = crossEntropyOptimizer(diagonalGaussianDistributionSampler(), 100, 30, 20, false);
     SolutionContainerPtr solutions = solver->optimize(context, problem, ObjectPtr(), Solver::verbosityAll);
     DenseDoubleVectorPtr probabilities = problem->normalizeProbabilities(solutions->getSolution(0).staticCast<DenseDoubleVector>());
     context.resultCallback("initial", problem->proposeStartingSolution(context));

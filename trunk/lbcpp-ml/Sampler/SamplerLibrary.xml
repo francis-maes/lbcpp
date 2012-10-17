@@ -14,7 +14,10 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
   </class>
-
+  <class name="DiagonalGaussianDistributionSampler" base="DiagonalGaussianSampler">
+    <constructor arguments="double learningRate" returnType="Sampler"/>
+  </class>
+  
   <class name="SearchSampler" base="Sampler" abstract="yes"/>
   
   <class name="RandomSearchSampler" base="SearchSampler">

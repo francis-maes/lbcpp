@@ -32,6 +32,7 @@ public:
 
 extern SamplerPtr uniformContinuousSampler();
 extern SamplerPtr diagonalGaussianSampler();
+extern SamplerPtr diagonalGaussianDistributionSampler();
 
 }; /* namespace lbcpp */
 

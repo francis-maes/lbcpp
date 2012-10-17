@@ -155,6 +155,22 @@ protected:
   DenseDoubleVectorPtr initialStddev;
 };
 
+class DiagonalGaussianDistributionSampler : public DiagonalGaussianSampler
+{
+public:
+  DiagonalGaussianDistributionSampler(double learningRate = 0.1)
+    : DiagonalGaussianSampler(learningRate) {}
+
+  virtual ObjectPtr sample(ExecutionContext& context) const
+  {
+    DenseDoubleVectorPtr res = DiagonalGaussianSampler::sample(context).staticCast<DenseDoubleVector>();
+    double Z = res->l1norm();
+    if (Z)
+      res->multiplyByScalar(1.0 / Z);
+    return res;
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
