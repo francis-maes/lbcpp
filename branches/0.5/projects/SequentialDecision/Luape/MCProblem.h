@@ -17,6 +17,7 @@ namespace lbcpp
 class MCProblem : public Object
 {
 public:
+  virtual size_t getMaxHorizon() const = 0;
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex) = 0;
 };
 
@@ -41,6 +42,9 @@ public:
 		virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
 		  {return finalState->getFinalStateReward();}
 	};
+
+  virtual size_t getMaxHorizon() const
+    {return decisionProblem->getHorizon();}
 
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
   {
@@ -67,6 +71,9 @@ class F8SymbolicRegressionMCProblem : public MCProblem
 public:
 	F8SymbolicRegressionMCProblem(size_t maxDepth = 10)
   	: maxDepth(maxDepth) {}
+
+  virtual size_t getMaxHorizon() const
+    {return maxDepth + 1;}
 
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
 	{
@@ -172,6 +179,9 @@ class PrimeNumberMCProblem : public MCProblem
 public:
 	PrimeNumberMCProblem(size_t maxDepth = 10)
 	  : maxDepth(maxDepth) {}
+
+  virtual size_t getMaxHorizon() const
+    {return maxDepth + 1;}
 
 	struct Objective : public LuapeMCObjective
 	{

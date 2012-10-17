@@ -30,7 +30,10 @@ public:
     jassert(!isSearching);
     isSearching = true;
 
-    bestScore = -DBL_MAX;
+    double worst, best;
+    objective->getObjectiveRange(worst, best);
+
+    bestScore = worst;
     jassert(bestActions.empty());
     jassert(bestFinalState == DecisionProblemStatePtr());
 
@@ -41,8 +44,8 @@ public:
       return bestScore;*/
 
     search(context, objective, actions, initialState);
-    jassert((bestScore == -DBL_MAX) == (bestFinalState == DecisionProblemStatePtr()));
-    jassert((bestScore == -DBL_MAX) == bestActions.empty());
+    jassert((bestScore == worst) == (bestFinalState == DecisionProblemStatePtr()));
+    jassert((bestScore == worst) == bestActions.empty());
     //String dbg2 = initialState->toShortString();
     //jassert(dbg == dbg2);
 
@@ -419,8 +422,8 @@ inline MCAlgorithmPtr step(MCAlgorithmPtr algorithm, bool useGlobalBest = true)
 inline MCAlgorithmPtr lookAhead(MCAlgorithmPtr algorithm, double numActions = 1.0)
   {return new LookAheadMCAlgorithm(algorithm, numActions);}
 
-inline MCAlgorithmPtr select(MCAlgorithmPtr algorithm)
-  {return new SelectMCAlgorithm(algorithm);}
+inline MCAlgorithmPtr select(MCAlgorithmPtr algorithm, double explorationCoefficient)
+  {return new SelectMCAlgorithm(algorithm, explorationCoefficient);}
 
 /*
 ** MCAlgorithmSet
