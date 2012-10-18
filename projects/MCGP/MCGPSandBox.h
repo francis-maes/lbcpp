@@ -139,7 +139,7 @@ public:
   {
     nextEvaluationCount = 1;
     startingTime = Time::getMillisecondCounterHiRes() / 1000.0;
-    nextEvaluationDeltaTime = 0.001;
+    nextEvaluationDeltaTime = 0.1;
   }
 
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
@@ -193,13 +193,13 @@ public:
     std::vector< std::pair<SolverPtr, String> > solvers;
 
     solvers.push_back(std::make_pair(nmcSolver(0), "random"));
-    solvers.push_back(std::make_pair(nmcSolver(1), "nmc(1)"));
-    solvers.push_back(std::make_pair(nmcSolver(2), "nmc(2)"));
-    solvers.push_back(std::make_pair(nmcSolver(3), "nmc(3)"));
+    solvers.push_back(std::make_pair(nmcSolver(1), "nmc1"));
+    solvers.push_back(std::make_pair(nmcSolver(2), "nmc2"));
+    solvers.push_back(std::make_pair(nmcSolver(3), "nmc3"));
 
-    solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa(1)"));
-    solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa(2)"));
-    solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa(3)"));
+    solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa1"));
+    solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa2"));
+    solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa3"));
     
     //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
     //solvers.push_back(std::make_pair(ceSolver(100, 30, true, 0.1), "ce(100, 30, true, 0.1"));
@@ -211,14 +211,14 @@ public:
     context.enterScope("Running");
     for (size_t i = 0; i < solvers.size(); ++i)
     {
-      size_t numCodeGenerators = (solvers[i].second.startsWith(T("nrpa")) || solvers[i].second.startsWith(T("ce"))) ? 4 : 1;
-      for (size_t j = 0; j < numCodeGenerators; ++j)
+      //size_t numCodeGenerators = (solvers[i].second.startsWith(T("nrpa")) || solvers[i].second.startsWith(T("ce"))) ? 4 : 1;
+      //for (size_t j = 0; j < numCodeGenerators; ++j)
       {
         String name = solvers[i].second;
-        if (numCodeGenerators > 1)
-          name += "-code" + String((int)j);
-        infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false, j)); // polish
-        infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true, j)); // reverse polish
+        //if (numCodeGenerators > 1)
+        //  name += "-code" + String((int)j);
+        infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false, 1)); // polish
+        infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true, 1)); // reverse polish
       }
     }
     context.leaveScope();
@@ -240,7 +240,8 @@ protected:
   size_t numEvaluations;
   size_t numRuns;
   size_t maxExpressionSize;
-  
+  File outputDirectory;
+
   struct SolverInfo
   {
     String name;
@@ -283,19 +284,43 @@ protected:
 
   SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation, size_t actionCodeGenerator)
   {
+    OutputStream* evalsOutput = NULL;
+    OutputStream* timesOutput = NULL;
+
+    if (outputDirectory != File::nonexistent)
+    {
+      outputDirectory.createDirectory();
+      File evalsFile = outputDirectory.getChildFile(description + "-evals.txt");
+      if (evalsFile.exists()) evalsFile.deleteFile();
+      evalsOutput = evalsFile.createOutputStream();
+
+      File timesFile = outputDirectory.getChildFile(description + "-times.txt");
+      if (timesFile.exists()) timesFile.deleteFile();
+      timesOutput = timesFile.createOutputStream();
+    }
+
     context.enterScope(description);
 	  std::vector<SolverInfo> runInfos(numRuns);
     size_t shortest1 = (size_t)-1;
     size_t shortest2 = (size_t)-1;
     for (size_t i = 0; i < numRuns; ++i)
     {
-      runSolverOnce(context, solver, runInfos[i], usePostfixNotation, actionCodeGenerator);
-      if (runInfos[i].fitnessPerEvaluationCount.size() < shortest1)
-        shortest1 = runInfos[i].fitnessPerEvaluationCount.size();
-      if (runInfos[i].fitnessPerCpuTime.size() < shortest2)
-        shortest2 = runInfos[i].fitnessPerCpuTime.size();
+      SolverInfo& info = runInfos[i];
+      runSolverOnce(context, solver, info, usePostfixNotation, actionCodeGenerator);
+      writeToOutput(evalsOutput, info.fitnessPerEvaluationCount);
+      writeToOutput(timesOutput, info.fitnessPerCpuTime);
+      if (info.fitnessPerEvaluationCount.size() < shortest1)
+        shortest1 = info.fitnessPerEvaluationCount.size();
+      if (info.fitnessPerCpuTime.size() < shortest2)
+        shortest2 = info.fitnessPerCpuTime.size();
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
+
+
+    if (evalsOutput)
+      deleteAndZero(evalsOutput);
+    if (timesOutput)
+      deleteAndZero(timesOutput);
 
     SolverInfo res;
     res.name = description;
@@ -307,6 +332,19 @@ protected:
     return res;
   }
   
+  void writeToOutput(OutputStream* ostr, const std::vector<double>& values)
+  {
+    if (ostr)
+    {
+      String line;
+      for (size_t i = 0; i < values.size(); ++i)
+        line += String(values[i]) + " ";
+      line += "\n";
+      *ostr << line;
+      ostr->flush();
+    }
+  }
+
   void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation, size_t actionCodeGenerator)
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
