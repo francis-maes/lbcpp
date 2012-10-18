@@ -101,7 +101,7 @@ public:
     {return "plog";}
 
   virtual double computeDouble(double value) const
-    {return value == 0.0 ? 0.0 : log(fabs(value));}
+    {return value > 0.000001 ? log(fabs(value)) : 1.0;}
 };
 
 class ExpDoubleFunction : public UnaryDoubleLuapeFuntion
@@ -250,7 +250,7 @@ public:
     {return "p/";}
 
   virtual double computeDouble(double first, double second) const
-    {return second ? first / second : 1.0;}
+    {return fabs(second) > 0.001 ? first / second : 1.0;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}

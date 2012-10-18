@@ -137,9 +137,9 @@ public:
   MCGPEvaluationDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations)
     : MaxIterationsDecoratorProblem(problem, maxNumEvaluations)
   {
-    nextEvaluationCount = 1;
+    nextEvaluationCount = 1.5;
     startingTime = Time::getMillisecondCounterHiRes() / 1000.0;
-    nextEvaluationDeltaTime = 0.1;
+    nextEvaluationDeltaTime = 0.001;
   }
 
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
@@ -149,17 +149,17 @@ public:
     if (!bestFitness || res->strictlyDominates(bestFitness))
       bestFitness = res;
 
-    if (numEvaluations == nextEvaluationCount)
+    while (numEvaluations >= (size_t)nextEvaluationCount)
     {
       fitnessPerEvaluationCount.push_back(bestFitness->getValue(0));
-      nextEvaluationCount *= 2;
+      nextEvaluationCount = nextEvaluationCount * 1.5;
     }
 
     double deltaTime = Time::getMillisecondCounterHiRes() / 1000.0 - startingTime;
     while (deltaTime >= nextEvaluationDeltaTime)
     {
       fitnessPerCpuTime.push_back(bestFitness->getValue(0));
-      nextEvaluationDeltaTime *= 2.0;
+      nextEvaluationDeltaTime *= 1.5;
     }
 
     return res;
@@ -174,7 +174,7 @@ public:
 protected:
   std::vector<double> fitnessPerEvaluationCount;  
   std::vector<double> fitnessPerCpuTime;
-  size_t nextEvaluationCount;
+  double nextEvaluationCount;
   double startingTime;
   double nextEvaluationDeltaTime;
 
@@ -374,15 +374,16 @@ protected:
       if (length < shortestLength)
         shortestLength = length;
     }
-    size_t x = 4;
+    double x = inFunctionOfCpuTime ? 0.001 : 1.5;
     for (size_t i = 2; i < shortestLength; ++i)
     {
-      context.enterScope(String((int)x));
-      context.resultCallback("log2(x)", i);
+      context.enterScope(String(x));
+
+      context.resultCallback("log10(x)", log10(x));
       for (size_t j = 0; j < infos.size(); ++j)
         context.resultCallback(infos[j].name, infos[j].getResult(inFunctionOfCpuTime, i));
       context.leaveScope();
-      x *= 2;
+      x *= 1.5;
     }
   }
 };
