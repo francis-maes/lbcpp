@@ -174,6 +174,57 @@ void ExpressionDomain::enumerateNodesExhaustively(ExecutionContext& context, siz
 LuapeSamplesCachePtr ExpressionDomain::createCache(size_t size, size_t maxCacheSizeInMb) const
     {return new LuapeSamplesCache(universe, inputs, size, maxCacheSizeInMb);}
 
+const std::map<ObjectPtr, size_t>& ExpressionDomain::getSymbolMap() const
+{
+  if (symbolMap.empty())
+  {
+    ExpressionDomain* pthis = const_cast<ExpressionDomain* >(this);
+    size_t index = 0;
+    for (size_t i = 0; i < inputs.size(); ++i)
+      pthis->addSymbol(inputs[i]);
+    for (size_t i = 0; i < constants.size(); ++i)
+      pthis->addSymbol(constants[i]);
+    for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
+      pthis->addSymbol(*it);
+    for (size_t i = 0; i < functions.size(); ++i)
+      pthis->addSymbol(functions[i]); // todo: support for parameterized functions
+    pthis->addSymbol(ObjectPtr()); // yield symbol
+  }
+  return symbolMap;
+}
+
+void ExpressionDomain::addSymbol(ObjectPtr symbol)
+{
+  size_t index = symbols.size();
+  symbols.push_back(symbol);
+  symbolMap[symbol] = index;
+}
+
+size_t ExpressionDomain::getSymbolIndex(const ObjectPtr& object) const
+{
+  std::map<ObjectPtr, size_t>::const_iterator it = getSymbolMap().find(object);
+  jassert(it != getSymbolMap().end());
+  return it->second;
+}
+
+size_t ExpressionDomain::getNumSymbols() const
+  {return getSymbolMap().size();}
+
+ObjectPtr ExpressionDomain::getSymbol(size_t index) const
+{
+  getSymbolMap(); // ensure symbols are computed
+  return symbols[index];
+}
+
+size_t ExpressionDomain::getSymbolArity(const ObjectPtr& symbol)
+{
+  FunctionPtr function = symbol.dynamicCast<Function>();
+  if (function)
+    return function->getNumInputs();
+  else
+    return 0;
+}
+
 /*
 ** ExpressionProblem
 */

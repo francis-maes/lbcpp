@@ -87,7 +87,7 @@ public:
   }
 
 protected:
-  friend class RepeatOptimizerClass;
+  friend class RepeatSolverClass;
 
   SolverPtr solver;
 };
@@ -192,14 +192,24 @@ public:
   {
     std::vector< std::pair<SolverPtr, String> > solvers;
 
+    SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
+    context.resultCallback("postfixSampler", sampler);
+
     solvers.push_back(std::make_pair(nmcSolver(0), "random"));
+    solvers.push_back(std::make_pair(nmcSolver(0, sampler), "random-sampler"));
     solvers.push_back(std::make_pair(nmcSolver(1), "nmc1"));
+    solvers.push_back(std::make_pair(nmcSolver(1, sampler), "nmc1-sampler"));
     solvers.push_back(std::make_pair(nmcSolver(2), "nmc2"));
+    solvers.push_back(std::make_pair(nmcSolver(2, sampler), "nmc2-sampler"));
     solvers.push_back(std::make_pair(nmcSolver(3), "nmc3"));
+    solvers.push_back(std::make_pair(nmcSolver(3, sampler), "nmc3-sampler"));
 
     solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa1"));
+    solvers.push_back(std::make_pair(nrpaSolver(1, sampler), "nrpa1-sampler"));
     solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa2"));
+    solvers.push_back(std::make_pair(nrpaSolver(2, sampler), "nrpa2-sampler"));
     solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa3"));
+    solvers.push_back(std::make_pair(nrpaSolver(3, sampler), "nrpa3-sampler"));
     
     //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
     //solvers.push_back(std::make_pair(ceSolver(100, 30, true, 0.1), "ce(100, 30, true, 0.1"));
@@ -218,7 +228,7 @@ public:
         //if (numCodeGenerators > 1)
         //  name += "-code" + String((int)j);
         infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false, 1)); // polish
-        infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true, 1)); // reverse polish
+        //infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true, 1)); // reverse polish
       }
     }
     context.leaveScope();
@@ -258,9 +268,9 @@ protected:
     }
   };
 
-  SolverPtr nmcSolver(size_t level) const
+  SolverPtr nmcSolver(size_t level, SamplerPtr sampler = SamplerPtr()) const
   {
-    SolverPtr res = rolloutSearchAlgorithm();
+    SolverPtr res = rolloutSearchAlgorithm(sampler ? sampler : (SamplerPtr)randomSearchSampler());
     for (size_t i = 0; i < level; ++i)
       res = stepSearchAlgorithm(lookAheadSearchAlgorithm(res));
     return new RepeatSolver(res);
@@ -268,7 +278,7 @@ protected:
 
   SolverPtr stepLaSolver(size_t numSteps, size_t numLookAheads) const
   {
-    SolverPtr res = rolloutSearchAlgorithm();
+    SolverPtr res = rolloutSearchAlgorithm(randomSearchSampler());
     for (size_t i = 0; i < numLookAheads; ++i)
       res = lookAheadSearchAlgorithm(res);
     for (size_t i = 0; i < numSteps; ++i)
@@ -276,8 +286,8 @@ protected:
     return new RepeatSolver(res);
   }
 
-  SolverPtr nrpaSolver(size_t level) const
-    {return new RepeatSolver(nrpaOptimizer(logLinearActionCodeSearchSampler(0.1, 1.0), level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
+  SolverPtr nrpaSolver(size_t level, SamplerPtr sampler = SamplerPtr()) const
+    {return new RepeatSolver(nrpaOptimizer(sampler ? sampler : (SamplerPtr)logLinearActionCodeSearchSampler(0.1, 1.0), level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
 
   SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, double regularizer) const
     {return crossEntropyOptimizer(logLinearActionCodeSearchSampler(regularizer), populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
@@ -300,6 +310,7 @@ protected:
     }
 
     context.enterScope(description);
+    context.resultCallback("solver", solver);
 	  std::vector<SolverInfo> runInfos(numRuns);
     size_t shortest1 = (size_t)-1;
     size_t shortest2 = (size_t)-1;

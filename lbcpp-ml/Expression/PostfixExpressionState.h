@@ -41,7 +41,7 @@ public:
   }
   
   virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(action, numSteps, stack.size(), maxSize);}
+    {return actionCodeGenerator->getActionCode(domain, action, numSteps, stack.size(), maxSize);}
   
   struct Backup : public Object
   {

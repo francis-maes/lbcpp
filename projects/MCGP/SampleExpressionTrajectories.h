@@ -20,45 +20,40 @@ class ExpressionSearchProbabilitiesProblem : public ContinuousProblem
 {
 public:
   ExpressionSearchProbabilitiesProblem(ExpressionDomainPtr domain, size_t maxSize, bool usePostfixNotation)
-    : maxSize(maxSize), usePostfixNotation(usePostfixNotation)
+    : expressionDomain(domain), maxSize(maxSize), usePostfixNotation(usePostfixNotation)
   {
-    std::set<size_t> aritySet;
-    aritySet.insert(0); // variables, constants
-    for (size_t i = 0; i < domain->getNumFunctions(); ++i)
-      aritySet.insert(domain->getFunction(i)->getNumInputs());
-    
-    arities.reserve(aritySet.size());
-    for (std::set<size_t>::const_iterator it = aritySet.begin(); it != aritySet.end(); ++it)
-      arities.push_back(*it);
-    size_t n = arities.size();
-    if (usePostfixNotation)
-      ++n;
-
-    startingSolution = new DenseDoubleVector(n, 0.0);
-    startingSolution->setValue(0, (double)(domain->getNumConstants() + domain->getNumInputs() + domain->getNumActiveVariables()));
-    for (size_t i = 1; i < arities.size(); ++i)
+    countPerArity.push_back(domain->getNumConstants() + domain->getNumInputs() + domain->getNumActiveVariables());
+    size_t maxArity = domain->getMaxFunctionArity();
+    for (size_t arity = 1; arity <= maxArity; ++arity)
     {
       size_t count = 0;
       for (size_t j = 0; j < domain->getNumFunctions(); ++j)
-        if (domain->getFunction(j)->getNumInputs() == arities[i])
+        if (domain->getFunction(j)->getNumInputs() == arity)
           ++count;
-      startingSolution->setValue(i, (double)count);
+      countPerArity.push_back(count);
     }
-    if (usePostfixNotation)
-      startingSolution->setValue(arities.size(), 1.0); // probability of yield
-    startingSolution->multiplyByScalar(1.0 / startingSolution->l1norm());
+    size_t n = countPerArity.size() + 1;
 
-    this->domain = new ContinuousDomain(std::vector< std::pair<double, double> >(n, std::make_pair(0.0, 1.0)));
-    //this->limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(0.0, log2((double)maxSize)))); // objective: maximize entropy
-    this->limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // objective: minimize error between expectation
+    startingSolution = new DenseDoubleVector(n, 1.0);
+    for (size_t i = 0; i < countPerArity.size(); ++i)
+      startingSolution->setValue(i, countPerArity[i]);
+    startingSolution->setValue(n-1, 1.0);
+    startingSolution->multiplyByScalar(1.0 / startingSolution->l1norm());
+    startingSolution->resize(2 * n);
+    for (size_t i = 0; i < n; ++i)
+      startingSolution->setValue(i + n, startingSolution->getValue(i));
+
+    this->domain = new ContinuousDomain(std::vector< std::pair<double, double> >(n * 2, std::make_pair(0.0, 1.0)));
+    this->limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(0.0, log2((double)maxSize)))); // objective: maximize entropy
+    //this->limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // objective: minimize error between expectation
   }
 
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
-    enum {precision = 10000};
+    enum {precision = 1000};
     DenseDoubleVectorPtr probabilities = normalizeProbabilities(object.staticCast<DenseDoubleVector>());
     DenseDoubleVectorPtr histogram = estimateHistogram(context, precision, probabilities->getValues());
-    return new Fitness(fabs(computeExpectation(histogram) - 15), limits);
+    return new Fitness(histogram->computeEntropy(), limits);
   }
 
   double computeExpectation(const DenseDoubleVectorPtr& histogram) const
@@ -86,6 +81,37 @@ public:
     return res;  
   }
 
+  SamplerPtr makeSampler(ExecutionContext& context, const std::vector<double>& probabilities) const
+  {
+    ExpressionActionCodeGeneratorPtr codeGenerator = new ExpressionActionCodeGenerator(1);
+    size_t numSymbols = expressionDomain->getNumSymbols();
+    DenseDoubleVectorPtr parameters = new DenseDoubleVector(numSymbols * maxSize, 0.0);
+    size_t n = probabilities.size() / 2;
+    jassert(n == countPerArity.size() + 1);
+    for (size_t step = 0; step < maxSize; ++step)
+    {
+      for (size_t index = 0; index < numSymbols; ++index)
+      {
+        ObjectPtr symbol = expressionDomain->getSymbol(index);
+        double p;
+        if (symbol)
+        {
+          size_t arity = expressionDomain->getSymbolArity(symbol);
+          p = countPerArity[arity] ? lerp(probabilities, arity, step) / (double)countPerArity[arity] : 0.0;
+        }
+        else
+          p = lerp(probabilities, n - 1, step);
+        size_t code = codeGenerator->getActionCode(expressionDomain, symbol, step, 0, maxSize);
+        parameters->setValue(code, juce::jmax(-5.0, log(p)));
+      }
+    }
+
+    SamplerPtr res = logLinearActionCodeSearchSampler();
+    int index = res->getClass()->findMemberVariable("parameters");
+    res->setVariable(index, parameters);
+    return res;
+  }
+
   DenseDoubleVectorPtr estimateHistogram(ExecutionContext& context, size_t precision, const std::vector<double>& probabilities) const
   {
     DenseDoubleVectorPtr histogram(new DenseDoubleVector(maxSize, 0.0));
@@ -108,31 +134,38 @@ public:
     {return startingSolution;}
 
 protected:
-  std::vector<size_t> arities;
+  std::vector<size_t> countPerArity;
   DenseDoubleVectorPtr startingSolution;
+  ExpressionDomainPtr expressionDomain;
   size_t maxSize;
   bool usePostfixNotation;
+  
+  double lerp(const std::vector<double>& probabilities, size_t index, size_t currentSize) const
+  {
+    double k = juce::jlimit(0.0, 1.0, currentSize / (double)(maxSize - 1));
+    double a = probabilities[index];
+    double b = probabilities[index + probabilities.size() / 2];
+    return a + k * (b - a);
+  }
 
   size_t sampleSizeWithPrefixNotation(RandomGeneratorPtr random, const std::vector<double>& probabilities) const
   {
-    jassert(probabilities.size() == arities.size());
     size_t numLeafs = 1;
     size_t size = 0;
+    size_t n = probabilities.size() / 2;
+    jassert(n == countPerArity.size() + 1);
     while (numLeafs > 0)
     {
       jassert(maxSize >= size + numLeafs);
       size_t maxArity = maxSize - size - numLeafs;
       size_t arity;
-      if (maxArity < arities.back())
-      {
-        std::vector<double> p(probabilities);
-        for (size_t i = 0; i < p.size(); ++i)
-          if (arities[i] > maxArity)
-            p[i] = 0.0;
-        arity = arities[random->sampleWithProbabilities(p)];
-      }
-      else
-        arity = arities[random->sampleWithNormalizedProbabilities(probabilities)];
+      std::vector<double> p(countPerArity.size());
+      for (size_t i = 0; i < p.size(); ++i)
+        if (!countPerArity[i] || i > maxArity)
+          p[i] = 0.0;
+        else
+          p[i] = lerp(probabilities, i, size);
+      arity = random->sampleWithProbabilities(p);
       numLeafs += arity - 1;
       ++size;
     }
@@ -141,30 +174,32 @@ protected:
 
   size_t sampleSizeWithPostfixNotation(RandomGeneratorPtr random, const std::vector<double>& probabilities) const
   {
-    jassert(probabilities.size() == arities.size() + 1);
     size_t stackSize = 0;
     size_t size = 0;
-    size_t maxFunctionArity = arities.back();
+    size_t maxFunctionArity = countPerArity.size() - 1;
+    size_t n = probabilities.size() / 2;
+    jassert(n == countPerArity.size() + 1);
     while (size < maxSize)
     {
-      std::vector<double> p(probabilities);
+      std::vector<double> p(n);
       size_t maxArity = (size_t)juce::jmin((int)maxFunctionArity, (int)stackSize); // cannot apply a n-ary operator if there are no n elements on the stack
       size_t minArity = (size_t)juce::jlimit(0, (int)maxFunctionArity, (int)stackSize - (int)((maxSize - size - 1) * (maxFunctionArity - 1)));
       bool isYieldable = (stackSize == 1);
   
-      for (size_t i = 0; i < arities.size(); ++i)
-      {
-        size_t arity = arities[i];
-        if (arity < minArity || arity > maxArity)
+      for (size_t i = 0; i < countPerArity.size(); ++i)
+        if (!countPerArity[i] || i < minArity || i > maxArity)
           p[i] = 0.0;
-      }
+        else
+          p[i] = lerp(probabilities, i, size);
       if (!isYieldable)
         p.back() = 0.0;
+      else
+        p.back() = lerp(probabilities, n-1, size);
 
       size_t action = random->sampleWithProbabilities(p);
-      if (action == arities.size())
+      if (action == n - 1)
         break; // yielded
-      stackSize += 1 - arities[action];
+      stackSize += 1 - action;
       ++size;
     }
     return size;
@@ -188,11 +223,20 @@ public:
     ExpressionDomainPtr domain = problem->getDomain();
 
     context.informationCallback(domain->toShortString());
-    optimizeDistribution(context, false);
-    optimizeDistribution(context, true);
-    sampleTrajectories(context, "prefix", prefixExpressionState(domain, maxExpressionSize));
-    sampleTrajectories(context, "postfix", postfixExpressionState(domain, maxExpressionSize));
-    sampleTrajectories(context, "typed-postfix", typedPostfixExpressionState(domain, maxExpressionSize));
+    SamplerPtr prefixSampler = optimizeDistribution(context, false);
+    SamplerPtr postfixSampler = optimizeDistribution(context, true);
+
+    context.resultCallback("prefixSampler", prefixSampler);
+    context.resultCallback("postfixSampler", postfixSampler);
+
+    ExpressionActionCodeGeneratorPtr codeGenerator = new ExpressionActionCodeGenerator(1);
+    sampleTrajectories(context, "prefix-initial", prefixExpressionState(domain, maxExpressionSize, codeGenerator), randomSearchSampler());
+    sampleTrajectories(context, "postfix-initial", postfixExpressionState(domain, maxExpressionSize, codeGenerator), randomSearchSampler());
+    sampleTrajectories(context, "prefix-optimized", prefixExpressionState(domain, maxExpressionSize, codeGenerator), prefixSampler);
+    sampleTrajectories(context, "postfix-optimized", postfixExpressionState(domain, maxExpressionSize, codeGenerator), postfixSampler);
+    //sampleTrajectories(context, "typed-postfix", typedPostfixExpressionState(domain, maxExpressionSize));
+
+
     return true;
   }
 
@@ -203,7 +247,7 @@ protected:
   size_t numExpressions;
   size_t maxExpressionSize;
 
-  DenseDoubleVectorPtr optimizeDistribution(ExecutionContext& context, bool usePostfixNotation)
+  SamplerPtr optimizeDistribution(ExecutionContext& context, bool usePostfixNotation)
   {
     context.enterScope(String("Optimizing probabilities with ") + (usePostfixNotation ? "postfix" : "prefix") + " notation");
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
@@ -216,7 +260,8 @@ protected:
     context.leaveScope();
     computeHistogramForProbabilities(context, "initial", problem->proposeStartingSolution(context), usePostfixNotation);
     computeHistogramForProbabilities(context, "optimized", probabilities, usePostfixNotation);
-    return probabilities;
+
+    return problem->makeSampler(context, probabilities->getValues());
   }
 
   void computeHistogramForProbabilities(ExecutionContext& context, const String& name, const DenseDoubleVectorPtr& probabilities, bool usePostfixNotation)
@@ -225,7 +270,7 @@ protected:
     ExpressionSearchProbabilitiesProblemPtr test = new ExpressionSearchProbabilitiesProblem(problem->getDomain(), maxExpressionSize, usePostfixNotation);
 
     DenseDoubleVectorPtr histo = test->estimateHistogram(context, numExpressions, probabilities->getValues());
-    context.enterScope(name + " -> " + String(test->computeExpectation(histo)));
+    context.enterScope(name + " -> " + String(histo->computeEntropy()));
     for (size_t i = 0; i < histo->getNumValues(); ++i)
     {
       context.enterScope(String((int)i+1));
@@ -236,10 +281,9 @@ protected:
     context.leaveScope();
   }
 
-  void sampleTrajectories(ExecutionContext& context, const String& name, ExpressionStatePtr initialState)
+  void sampleTrajectories(ExecutionContext& context, const String& name, ExpressionStatePtr initialState, SamplerPtr sampler)
   {
     std::vector<size_t> countsPerSize;
-    SamplerPtr sampler = randomSearchSampler();
     sampler->initialize(context, new SearchDomain(initialState));
 
     context.enterScope(name);

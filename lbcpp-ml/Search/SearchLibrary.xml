@@ -19,7 +19,8 @@
   </class>
 
   <class name="RolloutSearchAlgorithm" base="SearchAlgorithm">
-    <constructor/>
+    <constructor arguments="SearchSamplerPtr sampler"/>
+    <variable type="SearchSampler" name="sampler"/>
   </class>
   
   <class name="StepSearchAlgorithm" base="DecoratorSearchAlgorithm">

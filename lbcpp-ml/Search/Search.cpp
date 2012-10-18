@@ -73,6 +73,20 @@ void SearchSampler::clone(ExecutionContext& context, const ObjectPtr& t) const
   target->domain = domain;
 }
 
+ObjectPtr SearchSampler::sample(ExecutionContext& context) const
+{
+  SearchTrajectoryPtr res(new SearchTrajectory());
+  SearchStatePtr state = domain->createInitialState();
+  while (!state->isFinalState())
+  {
+    ObjectPtr action = sampleAction(context, state);
+    res->append(action);
+    state->performTransition(context, action);
+  }
+  res->setFinalState(state);
+  return res;
+}
+
 /*
 ** SearchAlgorithm
 */

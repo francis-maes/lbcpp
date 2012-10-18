@@ -104,30 +104,37 @@ class LogLinearActionCodeSearchSampler : public SearchSampler
 {
 public:
   LogLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0)
-    : regularizer(regularizer), learningRate(learningRate), deterministic(false) {}
-
-  virtual ObjectPtr sample(ExecutionContext& context) const
-  {
-    SearchTrajectoryPtr res(new SearchTrajectory());
-    SearchStatePtr state = domain->createInitialState();
-    bool det = true;
-    while (!state->isFinalState())
-    {
-      ObjectPtr action = sampleAction(context, state, det);
-      res->append(action);
-      state->performTransition(context, action);
-    }
-    res->setFinalState(state);
-    //context.informationCallback(state->toShortString());
-    const_cast<LogLinearActionCodeSearchSampler* >(this)->deterministic = det;
-    return res;
-  }
+    : regularizer(regularizer), learningRate(learningRate) {}
 
   virtual bool isDeterministic() const // returns true if the sampler has became deterministic
-    {return deterministic;}
+    {return false;}
 
   typedef LogLinearActionCodeLearningProblem::Example Example;
+  
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
+  {
+    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
+    size_t n = actionDomain->getNumElements();
+    
+    std::vector<double> probabilities(n, 0.0);
+    double Z = 0.0;
+    double highestProbability = 0.0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t code = state->getActionCode(actionDomain->getElement(i));
+      double p = exp(getParameter(code));
+      probabilities[i] = p;
+      highestProbability = juce::jmax(p, highestProbability);
+      Z += p;
+    }
 
+    //if (highestProbability < Z * (1 - 1e-9))
+    //  isDeterministic = false;
+
+    size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
+    return actionDomain->getElement(index);
+  }
+  
   virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
   {
     std::vector<size_t> indices(objects.size());
@@ -209,35 +216,10 @@ protected:
   double learningRate;
 
   DenseDoubleVectorPtr parameters;
-  bool deterministic;
 
   double getParameter(size_t index) const
     {return parameters && parameters->getNumValues() > index ? parameters->getValue(index) : 0.0;}
 
-  ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state, bool& isDeterministic) const
-  {
-    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
-    size_t n = actionDomain->getNumElements();
-    
-    std::vector<double> probabilities(n, 0.0);
-    double Z = 0.0;
-    double highestProbability = 0.0;
-    for (size_t i = 0; i < n; ++i)
-    {
-      size_t code = state->getActionCode(actionDomain->getElement(i));
-      double p = exp(getParameter(code));
-      probabilities[i] = p;
-      highestProbability = juce::jmax(p, highestProbability);
-      Z += p;
-    }
-
-    if (highestProbability < Z * (1 - 1e-9))
-      isDeterministic = false;
-
-    size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
-    return actionDomain->getElement(index);
-  }
-  
   void makeDatasetRecursively(const std::vector<SearchTrajectoryPtr>& trajectories, const std::vector<size_t>& indices, size_t step, std::vector<Example>& res, size_t& highestActionCode)
   {
     if (step == trajectories[indices[0]]->getLength())
