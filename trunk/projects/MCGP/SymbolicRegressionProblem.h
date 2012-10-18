@@ -25,19 +25,22 @@ public:
     DenseDoubleVectorPtr supervisions = cache->getNodeCache(output);
     
     // compute mean absolute error
-    ScalarVariableMean res;
+    double squaredError = 0.0;
     for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       double prediction = it.getRawDouble();
       if (prediction == doubleMissingValue || !isNumberValid(prediction))
         prediction = 0.0;
-      res.push(fabs(supervisions->getValue(it.getIndex()) - prediction));
+      double delta = supervisions->getValue(it.getIndex()) - prediction;
+      squaredError += delta * delta;
     }
+    squaredError /= (double)supervisions->getNumValues();
 
     // construct the Fitness
     std::vector<double> fitness(1);
-    fitness[0] = res.getMean();
+    fitness[0] = 1.0 / (1.0 + sqrt(squaredError));
     //fitness[1] = expression->getTreeSize();
+
 
     //std::cout << PostfixExpressionSequence::fromNode(expression)->toShortString() << " => " << res.getMean() << std::endl;
     return new Fitness(fitness, limits);
@@ -74,7 +77,7 @@ public:
     output = domain->createSupervision(doubleType, "y");
     
     // fitness limits
-    limits->setLimits(0, DBL_MAX, 0.0); // absolute error: should be minimized
+    limits->setLimits(0, 0.0, 1.0); // should maximize 1/(1 + rmse)
 
     // data
     const size_t numSamples = 20;
@@ -102,10 +105,7 @@ public:
   QuarticSymbolicRegressionProblem() {initialize(defaultExecutionContext());}
 
   virtual double computeFunction(double x) const
-  {
-    double x2 = x * x;
-    return x + x2 + x * x2 + x2 * x2;
-  }
+    {return x * (x * (x * (x + 1.0) + 1.0) + 1.0);}
 };
 
 #if 0
