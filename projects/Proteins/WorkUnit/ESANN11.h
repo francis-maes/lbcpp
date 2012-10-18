@@ -413,7 +413,7 @@ public:
       iteration->addTarget(drTarget);
       iteration->addTarget(stalTarget);
 
-      iteration->setEvaluator(new ProteinEvaluator());
+      //iteration->setEvaluator(new ProteinEvaluator());
       stack->addPredictor(iteration);
     }
 
@@ -427,10 +427,10 @@ public:
       return 103.f;
     }
 
-    ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
+    ProteinEvaluatorPtr trainEvaluator = createProteinEvaluator();
     stack->evaluate(context, trainingData, trainEvaluator, T("Evaluate on train proteins"));
 
-    ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
+    ProteinEvaluatorPtr testEvaluator = createProteinEvaluator();
     CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
     if (predictionPath != String::empty)
@@ -453,6 +453,18 @@ protected:
   {
     return predictor->evaluate(context, proteinPairs, saveToDirectoryEvaluator(predictionDirectory, T(".xml")),
                                T("Saving predictions to directory ") + predictionDirectory.getFileName());
+  }
+
+  ProteinEvaluatorPtr createProteinEvaluator() const
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
+
+    return evaluator;
   }
 };
 
