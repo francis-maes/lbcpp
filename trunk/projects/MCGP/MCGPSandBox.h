@@ -50,7 +50,7 @@ public:
     {return node->isFinalState();}
 
   virtual int compare(const ObjectPtr& otherObject) const
-    {return (int)node.get() - (int)otherObject.staticCast<PrunedSearchState>()->node.get();}
+    {return (int)((juce::int64)node.get() - (juce::int64)otherObject.staticCast<PrunedSearchState>()->node.get());}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<PrunedSearchState>()->node = node;}
