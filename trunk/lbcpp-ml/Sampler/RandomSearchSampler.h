@@ -18,22 +18,7 @@ namespace lbcpp
 class RandomSearchSampler : public SearchSampler
 {
 public:
-  virtual ObjectPtr sample(ExecutionContext& context) const
-  {
-    SearchTrajectoryPtr res(new SearchTrajectory());
-    SearchStatePtr state = domain->createInitialState();
-    while (!state->isFinalState())
-    {
-      ObjectPtr action = sampleAction(context, state);
-      res->append(state->cloneAndCast<SearchState>(), action);
-      state->performTransition(context, action);
-    }
-    res->setFinalState(state);
-    return res;
-  }
-
-private:
-  ObjectPtr sampleAction(ExecutionContext& context, const SearchStatePtr& state) const
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
   {
     DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
     size_t n = actionDomain->getNumElements();

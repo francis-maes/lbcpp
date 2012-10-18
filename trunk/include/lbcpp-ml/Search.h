@@ -112,6 +112,9 @@ class SearchSampler : public Sampler
 public:
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain);
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
+  virtual ObjectPtr sample(ExecutionContext& context) const;
+
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const = 0;
 
 protected:
   SearchDomainPtr domain;
@@ -134,7 +137,7 @@ protected:
   SearchTrajectoryPtr trajectory;
 };
 
-extern SearchAlgorithmPtr rolloutSearchAlgorithm();
+extern SearchAlgorithmPtr rolloutSearchAlgorithm(SearchSamplerPtr sampler);
 
 class DecoratorSearchAlgorithm : public SearchAlgorithm
 {

@@ -28,6 +28,7 @@
     <constructor arguments="double regularizer, double learningRate"/>
     <variable type="Double" name="regularizer"/>
     <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="parameters"/>
   </class>
 
 </library>

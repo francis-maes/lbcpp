@@ -17,6 +17,15 @@ namespace lbcpp
 class RolloutSearchAlgorithm : public SearchAlgorithm
 {
 public:
+  RolloutSearchAlgorithm(SearchSamplerPtr sampler = SearchSamplerPtr())
+    : sampler(sampler) {}
+
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  {
+    SearchAlgorithm::configure(context, problem, solutions, initialSolution, verbosity);
+    sampler->initialize(context, problem->getDomain());
+  }
+
   virtual void optimize(ExecutionContext& context)
   {
     SearchStatePtr state = trajectory->getFinalState();
@@ -24,17 +33,18 @@ public:
     {
       if (problem->shouldStop())
         return;
-      DiscreteDomainPtr availableActions = state->getActionDomain().staticCast<DiscreteDomain>();
-      size_t n = availableActions->getNumElements();
-      if (!n)
-        return;
-      ObjectPtr action = availableActions->getElement(context.getRandomGenerator()->sampleSize(n));
+      ObjectPtr action = sampler->sampleAction(context, state);
       trajectory->append(action);
       state->performTransition(context, action);
     }
     trajectory->setFinalState(state);
     evaluate(context, trajectory);
   }
+
+protected:
+  friend class RolloutSearchAlgorithmClass;
+
+  SearchSamplerPtr sampler;
 };
 
 }; /* namespace lbcpp */

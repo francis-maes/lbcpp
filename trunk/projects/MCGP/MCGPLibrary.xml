@@ -13,6 +13,10 @@
     <variable type="SearchNode" name="node"/>
   </class>
   
+  <class name="RepeatSolver" base="Solver">
+    <variable type="Solver" name="solver"/>
+  </class>
+  
   <class name="ExpressionToSearchProblem" base="DecoratorProblem"/>
 
   <!-- Expression Problems -->

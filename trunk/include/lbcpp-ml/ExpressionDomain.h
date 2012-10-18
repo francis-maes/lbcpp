@@ -105,6 +105,15 @@ public:
     {targetTypes.clear();}
 
   /*
+  ** Symbol Map
+  */
+  const std::map<ObjectPtr, size_t>& getSymbolMap() const;
+  size_t getSymbolIndex(const ObjectPtr& symbol) const;
+  size_t getNumSymbols() const;
+  ObjectPtr getSymbol(size_t index) const;
+  static size_t getSymbolArity(const ObjectPtr& symbol);
+
+  /*
   ** Object
   */
   virtual String toShortString() const;
@@ -132,6 +141,11 @@ protected:
 
   CriticalSection typeSearchSpacesLock;
   std::vector<PostfixExpressionTypeSpacePtr> typeSearchSpaces;
+
+  std::map<ObjectPtr, size_t> symbolMap;
+  std::vector<ObjectPtr> symbols;
+
+  void addSymbol(ObjectPtr symbol);
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
@@ -180,9 +194,9 @@ public:
     symbolAndStepAndStackSize,
   };
 
-  size_t getActionCode(ObjectPtr symbol, size_t step, size_t stackSize, size_t maxNumSteps)
+  size_t getActionCode(ExpressionDomainPtr domain, ObjectPtr symbol, size_t step, size_t stackSize, size_t maxNumSteps)
   {
-    size_t symbolCode = getSymbolCode(symbol);
+    size_t symbolCode = domain->getSymbolIndex(symbol);
     if (generator == symbolOnly)
       return symbolCode;
     else if (generator == symbolAndStep)
@@ -195,22 +209,6 @@ public:
 
 private:
   int generator;
-
-  typedef std::map<ObjectPtr, size_t> SymbolCodeMap;
-  SymbolCodeMap symbolCodes;
-
-  size_t getSymbolCode(ObjectPtr symbol)
-  {
-    SymbolCodeMap::const_iterator it = symbolCodes.find(symbol);
-    if (it == symbolCodes.end())
-    {
-      size_t res = symbolCodes.size();
-      symbolCodes[symbol] = res;
-      return res;
-    }
-    else
-      return it->second;
-  }
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActionCodeGeneratorPtr;

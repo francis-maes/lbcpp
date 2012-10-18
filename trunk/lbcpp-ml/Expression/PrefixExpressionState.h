@@ -59,7 +59,7 @@ public:
     {return numLeafs == 0;}
   
   virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(action, sequence.size(), numLeafs, maxSize);}
+    {return actionCodeGenerator->getActionCode(domain, action, sequence.size(), numLeafs, maxSize);}
 
   virtual ObjectPtr getConstructedObject() const
   {
