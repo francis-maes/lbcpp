@@ -4,7 +4,7 @@ import numpy
 import sys
 import os
 
-problem = "multiplexer"
+problem = "parity"
 directory = os.path.join("results_linux", problem)
 #methods = ["beagle", "linux-beagle", "random-postfix", "linux-random-postfix"]
 methods = ["beagle", "random-prefix", "random-postfix"]#, "nmc1-prefix", "nmc1-postfix", "nmc2-prefix", "nmc2-postfix", "nmc3-prefix", "nmc3-postfix"]#, "nrpa2-postfix", "nrpa3-postfix"]

@@ -54,6 +54,9 @@ public:
   }
   ExpressionActionDomainsCache() {}
 
+  DiscreteDomainPtr getActionsByArity(size_t arity) const
+    {jassert(arity < actionSubsets.size()); return actionSubsets[arity];}
+
   DiscreteDomainPtr getActions(const std::vector<size_t>& subsetIndices)
   {
     DiscreteDomainPtr& res = actionSets[subsetIndices];

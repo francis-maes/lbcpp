@@ -90,6 +90,9 @@ public:
   const FunctionPtr& getFunction(size_t index) const
     {jassert(index < functions.size()); return functions[index];}
 
+  const std::vector<FunctionPtr>& getFunctions() const
+    {return functions;}
+
   void addFunction(const FunctionPtr& function)
     {functions.push_back(function);}
 
@@ -107,6 +110,9 @@ public:
   /*
   ** Symbol Map
   */
+  std::vector<ExpressionPtr> getTerminals() const;
+  std::vector<ObjectPtr> getTerminalsAndFunctions() const;
+
   const std::map<ObjectPtr, size_t>& getSymbolMap() const;
   size_t getSymbolIndex(const ObjectPtr& symbol) const;
   size_t getNumSymbols() const;

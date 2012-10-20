@@ -25,6 +25,8 @@ protected:
   ExpressionDomainPtr domain;
 };
 
+typedef ReferenceCountedObjectPtr<ExpressionSampler> ExpressionSamplerPtr;
+
 class RPNExpressionSampler : public ExpressionSampler
 {
 public:

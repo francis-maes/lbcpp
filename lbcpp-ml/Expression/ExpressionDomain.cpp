@@ -174,6 +174,31 @@ void ExpressionDomain::enumerateNodesExhaustively(ExecutionContext& context, siz
 LuapeSamplesCachePtr ExpressionDomain::createCache(size_t size, size_t maxCacheSizeInMb) const
     {return new LuapeSamplesCache(universe, inputs, size, maxCacheSizeInMb);}
 
+std::vector<ExpressionPtr> ExpressionDomain::getTerminals() const
+{
+  std::vector<ExpressionPtr> res;
+  res.reserve(inputs.size() + constants.size() + activeVariables.size());
+  for (size_t i = 0; i < inputs.size(); ++i)
+    res.push_back(inputs[i]);
+  for (size_t i = 0; i < constants.size(); ++i)
+    res.push_back(constants[i]);
+  for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
+    res.push_back(*it);
+  return res;
+}
+
+std::vector<ObjectPtr> ExpressionDomain::getTerminalsAndFunctions() const
+{
+  std::vector<ExpressionPtr> terminals = getTerminals();
+  std::vector<ObjectPtr> res;
+  res.reserve(terminals.size() + functions.size());
+  for (size_t i = 0; i < terminals.size(); ++i)
+    res.push_back(terminals[i]);
+  for (size_t i = 0; i < functions.size(); ++i)
+    res.push_back(functions[i]);
+  return res;
+}
+
 const std::map<ObjectPtr, size_t>& ExpressionDomain::getSymbolMap() const
 {
   if (symbolMap.empty())
