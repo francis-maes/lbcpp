@@ -83,7 +83,9 @@ public:
 
   SamplerPtr makeSampler(ExecutionContext& context, const std::vector<double>& probabilities) const
   {
-    ExpressionActionCodeGeneratorPtr codeGenerator = new ExpressionActionCodeGenerator(1);
+    SearchActionCodeGeneratorPtr codeGenerator; // FIXME
+
+    //ExpressionActionCodeGeneratorPtr codeGenerator = new ExpressionActionCodeGenerator(1);
     size_t numSymbols = expressionDomain->getNumSymbols();
     DenseDoubleVectorPtr parameters = new DenseDoubleVector(numSymbols * maxSize, 0.0);
     size_t n = probabilities.size() / 2;
@@ -101,12 +103,15 @@ public:
         }
         else
           p = lerp(probabilities, n - 1, step);
-        size_t code = codeGenerator->getActionCode(expressionDomain, symbol, step, 0, maxSize);
+        //size_t code = codeGenerator->getActionCode(expressionDomain, symbol, step, 0, maxSize);
+        jassertfalse;
+        size_t code = 0; // FIXME
         parameters->setValue(code, juce::jmax(-5.0, log(p)));
       }
     }
 
-    SamplerPtr res = logLinearActionCodeSearchSampler();
+
+    SamplerPtr res = logLinearActionCodeSearchSampler(codeGenerator);
     int index = res->getClass()->findMemberVariable("parameters");
     res->setVariable(index, parameters);
     return res;
@@ -229,11 +234,10 @@ public:
     context.resultCallback("prefixSampler", prefixSampler);
     context.resultCallback("postfixSampler", postfixSampler);
 
-    ExpressionActionCodeGeneratorPtr codeGenerator = new ExpressionActionCodeGenerator(1);
-    sampleTrajectories(context, "prefix-initial", prefixExpressionState(domain, maxExpressionSize, codeGenerator), randomSearchSampler());
-    sampleTrajectories(context, "postfix-initial", postfixExpressionState(domain, maxExpressionSize, codeGenerator), randomSearchSampler());
-    sampleTrajectories(context, "prefix-optimized", prefixExpressionState(domain, maxExpressionSize, codeGenerator), prefixSampler);
-    sampleTrajectories(context, "postfix-optimized", postfixExpressionState(domain, maxExpressionSize, codeGenerator), postfixSampler);
+    sampleTrajectories(context, "prefix-initial", prefixExpressionState(domain, maxExpressionSize), randomSearchSampler());
+    sampleTrajectories(context, "postfix-initial", postfixExpressionState(domain, maxExpressionSize), randomSearchSampler());
+    sampleTrajectories(context, "prefix-optimized", prefixExpressionState(domain, maxExpressionSize), prefixSampler);
+    sampleTrajectories(context, "postfix-optimized", postfixExpressionState(domain, maxExpressionSize), postfixSampler);
     //sampleTrajectories(context, "typed-postfix", typedPostfixExpressionState(domain, maxExpressionSize));
 
 

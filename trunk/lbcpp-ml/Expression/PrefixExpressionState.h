@@ -19,8 +19,8 @@ namespace lbcpp
 class PrefixExpressionState : public ExpressionState
 {
 public:
-  PrefixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
-    : ExpressionState(domain, maxSize, codeGenerator), numLeafs(1)
+  PrefixExpressionState(ExpressionDomainPtr domain, size_t maxSize)
+    : ExpressionState(domain, maxSize), numLeafs(1)
   {
     ExpressionActionDomainsCachePtr actionsCache = new ExpressionActionDomainsCache(domain);
     actionsByMaxArity.resize(actionsCache->getMaxFunctionArity() + 1);
@@ -35,37 +35,34 @@ public:
 
   virtual DomainPtr getActionDomain() const
   {
-    size_t maxArity = maxSize - sequence.size() - numLeafs;
+    size_t maxArity = maxSize - trajectory.size() - numLeafs;
     jassert(maxArity >= 0);
     return maxArity < actionsByMaxArity.size() ? actionsByMaxArity[maxArity] : actionsByMaxArity.back();
   }
 
   virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
   {
-    sequence.push_back(action);
+    trajectory.push_back(action);
     FunctionPtr function = action.dynamicCast<Function>();
     numLeafs += (function ? function->getNumInputs() : 0) - 1;
   }
 
   virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    jassert(sequence.size());
-    FunctionPtr function = sequence.back().dynamicCast<Function>();
+    jassert(trajectory.size());
+    FunctionPtr function = trajectory.back().dynamicCast<Function>();
     numLeafs -= (function ? function->getNumInputs() : 0) - 1;
-    sequence.pop_back();
+    trajectory.pop_back();
   }
 
   virtual bool isFinalState() const
     {return numLeafs == 0;}
   
-  virtual size_t getActionCode(const ObjectPtr& action) const
-    {return actionCodeGenerator->getActionCode(domain, action, sequence.size(), numLeafs, maxSize);}
-
   virtual ObjectPtr getConstructedObject() const
   {
     size_t position = 0;
-    ExpressionPtr res = makeExpression(sequence, position);
-    jassert(position == sequence.size());
+    ExpressionPtr res = makeExpression(trajectory, position);
+    jassert(position == trajectory.size());
     return res;
   }
 
@@ -74,7 +71,6 @@ public:
     ExpressionState::clone(context, target);
 
     const ReferenceCountedObjectPtr<PrefixExpressionState>& t = target.staticCast<PrefixExpressionState>();
-    t->sequence = sequence;
     t->numLeafs = numLeafs;
     t->actionsByMaxArity = actionsByMaxArity;
   }
@@ -84,7 +80,6 @@ public:
 private:
   friend class PrefixExpressionStateClass;
 
-  std::vector<ObjectPtr> sequence;
   size_t numLeafs;
 
   // actionsByMaxArity[i] = all actions up to arity i (first: constants, second: constants + unary functions, third: constants + unary functions + binary functions ...

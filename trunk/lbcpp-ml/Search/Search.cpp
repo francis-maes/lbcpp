@@ -83,6 +83,7 @@ ObjectPtr SearchSampler::sample(ExecutionContext& context) const
     res->append(action);
     state->performTransition(context, action);
   }
+  // std::cout << res->toShortString() << std::endl;
   res->setFinalState(state);
   return res;
 }

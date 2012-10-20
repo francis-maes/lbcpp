@@ -130,6 +130,8 @@ public:
   virtual DomainPtr getActionDomain() const
     {return availableActions;}
   
+#if 0
+  // TODO: move in a separate class
   virtual size_t getActionCode(const ObjectPtr& ac) const
   {
     MorpionActionPtr action = ac.staticCast<MorpionAction>();
@@ -140,6 +142,7 @@ public:
     int indexInLine = action->getRequestedIndexInLine();
     return (size_t)(indexInLine + crossLength * (d + 4 * position));
   }
+#endif // 0
   
 #if 0
   virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const

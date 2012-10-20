@@ -250,8 +250,8 @@ bool ExpressionProblem::loadFromString(ExecutionContext& context, const String& 
 /*
 ** ExpressionState
 */
-ExpressionState::ExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
-  : domain(domain), maxSize(maxSize), actionCodeGenerator(codeGenerator)
+ExpressionState::ExpressionState(ExpressionDomainPtr domain, size_t maxSize)
+  : domain(domain), maxSize(maxSize)
 {
 }
 
@@ -260,5 +260,5 @@ void ExpressionState::clone(ExecutionContext& context, const ObjectPtr& target) 
   const ReferenceCountedObjectPtr<ExpressionState>& t = target.staticCast<ExpressionState>();
   t->domain = domain;
   t->maxSize = maxSize;
-  t->actionCodeGenerator = actionCodeGenerator;
+  t->trajectory = trajectory;
 }

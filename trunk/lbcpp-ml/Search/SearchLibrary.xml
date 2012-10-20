@@ -13,6 +13,8 @@
     <variable type="SearchState" name="initialState"/>
   </class>
 
+  <class name="SearchActionCodeGenerator" base="Object" abstract="yes"/>
+
   <class name="SearchAlgorithm" base="Solver" abstract="yes"/>
   <class name="DecoratorSearchAlgorithm" base="SearchAlgorithm" abstract="yes">
     <variable type="Solver" name="algorithm"/>
