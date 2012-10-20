@@ -126,5 +126,13 @@ SolutionVectorPtr PopulationBasedSolver::sampleAndEvaluatePopulation(ExecutionCo
   return res;
 }
 
+void PopulationBasedSolver::computeMissingFitnesses(ExecutionContext& context, const SolutionVectorPtr& population)
+{
+  size_t n = population->getNumSolutions();
+  for (size_t i = 0; i < n && !problem->shouldStop(); ++i)
+    if (!population->getFitness(i))
+      population->setFitness(i, evaluate(context, population->getSolution(i)));
+}
+
 void PopulationBasedSolver::learnSampler(ExecutionContext& context, SolutionVectorPtr solutions, SamplerPtr sampler)
   {sampler->learn(context, solutions->getObjects());}

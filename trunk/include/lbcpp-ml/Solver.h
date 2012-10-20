@@ -84,6 +84,7 @@ protected:
   size_t populationSize;
 
   SolutionVectorPtr sampleAndEvaluatePopulation(ExecutionContext& context, SamplerPtr sampler, size_t populationSize);
+  void computeMissingFitnesses(ExecutionContext& context, const SolutionVectorPtr& population);
   void learnSampler(ExecutionContext& context, SolutionVectorPtr solutions, SamplerPtr sampler);
 };
 

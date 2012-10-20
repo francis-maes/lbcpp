@@ -282,8 +282,13 @@ public:
     res.resize(end - begin);
     for (size_t i = 0; i < res.size(); ++i)
       res[i] = begin + i;
-    for (size_t i = 1; i < res.size(); ++i)
-      swap(res[i], res[sampleSize(i + 1)]);
+    shuffle(res);
+  }
+
+  inline void shuffle(std::vector<size_t>& v)
+  {
+    for (size_t i = 1; i < v.size(); ++i)
+      swap(v[i], v[sampleSize(i + 1)]);
   }
 
   inline void sampleSubset(const std::vector<size_t>& elements, size_t subsetSize, std::vector<size_t>& res)

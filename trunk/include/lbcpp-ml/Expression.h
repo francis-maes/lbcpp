@@ -155,6 +155,9 @@ public:
   const std::vector<ExpressionPtr>& getArguments() const
     {return arguments;}
 
+  std::vector<ExpressionPtr>& getArguments()
+    {return arguments;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
