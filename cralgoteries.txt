@@ -1,3 +1,5 @@
-* Solve the issue of too-big/too-small formulas
-* Launch big experiments
-* Compare with OpenBeagle
+* Depiler experiences taille 50
+* Re-implementer TreeBasedGPSolver
+* Beam-NRPA
+* NRPA with negative samples to maximize diversity
+

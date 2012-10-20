@@ -76,6 +76,12 @@
   </class>
   <class name="RandomRPNExpressionSampler" base="RPNExpressionSampler"/>
 
+  <class name="SimpleExpressionSearchActionCodeGenerator" base="SearchActionCodeGenerator"/>
+  <class name="NGramExpressionSearchActionCodeGenerator" base="SearchActionCodeGenerator">
+    <variable type="PositiveInteger" name="n"/>
+  </class>
+
+
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="ExpressionProblem" name="problem"/>

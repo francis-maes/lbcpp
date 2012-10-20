@@ -32,9 +32,6 @@ public:
   virtual DomainPtr getActionDomain() const
     {return node->getPrunedActionDomain();}
 
-  virtual size_t getActionCode(const ObjectPtr& action) const
-    {return node->getState()->getActionCode(action);}
-
   virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
   {
     jassert(node);
@@ -97,15 +94,15 @@ protected:
 class ExpressionToSearchProblem : public DecoratorProblem
 {
 public:
-  ExpressionToSearchProblem(ExpressionProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation, size_t actionCodeGenerator)
+  ExpressionToSearchProblem(ExpressionProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation)
     : DecoratorProblem(expressionProblem)
   {
     ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
     SearchStatePtr initialState;
     if (usePostfixNotation)
-      initialState = postfixExpressionState(expressionDomain, maxSize, new ExpressionActionCodeGenerator(actionCodeGenerator));
+      initialState = postfixExpressionState(expressionDomain, maxSize);
     else
-      initialState = prefixExpressionState(expressionDomain, maxSize, new ExpressionActionCodeGenerator(actionCodeGenerator));
+      initialState = prefixExpressionState(expressionDomain, maxSize);
     
     //if (pruneActions)
     //  initialState = new PrunedSearchState(new SearchNode(NULL, initialState));
@@ -127,6 +124,47 @@ public:
   
 protected:
   SearchDomainPtr domain;
+};
+
+///////////////////////////////////////////////////////////
+
+class SimpleExpressionSearchActionCodeGenerator : public SearchActionCodeGenerator
+{
+public:
+  virtual size_t getCode(const SearchStatePtr& state, const ObjectPtr& action)
+  {
+    const ExpressionStatePtr& expressionState = state.staticCast<ExpressionState>();
+    size_t symbol = expressionState->getDomain()->getSymbolIndex(action);
+    return symbol * expressionState->getMaxSize() + expressionState->getTrajectoryLength();
+  }
+};
+
+class NGramExpressionSearchActionCodeGenerator : public SearchActionCodeGenerator
+{
+public:
+  NGramExpressionSearchActionCodeGenerator(size_t n = 0)
+    : n(n) {}
+
+  virtual size_t getCode(const SearchStatePtr& state, const ObjectPtr& action)
+  {
+    const ExpressionStatePtr& expressionState = state.staticCast<ExpressionState>();
+    const ExpressionDomainPtr& domain = expressionState->getDomain();
+    jassert(n >= 1);
+    size_t res = domain->getSymbolIndex(action);
+    size_t numSymbols = domain->getNumSymbols();
+    const std::vector<ObjectPtr>& previousSymbols = expressionState->getTrajectory();
+    for (size_t i = 0; i < n - 1; ++i)
+    {
+      res *= numSymbols;
+      res += domain->getSymbolIndex(i < previousSymbols.size() ? previousSymbols[previousSymbols.size() - 1 - i] : ObjectPtr());
+    }
+    return res;
+  }
+
+protected:
+  friend class NGramExpressionSearchActionCodeGeneratorClass;
+
+  size_t n; // n = 1: one code per symbol, n = 2: one code per bigram, n = 3: one code per trigram, ...
 };
 
 ///////////////////////////////////////////////////////////
@@ -192,24 +230,33 @@ public:
   {
     std::vector< std::pair<SolverPtr, String> > solvers;
 
-    SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
-    context.resultCallback("postfixSampler", sampler);
+    //SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
+    //context.resultCallback("postfixSampler", sampler);
 
-    solvers.push_back(std::make_pair(nmcSolver(0), "random"));
-    solvers.push_back(std::make_pair(nmcSolver(0, sampler), "random-sampler"));
-    solvers.push_back(std::make_pair(nmcSolver(1), "nmc1"));
-    solvers.push_back(std::make_pair(nmcSolver(1, sampler), "nmc1-sampler"));
-    solvers.push_back(std::make_pair(nmcSolver(2), "nmc2"));
-    solvers.push_back(std::make_pair(nmcSolver(2, sampler), "nmc2-sampler"));
-    solvers.push_back(std::make_pair(nmcSolver(3), "nmc3"));
-    solvers.push_back(std::make_pair(nmcSolver(3, sampler), "nmc3-sampler"));
+    SamplerPtr randomSampler = randomSearchSampler();
 
-    solvers.push_back(std::make_pair(nrpaSolver(1), "nrpa1"));
-    solvers.push_back(std::make_pair(nrpaSolver(1, sampler), "nrpa1-sampler"));
-    solvers.push_back(std::make_pair(nrpaSolver(2), "nrpa2"));
-    solvers.push_back(std::make_pair(nrpaSolver(2, sampler), "nrpa2-sampler"));
-    solvers.push_back(std::make_pair(nrpaSolver(3), "nrpa3"));
-    solvers.push_back(std::make_pair(nrpaSolver(3, sampler), "nrpa3-sampler"));
+    std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
+    codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
+    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
+    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(2), "bigram"));
+    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(3), "trigram"));
+    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(4), "4gram"));
+    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(5), "5gram"));
+
+    for (size_t i = 0; i < codeGenerators.size(); ++i)
+    {
+      SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, 1.0);
+      String postfix = "-" + codeGenerators[i].second;
+      //solvers.push_back(std::make_pair(nrpaSolver(1, learnableSampler), "nrpa1" + postfix));
+      //solvers.push_back(std::make_pair(nrpaSolver(2, learnableSampler), "nrpa2" + postfix));
+      solvers.push_back(std::make_pair(nrpaSolver(3, learnableSampler), "nrpa3" + postfix));
+    }
+
+    /*solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
+    solvers.push_back(std::make_pair(nmcSolver(1, randomSampler), "nmc1"));
+    solvers.push_back(std::make_pair(nmcSolver(2, randomSampler), "nmc2"));
+    solvers.push_back(std::make_pair(nmcSolver(3, randomSampler), "nmc3"));
+    */
     
     //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
     //solvers.push_back(std::make_pair(ceSolver(100, 30, true, 0.1), "ce(100, 30, true, 0.1"));
@@ -221,15 +268,9 @@ public:
     context.enterScope("Running");
     for (size_t i = 0; i < solvers.size(); ++i)
     {
-      //size_t numCodeGenerators = (solvers[i].second.startsWith(T("nrpa")) || solvers[i].second.startsWith(T("ce"))) ? 4 : 1;
-      //for (size_t j = 0; j < numCodeGenerators; ++j)
-      {
-        String name = solvers[i].second;
-        //if (numCodeGenerators > 1)
-        //  name += "-code" + String((int)j);
-        infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false, 1)); // polish
-        //infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true, 1)); // reverse polish
-      }
+      String name = solvers[i].second;
+      infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false)); // polish
+      infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true)); // reverse polish
     }
     context.leaveScope();
 
@@ -268,17 +309,17 @@ protected:
     }
   };
 
-  SolverPtr nmcSolver(size_t level, SamplerPtr sampler = SamplerPtr()) const
+  SolverPtr nmcSolver(size_t level, SamplerPtr sampler) const
   {
-    SolverPtr res = rolloutSearchAlgorithm(sampler ? sampler : (SamplerPtr)randomSearchSampler());
+    SolverPtr res = rolloutSearchAlgorithm(sampler);
     for (size_t i = 0; i < level; ++i)
       res = stepSearchAlgorithm(lookAheadSearchAlgorithm(res));
     return new RepeatSolver(res);
   }
 
-  SolverPtr stepLaSolver(size_t numSteps, size_t numLookAheads) const
+  SolverPtr stepLaSolver(size_t numSteps, size_t numLookAheads, SamplerPtr sampler) const
   {
-    SolverPtr res = rolloutSearchAlgorithm(randomSearchSampler());
+    SolverPtr res = rolloutSearchAlgorithm(sampler);
     for (size_t i = 0; i < numLookAheads; ++i)
       res = lookAheadSearchAlgorithm(res);
     for (size_t i = 0; i < numSteps; ++i)
@@ -286,13 +327,13 @@ protected:
     return new RepeatSolver(res);
   }
 
-  SolverPtr nrpaSolver(size_t level, SamplerPtr sampler = SamplerPtr()) const
-    {return new RepeatSolver(nrpaOptimizer(sampler ? sampler : (SamplerPtr)logLinearActionCodeSearchSampler(0.1, 1.0), level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
+  SolverPtr nrpaSolver(size_t level, SamplerPtr sampler) const
+    {return new RepeatSolver(nrpaOptimizer(sampler, level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
 
-  SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, double regularizer) const
-    {return crossEntropyOptimizer(logLinearActionCodeSearchSampler(regularizer), populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
+  SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, SamplerPtr sampler) const
+    {return crossEntropyOptimizer(sampler, populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
 
-  SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation, size_t actionCodeGenerator)
+  SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation)
   {
     OutputStream* evalsOutput = NULL;
     OutputStream* timesOutput = NULL;
@@ -317,7 +358,7 @@ protected:
     for (size_t i = 0; i < numRuns; ++i)
     {
       SolverInfo& info = runInfos[i];
-      runSolverOnce(context, solver, info, usePostfixNotation, actionCodeGenerator);
+      runSolverOnce(context, solver, info, usePostfixNotation);
       writeToOutput(evalsOutput, info.fitnessPerEvaluationCount);
       writeToOutput(timesOutput, info.fitnessPerCpuTime);
       if (info.fitnessPerEvaluationCount.size() < shortest1)
@@ -356,10 +397,10 @@ protected:
     }
   }
 
-  void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation, size_t actionCodeGenerator)
+  void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation)
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
-    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation, actionCodeGenerator), numEvaluations);
+    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation), numEvaluations);
     solver->optimize(context, decoratedProblem);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();

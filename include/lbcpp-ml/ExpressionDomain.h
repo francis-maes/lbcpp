@@ -180,43 +180,10 @@ typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
 /*
 ** Expression Search Spaces
 */
-class ExpressionActionCodeGenerator : public Object
-{
-public:
-  ExpressionActionCodeGenerator(int generator = 0)
-    : generator(generator) {}
-
-  enum
-  {
-    symbolOnly = 0,
-    symbolAndStep,
-    symbolAndStackSize,
-    symbolAndStepAndStackSize,
-  };
-
-  size_t getActionCode(ExpressionDomainPtr domain, ObjectPtr symbol, size_t step, size_t stackSize, size_t maxNumSteps)
-  {
-    size_t symbolCode = domain->getSymbolIndex(symbol);
-    if (generator == symbolOnly)
-      return symbolCode;
-    else if (generator == symbolAndStep)
-      return symbolCode * maxNumSteps + step;
-    else if (generator == symbolAndStackSize)
-      return symbolCode * maxNumSteps + stackSize;
-    else
-      return (symbolCode * maxNumSteps + step) * maxNumSteps + stackSize;
-  }
-
-private:
-  int generator;
-};
-
-typedef ReferenceCountedObjectPtr<ExpressionActionCodeGenerator> ExpressionActionCodeGeneratorPtr;
-
 class ExpressionState : public SearchState
 {
 public:
-  ExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator);
+  ExpressionState(ExpressionDomainPtr domain, size_t maxSize);
   ExpressionState() {}
 
   const ExpressionDomainPtr& getDomain() const
@@ -224,7 +191,13 @@ public:
 
   size_t getMaxSize() const
     {return maxSize;}
+
+  const std::vector<ObjectPtr>& getTrajectory() const
+    {return trajectory;}
   
+  size_t getTrajectoryLength() const
+    {return trajectory.size();}
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
@@ -232,14 +205,14 @@ protected:
 
   ExpressionDomainPtr domain;
   size_t maxSize;
-  ExpressionActionCodeGeneratorPtr actionCodeGenerator;
+  std::vector<ObjectPtr> trajectory;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionState> ExpressionStatePtr;
 
-extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator = ExpressionActionCodeGeneratorPtr());
-extern ExpressionStatePtr postfixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator = ExpressionActionCodeGeneratorPtr());
-extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator = ExpressionActionCodeGeneratorPtr());
+extern ExpressionStatePtr prefixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+extern ExpressionStatePtr postfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
+extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain, size_t maxSize);
 
 }; /* namespace lbcpp */
 

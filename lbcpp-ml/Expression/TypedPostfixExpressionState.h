@@ -17,8 +17,8 @@ namespace lbcpp
 class TypedPostfixExpressionState : public PostfixExpressionStateBase
 {
 public:
-  TypedPostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize, ExpressionActionCodeGeneratorPtr codeGenerator)
-    : PostfixExpressionStateBase(domain, maxSize, codeGenerator)
+  TypedPostfixExpressionState(const ExpressionDomainPtr& domain, size_t maxSize)
+    : PostfixExpressionStateBase(domain, maxSize)
   {
     typeSearchSpace = domain->getSearchSpace(defaultExecutionContext(), maxSize);
     typeState = typeSearchSpace->getInitialState();
@@ -112,7 +112,7 @@ protected:
     std::vector<TypePtr> types(stack.size());
     for (size_t i = 0; i < types.size(); ++i)
       types[i] = stack[i]->getType();
-    typeState = typeSearchSpace->getState(numSteps, types);
+    typeState = typeSearchSpace->getState(trajectory.size(), types);
     jassert(typeState && typeState->hasAnyAction());
   }
 

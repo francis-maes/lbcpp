@@ -25,7 +25,8 @@
   </class>
   
   <class name="LogLinearActionCodeSearchSampler" base="SearchSampler">
-    <constructor arguments="double regularizer, double learningRate"/>
+    <constructor arguments="SearchActionCodeGeneratorPtr codeGenerator, double regularizer, double learningRate"/>
+    <variable type="SearchActionCodeGenerator" name="codeGenerator"/>
     <variable type="Double" name="regularizer"/>
     <variable type="Double" name="learningRate"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="parameters"/>

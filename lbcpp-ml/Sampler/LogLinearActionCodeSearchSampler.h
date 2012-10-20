@@ -103,8 +103,9 @@ protected:
 class LogLinearActionCodeSearchSampler : public SearchSampler
 {
 public:
-  LogLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0)
-    : regularizer(regularizer), learningRate(learningRate) {}
+  LogLinearActionCodeSearchSampler(SearchActionCodeGeneratorPtr codeGenerator, double regularizer = 0.1, double learningRate = 1.0)
+    : codeGenerator(codeGenerator), regularizer(regularizer), learningRate(learningRate) {}
+  LogLinearActionCodeSearchSampler() {}
 
   virtual bool isDeterministic() const // returns true if the sampler has became deterministic
     {return false;}
@@ -119,9 +120,10 @@ public:
     std::vector<double> probabilities(n, 0.0);
     double Z = 0.0;
     double highestProbability = 0.0;
+
     for (size_t i = 0; i < n; ++i)
     {
-      size_t code = state->getActionCode(actionDomain->getElement(i));
+      size_t code = codeGenerator->getCode(state, actionDomain->getElement(i));
       double p = exp(getParameter(code));
       probabilities[i] = p;
       highestProbability = juce::jmax(p, highestProbability);
@@ -170,6 +172,7 @@ public:
   {
     SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
     trajectory->ensureStatesAreComputed(context, domain->getInitialState());
+    //std::cout << "Reinforce "  << trajectory->toShortString() << std::endl;
 
     SparseDoubleVectorPtr gradient = new SparseDoubleVector();
     size_t n = trajectory->getLength();
@@ -179,7 +182,7 @@ public:
       ObjectPtr action = trajectory->getAction(i);
       DiscreteDomainPtr actionDomain = state->getActionDomain();
 
-      size_t code = state->getActionCode(action);
+      size_t code = codeGenerator->getCode(state, action);
       gradient->incrementValue(code, 1.0);
 
       size_t numActions = actionDomain->getNumElements();
@@ -187,7 +190,7 @@ public:
       double Z = 0.0;
       for (size_t j = 0; j < numActions; ++j)
       {
-        size_t code = state->getActionCode(actionDomain->getElement(j));
+        size_t code = codeGenerator->getCode(state, actionDomain->getElement(j));
         double probability = exp(getParameter(code));
         codesAndProbabilities[j] = std::make_pair(code, probability);
         Z += probability;
@@ -205,6 +208,7 @@ public:
   {
     const ReferenceCountedObjectPtr<LogLinearActionCodeSearchSampler>& target = t.staticCast<LogLinearActionCodeSearchSampler>();
     target->domain = domain;
+    target->codeGenerator = codeGenerator;
     target->learningRate = learningRate;
     target->parameters = parameters ? parameters->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
   }
@@ -212,6 +216,7 @@ public:
 protected:
   friend class LogLinearActionCodeSearchSamplerClass;
 
+  SearchActionCodeGeneratorPtr codeGenerator;
   double regularizer;
   double learningRate;
 
@@ -235,7 +240,7 @@ protected:
     example.availableActions.resize(actionDomain->getNumElements());
     for (size_t i = 0; i < example.availableActions.size(); ++i)
     {
-      size_t code = state->getActionCode(actionDomain->getElement(i));
+      size_t code = codeGenerator->getCode(state, actionDomain->getElement(i));
       if (code > highestActionCode)
         highestActionCode = code;
       example.availableActions[i] = code;
@@ -245,7 +250,7 @@ protected:
     for (size_t i = 0; i < indices.size(); ++i)
     {
       ObjectPtr action = trajectories[indices[i]]->getAction(step);
-      size_t actionCode = state->getActionCode(action);
+      size_t actionCode = codeGenerator->getCode(state, action);
       m[actionCode].push_back(indices[i]);
     }
     for (DispatchMap::const_iterator it = m.begin(); it != m.end(); ++it)

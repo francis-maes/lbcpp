@@ -30,9 +30,6 @@ public:
 
   virtual bool isFinalState() const = 0;
 
-  virtual size_t getActionCode(const ObjectPtr& action) const
-    {jassertfalse; return 0;}
-
   virtual ObjectPtr getConstructedObject() const
     {jassertfalse; return ObjectPtr();}
 
@@ -120,8 +117,16 @@ protected:
   SearchDomainPtr domain;
 };
 
+class SearchActionCodeGenerator : public Object
+{
+public:
+  virtual size_t getCode(const SearchStatePtr& state, const ObjectPtr& action) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<SearchActionCodeGenerator> SearchActionCodeGeneratorPtr;
+
 extern SearchSamplerPtr randomSearchSampler();
-extern SearchSamplerPtr logLinearActionCodeSearchSampler(double regularizer = 0.1, double learningRate = 1.0);
+extern SearchSamplerPtr logLinearActionCodeSearchSampler(SearchActionCodeGeneratorPtr codeGenerator, double regularizer = 0.1, double learningRate = 1.0);
 
 /*
 ** Solver
