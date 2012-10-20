@@ -34,6 +34,8 @@ extern SamplerPtr uniformContinuousSampler();
 extern SamplerPtr diagonalGaussianSampler();
 extern SamplerPtr diagonalGaussianDistributionSampler();
 
+extern SamplerPtr binaryMixtureSampler(SamplerPtr sampler1, SamplerPtr sampler2, double probability = 0.5);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_SAMPLER_H_

@@ -152,6 +152,19 @@ SolutionContainer::SolutionAndFitness SolutionVector::getBestSolution(const Solu
   return index >= 0 ? solutions[index] : SolutionAndFitness();
 }
 
+void SolutionVector::duplicateSolutionsUntilReachingSize(size_t newSize)
+{
+  jassert(newSize >= solutions.size());
+  size_t oldSize = solutions.size();
+  size_t i = 0;
+  solutions.resize(newSize);
+  for (size_t s = oldSize; s < newSize; ++s)
+  {
+    solutions[s] = solutions[i];
+    i = (i + 1) % oldSize;
+  }
+}
+
 SolutionVectorPtr SolutionVector::selectNBests(const SolutionComparatorPtr& comparator, size_t n) const
 {
   if (n >= solutions.size())
