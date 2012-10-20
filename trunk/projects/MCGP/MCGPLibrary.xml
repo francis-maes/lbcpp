@@ -81,6 +81,26 @@
     <variable type="PositiveInteger" name="n"/>
   </class>
 
+  <!-- Tree based Genetic Programming -->
+  <class name="DepthControlledExpressionSampler" base="ExpressionSampler" abstract="yes">
+    <variable type="PositiveInteger" name="minDepth"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  <class name="FullExpressionSampler" base="DepthControlledExpressionSampler">
+    <constructor arguments="size_t minDepth, size_t maxDepth" returnType="ExpressionSampler"/>
+  </class>
+  <class name="GrowExpressionSampler" base="DepthControlledExpressionSampler">
+    <constructor arguments="size_t minDepth, size_t maxDepth" returnType="ExpressionSampler"/>
+  </class>
+  <class name="BinaryMixtureSampler" base="Sampler">
+    <constructor arguments="SamplerPtr sampler1, SamplerPtr sampler2, double probability"/>
+    <variable type="Sampler" name="sampler1"/>
+    <variable type="Sampler" name="sampler2"/>
+    <variable type="Probability" name="probability"/>
+  </class>
+  <class name="TreeBasedGeneticProgrammingSolver" base="PopulationBasedSolver">
+    <variable type="Sampler" name="initialSampler"/>
+  </class>
 
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">

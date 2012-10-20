@@ -116,13 +116,13 @@ void IterativeSolver::optimize(ExecutionContext& context)
 SolutionVectorPtr PopulationBasedSolver::sampleAndEvaluatePopulation(ExecutionContext& context, SamplerPtr sampler, size_t populationSize)
 {
   SolutionVectorPtr res = new SolutionVector(problem->getFitnessLimits());
-  for (size_t i = 0; i < populationSize; ++i)
+  for (size_t i = 0; i < populationSize && !problem->shouldStop(); ++i)
   {
     ObjectPtr solution = sampler->sample(context);
     FitnessPtr fitness = evaluate(context, solution);
     res->insertSolution(solution, fitness);
   }
-  jassert(res->getNumSolutions() == populationSize);
+  jassert(res->getNumSolutions() <= populationSize);
   return res;
 }
 

@@ -19,6 +19,7 @@
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionSampler.h>
 # include <lbcpp-ml/Search.h>
+# include "TreeBasedGeneticProgramming.h"
 
 namespace lbcpp
 {
@@ -233,8 +234,10 @@ public:
     //SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
     //context.resultCallback("postfixSampler", sampler);
 
-    SamplerPtr randomSampler = randomSearchSampler();
+    solvers.push_back(std::make_pair(TreeBasedGeneticProgrammingSolver::createDefault(), "treegp"));
 
+    
+    /*
     std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
     codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
@@ -251,12 +254,14 @@ public:
       //solvers.push_back(std::make_pair(nrpaSolver(2, learnableSampler), "nrpa2" + postfix));
       solvers.push_back(std::make_pair(nrpaSolver(3, learnableSampler), "nrpa3" + postfix));
     }
+    */
+    SamplerPtr randomSampler = randomSearchSampler();
 
-    /*solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
+    solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
     solvers.push_back(std::make_pair(nmcSolver(1, randomSampler), "nmc1"));
     solvers.push_back(std::make_pair(nmcSolver(2, randomSampler), "nmc2"));
     solvers.push_back(std::make_pair(nmcSolver(3, randomSampler), "nmc3"));
-    */
+    
     
     //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
     //solvers.push_back(std::make_pair(ceSolver(100, 30, true, 0.1), "ce(100, 30, true, 0.1"));
@@ -269,8 +274,9 @@ public:
     for (size_t i = 0; i < solvers.size(); ++i)
     {
       String name = solvers[i].second;
-      infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false)); // polish
-      infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true)); // reverse polish
+      //infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false)); // polish
+      //infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true)); // reverse polish
+      infos.push_back(runSolver(context, solvers[i].first, name, true)); // reverse polish
     }
     context.leaveScope();
 
@@ -400,7 +406,10 @@ protected:
   void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation)
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
-    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation), numEvaluations);
+    ProblemPtr problem = this->problem;
+    if (!solver.isInstanceOf<TreeBasedGeneticProgrammingSolver>())
+      problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
+    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
     solver->optimize(context, decoratedProblem);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();
