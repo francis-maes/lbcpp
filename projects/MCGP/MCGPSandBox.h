@@ -234,7 +234,20 @@ public:
     //SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
     //context.resultCallback("postfixSampler", sampler);
 
-    solvers.push_back(std::make_pair(TreeBasedGeneticProgrammingSolver::createDefault(), "treegp"));
+    SolverPtr treeGP;
+    
+    if (problem->getClassName() == T("BooleanParityProblem"))
+      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0.0, 0.0, 0.0);
+    else if (problem->getClassName() == T("BooleanMultiplexerProblem"))
+      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
+    else if (problem->getClassName() == T("SantaFeTrailProblem"))
+      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
+    else if (problem->getClassName() == T("QuarticSymbolicRegressionProblem"))
+      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
+    else
+      jassertfalse;
+
+    solvers.push_back(std::make_pair(treeGP, "treegp"));
 
     
     /*
@@ -410,7 +423,7 @@ protected:
     if (!solver.isInstanceOf<TreeBasedGeneticProgrammingSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
     MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
-    solver->optimize(context, decoratedProblem);
+    solver->optimize(context, decoratedProblem, ObjectPtr(), Solver::verbosityQuiet);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();
   }

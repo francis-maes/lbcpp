@@ -62,6 +62,8 @@ void IterativeSolver::optimize(ExecutionContext& context)
   bool shouldContinue = true;
   for (size_t i = 0; (!numIterations || i < numIterations) && !problem->shouldStop() && shouldContinue; ++i)
   {
+    //Object::displayObjectAllocationInfo(std::cout);
+
     if (verbosity >= verbosityDetailed)
     {
       context.enterScope("Iteration " + String((int)i + 1));
