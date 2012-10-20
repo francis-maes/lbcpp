@@ -3,6 +3,9 @@
 <library name="Sampler" directory="Sampler">
 
   <class name="Sampler" abstract="yes"/>
+  <class name="DecoratorSampler" base="Sampler" abstract="yes">
+    <variable type="Sampler" name="sampler"/>
+  </class>
 
   <!-- Generic Samplers -->
   <class name="BinaryMixtureSampler" base="Sampler">
