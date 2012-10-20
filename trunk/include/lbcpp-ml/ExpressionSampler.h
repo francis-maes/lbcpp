@@ -11,6 +11,7 @@
 
 # include "ExpressionDomain.h"
 # include "Sampler.h"
+# include "Perturbator.h"
 
 namespace lbcpp
 {
@@ -18,8 +19,7 @@ namespace lbcpp
 class ExpressionSampler : public Sampler
 {
 public:
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-    {this->domain = domain.staticCast<ExpressionDomain>();}
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain);
 
 protected:
   ExpressionDomainPtr domain;
@@ -30,24 +30,12 @@ typedef ReferenceCountedObjectPtr<ExpressionSampler> ExpressionSamplerPtr;
 class DepthControlledExpressionSampler : public ExpressionSampler
 {
 public:
-  DepthControlledExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5)
-    : minDepth(minDepth), maxDepth(maxDepth) {}
+  DepthControlledExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5);
   
   virtual ExpressionPtr sampleTree(RandomGeneratorPtr random, size_t minDepth, size_t maxDepth) const = 0;
 
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-  {
-    ExpressionSampler::initialize(context, domain);
-    terminals = this->domain->getTerminals();
-  }
-  
-  virtual ObjectPtr sample(ExecutionContext& context) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    ExpressionPtr res = sampleTree(random, minDepth, random->sampleSize(minDepth, maxDepth + 1));
-    jassert(res->getDepth() >= minDepth && res->getDepth() <= maxDepth);
-    return res;
-  }
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain);
+  virtual ObjectPtr sample(ExecutionContext& context) const;
 
 protected:
   friend class DepthControlledExpressionSamplerClass;
@@ -61,6 +49,26 @@ typedef ReferenceCountedObjectPtr<DepthControlledExpressionSampler> DepthControl
 
 extern DepthControlledExpressionSamplerPtr fullExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5);
 extern DepthControlledExpressionSamplerPtr growExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5);
+
+class ExpressionPerturbator : public Perturbator
+{
+public:
+  virtual ExpressionPtr sampleExpression(ExecutionContext& context, const ExpressionPtr& expression) const = 0;
+
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain);
+  virtual ObjectPtr sample(ExecutionContext& context, const ObjectPtr& object) const;
+
+protected:
+  ExpressionDomainPtr domain;
+};
+
+typedef ReferenceCountedObjectPtr<ExpressionPerturbator> ExpressionPerturbatorPtr;
+
+extern ExpressionPerturbatorPtr shrinkExpressionPerturbator();
+extern ExpressionPerturbatorPtr swapExpressionPerturbator(double functionSelectionProbability);
+extern ExpressionPerturbatorPtr insertExpressionPerturbator(size_t maxDepth = 17);
+extern ExpressionPerturbatorPtr kozaExpressionPerturbator(DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth = 5, size_t maxDepth = 17);
+extern BinaryPerturbatorPtr subTreeCrossOverExpressionPerturbator(double functionSelectionProbability, size_t maxDepth = 17);
 
 }; /* namespace lbcpp */
 

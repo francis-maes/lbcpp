@@ -20,6 +20,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/SolutionComparator.h
   ../include/lbcpp-ml/Problem.h
   ../include/lbcpp-ml/Sampler.h
+  ../include/lbcpp-ml/Perturbator.h
   ../include/lbcpp-ml/Solver.h
   ../include/lbcpp-ml/Search.h
   ../include/lbcpp-ml/Function.h
@@ -81,9 +82,15 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/ExpressionUniverse.cpp
   Expression/Expression.cpp
   Expression/ExpressionDomain.cpp
+  Expression/ExpressionSampler.cpp
   Expression/PostfixExpression.cpp
   Expression/FullExpressionSampler.h
   Expression/GrowExpressionSampler.h
+  Expression/KozaExpressionPerturbator.h
+  Expression/InsertExpressionPerturbator.h
+  Expression/SwapExpressionPerturbator.h
+  Expression/ShrinkExpressionPerturbator.h
+  Expression/SubTreeCrossOverExpressionPerturbator.h
   Expression/ExpressionActionDomainsCache.h
   Expression/PrefixExpressionState.h
   Expression/PostfixExpressionState.h
