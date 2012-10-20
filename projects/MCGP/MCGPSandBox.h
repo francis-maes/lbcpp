@@ -19,7 +19,8 @@
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionSampler.h>
 # include <lbcpp-ml/Search.h>
-# include "TreeBasedGeneticProgramming.h"
+# include "TreeGPOperations.h"
+# include "TreeGPSamplers.h"
 
 namespace lbcpp
 {
@@ -237,13 +238,13 @@ public:
     SolverPtr treeGP;
     
     if (problem->getClassName() == T("BooleanParityProblem"))
-      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
+      treeGP = TreeGPOperationsSolvers::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
     else if (problem->getClassName() == T("BooleanMultiplexerProblem"))
-      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP = TreeGPOperationsSolvers::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
     else if (problem->getClassName() == T("SantaFeTrailProblem"))
-      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP = TreeGPOperationsSolvers::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
     else if (problem->getClassName() == T("QuarticSymbolicRegressionProblem"))
-      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
+      treeGP = TreeGPOperationsSolvers::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
     else
       jassertfalse;
 
@@ -425,7 +426,7 @@ protected:
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
     ProblemPtr problem = this->problem;
-    if (!solver.isInstanceOf<TreeBasedGeneticProgrammingSolver>())
+    if (!solver.isInstanceOf<TreeGPOperationsSolvers>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
     MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
     SolutionContainerPtr solutions = solver->optimize(context, decoratedProblem, ObjectPtr(), verbose ? Solver::verbosityDetailed : Solver::verbosityQuiet);

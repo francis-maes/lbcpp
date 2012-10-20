@@ -10,6 +10,7 @@
   <import name="Expression"/>
 
   <include file="lbcpp-ml/Problem.h"/>
+  <include file="lbcpp-ml/Perturbator.h"/>
 
   <!-- CORE -->
   <class name="Domain" abstract="yes"/>
@@ -35,6 +36,10 @@
 
   <uicomponent name="SolutionVectorComponent" type="SolutionVector"/>
 
+  <!-- Perturbator -->
+  <class name="Perturbator" base="Object" abstract="yes"/>
+  <class name="BinaryPerturbator" base="Object" abstract="yes"/>
+  
   <!-- Problems -->
   <class name="Problem" abstract="yes"/>
   <class name="ContinuousProblem" base="Problem" abstract="yes"/>

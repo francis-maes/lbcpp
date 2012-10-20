@@ -17,7 +17,8 @@ SET(LBCPP_MCGP_SOURCES
   precompiled.cpp
   TestDomain.h
   SampleExpressionTrajectories.h
-  TreeBasedGeneticProgramming.h
+  TreeGPOperations.h
+  TreeGPSamplers.h
   ${LBCPP_MCGP_PROBLEM_SOURCES}
   MCGPSandBox.h
   MCGPLibrary.xml
