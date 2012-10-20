@@ -109,13 +109,35 @@
     <variable type="Probability" name="probability"/>
   </class>
   
-  <class name="TreeGPOperationsSolvers" base="PopulationBasedSolver">
+  <class name="TreeGPOperationsSolver" base="PopulationBasedSolver">
     <variable type="Sampler" name="initialSampler"/>
     <variable type="SolutionsOperator" name="solutionOperator"/>
   </class>
 
   <!-- Tree GP: Implementation based on samplers -->
+  <class name="TournamentSampler" base="Sampler">
+    <constructor arguments="SolutionComparatorPtr comparator, size_t tournamentSize"/>
+    <variable type="SolutionComparator" name="comparator"/>
+    <variable type="PositiveInteger" name="tournamentSize"/>
+  </class>
   
+  <class name="PerturbatorSampler" base="DecoratorSampler">
+    <constructor arguments="SamplerPtr inputSampler, PerturbatorPtr perturbator, double probability"/>
+    <variable type="Perturbator" name="perturbator"/>
+    <variable type="Double" name="probability"/>
+  </class>
+
+  <class name="BinaryPerturbatorSampler" base="DecoratorSampler">
+    <constructor arguments="SamplerPtr inputSampler, BinaryPerturbatorPtr perturbator, double probability"/>
+    <variable type="BinaryPerturbator" name="perturbator"/>
+    <variable type="Double" name="probability"/>
+  </class>
+
+  <class name="TreeGPSamplersSolver" base="PopulationBasedSolver">
+    <variable type="Sampler" name="initialSampler"/>
+    <variable type="Sampler" name="subsequentSampler"/>
+  </class>
+
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="ExpressionProblem" name="problem"/>

@@ -235,21 +235,34 @@ public:
     //SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
     //context.resultCallback("postfixSampler", sampler);
 
-    SolverPtr treeGP;
+    SolverPtr treeGP1, treeGP2;
     
     if (problem->getClassName() == T("BooleanParityProblem"))
-      treeGP = TreeGPOperationsSolvers::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
+    {
+      treeGP1 = TreeGPOperationsSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
+      treeGP2 = TreeGPSamplersSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
+    }
     else if (problem->getClassName() == T("BooleanMultiplexerProblem"))
-      treeGP = TreeGPOperationsSolvers::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
+    {
+      treeGP1 = TreeGPOperationsSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP2 = TreeGPSamplersSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
+    }
     else if (problem->getClassName() == T("SantaFeTrailProblem"))
-      treeGP = TreeGPOperationsSolvers::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
+    {
+      treeGP1 = TreeGPOperationsSolver::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP2 = TreeGPSamplersSolver::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
+    }
     else if (problem->getClassName() == T("QuarticSymbolicRegressionProblem"))
-      treeGP = TreeGPOperationsSolvers::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
+    {
+      treeGP1 = TreeGPOperationsSolver::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
+      treeGP2 = TreeGPSamplersSolver::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
+    }
     else
       jassertfalse;
 
-    solvers.push_back(std::make_pair(treeGP, "treegp"));
-
+    solvers.push_back(std::make_pair(treeGP1, "treegp1"));
+    solvers.push_back(std::make_pair(treeGP2, "treegp2"));
+    
     
     /*
     std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
@@ -426,7 +439,7 @@ protected:
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
     ProblemPtr problem = this->problem;
-    if (!solver.isInstanceOf<TreeGPOperationsSolvers>())
+    if (!solver.isInstanceOf<TreeGPOperationsSolver>() && !solver.isInstanceOf<TreeGPSamplersSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
     MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
     SolutionContainerPtr solutions = solver->optimize(context, decoratedProblem, ObjectPtr(), verbose ? Solver::verbosityDetailed : Solver::verbosityQuiet);

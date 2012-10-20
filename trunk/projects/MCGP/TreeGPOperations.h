@@ -221,12 +221,12 @@ extern SolutionsOperatorPtr crossOverOperator(BinaryPerturbatorPtr perturbator, 
 extern SolutionsOperatorPtr compositeSolutionsOperator(const std::vector<SolutionsOperatorPtr>& operators);
 extern SolutionsOperatorPtr compositeSolutionsOperator(SolutionsOperatorPtr operator1, SolutionsOperatorPtr operator2, SolutionsOperatorPtr operator3 = SolutionsOperatorPtr(), SolutionsOperatorPtr operator4 = SolutionsOperatorPtr(), SolutionsOperatorPtr operator5 = SolutionsOperatorPtr());
   
-class TreeGPOperationsSolvers : public PopulationBasedSolver
+class TreeGPOperationsSolver : public PopulationBasedSolver
 {
 public:
-  TreeGPOperationsSolvers(SamplerPtr initialSampler, SolutionsOperatorPtr solutionOperator, size_t populationSize = 100, size_t numGenerations = 0)
+  TreeGPOperationsSolver(SamplerPtr initialSampler, SolutionsOperatorPtr solutionOperator, size_t populationSize = 100, size_t numGenerations = 0)
     : PopulationBasedSolver(populationSize, numGenerations), initialSampler(initialSampler), solutionOperator(solutionOperator) {}
-  TreeGPOperationsSolvers() {}
+  TreeGPOperationsSolver() {}
 
   static SolverPtr createDefault(size_t populationSize, size_t maxGenerations, size_t tournamentSize,
                                 double crossOverProbability,
@@ -251,7 +251,7 @@ public:
     if (insertProbability > 0.0)
       operators.push_back(mutationOperator(insertExpressionPerturbator(), insertProbability));
 
-    return new TreeGPOperationsSolvers(initialSampler, compositeSolutionsOperator(operators), populationSize, maxGenerations);
+    return new TreeGPOperationsSolver(initialSampler, compositeSolutionsOperator(operators), populationSize, maxGenerations);
   }
 
   virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
@@ -294,7 +294,7 @@ public:
   }
 
 protected:
-  friend class TreeGPOperationsSolversClass;
+  friend class TreeGPOperationsSolverClass;
 
   SamplerPtr initialSampler;
   SolutionsOperatorPtr solutionOperator;
