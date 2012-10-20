@@ -55,7 +55,16 @@ public:
     {jassert(isNumberValid(importance)); this->importance = importance;}
 
   size_t getDepth() const;
+  size_t getNodeDepth(ExpressionPtr node) const;
   size_t getTreeSize() const;
+  ExpressionPtr getNodeByTreeIndex(size_t index) const;
+
+  ExpressionPtr cloneAndSubstitute(ExpressionPtr sourceNode, ExpressionPtr targetNode) const;
+  void getInternalNodes(std::vector<ExpressionPtr>& res) const;
+  void getLeafNodes(std::vector<ExpressionPtr>& res) const;
+  ExpressionPtr sampleNode(RandomGeneratorPtr random, double functionSelectionProbability) const;
+  ExpressionPtr sampleNode(RandomGeneratorPtr random) const;
+  ExpressionPtr sampleSubNode(RandomGeneratorPtr random) const;
 
   lbcpp_UseDebuggingNewOperator
 

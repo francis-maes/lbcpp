@@ -113,7 +113,7 @@ public:
     direction = E;
     jassert(!world->hasPellet(position.x, position.y));
   }
-  SantaFeTrailState() {}
+  SantaFeTrailState() : maxNumSteps(600) {}
 
   bool isFoodAhead() const
   {

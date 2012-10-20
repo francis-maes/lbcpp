@@ -38,7 +38,7 @@ void Expression::addImportance(double delta)
     getSubNode(i)->addImportance(delta);
 }
 
-size_t Expression::getDepth() const
+size_t Expression::getDepth() const // returns 1 for a leaf node 
 {
   size_t res = 0;
   for (size_t i = 0; i < getNumSubNodes(); ++i)
@@ -54,6 +54,23 @@ size_t Expression::getDepth() const
   return res + 1;
 }
 
+size_t Expression::getNodeDepth(ExpressionPtr node) const // returns 1 if (node == this)
+{
+  if (node.get() == this)
+    return 1;
+  for (size_t i = 0; i < getNumSubNodes(); ++i)
+  {
+    ExpressionPtr subNode = getSubNode(i);
+    if (subNode)
+    {
+      size_t res = subNode->getNodeDepth(node);
+      if (res != (size_t)-1)
+        return res + 1;
+    }
+  }
+  return (size_t)-1;
+}
+
 size_t Expression::getTreeSize() const
 {
   size_t res = 1;
@@ -64,6 +81,88 @@ size_t Expression::getTreeSize() const
       res += subNode->getTreeSize();
   }
   return res;
+}
+
+inline ExpressionPtr getNodeByTreeIndexRec(ExpressionPtr expression, size_t& index)
+{
+  if (index == 0)
+    return expression;
+  index -= 1;
+  for (size_t i = 0; i < expression->getNumSubNodes(); ++i)
+  {
+    ExpressionPtr subNode = expression->getSubNode(i);
+    if (subNode)
+    {
+      ExpressionPtr res = getNodeByTreeIndexRec(subNode, index);
+      if (res)
+        return res;
+    }
+  }
+  return ExpressionPtr();
+}
+
+ExpressionPtr Expression::getNodeByTreeIndex(size_t index) const
+  {return getNodeByTreeIndexRec(refCountedPointerFromThis(this), index);}
+
+ExpressionPtr Expression::cloneAndSubstitute(ExpressionPtr sourceNode, ExpressionPtr targetNode) const
+{
+  if (this == sourceNode.get())
+    return targetNode;
+  ExpressionPtr pthis = refCountedPointerFromThis(this);
+  FunctionExpressionPtr functionNode = pthis.dynamicCast<FunctionExpression>();
+  if (!functionNode)
+    return pthis;
+  std::vector<ExpressionPtr> arguments(functionNode->getNumArguments());
+  for (size_t i = 0; i < arguments.size(); ++i)
+    arguments[i] = functionNode->getArgument(i)->cloneAndSubstitute(sourceNode, targetNode);
+  return new FunctionExpression(functionNode->getFunction(), arguments);
+}
+
+void Expression::getInternalNodes(std::vector<ExpressionPtr>& res) const
+{
+  size_t n = getNumSubNodes();
+  if (n > 0)
+  {
+    res.push_back(refCountedPointerFromThis(this));
+    for (size_t i = 0; i < n; ++i)
+      getSubNode(i)->getInternalNodes(res);
+  }
+}
+
+void Expression::getLeafNodes(std::vector<ExpressionPtr>& res) const
+{
+  size_t n = getNumSubNodes();
+  if (n > 0)
+  {
+    for (size_t i = 0; i < n; ++i)
+      getSubNode(i)->getLeafNodes(res);
+  }
+  else
+    res.push_back(refCountedPointerFromThis(this));
+}
+
+ExpressionPtr Expression::sampleNode(RandomGeneratorPtr random) const
+  {return getNodeByTreeIndex(random->sampleSize(getTreeSize()));}
+
+ExpressionPtr Expression::sampleNode(RandomGeneratorPtr random, double functionSelectionProbability) const
+{
+  if (getNumSubNodes() == 0)
+    return refCountedPointerFromThis(this);
+
+  std::vector<ExpressionPtr> nodes;
+  if (random->sampleBool(functionSelectionProbability))
+    getInternalNodes(nodes);
+  else
+    getLeafNodes(nodes);
+  jassert(nodes.size() > 0);
+  return nodes[random->sampleSize(nodes.size())];
+}
+
+ExpressionPtr Expression::sampleSubNode(RandomGeneratorPtr random) const
+{
+  size_t n = getNumSubNodes();
+  jassert(n > 0);
+  return getSubNode(random->sampleSize(n));
 }
 
 /*

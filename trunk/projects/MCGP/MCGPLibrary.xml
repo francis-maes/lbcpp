@@ -87,10 +87,10 @@
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
   <class name="FullExpressionSampler" base="DepthControlledExpressionSampler">
-    <constructor arguments="size_t minDepth, size_t maxDepth" returnType="ExpressionSampler"/>
+    <constructor arguments="size_t minDepth, size_t maxDepth"/>
   </class>
   <class name="GrowExpressionSampler" base="DepthControlledExpressionSampler">
-    <constructor arguments="size_t minDepth, size_t maxDepth" returnType="ExpressionSampler"/>
+    <constructor arguments="size_t minDepth, size_t maxDepth"/>
   </class>
   <class name="BinaryMixtureSampler" base="Sampler">
     <constructor arguments="SamplerPtr sampler1, SamplerPtr sampler2, double probability"/>
@@ -98,9 +98,45 @@
     <variable type="Sampler" name="sampler2"/>
     <variable type="Probability" name="probability"/>
   </class>
+  
+  <!-- Tree GP: Mutations -->
+  <class name="MutationSampler" base="Object" abstract="yes"/>
+  <class name="ExpressionMutationSampler" base="MutationSampler" abstract="yes"/>
+  <class name="ShrinkExpressionMutationSampler" base="ExpressionMutationSampler">
+    <constructor returnType="MutationSampler"/>
+  </class>
+  <class name="SwapExpressionMutationSampler" base="ExpressionMutationSampler">
+    <constructor arguments="double functionSelectionProbability" returnType="MutationSampler"/>
+    <variable type="Probability" name="functionSelectionProbability"/>
+  </class>
+  <class name="InsertExpressionMutationSampler" base="ExpressionMutationSampler">
+    <constructor arguments="size_t maxDepth" returnType="MutationSampler"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  <class name="StandardExpressionMutationSampler" base="ExpressionMutationSampler">
+    <constructor arguments="DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth, size_t maxDepth" returnType="MutationSampler"/>
+    <variable type="DepthControlledExpressionSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="maxRegenerationDepth"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <!-- Tree GP: Cross-over -->
+  <class name="CrossOverSampler" base="Object" abstract="yes"/>
+  <class name="SubTreeCrossOverSampler" base="CrossOverSampler">
+    <constructor arguments="double functionSelectionProbability, size_t maxDepth"/>
+    <variable type="Probability" name="functionSelectionProbability"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
 
   <!-- Tree GP: Operators -->
   <class name="SolutionsOperator" base="Object" abstract="yes"/>
+
+  <class name="CompositeSolutionsOperator" base="SolutionsOperator">
+    <constructor arguments="const std::vector&lt;SolutionsOperatorPtr&gt;&amp; operators"/>
+    <constructor arguments="SolutionsOperatorPtr operator1, SolutionsOperatorPtr operator2, SolutionsOperatorPtr operator3, SolutionsOperatorPtr operator4, SolutionsOperatorPtr operator5"/>
+    <variable type="ObjectVector[SolutionsOperator]" name="operators"/>
+  </class>
+
   <class name="SolutionSelector" base="SolutionsOperator" abstract="yes"/>
   <class name="TournamentSolutionSelector" base="SolutionSelector">
     <constructor arguments="SolutionComparatorPtr comparator, size_t tournamentSize"/>
@@ -108,20 +144,23 @@
     <variable type="PositiveInteger" name="tournamentSize"/>
   </class>
 
-  <class name="CrossOverOperator" base="SolutionsOperator" abstract="yes">
-    <variable type="Probability" name="crossOverProbability"/>
+  <class name="MutationOperator" base="SolutionsOperator">
+    <constructor arguments="MutationSamplerPtr mutation, double mutationProbability"/>
+    <variable type="MutationSampler" name="mutation"/>
+    <variable type="Probability" name="mutationProbability"/>
   </class>
-  <class name="SubTreeCrossOverOperator" base="CrossOverOperator">
-    <constructor arguments="double crossOverProbability, double probabilityOfInternalNode" returnType="SolutionsOperator"/>
-    <variable type="Probability" name="probabilityOfInternalNode"/>
+
+  <class name="CrossOverOperator" base="SolutionsOperator">
+    <constructor arguments="CrossOverSamplerPtr crossOver, double crossOverProbability"/>
+    <variable type="CrossOverSampler" name="crossOver"/>
+    <variable type="Probability" name="crossOverProbability"/>
   </class>
 
   
   <!-- Tree GP: Top-level -->
   <class name="TreeBasedGeneticProgrammingSolver" base="PopulationBasedSolver">
     <variable type="Sampler" name="initialSampler"/>
-    <variable type="SolutionSelector" name="selector"/>
-    <variable type="SolutionsOperator" name="generator"/>
+    <variable type="SolutionsOperator" name="solutionOperator"/>
   </class>
 
   <!-- SandBox -->
