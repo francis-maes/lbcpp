@@ -81,7 +81,7 @@
     <variable type="PositiveInteger" name="n"/>
   </class>
 
-  <!-- Tree based Genetic Programming -->
+  <!-- Tree GP: Samplers -->
   <class name="DepthControlledExpressionSampler" base="ExpressionSampler" abstract="yes">
     <variable type="PositiveInteger" name="minDepth"/>
     <variable type="PositiveInteger" name="maxDepth"/>
@@ -98,8 +98,30 @@
     <variable type="Sampler" name="sampler2"/>
     <variable type="Probability" name="probability"/>
   </class>
+
+  <!-- Tree GP: Operators -->
+  <class name="SolutionsOperator" base="Object" abstract="yes"/>
+  <class name="SolutionSelector" base="SolutionsOperator" abstract="yes"/>
+  <class name="TournamentSolutionSelector" base="SolutionSelector">
+    <constructor arguments="SolutionComparatorPtr comparator, size_t tournamentSize"/>
+    <variable type="SolutionComparator" name="comparator"/>
+    <variable type="PositiveInteger" name="tournamentSize"/>
+  </class>
+
+  <class name="CrossOverOperator" base="SolutionsOperator" abstract="yes">
+    <variable type="Probability" name="crossOverProbability"/>
+  </class>
+  <class name="SubTreeCrossOverOperator" base="CrossOverOperator">
+    <constructor arguments="double crossOverProbability, double probabilityOfInternalNode" returnType="SolutionsOperator"/>
+    <variable type="Probability" name="probabilityOfInternalNode"/>
+  </class>
+
+  
+  <!-- Tree GP: Top-level -->
   <class name="TreeBasedGeneticProgrammingSolver" base="PopulationBasedSolver">
     <variable type="Sampler" name="initialSampler"/>
+    <variable type="SolutionSelector" name="selector"/>
+    <variable type="SolutionsOperator" name="generator"/>
   </class>
 
   <!-- SandBox -->

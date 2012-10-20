@@ -25,6 +25,7 @@ public:
   virtual size_t getNumSolutions() const = 0;
   virtual ObjectPtr getSolution(size_t index) const = 0;
   virtual FitnessPtr getFitness(size_t index) const = 0;
+  virtual SolutionAndFitness getSolutionAndFitness(size_t index) const = 0;
   virtual FitnessLimitsPtr getFitnessLimits() const = 0;
 
   size_t getNumObjectives() const;
@@ -44,21 +45,36 @@ public:
   bool isEmpty() const
     {return solutions.empty();}
 
-  size_t getNumSolutions() const
+  virtual size_t getNumSolutions() const
     {return solutions.size();}
 
-  ObjectPtr getSolution(size_t index) const
+  virtual ObjectPtr getSolution(size_t index) const
     {jassert(index < solutions.size()); return solutions[index].first;}
 
-  FitnessPtr getFitness(size_t index) const
+  virtual FitnessPtr getFitness(size_t index) const
     {jassert(index < solutions.size()); return solutions[index].second;}
+  
+  virtual SolutionAndFitness getSolutionAndFitness(size_t index) const
+    {jassert(index < solutions.size()); return solutions[index];}
+
+  void setSolution(size_t index, ObjectPtr solution, FitnessPtr fitness = FitnessPtr())
+    {jassert(index < solutions.size()); solutions[index] = std::make_pair(solution, fitness);}
+
+  void setFitness(size_t index, FitnessPtr fitness)
+    {jassert(index < solutions.size() && solutions[index].first); solutions[index].second = fitness;}
 
   std::vector<ObjectPtr> getObjects() const;
+
+  void reserve(size_t size)
+    {solutions.reserve(size);}
 
   /*
   ** Solutions insertion
   */
   virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness);
+  void insertSolution(const SolutionAndFitness& solutionAndFitness)
+    {insertSolution(solutionAndFitness.first, solutionAndFitness.second);}
+
   virtual void insertSolutions(SolutionContainerPtr solutions);
 
   /*
