@@ -49,6 +49,7 @@ SET(LBCPP_ML_SAMPLER_SOURCES
   Sampler/DiagonalGaussianSampler.h
   Sampler/RandomSearchSampler.h
   Sampler/LogLinearActionCodeSearchSampler.h
+  Sampler/BinaryMixtureSampler.h
   Sampler/SamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )
@@ -81,6 +82,8 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/Expression.cpp
   Expression/ExpressionDomain.cpp
   Expression/PostfixExpression.cpp
+  Expression/FullExpressionSampler.h
+  Expression/GrowExpressionSampler.h
   Expression/ExpressionActionDomainsCache.h
   Expression/PrefixExpressionState.h
   Expression/PostfixExpressionState.h

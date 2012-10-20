@@ -97,6 +97,8 @@ public:
 
   void computeCrowdingDistances(std::vector<double>& res) const;
 
+  void duplicateSolutionsUntilReachingSize(size_t newSize);
+
   /*
   ** Fitness limits
   */

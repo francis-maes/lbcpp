@@ -18,146 +18,9 @@
 namespace lbcpp
 {
 
-/////////////// INITIALIZATION ////////////////////////
+/////////////// PERTURBATORS ////////////////////////
 
-class DepthControlledExpressionSampler : public ExpressionSampler
-{
-public:
-  DepthControlledExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5)
-    : minDepth(minDepth), maxDepth(maxDepth) {}
-  
-  virtual ExpressionPtr sampleTree(RandomGeneratorPtr random, size_t minDepth, size_t maxDepth) const = 0;
-
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-  {
-    ExpressionSampler::initialize(context, domain);
-    terminals = this->domain->getTerminals();
-  }
-  
-  virtual ObjectPtr sample(ExecutionContext& context) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    ExpressionPtr res = sampleTree(random, minDepth, random->sampleSize(minDepth, maxDepth + 1));
-    jassert(res->getDepth() >= minDepth && res->getDepth() <= maxDepth);
-    return res;
-  }
-
-protected:
-  friend class DepthControlledExpressionSamplerClass;
-
-  size_t minDepth;
-  size_t maxDepth;
-  std::vector<ExpressionPtr> terminals;
-};
-
-typedef ReferenceCountedObjectPtr<DepthControlledExpressionSampler> DepthControlledExpressionSamplerPtr;
-
-class FullExpressionSampler : public DepthControlledExpressionSampler
-{
-public:
-  FullExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5)
-    : DepthControlledExpressionSampler(minDepth, maxDepth) {}
-  
-  // returns a tree of depth maxDepth (argument minDepth is ignored)
-  virtual ExpressionPtr sampleTree(RandomGeneratorPtr random, size_t minDepth, size_t maxDepth) const
-  {
-    jassert(maxDepth > 0);
-    if (maxDepth == 1)
-      return terminals[random->sampleSize(terminals.size())];
-    else
-    {
-      FunctionPtr function = domain->getFunction(random->sampleSize(domain->getNumFunctions()));
-      std::vector<ExpressionPtr> expressions(function->getNumInputs());
-      for (size_t i = 0; i < expressions.size(); ++i)
-        expressions[i] = sampleTree(random, minDepth, maxDepth - 1);
-      return new FunctionExpression(function, expressions);
-    }
-  }
-};
-
-class GrowExpressionSampler : public DepthControlledExpressionSampler
-{
-public:
-  GrowExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5)
-    : DepthControlledExpressionSampler(minDepth, maxDepth) {}
-  
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-  {
-    DepthControlledExpressionSampler::initialize(context, domain);
-    functions = this->domain->getFunctions();
-    terminalsAndFunctions = this->domain->getTerminalsAndFunctions();
-  }
-
-  virtual ExpressionPtr sampleTree(RandomGeneratorPtr random, size_t minDepth, size_t maxDepth) const
-  {
-    jassert(minDepth >= 1 && maxDepth >= 1 && minDepth <= maxDepth);
-
-    ObjectPtr action;
-    if (minDepth > 1) // must be an internal node
-      action = functions[random->sampleSize(functions.size())];
-    else if (maxDepth == 1) // must be a leaf node
-      action = terminals[random->sampleSize(terminals.size())];
-    else // any kind of node
-      action = terminalsAndFunctions[random->sampleSize(terminalsAndFunctions.size())];
-
-    FunctionPtr function = action.dynamicCast<Function>();
-    if (function)
-    {
-      jassert(maxDepth > 1);
-      size_t newMinDepth = (minDepth > 1 ? minDepth - 1 : 1);
-      size_t newMaxDepth = (maxDepth - 1);
-      std::vector<ExpressionPtr> expressions(function->getNumInputs());
-      for (size_t i = 0; i < expressions.size(); ++i)
-      {
-        expressions[i] = sampleTree(random, newMinDepth, newMaxDepth);
-        jassert(expressions[i]);
-      }
-      ExpressionPtr res = new FunctionExpression(function, expressions);
-#ifdef JUCE_DEBUG
-      size_t depth = res->getDepth();
-      jassert(depth >= minDepth && depth <= maxDepth);
-#endif // JUCE_DEBUG
-      return res;
-    }
-    else
-    {
-      jassert(1 >= minDepth && 1 <= maxDepth);
-      return action.staticCast<Expression>();
-    }
-  }
-
-protected:
-  std::vector<FunctionPtr> functions;
-  std::vector<ObjectPtr> terminalsAndFunctions;
-};
-
-class BinaryMixtureSampler : public Sampler
-{
-public:
-  BinaryMixtureSampler(SamplerPtr sampler1, SamplerPtr sampler2, double probability)
-    : sampler1(sampler1), sampler2(sampler2), probability(probability) {}
-  BinaryMixtureSampler() : probability(0.5) {}
-
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-  {
-    sampler1->initialize(context, domain);
-    sampler2->initialize(context, domain);
-  }
-
-  virtual ObjectPtr sample(ExecutionContext& context) const
-    {return (context.getRandomGenerator()->sampleBool(probability) ? sampler2 : sampler1)->sample(context);}
-
-protected:
-  friend class BinaryMixtureSamplerClass;
-
-  SamplerPtr sampler1;
-  SamplerPtr sampler2;
-  double probability;
-};
-
-/////////////// MUTATION ////////////////////////
-
-class MutationSampler : public Object
+class Perturbator : public Object
 {
 public:
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain) = 0;
@@ -165,9 +28,26 @@ public:
   virtual ObjectPtr sample(ExecutionContext& context, const ObjectPtr& object) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<MutationSampler> MutationSamplerPtr;
+typedef ReferenceCountedObjectPtr<Perturbator> PerturbatorPtr;
 
-class ExpressionMutationSampler : public MutationSampler
+class BinaryPerturbator : public Perturbator
+{
+public:
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain) {}
+
+  virtual ObjectPtr sample(ExecutionContext& context, const ObjectPtr& object) const
+  {
+    PairPtr pair = object.staticCast<Pair>();
+    std::pair<ObjectPtr, ObjectPtr> res = samplePair(context, pair->getFirst().getObject(), pair->getSecond().getObject());
+    return new Pair(res.first, res.second);
+  }
+
+  virtual std::pair<ObjectPtr, ObjectPtr> samplePair(ExecutionContext& context, const ObjectPtr& object1, const ObjectPtr& object2) const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<BinaryPerturbator> BinaryPerturbatorPtr;
+
+class ExpressionPerturbator : public Perturbator
 {
 public:
   virtual ExpressionPtr sampleExpression(ExecutionContext& context, const ExpressionPtr& expression) const = 0;
@@ -195,10 +75,10 @@ protected:
   ExpressionDomainPtr domain;
 };
 
-typedef ReferenceCountedObjectPtr<ExpressionMutationSampler> ExpressionMutationSamplerPtr;
+typedef ReferenceCountedObjectPtr<ExpressionPerturbator> ExpressionPerturbatorPtr;
 
 // replaces a randomly chosen internal node by one of its child nodes (also randomly chosen)
-class ShrinkExpressionMutationSampler : public ExpressionMutationSampler
+class ShrinkExpressionPerturbator : public ExpressionPerturbator
 {
 public:
   virtual ExpressionPtr sampleExpression(ExecutionContext& context, const ExpressionPtr& expression) const
@@ -212,15 +92,15 @@ public:
 };
 
 // swaps a randomly chosen node symbol by another symbol of same arity
-class SwapExpressionMutationSampler : public ExpressionMutationSampler
+class SwapExpressionPerturbator : public ExpressionPerturbator
 {
 public:
-  SwapExpressionMutationSampler(double functionSelectionProbability = 0.0)
+  SwapExpressionPerturbator(double functionSelectionProbability = 0.0)
     : functionSelectionProbability(functionSelectionProbability) {}
   
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
   {
-    ExpressionMutationSampler::initialize(context, domain);
+    ExpressionPerturbator::initialize(context, domain);
     terminals = this->domain->getTerminals();
     size_t maxArity = this->domain->getMaxFunctionArity();
     functionsByArity.resize(maxArity + 1);
@@ -251,7 +131,7 @@ public:
   }
 
 protected:
-  friend class SwapExpressionMutationSamplerClass;
+  friend class SwapExpressionPerturbatorClass;
 
   double functionSelectionProbability;
 
@@ -264,15 +144,15 @@ protected:
 // using the original subtree at this position as one argument, and if necessary randomly
 // selecting terminal primitives to complete the arguments of the inserted node.
 
-class InsertExpressionMutationSampler : public ExpressionMutationSampler
+class InsertExpressionPerturbator : public ExpressionPerturbator
 {
 public:
-  InsertExpressionMutationSampler(size_t maxDepth = 17)
+  InsertExpressionPerturbator(size_t maxDepth = 17)
     : maxDepth(maxDepth) {}
 
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
   {
-    ExpressionMutationSampler::initialize(context, domain);
+    ExpressionPerturbator::initialize(context, domain);
     terminals = this->domain->getTerminals();
   }
   
@@ -292,7 +172,7 @@ public:
   }
 
 protected:
-  friend class InsertExpressionMutationSamplerClass;
+  friend class InsertExpressionPerturbatorClass;
 
   size_t maxDepth;
 
@@ -300,12 +180,12 @@ protected:
 };
 
 // replaces a randomly chosen node by a subtree generated by a given sampler
-class StandardExpressionMutationSampler : public ExpressionMutationSampler
+class StandardExpressionPerturbator : public ExpressionPerturbator
 {
 public:
-  StandardExpressionMutationSampler(DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth, size_t maxDepth)
+  StandardExpressionPerturbator(DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth, size_t maxDepth)
     : sampler(sampler), maxRegenerationDepth(maxRegenerationDepth), maxDepth(maxDepth) {}
-  StandardExpressionMutationSampler() : maxRegenerationDepth(0), maxDepth(0) {}
+  StandardExpressionPerturbator() : maxRegenerationDepth(0), maxDepth(0) {}
     
   virtual ExpressionPtr sampleExpression(ExecutionContext& context, const ExpressionPtr& expression) const
   {
@@ -323,30 +203,20 @@ public:
   }
 
 protected:
-  friend class StandardExpressionMutationSamplerClass;
+  friend class StandardExpressionPerturbatorClass;
 
   DepthControlledExpressionSamplerPtr sampler;
   size_t maxRegenerationDepth;
   size_t maxDepth;
 };
 
-/////////////// CROSS-OVER //////////////////////
-
-class CrossOverSampler : public Object
+class SubTreeBinaryPerturbator : public BinaryPerturbator
 {
 public:
-  virtual std::pair<ObjectPtr, ObjectPtr> sample(ExecutionContext& context, const ObjectPtr& object1, const ObjectPtr& object2) const = 0;
-};
-
-typedef ReferenceCountedObjectPtr<CrossOverSampler> CrossOverSamplerPtr;
-
-class SubTreeCrossOverSampler : public CrossOverSampler
-{
-public:
-  SubTreeCrossOverSampler(double functionSelectionProbability = 0.0, size_t maxDepth = 17)
+  SubTreeBinaryPerturbator(double functionSelectionProbability = 0.0, size_t maxDepth = 17)
     : functionSelectionProbability(functionSelectionProbability), maxDepth(maxDepth) {}
 
-  virtual std::pair<ObjectPtr, ObjectPtr> sample(ExecutionContext& context, const ObjectPtr& object1, const ObjectPtr& object2) const
+  virtual std::pair<ObjectPtr, ObjectPtr> samplePair(ExecutionContext& context, const ObjectPtr& object1, const ObjectPtr& object2) const
   {
     for (size_t attempt = 0; attempt < 2; ++attempt)
     {
@@ -363,7 +233,7 @@ public:
   }
 
 protected:
-  friend class SubTreeCrossOverSamplerClass;
+  friend class SubTreeBinaryPerturbatorClass;
 
   double functionSelectionProbability;
   size_t maxDepth;
@@ -386,7 +256,7 @@ protected:
   }
 };
 
-/////////////// OPERATORS //////////////////////
+/////////////// SOLUTIONS OPERATORS //////////////////////
 
 class SolutionsOperator : public Object
 {
@@ -479,16 +349,37 @@ protected:
   size_t tournamentSize;
 };
 
+class NBestsSolutionSelector : public SolutionsOperator
+{
+public:
+  NBestsSolutionSelector(SolutionComparatorPtr comparator, size_t numBests)
+    : comparator(comparator), numBests(numBests) {}
+  NBestsSolutionSelector() : numBests(0) {}
+  
+  virtual SolutionContainerPtr compute(ExecutionContext& context, const ProblemPtr& problem, const SolutionContainerPtr& solutions)
+  {
+    SolutionVectorPtr res = solutions.staticCast<SolutionVector>()->selectNBests(comparator, numBests);
+    res->duplicateSolutionsUntilReachingSize(solutions->getNumSolutions());
+    return res;
+  }
+
+protected:
+  friend class NBestsSolutionSelectorClass;
+
+  SolutionComparatorPtr comparator;
+  size_t numBests;
+};
+
 class MutationOperator : public SolutionsOperator
 {
 public:
-  MutationOperator(MutationSamplerPtr mutation, double mutationProbability)
-    : mutation(mutation), mutationProbability(mutationProbability) {}
-  MutationOperator() : mutationProbability(0.0) {}
+  MutationOperator(PerturbatorPtr perturbator, double probability)
+    : perturbator(perturbator), probability(probability) {}
+  MutationOperator() : probability(0.0) {}
 
   virtual SolutionContainerPtr compute(ExecutionContext& context, const ProblemPtr& problem, const SolutionContainerPtr& solutions)
   {
-    mutation->initialize(context, problem->getDomain());
+    perturbator->initialize(context, problem->getDomain());
 
     RandomGeneratorPtr random = context.getRandomGenerator();
     size_t n = solutions->getNumSolutions();
@@ -497,8 +388,8 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       SolutionAndFitness solutionAndFitness = solutions->getSolutionAndFitness(i);
-      if (random->sampleBool(mutationProbability))
-        res->insertSolution(mutation->sample(context, solutionAndFitness.first), FitnessPtr());
+      if (random->sampleBool(probability))
+        res->insertSolution(perturbator->sample(context, solutionAndFitness.first), FitnessPtr());
       else
         res->insertSolution(solutionAndFitness);
     }
@@ -508,16 +399,16 @@ public:
 protected:
   friend class MutationOperatorClass;
 
-  MutationSamplerPtr mutation;
-  double mutationProbability;
+  PerturbatorPtr perturbator;
+  double probability;
 };
 
 class CrossOverOperator : public SolutionsOperator
 {
 public:
-  CrossOverOperator(CrossOverSamplerPtr crossOver, double crossOverProbability)
-    : crossOver(crossOver), crossOverProbability(crossOverProbability) {}
-  CrossOverOperator() : crossOverProbability(0.0) {}
+  CrossOverOperator(BinaryPerturbatorPtr perturbator, double probability)
+    : perturbator(perturbator), probability(probability) {}
+  CrossOverOperator() : probability(0.0) {}
 
   virtual SolutionContainerPtr compute(ExecutionContext& context, const ProblemPtr& problem, const SolutionContainerPtr& solutions)
   {
@@ -525,9 +416,9 @@ public:
     RandomGeneratorPtr random = context.getRandomGenerator();
     size_t n = solutions->getNumSolutions();
     std::vector<size_t> selected;
-    selected.reserve((size_t)(crossOverProbability * 1.2 * n));
+    selected.reserve((size_t)(probability * 1.2 * n));
     for (size_t i = 0; i < n; ++i)
-      if (random->sampleBool(crossOverProbability))
+      if (random->sampleBool(probability))
         selected.push_back(i);
     random->shuffle(selected);
     if (selected.size() % 2 == 1)
@@ -546,7 +437,7 @@ public:
     {
       ObjectPtr object1 = res->getSolution(selected[i]); 
       ObjectPtr object2 = res->getSolution(selected[i+1]);
-      std::pair<ObjectPtr, ObjectPtr> newSolutions = crossOver->sample(context, object1, object2);
+      std::pair<ObjectPtr, ObjectPtr> newSolutions = perturbator->samplePair(context, object1, object2);
       res->setSolution(selected[i], newSolutions.first);
       res->setSolution(selected[i+1], newSolutions.second);
     }
@@ -556,29 +447,25 @@ public:
 protected:
   friend class CrossOverOperatorClass;
 
-  CrossOverSamplerPtr crossOver;
-  double crossOverProbability;
+  BinaryPerturbatorPtr perturbator;
+  double probability;
 };
 
 /////////////// TOP-LEVEL SOLVER ////////////////////////
 
-// samplers
-extern DepthControlledExpressionSamplerPtr fullExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5);
-extern DepthControlledExpressionSamplerPtr growExpressionSampler(size_t minDepth = 2, size_t maxDepth = 5);
-extern SamplerPtr binaryMixtureSampler(SamplerPtr sampler1, SamplerPtr sampler2, double probability = 0.5);
-
 // mutations
-extern MutationSamplerPtr shrinkExpressionMutationSampler();
-extern MutationSamplerPtr swapExpressionMutationSampler(double functionSelectionProbability);
-extern MutationSamplerPtr insertExpressionMutationSampler(size_t maxDepth = 17);
-extern MutationSamplerPtr standardExpressionMutationSampler(DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth = 5, size_t maxDepth = 17);
+extern PerturbatorPtr shrinkExpressionPerturbator();
+extern PerturbatorPtr swapExpressionPerturbator(double functionSelectionProbability);
+extern PerturbatorPtr insertExpressionPerturbator(size_t maxDepth = 17);
+extern PerturbatorPtr standardExpressionPerturbator(DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth = 5, size_t maxDepth = 17);
 // cross-over
-extern CrossOverSamplerPtr subTreeCrossOverSampler(double functionSelectionProbability, size_t maxDepth = 17);
+extern BinaryPerturbatorPtr subTreeBinaryPerturbator(double functionSelectionProbability, size_t maxDepth = 17);
 
 // operators
 extern SolutionSelectorPtr tournamentSolutionSelector(SolutionComparatorPtr comparator, size_t tournamentSize);
-extern SolutionsOperatorPtr mutationOperator(MutationSamplerPtr mutation, double mutationProbability);
-extern SolutionsOperatorPtr crossOverOperator(CrossOverSamplerPtr crossOver, double crossOverProbability);
+extern SolutionsOperatorPtr nBestsSolutionSelector(SolutionComparatorPtr comparator, size_t numBests);
+extern SolutionsOperatorPtr mutationOperator(PerturbatorPtr perturbator, double probability);
+extern SolutionsOperatorPtr crossOverOperator(BinaryPerturbatorPtr perturbator, double probability);
 
 extern SolutionsOperatorPtr compositeSolutionsOperator(const std::vector<SolutionsOperatorPtr>& operators);
 extern SolutionsOperatorPtr compositeSolutionsOperator(SolutionsOperatorPtr operator1, SolutionsOperatorPtr operator2, SolutionsOperatorPtr operator3 = SolutionsOperatorPtr(), SolutionsOperatorPtr operator4 = SolutionsOperatorPtr(), SolutionsOperatorPtr operator5 = SolutionsOperatorPtr());
@@ -599,18 +486,20 @@ public:
   {
     SamplerPtr initialSampler = binaryMixtureSampler(fullExpressionSampler(2, 5), growExpressionSampler(2, 5), 0.5);
     std::vector<SolutionsOperatorPtr> operators;
-    operators.push_back(tournamentSolutionSelector(objectiveComparator(0), tournamentSize));
+    operators.push_back(nBestsSolutionSelector(objectiveComparator(0), populationSize / 4));
+
+    //operators.push_back(tournamentSolutionSelector(objectiveComparator(0), tournamentSize));
     
     if (crossOverProbability > 0.0)
-      operators.push_back(crossOverOperator(subTreeCrossOverSampler(0.9), crossOverProbability));
+      operators.push_back(crossOverOperator(subTreeBinaryPerturbator(0.9), crossOverProbability));
     if (standardProbability > 0.0)
-      operators.push_back(mutationOperator(standardExpressionMutationSampler(growExpressionSampler()), insertProbability));
+      operators.push_back(mutationOperator(standardExpressionPerturbator(growExpressionSampler()), insertProbability));
     if (shrinkProbability > 0.0)
-      operators.push_back(mutationOperator(shrinkExpressionMutationSampler(), shrinkProbability));
+      operators.push_back(mutationOperator(shrinkExpressionPerturbator(), shrinkProbability));
     if (swapProbability > 0.0)
-      operators.push_back(mutationOperator(swapExpressionMutationSampler(0.9), swapProbability));
+      operators.push_back(mutationOperator(swapExpressionPerturbator(0.9), swapProbability));
     if (insertProbability > 0.0)
-      operators.push_back(mutationOperator(insertExpressionMutationSampler(), insertProbability));
+      operators.push_back(mutationOperator(insertExpressionPerturbator(), insertProbability));
 
     return new TreeBasedGeneticProgrammingSolver(initialSampler, compositeSolutionsOperator(operators), populationSize, maxGenerations);
   }

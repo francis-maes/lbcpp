@@ -42,9 +42,22 @@
 
   <!-- Universe -->
   <class name="ExpressionUniverse" base="Object"/>
-
   <class name="ExpressionDomain" base="Domain"/>
 
+  <!-- Expression Samplers -->
+  <class name="ExpressionSampler" base="Sampler" abstract="yes"/>
+  <class name="DepthControlledExpressionSampler" base="ExpressionSampler" abstract="yes">
+    <variable type="PositiveInteger" name="minDepth"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <class name="FullExpressionSampler" base="DepthControlledExpressionSampler">
+    <constructor arguments="size_t minDepth, size_t maxDepth"/>
+  </class>
+  
+  <class name="GrowExpressionSampler" base="DepthControlledExpressionSampler">
+    <constructor arguments="size_t minDepth, size_t maxDepth"/>
+  </class>
 
   <!-- Expression RPN -->
   <class name="PostfixExpressionSequence" base="Object">

@@ -225,7 +225,7 @@ typedef ReferenceCountedObjectPtr<MCGPEvaluationDecoratorProblem> MCGPEvaluation
 class MCGPSandBox : public WorkUnit
 {
 public:
-  MCGPSandBox() : numEvaluations(1000), numRuns(100), maxExpressionSize(10) {}
+  MCGPSandBox() : numEvaluations(1000), numRuns(100), maxExpressionSize(10), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -237,7 +237,7 @@ public:
     SolverPtr treeGP;
     
     if (problem->getClassName() == T("BooleanParityProblem"))
-      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0.0, 0.0, 0.0);
+      treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
     else if (problem->getClassName() == T("BooleanMultiplexerProblem"))
       treeGP = TreeBasedGeneticProgrammingSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
     else if (problem->getClassName() == T("SantaFeTrailProblem"))
@@ -311,6 +311,7 @@ protected:
   size_t numRuns;
   size_t maxExpressionSize;
   File outputDirectory;
+  bool verbose;
 
   struct SolverInfo
   {
@@ -377,13 +378,17 @@ protected:
     for (size_t i = 0; i < numRuns; ++i)
     {
       SolverInfo& info = runInfos[i];
-      runSolverOnce(context, solver, info, usePostfixNotation);
+      if (verbose)
+        context.enterScope("Run " + String((int)i));
+      double res = runSolverOnce(context, solver, info, usePostfixNotation);
       writeToOutput(evalsOutput, info.fitnessPerEvaluationCount);
       writeToOutput(timesOutput, info.fitnessPerCpuTime);
       if (info.fitnessPerEvaluationCount.size() < shortest1)
         shortest1 = info.fitnessPerEvaluationCount.size();
       if (info.fitnessPerCpuTime.size() < shortest2)
         shortest2 = info.fitnessPerCpuTime.size();
+      if (verbose)
+        context.leaveScope(res);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
 
@@ -416,16 +421,17 @@ protected:
     }
   }
 
-  void runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation)
+  double runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation)
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
     ProblemPtr problem = this->problem;
     if (!solver.isInstanceOf<TreeBasedGeneticProgrammingSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
     MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
-    solver->optimize(context, decoratedProblem, ObjectPtr(), Solver::verbosityQuiet);
+    SolutionContainerPtr solutions = solver->optimize(context, decoratedProblem, ObjectPtr(), verbose ? Solver::verbosityDetailed : Solver::verbosityQuiet);
     info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
     info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();
+    return solutions->getFitness(0)->getValue(0);
   }
 
   void mergeResults(std::vector<double>& res, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
