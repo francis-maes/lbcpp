@@ -413,7 +413,6 @@ public:
       iteration->addTarget(drTarget);
       iteration->addTarget(stalTarget);
 
-      //iteration->setEvaluator(new ProteinEvaluator());
       stack->addPredictor(iteration);
     }
 

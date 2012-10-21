@@ -206,13 +206,6 @@
     <variable type="String" name="outputPrefix" shortName="o"/>
     <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
   </class>
-  <class name="GenerateLargeProteinExperimentsWorkUnit" base="WorkUnit">
-    <variable type="PositiveInteger" name="numParameters" shortName="p"/>
-    <variable type="PositiveInteger" name="numExperiments" shortName="n"/>
-  </class>
-  <class name="PlotDisulfideBondResultsWorkUnit" base="WorkUnit">
-    <variable type="File" name="directory"/>
-  </class>
   <class name="CountNumDisulfideBridgePerProtein" base="WorkUnit">
     <variable type="File" name="directory"/>
   </class>
@@ -363,7 +356,25 @@
 
 
 
+  <!-- BEGIN Comparative Study -->
+  <class name="GenerateLargeProteinExperimentsWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="numParameters" shortName="p"/>
+    <variable type="PositiveInteger" name="numExperiments" shortName="n"/>
+  </class>
 
+  <class name="PlotDisulfideBondResultsWorkUnit" base="WorkUnit">
+    <variable type="File" name="directory"/>
+  </class>
+
+  <class name="ProteinLearnerForComparativeStudy" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in" description="Directory of input proteins (without train/test split)"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup" description="Directory of supervision proteins (without train/test split)"/>
+    <variable type="File" name="parametersFile" shortName="p" description="File of a LargeProteinPredictorParameters"/>
+    <variable type="String" name="learningMachineName" shortName="ml" description="kNN, ExtraTrees or SVM:<C>:<Gamma>"/>
+    <variable type="PositiveInteger" name="numFolds" shortName="n" description="Number of folds"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t" description="ss3, ss8, sa20, dr, stal, cbp, cbs, dsb"/>
+  </class>
+  <!-- END Comparative Study -->
 
 
 

@@ -129,8 +129,9 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/PerceptronWorkUnit.h
   WorkUnit/ProteinStatisticsWorkUnit.h
   WorkUnit/CB513AndRS126Box.h
-  WorkUnit/ESANN11.h
   WorkUnit/StudentTestsBox.h
+  WorkUnit/ComparativeStudy.h
+  WorkUnit/ESANN11.h
   WorkUnit/PlosComputationalBiologyJournal.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
