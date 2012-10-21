@@ -101,7 +101,7 @@ public:
     else if (target == dsbTarget || target == odsbTarget)
       res = disulfideBondPredictor(target);
     else if (target == cbpTarget)
-      res = labelPropertyPredictor(target);
+      res = binaryClassifier(target);
     else if (target == fdsbTarget)
       res = mapNMatrixFunction(binaryClassifier(target));
     else
