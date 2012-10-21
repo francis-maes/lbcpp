@@ -714,6 +714,76 @@ public:
   }
 };
 
+class CopyCysteinBondingPropertyWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ProteinPtr cbpProtein = Protein::createFromXml(context, cbpProteinFile);
+    ProteinPtr targetProtein = Protein::createFromXml(context, targetProteinFile);
+
+    if (!cbpProtein || !targetProtein)
+      return false;
+
+    if (cbpProtein->toString() != targetProtein->toString())
+    {
+      jassertfalse;
+      return false;
+    }
+
+    targetProtein->setCysteinBondingProperty(cbpProtein->getCysteinBondingProperty(context).getDouble());
+    targetProtein->saveToFile(context, targetProteinFile);
+    return true;
+  }
+
+protected:
+  friend class CopyCysteinBondingPropertyWorkUnitClass;
+
+  File cbpProteinFile;
+  File targetProteinFile;
+};
+
+class ManuallyAddDisulfidePatternWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ProteinPtr protein = Protein::createFromXml(context, proteinFile);
+    if (!protein)
+      return false;
+
+    String ps = protein->getPrimaryStructure()->toString();
+    std::cout << ps << std::endl;
+    const std::vector<size_t>& cysIndices = protein->getCysteinIndices();
+    std::cout << "Num. Cysteins: " << cysIndices.size() << std::endl;
+    for (size_t i = 0; i < cysIndices.size(); ++i)
+    {
+      std::cout << "[" << i << "] Position: " << cysIndices[i] << " : ";
+      String localPs = ps.substring(cysIndices[i] - 5, cysIndices[i] + 6);
+      for (size_t j = 0; j < (size_t)localPs.length(); ++j)
+        std::cout << AminoAcid::toThreeLettersCode((AminoAcidType)AminoAcid::fromOneLetterCode(localPs[j]).getInteger()) << " ";
+      std::cout << std::endl;
+    }
+
+    SymmetricMatrixPtr dsb = Protein::createEmptyContactMap(cysIndices.size());
+
+// INSERT BOND HERE
+    dsb->setElement(0, 3, 1.f);
+    dsb->setElement(1, 2, 1.f);
+    dsb->setElement(7, 8, 1.f);
+
+    protein->setDisulfideBonds(dsb);
+    protein->saveToFile(context, proteinFile);
+
+    return true;
+  }
+
+protected:
+  friend class ManuallyAddDisulfidePatternWorkUnitClass;
+
+  File proteinFile;
+};
+
 };
 
 #endif // !_PROTEINS_BRICO_BOX_
