@@ -127,6 +127,15 @@
     <variable type="Function" name="decorated"/>
   </class>
 
+  <class name="CopyCysteinBondingPropertyWorkUnit" base="WorkUnit">
+    <variable type="File" name="cbpProteinFile"/>
+    <variable type="File" name="targetProteinFile"/>
+  </class>
+
+  <class name="ManuallyAddDisulfidePatternWorkUnit" base="WorkUnit">
+    <variable type="File" name="proteinFile"/>
+  </class>
+
   <!-- BEGIN CysteinBox -->
   <class name="StreamBasedOptimizationProblem" base="OptimizationProblem">
     <variable type="Stream" name="stream"/>
