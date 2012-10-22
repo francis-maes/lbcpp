@@ -13,10 +13,6 @@
     <variable type="SearchNode" name="node"/>
   </class>
   
-  <class name="RepeatSolver" base="Solver">
-    <variable type="Solver" name="solver"/>
-  </class>
-  
   <class name="ExpressionToSearchProblem" base="DecoratorProblem"/>
 
   <!-- Expression Problems -->
@@ -137,6 +133,11 @@
     <variable type="Sampler" name="initialSampler"/>
     <variable type="Sampler" name="subsequentSampler"/>
   </class>
+
+  <class name="TestSolver" base="PopulationBasedSolver">
+    <variable type="Sampler" name="initialSampler"/>
+  </class>
+
 
   <!-- Minimalistic incremental -->
   <class name="MinimalisticIncrementalEvolver" base="IterativeSolver">

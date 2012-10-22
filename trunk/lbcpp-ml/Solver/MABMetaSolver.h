@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: MABMetaOptimizer.h             | Multi-armed bandit based        |
-| Author  : Francis Maes                   | Meta optimizer                  |
+| Filename: MABMetaSolver.h                | Multi-armed bandit based        |
+| Author  : Francis Maes                   | Meta solver                     |
 | Started : 16/09/2012 16:14               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_OPTIMIZER_MAB_META_H_
-# define LBCPP_ML_OPTIMIZER_MAB_META_H_
+#ifndef LBCPP_ML_SOLVER_MAB_META_H_
+# define LBCPP_ML_SOLVER_MAB_META_H_
 
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp/Optimizer/BanditPool.h>
@@ -15,12 +15,12 @@
 namespace lbcpp
 {
 
-class MABMetaOptimizer : public IterativeSolver
+class MABMetaSolver : public IterativeSolver
 {
 public:
-  MABMetaOptimizer(IterativeSolverPtr baseOptimizer, size_t numInstances, double explorationCoefficient, size_t numIterations = 0)
+  MABMetaSolver(IterativeSolverPtr baseOptimizer, size_t numInstances, double explorationCoefficient, size_t numIterations = 0)
     : IterativeSolver(numIterations), baseOptimizer(baseOptimizer), numInstances(numInstances), explorationCoefficient(explorationCoefficient) {}
-  MABMetaOptimizer() {}
+  MABMetaSolver() {}
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
@@ -70,7 +70,7 @@ public:
   }
 
 protected:
-  friend class MABMetaOptimizerClass;
+  friend class MABMetaSolverClass;
 
   IterativeSolverPtr baseOptimizer;
   size_t numInstances;
@@ -104,4 +104,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OPTIMIZER_MAB_META_H_
+#endif // !LBCPP_ML_SOLVER_MAB_META_H_

@@ -1,5 +1,4 @@
-* Depiler experiences taille 50
-* Re-implementer TreeBasedGPSolver
-* Beam-NRPA
-* NRPA with negative samples to maximize diversity
+Variants of NRPA:
+  * Beam-NRPA
+  * NRPA with negative samples to maximize diversity
 

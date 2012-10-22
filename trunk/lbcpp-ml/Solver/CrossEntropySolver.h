@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: CrossEntropyOptimizer.h        | Cross-Entropy Optimizer         |
+| Filename: CrossEntropySolver.h           | Cross-Entropy Solver            |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/09/2012 10:59               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_OPTIMIZER_CROSS_ENTROPY_H_
-# define LBCPP_ML_OPTIMIZER_CROSS_ENTROPY_H_
+#ifndef LBCPP_ML_SOLVER_CROSS_ENTROPY_H_
+# define LBCPP_ML_SOLVER_CROSS_ENTROPY_H_
 
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
@@ -17,12 +17,12 @@
 namespace lbcpp
 {
 
-class CrossEntropyOptimizer : public PopulationBasedSolver
+class CrossEntropySolver : public PopulationBasedSolver
 {
 public:
-  CrossEntropyOptimizer(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr())
+  CrossEntropySolver(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr())
     : PopulationBasedSolver(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
-  CrossEntropyOptimizer() : elitist(false) {}
+  CrossEntropySolver() : elitist(false) {}
   
   virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
   {
@@ -59,7 +59,7 @@ public:
   }
 
  protected:
-  friend class CrossEntropyOptimizerClass;
+  friend class CrossEntropySolverClass;
 
   SamplerPtr sampler;
   size_t numTrainingSamples;
@@ -83,4 +83,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OPTIMIZER_CROSS_ENTROPY_H_
+#endif // !LBCPP_ML_SOLVER_CROSS_ENTROPY_H_

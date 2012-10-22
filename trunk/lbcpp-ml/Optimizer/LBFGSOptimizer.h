@@ -10,6 +10,7 @@
 # define LBCPP_ML_OPTIMIZER_LBFGS_H_
 
 # include <lbcpp-ml/Solver.h>
+# include <lbcpp-ml/SolutionContainer.h>
 
 extern int lbfgs(
     int* num_variables,   // in

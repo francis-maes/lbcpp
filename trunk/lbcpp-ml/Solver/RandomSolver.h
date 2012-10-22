@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RandomOptimizer.h              | Random Optimizer                |
+| Filename: RandomSolver.h                 | Random Solver                   |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/09/2012 15:50               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_OPTIMIZER_RANDOM_H_
-# define LBCPP_ML_OPTIMIZER_RANDOM_H_
+#ifndef LBCPP_ML_SOLVER_RANDOM_H_
+# define LBCPP_ML_SOLVER_RANDOM_H_
 
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
@@ -15,12 +15,12 @@
 namespace lbcpp
 {
 
-class RandomOptimizer : public IterativeSolver
+class RandomSolver : public IterativeSolver
 {
 public:
-  RandomOptimizer(SamplerPtr sampler, size_t numIterations = 0)
+  RandomSolver(SamplerPtr sampler, size_t numIterations = 0)
     : IterativeSolver(numIterations), sampler(sampler) {}
-  RandomOptimizer() {}
+  RandomSolver() {}
 
   virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
   {
@@ -41,11 +41,11 @@ public:
   }
 
 protected:
-  friend class RandomOptimizerClass;
+  friend class RandomSolverClass;
 
   SamplerPtr sampler;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OPTIMIZER_RANDOM_H_
+#endif // !LBCPP_ML_SOLVER_RANDOM_H_

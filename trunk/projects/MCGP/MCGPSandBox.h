@@ -71,28 +71,6 @@ protected:
 
 ///////////////////
 
-class RepeatSolver : public IterativeSolver
-{
-public:
-  RepeatSolver(SolverPtr solver, size_t numIterations = 0)
-    : IterativeSolver(numIterations), solver(solver) {}
-  RepeatSolver() {}
-  
-  virtual bool iteration(ExecutionContext& context, size_t iter)
-  {
-    SolutionContainerPtr solutions = solver->optimize(context, problem, ObjectPtr(), verbosity > verbosityQuiet ? (Verbosity)(verbosity - 1) : verbosityQuiet);
-    this->solutions->insertSolutions(solutions);
-    return true;
-  }
-
-protected:
-  friend class RepeatSolverClass;
-
-  SolverPtr solver;
-};
-
-//////////////////
-
 class ExpressionToSearchProblem : public DecoratorProblem
 {
 public:
@@ -305,7 +283,7 @@ public:
     //SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
     //context.resultCallback("postfixSampler", sampler);
 
-    SolverPtr treeGP1, treeGP2;
+    SolverPtr treeGP1, treeGP2, treeGP3;
     
     if (problem->getClassName() == T("BooleanParityProblem"))
     {
@@ -330,9 +308,13 @@ public:
     else
       jassertfalse;
 
-    SamplerPtr randomSampler = randomSearchSampler();
-    solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
+    solvers.push_back(std::make_pair(TestSolver::createDefault(400000, numEvaluations / 400000), "examplescreator"));
+    
 
+    SamplerPtr randomSampler = randomSearchSampler();
+    //solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
+
+#if 0
     std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
     codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
     //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
@@ -346,15 +328,16 @@ public:
     {
       SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, learningRate);
       String postfix = "-" + codeGenerators[i].second + "-" + String(learningRate);
-      //solvers.push_back(std::make_pair(nrpaSolver(1, learnableSampler), "nrpa1" + postfix));
-      //solvers.push_back(std::make_pair(nrpaSolver(2, learnableSampler), "nrpa2" + postfix));
-      //solvers.push_back(std::make_pair(nrpaSolver(3, learnableSampler), "nrpa3" + postfix));
+      //solvers.push_back(std::make_pair(createNrpaSolver(1, learnableSampler), "nrpa1" + postfix));
+      //solvers.push_back(std::make_pair(createNrpaSolver(2, learnableSampler), "nrpa2" + postfix));
+      //solvers.push_back(std::make_pair(createNrpaSolver(3, learnableSampler), "nrpa3" + postfix));
       SolverPtr solver = new MinimalisticIncrementalEvolver(learnableSampler, 7);
       solvers.push_back(std::make_pair(solver, "mini" + postfix));
     }
-
+#endif // 0
+      /*
     solvers.push_back(std::make_pair(treeGP1, "treegp1"));
-    //solvers.push_back(std::make_pair(treeGP2, "treegp2"));
+    solvers.push_back(std::make_pair(treeGP2, "treegp2"));
     
 
    
@@ -362,7 +345,8 @@ public:
     solvers.push_back(std::make_pair(nmcSolver(2, randomSampler), "nmc2"));
     solvers.push_back(std::make_pair(nmcSolver(3, randomSampler), "nmc3"));
     
-    
+    */
+
     //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
     //solvers.push_back(std::make_pair(ceSolver(100, 30, true, 0.1), "ce(100, 30, true, 0.1"));
 
@@ -421,7 +405,7 @@ protected:
     SolverPtr res = rolloutSearchAlgorithm(sampler);
     for (size_t i = 0; i < level; ++i)
       res = stepSearchAlgorithm(lookAheadSearchAlgorithm(res));
-    return new RepeatSolver(res);
+    return repeatSolver(res);
   }
 
   SolverPtr stepLaSolver(size_t numSteps, size_t numLookAheads, SamplerPtr sampler) const
@@ -431,14 +415,14 @@ protected:
       res = lookAheadSearchAlgorithm(res);
     for (size_t i = 0; i < numSteps; ++i)
       res = stepSearchAlgorithm(res);
-    return new RepeatSolver(res);
+    return repeatSolver(res);
   }
 
-  SolverPtr nrpaSolver(size_t level, SamplerPtr sampler) const
-    {return new RepeatSolver(nrpaOptimizer(sampler, level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
+  SolverPtr createNrpaSolver(size_t level, SamplerPtr sampler) const
+    {return repeatSolver(nrpaSolver(sampler, level, (size_t)pow((double)numEvaluations, 1.0 / level)));}
 
   SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, SamplerPtr sampler) const
-    {return crossEntropyOptimizer(sampler, populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
+    {return crossEntropySolver(sampler, populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
 
   SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation)
   {
@@ -512,7 +496,7 @@ protected:
   {
     problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
     ProblemPtr problem = this->problem;
-    if (!solver.isInstanceOf<TreeGPOperationsSolver>() && !solver.isInstanceOf<TreeGPSamplersSolver>())
+    if (!solver.isInstanceOf<TreeGPOperationsSolver>() && !solver.isInstanceOf<TreeGPSamplersSolver>() && !solver.isInstanceOf<TestSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
     MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
     SolutionContainerPtr solutions = solver->optimize(context, decoratedProblem, ObjectPtr(), verbose ? Solver::verbosityDetailed : Solver::verbosityQuiet);

@@ -237,16 +237,16 @@ public:
     if (!problem->isLoaded())
       return false;
 
-    runOptimizer(context, problem, randomOptimizer(new ColoSampler(), numEvaluations));
-    runOptimizer(context, problem, crossEntropyOptimizer(new ColoSampler(), 100, 30, numEvaluations / 100, false));
-    runOptimizer(context, problem, crossEntropyOptimizer(new ColoSampler(), 100, 30, numEvaluations / 100, true));
-    runOptimizer(context, problem, crossEntropyOptimizer(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
-    runOptimizer(context, problem, crossEntropyOptimizer(new ColoSampler2(), 100, 30, numEvaluations / 100, true));
+    runOptimizer(context, problem, randomSolver(new ColoSampler(), numEvaluations));
+    runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, false));
+    runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, true));
+    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
+    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, true));
     
-    /*runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler(), 2, 20, 10, 5, false));
-    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler(), 2, 20, 10, 5, true));
-    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler2(), 2, 20, 10, 5, false));
-    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler2(), 2, 20, 10, 5, true));*/
+    /*runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler(), 2, 20, 10, 5, false));
+    runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler(), 2, 20, 10, 5, true));
+    runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler2(), 2, 20, 10, 5, false));
+    runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler2(), 2, 20, 10, 5, true));*/
     return true;
   }
 
