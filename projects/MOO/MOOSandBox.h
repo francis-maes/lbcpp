@@ -56,13 +56,13 @@ protected:
       context.enterScope(String((int)numTrainingSamples));
       context.resultCallback("numTrainingSamples", numTrainingSamples);
       context.resultCallback("CE", evaluateSingleObjectiveOptimizer(context, problems,
-        new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, numTrainingSamples)));
+        new CrossEntropySolver(new DiagonalGaussianSampler(), 100, numTrainingSamples)));
       context.resultCallback("level1", evaluateSingleObjectiveOptimizer(context, problems, 
-        new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 1, 100, numTrainingSamples)));
+        new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 1, 100, numTrainingSamples)));
       context.resultCallback("level2", evaluateSingleObjectiveOptimizer(context, problems, 
-        new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 2, 100, numTrainingSamples)));
+        new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 2, 100, numTrainingSamples)));
       context.resultCallback("level3", evaluateSingleObjectiveOptimizer(context, problems, 
-        new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 3, 100, numTrainingSamples)));
+        new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 3, 100, numTrainingSamples)));
       context.leaveScope();
     }
 #endif // 0
@@ -72,29 +72,29 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      solveWithSingleObjectiveOptimizer(context, problem, randomOptimizer(uniformContinuousSampler(), numEvaluations));
-      solveWithSingleObjectiveOptimizer(context, problem, crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformContinuousSampler(), numEvaluations));
+      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
 
       /*
       double explorationCoefficient = 5.0;
-      IterativeSolverPtr baseOptimizer = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, 0, true);
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 20, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 50, explorationCoefficient, numEvaluations / 100));*/
+      IterativeSolverPtr baseOptimizer = crossEntropySolver(diagonalGaussianSampler(), 100, 50, 0, true);
+      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 20, explorationCoefficient, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 50, explorationCoefficient, numEvaluations / 100));*/
 /*
 
       for (double r = -5.5; r <= -0.5; r += 1.0)
-        solveWithSingleObjectiveOptimizer(context, problem, new NRPAOptimizer(new DiagonalGaussianSampler(pow(10, r)), 1, numEvaluations));
+        solveWithSingleObjectiveOptimizer(context, problem, new NRPASolver(new DiagonalGaussianSampler(pow(10, r)), 1, numEvaluations));
 
       for (double r = -5.5; r <= -0.5; r += 1.0)
-        solveWithSingleObjectiveOptimizer(context, problem, new NRPAOptimizer(new DiagonalGaussianSampler(pow(10, r)), 2, (size_t)(sqrt((double)numEvaluations))));
+        solveWithSingleObjectiveOptimizer(context, problem, new NRPASolver(new DiagonalGaussianSampler(pow(10, r)), 2, (size_t)(sqrt((double)numEvaluations))));
 
       double r = 0.2;
       for (size_t l = 1; l <= 5; ++l)
-        solveWithSingleObjectiveOptimizer(context, problem, new NRPAOptimizer(new DiagonalGaussianSampler(r), l, 10));
+        solveWithSingleObjectiveOptimizer(context, problem, new NRPASolver(new DiagonalGaussianSampler(r), l, 10));
 */
       context.leaveScope(); 
     }
@@ -167,27 +167,27 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      solveWithMultiObjectiveOptimizer(context, problem, randomOptimizer(uniformContinuousSampler(), numEvaluations));
+      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformContinuousSampler(), numEvaluations));
       solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
       //solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100, numEvaluations / 100));
 
-      //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
-      solveWithMultiObjectiveOptimizer(context, problem, crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
+      solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
       /*
       double explorationCoefficient = 5.0;
-      IterativeSolverPtr baseOptimizer = crossEntropyOptimizer(diagonalGaussianSampler(), 100, 50, 0, true);
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 20, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaOptimizer(baseOptimizer, 50, explorationCoefficient, numEvaluations / 100));*/
+      IterativeSolverPtr baseOptimizer = crossEntropySolver(diagonalGaussianSampler(), 100, 50, 0, true);
+      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 20, explorationCoefficient, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 50, explorationCoefficient, numEvaluations / 100));*/
 
       
-      /*solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, false));
-      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, true));
+      /*solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, false));
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, true));
 
-      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 1, 50, 25, 2, false));
-      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 1, 50, 25, 2, true));*/
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 1, 50, 25, 2, false));
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 1, 50, 25, 2, true));*/
       
       context.leaveScope();
     }

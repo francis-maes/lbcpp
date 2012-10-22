@@ -2,43 +2,12 @@
 
 <library name="Optimizer" directory="Optimizer">
 
-  <class name="Solver" abstract="yes"/>
-  <class name="IterativeSolver" base="Solver" abstract="yes">
-    <variable type="PositiveInteger" name="numIterations"/>
+  <!-- Gradient-based optimizers -->
+  <class name="LBFGSOptimizer" base="IterativeSolver">
+    <constructor/>
   </class>
 
-  <!-- Optimizers -->
-  <class name="RandomOptimizer" base="IterativeSolver">
-    <constructor arguments="SamplerPtr sample, size_t numIterations"/>
-    <variable type="Sampler" name="sampler"/>
-  </class>
-
-  <class name="NRPAOptimizer" base="Solver">
-    <constructor arguments="SamplerPtr sampler, size_t level, size_t numIterationsPerLevel"/>
-    <variable type="Sampler" name="sampler"/>
-    <variable type="PositiveInteger" name="level"/>
-    <variable type="PositiveInteger" name="numIterationsPerLevel"/>
-  </class>
-
-  <!-- Population Based Optimizers -->
-  <class name="PopulationBasedSolver" base="IterativeSolver" abstract="yes">
-    <variable type="PositiveInteger" name="populationSize"/>
-  </class>
-
-  <class name="CrossEntropyOptimizer" base="PopulationBasedSolver">
-    <constructor arguments="SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations, bool elitist, SolutionComparatorPtr comparator"/>
-    <variable type="Sampler" name="sampler"/>
-    <variable type="PositiveInteger" name="numTrainingSamples"/>
-    <variable type="Boolean" name="elitist"/>
-    <variable type="SolutionComparator" name="comparator"/>
-  </class>
-
-  <!--
-  <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
-    <variable type="PositiveInteger" name="level"/>
-  </class>
-  -->
-
+  <!-- Multi objective -->
   <class name="NSGA2MOOptimizer" base="PopulationBasedSolver">
     <constructor arguments="size_t populationSize, size_t numGenerations, double mutationDistributionIndex, double crossOverDistributionIndex, double crossOverProbability"/>
     <variable type="Double" name="mutationDistributionIndex"/>
@@ -50,16 +19,4 @@
     <variable type="PositiveInteger" name="numOffsprings"/>
   </class>
 
-  <!-- Meta Optimizers -->
-  <class name="MABMetaOptimizer" base="IterativeSolver">
-    <variable type="IterativeSolver" name="baseOptimizer"/>
-    <variable type="PositiveInteger" name="numInstances"/>
-    <variable type="Double" name="explorationCoefficient"/>
-  </class>
-  
-  <!-- Gradient-based optimizers -->
-  <class name="LBFGSOptimizer" base="IterativeSolver">
-    <constructor/>
-  </class>
-  
 </library>

@@ -51,7 +51,7 @@ protected:
   FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
 };
 
-extern SolverPtr nrpaOptimizer(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel);
+extern SolverPtr nrpaSolver(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel);
 
 class IterativeSolver : public Solver
 {
@@ -69,7 +69,8 @@ protected:
   size_t numIterations;
 };
 
-extern IterativeSolverPtr randomOptimizer(SamplerPtr sampler, size_t numIterations = 0);
+extern IterativeSolverPtr randomSolver(SamplerPtr sampler, size_t numIterations = 0);
+extern IterativeSolverPtr repeatSolver(SolverPtr solver, size_t numIterations = 0);
 extern IterativeSolverPtr lbfgsOptimizer();
 
 class PopulationBasedSolver : public IterativeSolver
@@ -88,7 +89,7 @@ protected:
   void learnSampler(ExecutionContext& context, SolutionVectorPtr solutions, SamplerPtr sampler);
 };
 
-extern PopulationBasedSolverPtr crossEntropyOptimizer(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr());
+extern PopulationBasedSolverPtr crossEntropySolver(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr());
 extern PopulationBasedSolverPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
 
 }; /* namespace lbcpp */

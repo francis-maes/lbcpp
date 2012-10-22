@@ -28,16 +28,16 @@ public:
     
     SearchActionCodeGeneratorPtr codeGenerator; // FIXME
 
-    testOptimizer(context, randomOptimizer(logLinearActionCodeSearchSampler(codeGenerator), numEvaluations), problem);
+    testOptimizer(context, randomSolver(logLinearActionCodeSearchSampler(codeGenerator), numEvaluations), problem);
     for (int r = -8; r <= 0; ++r)
     {
       double regularizer = pow(10.0, (double)r);
-      testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(codeGenerator, regularizer), 100, 30, numEvaluations / 100, false), problem);
-      testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(codeGenerator, regularizer), 100, 30, numEvaluations / 100, true), problem);
+      testOptimizer(context, crossEntropySolver(logLinearActionCodeSearchSampler(codeGenerator, regularizer), 100, 30, numEvaluations / 100, false), problem);
+      testOptimizer(context, crossEntropySolver(logLinearActionCodeSearchSampler(codeGenerator, regularizer), 100, 30, numEvaluations / 100, true), problem);
     }
-    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(codeGenerator), 1, 100), problem);
-    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(codeGenerator), 2, 100), problem);
-    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(codeGenerator), 3, 100), problem);
+    testOptimizer(context, nrpaSolver(logLinearActionCodeSearchSampler(codeGenerator), 1, 100), problem);
+    testOptimizer(context, nrpaSolver(logLinearActionCodeSearchSampler(codeGenerator), 2, 100), problem);
+    testOptimizer(context, nrpaSolver(logLinearActionCodeSearchSampler(codeGenerator), 3, 100), problem);
 
     return true;
   }

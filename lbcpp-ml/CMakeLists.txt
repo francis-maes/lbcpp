@@ -7,6 +7,7 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(LBCppMLLibrary.xml LBCppMLLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Comparator/ComparatorLibrary.xml ComparatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Solver/SolverLibrary.xml SolverLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.cpp)
@@ -31,14 +32,20 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/ExpressionSampler.h
 )
 
+
+SET(LBCPP_ML_SOLVER_SOURCES
+  Solver/Solver.cpp
+  Solver/RandomSolver.h
+  Solver/NRPASolver.h
+  Solver/CrossEntropySolver.h
+  Solver/RepeatSolver.h
+  Solver/MABMetaSolver.h
+  Solver/SolverLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SolverLibrary.cpp
+)
+
 SET(LBCPP_ML_OPTIMIZER_SOURCES
-  Optimizer/Solver.cpp
-  Optimizer/RandomOptimizer.h
-  Optimizer/NRPAOptimizer.h
-  Optimizer/CrossEntropyOptimizer.h
-  Optimizer/NestedCrossEntropyOptimizer.h
   Optimizer/SharkMOOptimizers.h
-  Optimizer/MABMetaOptimizer.h
   Optimizer/LBFGSOptimizer.h
   Optimizer/LBFGSOptimizer.cpp
   Optimizer/OptimizerLibrary.xml
@@ -125,6 +132,7 @@ SET(LBCPP_ML_MAIN_SOURCES
 
 SET(LBCPP_ML_SOURCES 
   ${LBCPP_ML_INCLUDES}
+  ${LBCPP_ML_SOLVER_SOURCES}
   ${LBCPP_ML_OPTIMIZER_SOURCES}
   ${LBCPP_ML_SAMPLER_SOURCES}
   ${LBCPP_ML_COMPARATOR_SOURCES}
@@ -137,6 +145,7 @@ SET(LBCPP_ML_SOURCES
 GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_ML_SOURCES)
 
 SOURCE_GROUP(Include FILES ${LBCPP_ML_INCLUDES})
+SOURCE_GROUP(Solver FILES ${LBCPP_ML_SOLVER_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_ML_OPTIMIZER_SOURCES})
 SOURCE_GROUP(Sampler FILES ${LBCPP_ML_SAMPLER_SOURCES})
 SOURCE_GROUP(Comparator FILES ${LBCPP_ML_COMPARATOR_SOURCES})

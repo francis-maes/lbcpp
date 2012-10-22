@@ -256,7 +256,7 @@ protected:
     context.enterScope(String("Optimizing probabilities with ") + (usePostfixNotation ? "postfix" : "prefix") + " notation");
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
     ExpressionSearchProbabilitiesProblemPtr problem = new ExpressionSearchProbabilitiesProblem(this->problem->getDomain(), maxExpressionSize, usePostfixNotation);
-    SolverPtr solver = crossEntropyOptimizer(diagonalGaussianDistributionSampler(), 100, 30, 20, false);
+    SolverPtr solver = crossEntropySolver(diagonalGaussianDistributionSampler(), 100, 30, 20, false);
     SolutionContainerPtr solutions = solver->optimize(context, problem, ObjectPtr(), Solver::verbosityAll);
     DenseDoubleVectorPtr probabilities = problem->normalizeProbabilities(solutions->getSolution(0).staticCast<DenseDoubleVector>());
     context.resultCallback("initial", problem->proposeStartingSolution(context));

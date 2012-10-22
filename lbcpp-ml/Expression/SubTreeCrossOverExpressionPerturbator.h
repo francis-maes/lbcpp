@@ -41,23 +41,6 @@ protected:
 
   double functionSelectionProbability;
   size_t maxDepth;
-
-  ExpressionPtr sampleNode(ExecutionContext& context, ExpressionPtr root) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    std::vector<ExpressionPtr> nodes;
-    if (random->sampleBool(functionSelectionProbability))
-      root->getInternalNodes(nodes);
-    else
-    {
-      if (root->getNumSubNodes() == 0)
-        return root;
-      else
-        root->getLeafNodes(nodes);
-    }
-    jassert(nodes.size() == 0);
-    return nodes[random->sampleSize(nodes.size())];
-  }
 };
 
 }; /* namespace lbcpp */

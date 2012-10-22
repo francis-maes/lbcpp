@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Solver" directory="Solver">
+
+  <class name="Solver" abstract="yes"/>
+  <class name="IterativeSolver" base="Solver" abstract="yes">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <!-- Optimizers -->
+  <class name="RandomSolver" base="IterativeSolver">
+    <constructor arguments="SamplerPtr sample, size_t numIterations"/>
+    <variable type="Sampler" name="sampler"/>
+  </class>
+
+  <class name="NRPASolver" base="Solver">
+    <constructor arguments="SamplerPtr sampler, size_t level, size_t numIterationsPerLevel"/>
+    <variable type="Sampler" name="sampler"/>
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterationsPerLevel"/>
+  </class>
+
+  <!-- Population Based Optimizers -->
+  <class name="PopulationBasedSolver" base="IterativeSolver" abstract="yes">
+    <variable type="PositiveInteger" name="populationSize"/>
+  </class>
+
+  <class name="CrossEntropySolver" base="PopulationBasedSolver">
+    <constructor arguments="SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations, bool elitist, SolutionComparatorPtr comparator"/>
+    <variable type="Sampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numTrainingSamples"/>
+    <variable type="Boolean" name="elitist"/>
+    <variable type="SolutionComparator" name="comparator"/>
+  </class>
+
+  <!-- Meta Solvers -->
+  <class name="RepeatSolver" base="IterativeSolver">
+    <constructor arguments="SolverPtr solver, size_t numIterations"/>
+    <variable type="Solver" name="solver"/>
+  </class>
+
+  <class name="MABMetaSolver" base="IterativeSolver">
+    <variable type="IterativeSolver" name="baseOptimizer"/>
+    <variable type="PositiveInteger" name="numInstances"/>
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
+  
+</library>

@@ -16,34 +16,6 @@
 namespace lbcpp
 {
 
-/*
-class EmpiricalSampler : public Sampler
-{
-public:
-  virtual ObjectPtr sample(ExecutionContext& context) const
-  {
-    size_t n = objects.size();
-    jassert(n);
-    return n ? objects[context.getRandomGenerator()->sampleSize(n)] : ObjectPtr();
-  }
-  
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
-    {this->objects = objects;}
-
-  virtual void learn(ExecutionContext& context, const SolutionVectorPtr& solutions)
-  {
-    objects.resize(solutions->getNumSolutions());
-    for (size_t i = 0; i < objects.size(); ++i)
-      objects[i] = solutions->getSolution(i);
-  }
-
-protected:
-  friend class EmpiricalSamplerClass;
-
-  std::vector<ObjectPtr> objects;
-};
-*/
-
 class TournamentSampler : public Sampler
 {
 public:
@@ -154,6 +126,171 @@ protected:
 };
 
 ////////////////////////////////////////////////////////////////////////////
+
+class TestSolver : public PopulationBasedSolver
+{
+public:
+  TestSolver(SamplerPtr initialSampler = SamplerPtr(), size_t populationSize = 0, size_t numGenerations = 0)
+    : PopulationBasedSolver(populationSize, numGenerations), initialSampler(initialSampler) {}
+
+  static SolverPtr createDefault(size_t populationSize, size_t maxGenerations)
+  {
+    SamplerPtr initialSampler = binaryMixtureSampler(fullExpressionSampler(2, 5), growExpressionSampler(2, 5), 0.5);
+    return new TestSolver(initialSampler, populationSize, maxGenerations);
+  }
+
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  {
+    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    initialSampler->initialize(context, problem->getDomain());
+    //subsequentSampler->initialize(context, problem->getDomain());
+  }
+
+  std::pair<ExpressionPtr, ExpressionPtr> crossOver(ExecutionContext& context, const ExpressionPtr& expression1, const ExpressionPtr& expression2, ExpressionPtr& node1, ExpressionPtr& node2)
+  {
+    if (context.getRandomGenerator()->sampleBool(0.9))
+    {
+      for (size_t i = 0; i < 2; ++i)
+      {
+        static const size_t maxDepth = 17;
+        node1 = expression1->sampleNode(context.getRandomGenerator(), 0.9);
+        node2 = expression2->sampleNode(context.getRandomGenerator(), 0.9);
+        ExpressionPtr newExpression1 = expression1->cloneAndSubstitute(node1, node2);
+        ExpressionPtr newExpression2 = expression2->cloneAndSubstitute(node2, node1);
+        if (newExpression1->getDepth() <= maxDepth && newExpression2->getDepth() <= maxDepth)
+          return std::make_pair(newExpression1, newExpression2);
+      }
+    }
+    return std::make_pair(ExpressionPtr(), ExpressionPtr()); 
+  }
+
+  virtual bool iteration(ExecutionContext& context, size_t iter)
+  {
+    if (iter == 0)
+    {
+      population = sampleAndEvaluatePopulation(context, initialSampler, populationSize);
+    }
+    else
+    {
+      File examplesFile = context.getFile("iteration" + String((int)iter) + ".txt");
+      if (examplesFile.existsAsFile())
+        examplesFile.deleteFile();
+      juce::OutputStream* ostr = examplesFile.createOutputStream();
+
+      size_t n = population->getNumSolutions();
+      std::map<ObjectPtr, FitnessPtr> fitnessByObject;
+      for (size_t i = 0; i < n; ++i)
+        fitnessByObject[population->getSolution(i)] = population->getFitness(i);
+
+      SamplerPtr parentsSampler = new TournamentSampler(objectiveComparator(0), 7);
+      parentsSampler->initialize(context, problem->getDomain());
+      parentsSampler->learn(context, population);
+
+      population = new SolutionVector(population->getFitnessLimits());
+      population->reserve(n);
+
+      size_t numNegatives = 0, numPositives = 0;
+
+      for (size_t i = 0; i < n && !problem->shouldStop(); i += 2)
+      {
+        ExpressionPtr solution1 = parentsSampler->sample(context);
+        ExpressionPtr solution2 = parentsSampler->sample(context);
+        FitnessPtr fitness1 = fitnessByObject[solution1];
+        FitnessPtr fitness2 = fitnessByObject[solution2];
+        ExpressionPtr node1;
+        ExpressionPtr node2;
+        std::pair<ExpressionPtr, ExpressionPtr> pair = crossOver(context, solution1, solution2, node1, node2);
+        if (pair.first && pair.second)
+        {
+          FitnessPtr newFitness1 = evaluate(context, pair.first);
+          FitnessPtr newFitness2 = evaluate(context, pair.second);
+          bool isPositive = (newFitness1->dominates(fitness1, true) && newFitness1->dominates(fitness2, true)) ||
+                          (newFitness2->dominates(fitness1, true) && newFitness2->dominates(fitness2, true));
+          isPositive ? ++numPositives : ++numNegatives;
+          writeExample(*ostr, solution1, solution2, node1, node2, isPositive);
+          population->insertSolution(pair.first, newFitness1);
+          population->insertSolution(pair.second, newFitness2);
+        }
+        else
+        {
+          population->insertSolution(solution1, fitness1);
+          population->insertSolution(solution2, fitness2);
+        }
+      }
+      std::cout << numPositives << " positive examples, " << numNegatives << " negative examples." << std::endl;
+      delete ostr;
+    }
+    return true;
+  }
+   
+  virtual void clear(ExecutionContext& context)
+  {
+    population = SolutionVectorPtr();
+  }
+
+  std::map<String, size_t> featuresMap;
+  std::vector<String> features;
+
+  size_t getFeatureIndex(const String& name)
+  {
+    std::map<String, size_t>::const_iterator it = featuresMap.find(name);
+    if (it == featuresMap.end())
+    {
+      size_t res = featuresMap.size();
+      featuresMap[name] = res;
+      features.push_back(name);
+      return res;
+    }
+    else
+      return it->second;
+  }
+
+  void addFeature(const String& name, std::set<size_t>& res)
+    {res.insert(getFeatureIndex(name));}
+
+  void makeNodeFeatures(ExpressionPtr node, const String& prefix, size_t maxDepth, std::set<size_t>& res)
+  {
+    FunctionExpressionPtr functionNode = node.dynamicCast<FunctionExpression>();
+    if (functionNode)
+    {
+      addFeature(prefix + "arity" + String((int)functionNode->getNumArguments()), res);
+      addFeature(prefix + "function" + functionNode->getFunction()->toShortString(), res);
+    }
+    else
+      addFeature(prefix + "terminal" + node->toShortString(), res);
+
+    if (maxDepth > 1)
+    {
+      for (size_t i = 0; i < node->getNumSubNodes(); ++i)
+        makeNodeFeatures(node->getSubNode(i), prefix + "_" + String((int)i) + "_", maxDepth - 1, res);
+    }
+  }
+
+  void writeExample(juce::OutputStream& ostr, ExpressionPtr expression1, ExpressionPtr expression2, ExpressionPtr node1, ExpressionPtr node2, bool isPositive)
+  {
+    std::set<size_t> activeFeatures;
+    makeNodeFeatures(expression1, "root1", 3, activeFeatures);
+    makeNodeFeatures(expression2, "root2", 3, activeFeatures);
+    makeNodeFeatures(node1, "node1", 3, activeFeatures);
+    makeNodeFeatures(node2, "node2", 3, activeFeatures);
+    //ostr << "E1: " << expression1->toShortString() << " N1: " << node1->toShortString() << " E2: " << expression2->toShortString() << " N2: " << node2->toShortString() << " => " << (isPositive ? '+' : '-') << "\n";
+    ostr << (isPositive ? "+1" : "-1");
+    for (std::set<size_t>::const_iterator it = activeFeatures.begin(); it != activeFeatures.end(); ++it)
+      ostr << " " << String((int)*it) << ":1";
+    ostr << "\n";
+    /*std::cout << (isPositive ? "+1" : "-1");
+    for (std::set<size_t>::const_iterator it = activeFeatures.begin(); it != activeFeatures.end(); ++it)
+      std::cout << " " << features[*it];
+    std::cout << std::endl;*/
+  }
+
+protected:
+  friend class TestSolverClass;
+
+  SamplerPtr initialSampler;
+
+  SolutionVectorPtr population;
+};
 
 extern SamplerPtr tournamentSampler(SolutionComparatorPtr comparator, size_t tournamentSize);
 extern DecoratorSamplerPtr perturbatorSampler(SamplerPtr inputSampler, PerturbatorPtr perturbator, double probability);
