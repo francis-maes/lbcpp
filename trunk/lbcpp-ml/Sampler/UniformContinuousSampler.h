@@ -23,12 +23,6 @@ public:
   virtual ObjectPtr sample(ExecutionContext& context) const
     {return domain->sampleUniformly(context.getRandomGenerator());}
 
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
-    {jassertfalse;}
-
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
-    {jassertfalse;}
-
 protected:
   ContinuousDomainPtr domain;
 };

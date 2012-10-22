@@ -168,7 +168,7 @@ public:
       parameters = front->getSolution(0).staticCast<DenseDoubleVector>();
   }
 
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object, double weight)
   {
     SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
     trajectory->ensureStatesAreComputed(context, domain->getInitialState());
@@ -201,7 +201,7 @@ public:
 
     if (!parameters)
       parameters = new DenseDoubleVector(0, 0.0);
-    gradient->addWeightedTo(parameters, 0, learningRate);
+    gradient->addWeightedTo(parameters, 0, learningRate * weight);
   }
   
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const

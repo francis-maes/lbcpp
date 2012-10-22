@@ -75,7 +75,8 @@ public:
     } 
   }
 
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
+  // todo: take "weight" into account
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object, double weight)
   {
     static const double minStddev = 1e-6;
     DenseDoubleVectorPtr vector = object.staticCast<DenseDoubleVector>();

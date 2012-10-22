@@ -149,9 +149,6 @@ public:
       probabilities[i] = counts[i] / (double)totalCount;
   }
 
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution)
-    {jassertfalse;}
-
 protected:
   friend class ColoSamplerClass;
 
@@ -222,9 +219,6 @@ public:
         probabilities[i] = std::vector<double>(n, 1.0 / n);
     }
   }
-
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution)
-    {jassertfalse;}
 
 protected:
   friend class ColoSampler2Class;

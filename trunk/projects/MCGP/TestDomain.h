@@ -357,12 +357,6 @@ public:
     return new VariantObject(domain->getConstructorName(constructorIndex), ObjectPtr());
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
-    {jassertfalse;}
-
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
-    {jassertfalse;}
-
 protected:
   std::vector<SamplerPtr> subSamplers;
   VariantDomainPtr domain;

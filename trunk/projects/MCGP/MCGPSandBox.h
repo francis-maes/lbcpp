@@ -171,6 +171,76 @@ protected:
 
 ///////////////////////////////////////////////////////////
 
+class MinimalisticIncrementalEvolver : public IterativeSolver
+{
+public:
+  MinimalisticIncrementalEvolver(SamplerPtr sampler, size_t tournamentSize)
+    : sampler(sampler), tournamentSize(tournamentSize) {}
+  MinimalisticIncrementalEvolver() : tournamentSize(0) {}
+
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  {
+    currentSampler = sampler->cloneAndCast<Sampler>();
+    currentSampler->initialize(context, problem->getDomain());
+    currentSolutions = new SolutionVector(problem->getFitnessLimits());
+    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+  }
+  
+  virtual bool iteration(ExecutionContext& context, size_t iter)
+  {
+    ObjectPtr solution = currentSampler->sample(context);
+    FitnessPtr fitness = evaluate(context, solution);
+    currentSolutions->insertSolution(solution, fitness);
+    if (currentSolutions->getNumSolutions() == tournamentSize)
+    {
+      performTournament(context, currentSampler, currentSolutions);
+      currentSolutions->clear();
+    }
+    return true;
+  }
+
+  virtual void clear(ExecutionContext& context)
+  {
+    IterativeSolver::clear(context);
+    currentSolutions = SolutionVectorPtr();
+    currentSampler = SamplerPtr();
+  }
+
+protected:
+  friend class MinimalisticIncrementalEvolverClass;
+
+  SamplerPtr sampler;
+  size_t tournamentSize;
+  
+  SamplerPtr currentSampler;
+  SolutionVectorPtr currentSolutions;
+
+  void performTournament(ExecutionContext& context, SamplerPtr sampler, SolutionVectorPtr solutions)
+  {
+    std::vector< std::pair<size_t, size_t> > mapping;
+    std::vector<ParetoFrontPtr> fronts = solutions->nonDominatedSort(&mapping);
+    jassert(fronts.size());
+    if (fronts.size() == 1)
+      return; // all solutions are comparable
+    size_t numPositives = fronts[0]->getNumSolutions();
+    size_t numNegatives = mapping.size() - numPositives;
+    jassert(numPositives && numNegatives);
+    double positiveWeight = 1.0 / numPositives;
+    double negativeWeight = 1.0 / numNegatives;
+
+    std::vector<size_t> order;
+    context.getRandomGenerator()->sampleOrder(solutions->getNumSolutions(), order);
+    for (size_t i = 0; i < order.size(); ++i)
+    {
+      size_t index = order[i];
+      bool isPositive = (mapping[index].first == 0); // was mapped to the optimal front
+      sampler->reinforce(context, solutions->getSolution(index), isPositive ? positiveWeight : negativeWeight);
+    }
+  }
+};
+
+///////////////////////////////////////////////////////////
+
 class MCGPEvaluationDecoratorProblem : public MaxIterationsDecoratorProblem
 {
 public:
@@ -260,31 +330,34 @@ public:
     else
       jassertfalse;
 
-    solvers.push_back(std::make_pair(treeGP1, "treegp1"));
-    solvers.push_back(std::make_pair(treeGP2, "treegp2"));
-    
-    
-    /*
+    SamplerPtr randomSampler = randomSearchSampler();
+    solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
+
     std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
     codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
-    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
+    //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(2), "bigram"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(3), "trigram"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(4), "4gram"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(5), "5gram"));
 
     for (size_t i = 0; i < codeGenerators.size(); ++i)
+      for (double learningRate = 0.000001; learningRate <= 10.0; learningRate *= 10.0)
     {
-      SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, 1.0);
-      String postfix = "-" + codeGenerators[i].second;
+      SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, learningRate);
+      String postfix = "-" + codeGenerators[i].second + "-" + String(learningRate);
       //solvers.push_back(std::make_pair(nrpaSolver(1, learnableSampler), "nrpa1" + postfix));
       //solvers.push_back(std::make_pair(nrpaSolver(2, learnableSampler), "nrpa2" + postfix));
-      solvers.push_back(std::make_pair(nrpaSolver(3, learnableSampler), "nrpa3" + postfix));
+      //solvers.push_back(std::make_pair(nrpaSolver(3, learnableSampler), "nrpa3" + postfix));
+      SolverPtr solver = new MinimalisticIncrementalEvolver(learnableSampler, 7);
+      solvers.push_back(std::make_pair(solver, "mini" + postfix));
     }
-    */
-    SamplerPtr randomSampler = randomSearchSampler();
 
-    solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
+    solvers.push_back(std::make_pair(treeGP1, "treegp1"));
+    //solvers.push_back(std::make_pair(treeGP2, "treegp2"));
+    
+
+   
     solvers.push_back(std::make_pair(nmcSolver(1, randomSampler), "nmc1"));
     solvers.push_back(std::make_pair(nmcSolver(2, randomSampler), "nmc2"));
     solvers.push_back(std::make_pair(nmcSolver(3, randomSampler), "nmc3"));

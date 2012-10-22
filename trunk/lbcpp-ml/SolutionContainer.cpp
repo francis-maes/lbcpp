@@ -192,6 +192,7 @@ ParetoFrontPtr SolutionVector::getParetoFront() const
   return new ParetoFront(limits, res, comparator);
 }
 
+// mapping: solutionPosition -> frontIndex, positionInFront
 void SolutionVector::computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const
 {
   size_t n = solutions.size();
