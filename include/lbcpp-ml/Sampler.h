@@ -31,7 +31,7 @@ public:
   virtual void learn(ExecutionContext& context, const SolutionVectorPtr& solutions)
     {jassertfalse;}
 
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object, double weight)
     {jassertfalse;}
 };
 
@@ -62,8 +62,8 @@ public:
   virtual void learn(ExecutionContext& context, const SolutionVectorPtr& solutions)
     {sampler->learn(context, solutions);}
 
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
-    {sampler->reinforce(context, object);}
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object, double weight)
+    {sampler->reinforce(context, object, weight);}
 
 protected:
   friend class DecoratorSamplerClass;

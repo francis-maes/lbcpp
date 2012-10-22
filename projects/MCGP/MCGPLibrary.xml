@@ -138,6 +138,12 @@
     <variable type="Sampler" name="subsequentSampler"/>
   </class>
 
+  <!-- Minimalistic incremental -->
+  <class name="MinimalisticIncrementalEvolver" base="IterativeSolver">
+    <variable type="Sampler" name="sampler"/>
+    <variable type="PositiveInteger" name="tournamentSize"/>
+  </class>
+
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="ExpressionProblem" name="problem"/>

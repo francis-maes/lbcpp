@@ -68,6 +68,9 @@ public:
   void reserve(size_t size)
     {solutions.reserve(size);}
 
+  void clear()
+    {solutions.clear();}
+
   /*
   ** Solutions insertion
   */
