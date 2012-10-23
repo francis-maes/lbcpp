@@ -170,6 +170,8 @@ public:
 
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object, double weight)
   {
+    jassert(object);
+
     SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
     trajectory->ensureStatesAreComputed(context, domain->getInitialState());
     //std::cout << "Reinforce "  << trajectory->toShortString() << std::endl;

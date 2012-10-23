@@ -29,7 +29,7 @@ public:
   }
 
   virtual void optimize(ExecutionContext& context)
-    {optimizeRecursively(context, sampler, level);}
+    {solveRecursively(context, sampler, level);}
 
 protected:
   friend class NRPASolverClass;
@@ -38,7 +38,7 @@ protected:
   size_t level;
   size_t numIterationsPerLevel;
 
-  SolutionAndFitnessPair optimizeRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
+  SolutionAndFitnessPair solveRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
   {
     if (problem->shouldStop())
       return SolutionAndFitnessPair();
@@ -57,7 +57,7 @@ protected:
       bool isTopLevel = (this->level == level);
       for (size_t i = 0; isTopLevel || i < numIterationsPerLevel; ++i)
       {
-        SolutionAndFitnessPair subResult = optimizeRecursively(context, currentSampler, level - 1);
+        SolutionAndFitnessPair subResult = solveRecursively(context, currentSampler, level - 1);
         if (subResult.second && subResult.second->dominates(bestFitness))
         {
           bestSolution = subResult.first;

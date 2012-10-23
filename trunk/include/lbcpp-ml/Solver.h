@@ -52,6 +52,7 @@ protected:
 };
 
 extern SolverPtr nrpaSolver(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel);
+extern SolverPtr beamNRPASolver(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel, size_t beamSizeAtFirstLevel, size_t beamSizeAtHigherLevels);
 
 class IterativeSolver : public Solver
 {
