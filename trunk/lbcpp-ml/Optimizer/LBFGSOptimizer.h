@@ -34,6 +34,9 @@ namespace lbcpp
 class LBFGSOptimizer : public IterativeSolver
 {
 public:
+  LBFGSOptimizer(size_t numIterations = 0)
+    : IterativeSolver(numIterations) {}
+
   virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
   {
     IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);

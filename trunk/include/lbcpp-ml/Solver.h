@@ -71,7 +71,7 @@ protected:
 
 extern IterativeSolverPtr randomSolver(SamplerPtr sampler, size_t numIterations = 0);
 extern IterativeSolverPtr repeatSolver(SolverPtr solver, size_t numIterations = 0);
-extern IterativeSolverPtr lbfgsOptimizer();
+extern IterativeSolverPtr lbfgsOptimizer(size_t numIterations = 0);
 
 class PopulationBasedSolver : public IterativeSolver
 {

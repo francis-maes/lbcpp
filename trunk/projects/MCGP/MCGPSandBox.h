@@ -308,13 +308,12 @@ public:
     else
       jassertfalse;
 
-    solvers.push_back(std::make_pair(TestSolver::createDefault(400000, numEvaluations / 400000), "examplescreator"));
+    //solvers.push_back(std::make_pair(TestSolver::createDefault(400000, numEvaluations / 400000), "examplescreator"));
     
 
     SamplerPtr randomSampler = randomSearchSampler();
     //solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
 
-#if 0
     std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
     codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
     //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
@@ -324,19 +323,32 @@ public:
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(5), "5gram"));
 
     for (size_t i = 0; i < codeGenerators.size(); ++i)
-      for (double learningRate = 0.000001; learningRate <= 10.0; learningRate *= 10.0)
     {
-      SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, learningRate);
-      String postfix = "-" + codeGenerators[i].second + "-" + String(learningRate);
-      //solvers.push_back(std::make_pair(createNrpaSolver(1, learnableSampler), "nrpa1" + postfix));
-      //solvers.push_back(std::make_pair(createNrpaSolver(2, learnableSampler), "nrpa2" + postfix));
-      //solvers.push_back(std::make_pair(createNrpaSolver(3, learnableSampler), "nrpa3" + postfix));
-      SolverPtr solver = new MinimalisticIncrementalEvolver(learnableSampler, 7);
-      solvers.push_back(std::make_pair(solver, "mini" + postfix));
+      SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, 1.0);
+      String postfix = "-" + codeGenerators[i].second;
+      solvers.push_back(std::make_pair(ceSolver(1000, 300, false, learnableSampler), "NON-E CE" + postfix));
+      solvers.push_back(std::make_pair(ceSolver(1000, 300, true, learnableSampler), "CE" + postfix));
     }
+#if 0
+      for (double learningRate = 0.000001; learningRate <= 10.0; learningRate *= 10.0)
+      {
+        SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, learningRate);
+      
+        //solvers.push_back(std::make_pair(createNrpaSolver(1, learnableSampler), "nrpa1" + postfix));
+        //solvers.push_back(std::make_pair(createNrpaSolver(2, learnableSampler), "nrpa2" + postfix));
+        //solvers.push_back(std::make_pair(createNrpaSolver(3, learnableSampler), "nrpa3" + postfix));
+        SolverPtr solver = new MinimalisticIncrementalEvolver(learnableSampler, 7);
+        solvers.push_back(std::make_pair(solver, "mini" + postfix));
+      }
 #endif // 0
-      /*
+
+      
     solvers.push_back(std::make_pair(treeGP1, "treegp1"));
+
+
+    
+    /*
+
     solvers.push_back(std::make_pair(treeGP2, "treegp2"));
     
 

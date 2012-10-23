@@ -1,4 +1,4 @@
 Variants of NRPA:
   * Beam-NRPA
-  * NRPA with negative samples to maximize diversity
-
+  * Optimize Random-sampler
+  * Random+frequent sub-trees as "active variables"
