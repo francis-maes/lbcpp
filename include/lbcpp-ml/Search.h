@@ -121,6 +121,8 @@ class SearchActionCodeGenerator : public Object
 {
 public:
   virtual size_t getCode(const SearchStatePtr& state, const ObjectPtr& action) = 0;
+  virtual size_t getNumCodes(const SearchStatePtr& initialState) const
+    {return 0;}
 };
 
 typedef ReferenceCountedObjectPtr<SearchActionCodeGenerator> SearchActionCodeGeneratorPtr;

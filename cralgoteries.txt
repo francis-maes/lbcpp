@@ -1,4 +1,6 @@
 Variants of NRPA:
-  * Beam-NRPA
-  * Optimize Random-sampler
+  ok Beam-NRPA
   * Random+frequent sub-trees as "active variables"
+  * Scripts to output latex summary tables
+
+  * Optimize Random-sampler

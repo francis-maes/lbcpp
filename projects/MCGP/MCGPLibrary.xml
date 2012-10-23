@@ -145,6 +145,23 @@
     <variable type="PositiveInteger" name="tournamentSize"/>
   </class>
 
+  <class name="RandomWithActiveSubTreesSampler" base="SearchSampler">
+    <variable type="ObjectVector[Expression]" name="subTrees"/>
+  </class>
+  <class name="RandomWithActiveSubTreesSolver" base="PopulationBasedSolver">
+    <variable type="PositiveInteger" name="numBests"/>
+    <variable type="PositiveInteger" name="numActiveSubTrees"/>
+  </class>
+
+
+  <class name="MABSamplerExpressionSolver" base="IterativeSolver">
+    <variable type="SearchActionCodeGenerator" name="codeGenerator"/>
+    <variable type="PositiveInteger" name="numArms"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
+    <variable type="Boolean" name="usePostfixNotation"/>
+  </class>
+
+
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="ExpressionProblem" name="problem"/>
@@ -160,5 +177,17 @@
     <variable type="PositiveInteger" name="numExpressions"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
+
+
+  <class name="OptimizeExpressionSamplerProblem" base="ContinuousProblem">
+    <variable type="SearchActionCodeGenerator" name="codeGenerator"/>
+    <variable type="Problem" name="targetProblem"/>
+  </class>
+  <class name="OptimizeExpressionSamplerSandBox" base="WorkUnit">
+    <variable type="ExpressionProblem" name="problem"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
+  </class>
+
 
 </library>

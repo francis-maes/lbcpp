@@ -4,10 +4,20 @@ import numpy
 import sys
 import os
 
-problem = "parity"
-directory = os.path.join("results_linux", problem)
-#methods = ["beagle", "linux-beagle", "random-postfix", "linux-random-postfix"]
-methods = ["beagle", "random-prefix", "random-postfix"]#, "nmc1-prefix", "nmc1-postfix", "nmc2-prefix", "nmc2-postfix", "nmc3-prefix", "nmc3-postfix"]#, "nrpa2-postfix", "nrpa3-postfix"]
+directory = "results_fast"
+problems = ["symbreg", "ant", "parity", "multiplexer"]
+
+#methods = ["beagle", "random-postfix", "nmc1-postfix", "nmc2-postfix", "nmc3-postfix"]
+#methods = ["beagle", "random-prefix", "nmc1-prefix", "nmc2-prefix", "nmc3-prefix"]
+#methods = ["beagle", "random-prefix", "random-postfix", "nmc2-prefix", "nmc2-postfix"]
+
+#methods = ["beagle", "random-postfix", "nrpa2-postfix", "nrpa3-postfix"]
+#methods = ["beagle", "random-prefix", "nrpa2-prefix", "nrpa3-prefix"]
+#methods = ["beagle", "random-prefix", "nrpa2-prefix", "bnrpa8-2-prefix", "nrpa3-prefix", "bnrpa8-3-prefix"]
+#methods = ["beagle", "random-postfix", "nrpa2-postfix", "bnrpa8-2-postfix", "nrpa3-postfix", "bnrpa8-3-postfix"]
+methods = ["beagle", "random-postfix", "nmc2-postfix", "nrpa3-postfix"]
+#methods = ["beagle", "treegp-postfix", "treegp-samplers-postfix"]
+inFunctionOfTime = False
 
 def parseFile(filename):
     res = []
@@ -57,19 +67,21 @@ def getYRange():
     elif problem == "ant":
         return [0, 100]
     elif problem == "multiplexer":
-        return [0,2100]
+        return [500,2100]
     elif problem == "parity":
         return [4,16]
 
-evals = []
-times = []
-for method in methods:
+results = []
+for problem in problems:
+  for method in methods:
 
-  name = os.path.join(directory, method)
-  evalRuns = parseFile(name + "-evals.txt")
-  timeRuns = parseFile(name + "-times.txt")
-  evals.append(computeMean(evalRuns))
-  times.append(computeMean(timeRuns))
+    name = os.path.join(os.path.join(directory, problem), method)
+    if inFunctionOfTime:
+        name = name + "-times.txt"
+    else:
+        name = name + "-evals.txt"
+    data = parseFile(name)
+    results.append(computeMean(data))
 
 #print "Evaluations:"
 #print computeXValues(False, len(evals_means))
@@ -78,28 +90,28 @@ for method in methods:
 #print computeXValues(True, len(times_means))
 #print times_means
 
-plt.figure(1, figsize=(16, 6))
+plt.figure(1, figsize=(12, 12))
 plt.clf()
 
-plt.subplot(1, 2, 1)
-plt.xscale('log')
-plt.xlabel("Number of evaluations")
-plt.ylabel("Best fitness")
-plt.ylim( getYRange())
-for i in range(len(methods)):
-  evals_means = evals[i]
-  plt.plot(computeXValues(False, len(evals_means)), evals_means, label=methods[i])
-plt.legend(loc=4)
-
-plt.subplot(1, 2, 2)
-plt.xscale('log')
-plt.xlabel("Time in seconds")
-plt.ylabel("Best fitness")
-plt.ylim(getYRange())
-for i in range(len(methods)):
-  times_means = times[i]
-  plt.plot(computeXValues(True, len(times_means)), times_means, label=methods[i]) 
-plt.legend(loc=4)
+problemIndex = 0
+resultsIndex = 0
+for problem in problems:
+    problemIndex = problemIndex + 1
+    plt.subplot(2, 2, problemIndex)
+    
+    plt.xscale('log')
+    if inFunctionOfTime:
+        plt.xlabel("Time in seconds")
+    else:
+        plt.xlabel("Number of evaluations")
+    plt.ylabel("Best fitness")
+    plt.ylim( getYRange())
+    plt.title(problem)
+    for i in range(len(methods)):
+      data = results[resultsIndex]
+      resultsIndex = resultsIndex + 1
+      plt.plot(computeXValues(inFunctionOfTime, len(data)), data, label=methods[i])
+    plt.legend(loc=4)
 
 plt.show()
 

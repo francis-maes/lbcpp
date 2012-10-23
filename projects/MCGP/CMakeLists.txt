@@ -17,6 +17,7 @@ SET(LBCPP_MCGP_SOURCES
   precompiled.cpp
   TestDomain.h
   SampleExpressionTrajectories.h
+  OptimizeExpressionSampler.h
   TreeGPOperations.h
   TreeGPSamplers.h
   ${LBCPP_MCGP_PROBLEM_SOURCES}
