@@ -17,47 +17,82 @@
 namespace lbcpp
 {
 
-class MorpionSandBox : public WorkUnit
+class CompareSolversWorkUnit : public WorkUnit
 {
 public:
-  MorpionSandBox() : numEvaluations(1000), verbosity(1) {}
+  CompareSolversWorkUnit() : numEvaluations(1000), verbosity(1) {}
+
+  virtual ProblemPtr createProblem(ExecutionContext& context) = 0;
+  virtual void initializeSolvers(ExecutionContext& context, ProblemPtr problem) = 0;
 
   virtual Variable run(ExecutionContext& context)
   {
-    ProblemPtr problem = new MorpionProblem(4, true);
-    
-    SearchActionCodeGeneratorPtr codeGenerator; // FIXME
-
-    testOptimizer(context, randomSolver(logLinearActionCodeSearchSampler(codeGenerator), numEvaluations), problem);
-    for (int r = -8; r <= 0; ++r)
+    solvers.clear();
+    problem = createProblem(context);
+    initializeSolvers(context, problem);
+    for (size_t i = 0; i < solvers.size(); ++i)
     {
-      double regularizer = pow(10.0, (double)r);
-      testOptimizer(context, crossEntropySolver(logLinearActionCodeSearchSampler(codeGenerator, regularizer), 100, 30, numEvaluations / 100, false), problem);
-      testOptimizer(context, crossEntropySolver(logLinearActionCodeSearchSampler(codeGenerator, regularizer), 100, 30, numEvaluations / 100, true), problem);
+      context.enterScope(solvers[i].first);
+      ScalarVariableStatisticsPtr stats = runSolver(context, problem, solvers[i].second);
+      context.leaveScope(stats);
     }
-    testOptimizer(context, nrpaSolver(logLinearActionCodeSearchSampler(codeGenerator), 1, 100), problem);
-    testOptimizer(context, nrpaSolver(logLinearActionCodeSearchSampler(codeGenerator), 2, 100), problem);
-    testOptimizer(context, nrpaSolver(logLinearActionCodeSearchSampler(codeGenerator), 3, 100), problem);
-
     return true;
   }
 
 protected:
-  friend class MorpionSandBoxClass;
+  friend class CompareSolversWorkUnitClass;
 
   size_t numEvaluations;
+  size_t numRuns;
   size_t verbosity;
 
-  void testOptimizer(ExecutionContext& context, SolverPtr optimizer, ProblemPtr problem)
+  ProblemPtr problem;
+  std::vector< std::pair<String, SolverPtr> > solvers;
+
+  void addSolver(const String& name, const SolverPtr& solver)
+    {solvers.push_back(std::make_pair(name, solver));}
+
+  ScalarVariableStatisticsPtr runSolver(ExecutionContext& context, ProblemPtr problem, SolverPtr solver)
   {
-    context.enterScope(optimizer->toShortString());
+    ScalarVariableStatisticsPtr results = new ScalarVariableStatistics("results");
+    for (size_t run = 0; run < numRuns; ++run)
+    {
+      context.enterScope("Run " + String((int)run+1));
+      MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problem, numEvaluations));
 
-    MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problem, numEvaluations));
+      ParetoFrontPtr pareto = solver->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
+      context.resultCallback("pareto", pareto);
+      double result = pareto->getFitness(0)->getValue(0);
+      results->push(result);
+      context.leaveScope(result);
+      if (numRuns > 1)
+        context.progressCallback(new ProgressionState(run+1, numRuns, "Runs"));
+    }
+    return results;
+  }
+};
 
-    ParetoFrontPtr pareto = optimizer->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
-    context.resultCallback("pareto", pareto);
+class MorpionSandBox : public CompareSolversWorkUnit
+{
+public:
+  virtual ProblemPtr createProblem(ExecutionContext& context)
+    {return new MorpionProblem(5, true);}
 
-    context.leaveScope(pareto->getFitness(0)->getValue(0));
+  virtual void initializeSolvers(ExecutionContext& context, ProblemPtr problem)
+  {
+    SearchActionCodeGeneratorPtr codeGenerator = new MorpionActionCodeGenerator();
+    SamplerPtr sampler = logLinearActionCodeSearchSampler(codeGenerator, 0.1, 1.0);
+    
+    addSolver("random", randomSolver(sampler, numEvaluations));
+    //addSolver("nrpa1", repeatSolver(nrpaSolver(sampler, 1, 20)));
+    addSolver("nrpa2", repeatSolver(nrpaSolver(sampler, 2, 20)));
+    //addSolver("nrpa3", repeatSolver(nrpaSolver(sampler, 3, 20)));
+    //addSolver("bnrpa1-8", repeatSolver(beamNRPASolver(sampler, 1, 20, 8, 1)));
+    addSolver("bnrpa2-2", repeatSolver(beamNRPASolver(sampler, 2, 20, 2, 1)));
+    addSolver("bnrpa2-4", repeatSolver(beamNRPASolver(sampler, 2, 20, 4, 1)));
+    addSolver("bnrpa2-8", repeatSolver(beamNRPASolver(sampler, 2, 20, 8, 1)));
+    addSolver("bnrpa2-16", repeatSolver(beamNRPASolver(sampler, 2, 20, 16, 1)));
+    //addSolver("bnrpa3-8", repeatSolver(beamNRPASolver(sampler, 3, 20, 8, 1)));
   }
 };
 

@@ -315,19 +315,35 @@ public:
     //solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "random"));
 
     std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
-    codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
+    //codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
     //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(2), "bigram"));
-    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(3), "trigram"));
-    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(4), "4gram"));
-    codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(5), "5gram"));
+    //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(3), "trigram"));
+    //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(4), "4gram"));
+    //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(5), "5gram"));
 
-    for (size_t i = 0; i < codeGenerators.size(); ++i)
+    for (size_t level = 2; level <= 3; ++level)
     {
-      SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, 1.0);
-      String postfix = "-" + codeGenerators[i].second;
-      solvers.push_back(std::make_pair(ceSolver(1000, 300, false, learnableSampler), "NON-E CE" + postfix));
-      solvers.push_back(std::make_pair(ceSolver(1000, 300, true, learnableSampler), "CE" + postfix));
+      for (size_t i = 0; i < codeGenerators.size(); ++i)
+      {
+        SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, 1.0);
+        String postfix = String((int)level);// = "-" + codeGenerators[i].second;
+        //solvers.push_back(std::make_pair(ceSolver(1000, 300, false, learnableSampler), "NON-E CE" + postfix));
+        //solvers.push_back(std::make_pair(ceSolver(1000, 300, true, learnableSampler), "CE" + postfix));
+
+        size_t iterationsPerLevel = (size_t)pow((double)numEvaluations, 1.0 / level);
+        solvers.push_back(std::make_pair(repeatSolver(nrpaSolver(learnableSampler, level, iterationsPerLevel)), "nrpa" + postfix));
+        iterationsPerLevel = (size_t)pow((double)numEvaluations / 2.0, 1.0 / level);
+        solvers.push_back(std::make_pair(repeatSolver(beamNRPASolver(learnableSampler, level, iterationsPerLevel, 2, 1)), "bnrpa2-" + postfix));
+        iterationsPerLevel = (size_t)pow((double)numEvaluations / 4.0, 1.0 / level);
+        solvers.push_back(std::make_pair(repeatSolver(beamNRPASolver(learnableSampler, level, iterationsPerLevel, 4, 1)), "bnrpa4-" + postfix));
+        iterationsPerLevel = (size_t)pow((double)numEvaluations / 8.0, 1.0 / level);
+        solvers.push_back(std::make_pair(repeatSolver(beamNRPASolver(learnableSampler, level, iterationsPerLevel, 8, 1)), "bnrpa8-" + postfix));
+        iterationsPerLevel = (size_t)pow((double)numEvaluations / 16.0, 1.0 / level);
+        solvers.push_back(std::make_pair(repeatSolver(beamNRPASolver(learnableSampler, level, iterationsPerLevel, 16, 1)), "bnrpa16-" + postfix));
+        iterationsPerLevel = (size_t)pow((double)numEvaluations / 32.0, 1.0 / level);
+        solvers.push_back(std::make_pair(repeatSolver(beamNRPASolver(learnableSampler, level, iterationsPerLevel, 32, 1)), "bnrpa32-" + postfix));
+      }
     }
 #if 0
       for (double learningRate = 0.000001; learningRate <= 10.0; learningRate *= 10.0)
@@ -343,14 +359,9 @@ public:
 #endif // 0
 
       
-    solvers.push_back(std::make_pair(treeGP1, "treegp1"));
-
-
-    
-    /*
-
-    solvers.push_back(std::make_pair(treeGP2, "treegp2"));
-    
+    solvers.push_back(std::make_pair(treeGP1, "treegp"));
+    solvers.push_back(std::make_pair(treeGP2, "treegp-samplers"));
+/*    
 
    
     solvers.push_back(std::make_pair(nmcSolver(1, randomSampler), "nmc1"));
@@ -370,9 +381,9 @@ public:
     for (size_t i = 0; i < solvers.size(); ++i)
     {
       String name = solvers[i].second;
-      //infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false)); // polish
-      //infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true)); // reverse polish
-      infos.push_back(runSolver(context, solvers[i].first, name, true)); // reverse polish
+      infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false)); // polish
+      infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true)); // reverse polish
+      //infos.push_back(runSolver(context, solvers[i].first, name, true)); // reverse polish
     }
     context.leaveScope();
 

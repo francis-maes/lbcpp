@@ -19,6 +19,13 @@
     <variable type="PositiveInteger" name="level"/>
     <variable type="PositiveInteger" name="numIterationsPerLevel"/>
   </class>
+  
+  <class name="BeamNRPASolver" base="NRPASolver">
+    <constructor arguments="SamplerPtr sampler, size_t level, size_t numIterationsPerLevel, size_t beamSizeAtFirstLevel, size_t beamSizeAtHigherLevels" returnType="Solver"/>
+    <variable type="PositiveInteger" name="beamSizeAtFirstLevel"/>
+    <variable type="PositiveInteger" name="beamSizeAtHigherLevels"/>
+  </class>
+
 
   <!-- Population Based Optimizers -->
   <class name="PopulationBasedSolver" base="IterativeSolver" abstract="yes">

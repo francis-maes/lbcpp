@@ -130,19 +130,6 @@ public:
   virtual DomainPtr getActionDomain() const
     {return availableActions;}
   
-#if 0
-  // TODO: move in a separate class
-  virtual size_t getActionCode(const ObjectPtr& ac) const
-  {
-    MorpionActionPtr action = ac.staticCast<MorpionAction>();
-    int x = action->getPosition().getX();
-    int y = action->getPosition().getY();
-    int position = (x + 25) * 100 + (y + 25);
-    int d = (int)(MorpionDirection::Direction)(action->getDirection());
-    int indexInLine = action->getRequestedIndexInLine();
-    return (size_t)(indexInLine + crossLength * (d + 4 * position));
-  }
-#endif // 0
   
 #if 0
   virtual DoubleVectorPtr getActionFeatures(const SearchStatePtr& state, const ObjectPtr& action) const
@@ -580,6 +567,22 @@ protected:
 };
 
 extern ClassPtr morpionStateClass;
+
+class MorpionActionCodeGenerator : public SearchActionCodeGenerator
+{
+public:
+  virtual size_t getCode(const SearchStatePtr& s, const ObjectPtr& a)
+  {
+    const MorpionStatePtr& state = s.staticCast<MorpionState>();
+    const MorpionActionPtr& action = a.staticCast<MorpionAction>();
+    int x = action->getPosition().getX();
+    int y = action->getPosition().getY();
+    int position = (x + 25) * 100 + (y + 25);
+    int d = (int)(MorpionDirection::Direction)(action->getDirection());
+    int indexInLine = action->getRequestedIndexInLine();
+    return (size_t)(indexInLine + state->getCrossLength() * (d + 4 * position));
+  }
+};
 
 class MorpionProblem : public Problem
 {

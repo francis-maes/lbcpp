@@ -37,6 +37,7 @@ SET(LBCPP_ML_SOLVER_SOURCES
   Solver/Solver.cpp
   Solver/RandomSolver.h
   Solver/NRPASolver.h
+  Solver/BeamNRPASolver.h
   Solver/CrossEntropySolver.h
   Solver/RepeatSolver.h
   Solver/MABMetaSolver.h
