@@ -4,7 +4,7 @@
 
   <!-- Gradient-based optimizers -->
   <class name="LBFGSOptimizer" base="IterativeSolver">
-    <constructor/>
+    <constructor arguments="size_t numIterations"/>
   </class>
 
   <!-- Multi objective -->
