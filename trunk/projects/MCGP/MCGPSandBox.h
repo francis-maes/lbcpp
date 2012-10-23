@@ -546,7 +546,7 @@ public:
   MCGPEvaluationDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations)
     : MaxIterationsDecoratorProblem(problem, maxNumEvaluations)
   {
-    nextEvaluationCount = 1.5;
+    nextEvaluationCount = 1;
     startingTime = Time::getMillisecondCounterHiRes() / 1000.0;
     nextEvaluationDeltaTime = 0.001;
   }
@@ -558,10 +558,10 @@ public:
     if (!bestFitness || res->strictlyDominates(bestFitness))
       bestFitness = res;
 
-    while (numEvaluations >= (size_t)nextEvaluationCount)
+    while (numEvaluations >= nextEvaluationCount)
     {
       fitnessPerEvaluationCount.push_back(bestFitness->getValue(0));
-      nextEvaluationCount = nextEvaluationCount * 1.5;
+      nextEvaluationCount *= 2;
     }
 
     double deltaTime = Time::getMillisecondCounterHiRes() / 1000.0 - startingTime;
@@ -583,7 +583,7 @@ public:
 protected:
   std::vector<double> fitnessPerEvaluationCount;  
   std::vector<double> fitnessPerCpuTime;
-  double nextEvaluationCount;
+  size_t nextEvaluationCount;
   double startingTime;
   double nextEvaluationDeltaTime;
 
@@ -608,23 +608,23 @@ public:
     
     if (problem->getClassName() == T("BooleanParityProblem"))
     {
-      treeGP1 = TreeGPOperationsSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
-      treeGP2 = TreeGPSamplersSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.9, 0, 0, 0);
+      treeGP1 = TreeGPOperationsSolver::createDefault(4000, 1 + numEvaluations / 4000, 7, 0.9, 0, 0, 0);
+      treeGP2 = TreeGPSamplersSolver::createDefault(4000, 1 + numEvaluations / 4000, 7, 0.9, 0, 0, 0);
     }
     else if (problem->getClassName() == T("BooleanMultiplexerProblem"))
     {
-      treeGP1 = TreeGPOperationsSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
-      treeGP2 = TreeGPSamplersSolver::createDefault(4000, juce::jmax(1, numEvaluations / 4000), 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP1 = TreeGPOperationsSolver::createDefault(4000,  1 + numEvaluations / 4000, 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP2 = TreeGPSamplersSolver::createDefault(4000,  1 + numEvaluations / 4000, 7, 0.8, 0.05, 0.05, 0.05);
     }
     else if (problem->getClassName() == T("SantaFeTrailProblem"))
     {
-      treeGP1 = TreeGPOperationsSolver::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
-      treeGP2 = TreeGPSamplersSolver::createDefault(500, juce::jmax(1, numEvaluations / 500), 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP1 = TreeGPOperationsSolver::createDefault(500, 1 + numEvaluations / 500, 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP2 = TreeGPSamplersSolver::createDefault(500, 1 + numEvaluations / 500, 7, 0.8, 0.05, 0.05, 0.05);
     }
     else if (problem->getClassName() == T("QuarticSymbolicRegressionProblem"))
     {
-      treeGP1 = TreeGPOperationsSolver::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
-      treeGP2 = TreeGPSamplersSolver::createDefault(100, juce::jmax(1, numEvaluations / 100), 7, 0.8, 0.05, 0.05, 0.5);
+      treeGP1 = TreeGPOperationsSolver::createDefault(100, 1 + numEvaluations / 100, 7, 0.8, 0.05, 0.05, 0.5);
+      treeGP2 = TreeGPSamplersSolver::createDefault(100, 1 + numEvaluations / 100, 7, 0.8, 0.05, 0.05, 0.5);
     }
     else
       jassertfalse;
