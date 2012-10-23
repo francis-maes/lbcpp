@@ -21,6 +21,7 @@
 # include <lbcpp-ml/Search.h>
 # include "TreeGPOperations.h"
 # include "TreeGPSamplers.h"
+# include <algorithm>
 
 namespace lbcpp
 {
