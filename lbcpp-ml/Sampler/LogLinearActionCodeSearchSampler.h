@@ -160,7 +160,7 @@ public:
     for (size_t i = 0; i < 10; ++i)
       learningProblem->testDerivativeWithRandomDirection(context, parameters);
 
-    SolverPtr optimizer = lbfgsOptimizer();
+    SolverPtr optimizer = lbfgsOptimizer(5);
     context.enterScope("LBFGS");
     ParetoFrontPtr front = optimizer->optimize(context, learningProblem, parameters, Solver::verbosityAll);
     context.leaveScope();

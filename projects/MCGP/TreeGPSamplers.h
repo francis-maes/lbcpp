@@ -126,7 +126,46 @@ protected:
 };
 
 ////////////////////////////////////////////////////////////////////////////
+/*
+class GeneratePerturbationExamples : public Solver
+{
+public:
+  GeneratePerturbationExamples(SamplerPtr sampler, PerturbatorPtr perturbator, size_t count)
+    : sampler(sampler), perturbator(perturbator), count(count) {}
 
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  {
+    sampler->initialize(context, problem->getDomain());
+    perturbator->initialize(context, problem->getDomain());
+  }
+
+  virtual void optimize(ExecutionContext& context)
+  {
+    File outputFile = context.getFile("examples.txt");
+    if (outputFile.exists())
+      outputFile.deleteFile();
+    juce::OutputStream* ostr = outputFile.createOutputStream();
+    for (size_t i = 0; i < count; ++i)
+    {
+      ObjectPtr solution = sampler->sample(context);
+      FitnessPtr fitness = evaluate(context, solution);
+      ObjectPtr perturbedSolution = perturbator->sample(context, solution);
+      FitnessPtr perturbedFitness = evaluate(context, solution);
+      
+    }
+  }
+
+  virtual void clear(ExecutionContext& context)
+  {
+  }
+
+protected:
+  friend class GeneratePerturbationExamplesClass;
+  SamplerPtr sampler;
+  PerturbatorPtr perturbator;
+  size_t count;
+};
+*/
 class TestSolver : public PopulationBasedSolver
 {
 public:
