@@ -51,7 +51,7 @@ public:
   double computeFold(ExecutionContext& context, const ProteinPredictorParametersPtr& predictor,
                      const ContainerPtr& trainingProteins, const ContainerPtr& testingProteins) const
   {
-    ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
+    ProteinPredictorPtr iteration = new ProteinPredictor(predictor->cloneAndCast<ProteinPredictorParameters>(context));
     iteration->addTarget(target);
 
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))

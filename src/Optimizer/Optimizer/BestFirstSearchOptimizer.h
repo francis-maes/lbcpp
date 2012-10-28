@@ -316,7 +316,7 @@ public:
           state->mapWorkUnitToResult(workUnit, i, valueIndex);
 
           std::cout << baseObject->getVariableName(parameter->getIndex()) << " : " << value << std::endl;
-          //context.pushWorkUnit(workUnit, state.get(), false);
+          context.pushWorkUnit(workUnit, state.get(), false);
           ++numPushedWorkUnit;
         }
       }
