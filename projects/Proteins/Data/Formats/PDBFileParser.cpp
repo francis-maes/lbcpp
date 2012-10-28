@@ -270,10 +270,13 @@ bool PDBFileParser::parseAtomLine(ExecutionContext& context, const String& line)
     currentResidueSerialNumber = residueSequenceNumber;
     currentResidueInsertionCode = residueInsertionCode;
   }
-
+//#define BE_STRONGLY_TOLERANT
   // update currentResidueIndex
   if (currentResidueSerialNumber != residueSequenceNumber || currentResidueInsertionCode != residueInsertionCode)
   {
+#ifdef BE_STRONGLY_TOLERANT
+  ++currentResidueIndex;
+#else
     if (residueSequenceNumber < currentResidueSerialNumber)
     {
       context.errorCallback(T("PDBFileParser::parseAtomLine"), T("Residue sequence number are misordered (previous: ")
@@ -291,8 +294,10 @@ bool PDBFileParser::parseAtomLine(ExecutionContext& context, const String& line)
       currentResidueIndex = 0;
     }
     else
+    {
       ++currentResidueIndex; // contiguous, just increment the current residue index
-
+    }
+#endif // !BE_STRONGLY_TOLERANT
     currentResidueSerialNumber = residueSequenceNumber;
     currentResidueInsertionCode = residueInsertionCode;
   }
