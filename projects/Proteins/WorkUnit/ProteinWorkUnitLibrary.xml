@@ -266,7 +266,7 @@
     <variable type="File" name="fromPdb"/>
     <variable type="File" name="output"/>
   </class>
-
+<!--
   <class name="ProteinLearnerFunction" base="SimpleUnaryFunction">
     <variable type="VariablesEnumeration[Protein]" name="target"/>
     <variable type="String" name="proteinsPath"/>
@@ -281,7 +281,7 @@
     <variable type="String" name="optimizerFile" shortName="o"/>
     <variable type="String" name="learningMachine" shortName="m"/>
   </class>
-
+-->
   <class name="ExportPredictionWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinDirectory" shortName="in"/>
   </class>
@@ -384,8 +384,25 @@
     <variable type="VariablesEnumeration[Protein]" name="target" shortName="t" description="ss3, ss8, sa20, dr, stal, cbp, cbs, dsb"/>
   </class>
   <!-- END Comparative Study -->
-
-
+  <!-- BEGIN Feature Function Selection Pipeline -->
+  <class name="ProteinLearnerFunction" base="Function">
+    <variable type="String" name="inputDirectory"/>
+    <variable type="String" name="supervisionDirectory"/>
+    <variable type="String" name="machineLearning"/>
+    <variable type="VariablesEnumeration[Protein]" name="target"/>
+    <variable type="Boolean" name="isValidation"/>
+  </class>
+  <class name="ProteinFeatureFunctionSelectionWorkUnit" base="WorkUnit">
+    <variable type="String" name="inputDirectory" shortName="in"/>
+    <variable type="String" name="supervisionDirectory" shortName="sup"/>
+    <variable type="String" name="optimizerStateFile" shortName="st"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
+    <variable type="String" name="machineLearning" shortName="ml"/>
+    <variable type="String" name="projectName" shortName="project"/>
+    <variable type="String" name="gridName" shortName="grid"/>
+    <variable type="PositiveInteger" name="memoryResourceInGb" shortName="mem"/>
+  </class>
+  <!-- END Feature Function Selection Pipeline -->
 
 
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --

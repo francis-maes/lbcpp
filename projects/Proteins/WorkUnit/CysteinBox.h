@@ -1696,18 +1696,20 @@ protected:
   DSBLearnerFunction() {}
 
   ProteinEvaluatorPtr createProteinEvaluator() const
-  {
+  {    
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    //evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
+    
     if (target == ss3Target || target == ss8Target || target == stalTarget)
       evaluator->addEvaluator(target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
-    else if (target == sa20Target)
+    else if (target == sa20Target || target == cbsTarget)
       evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
     else if (target == drTarget)
       evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
     else if (target == dsbTarget)
       evaluator->addEvaluator(target, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
-
+    else if (target == cbpTarget)
+      evaluator->addEvaluator(target, binaryClassificationEvaluator(binaryClassificationAccuracyScore), T("CBP"), true);
+    
     return evaluator;
   }
 };
