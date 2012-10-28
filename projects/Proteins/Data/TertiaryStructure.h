@@ -41,7 +41,7 @@ public:
     {return residues->getNumElements();}
 
   ResiduePtr getResidue(size_t index) const
-    {jassert(index < getNumResidues()); return residues->getAndCast<Residue>(index);}
+    {jassert(index < getNumResidues()); return index < getNumResidues() ? residues->getAndCast<Residue>(index) : ResiduePtr();}
 
   ResiduePtr getLastResidue() const
     {size_t n = residues->getNumElements(); return n ? getResidue(n - 1) : ResiduePtr();}
