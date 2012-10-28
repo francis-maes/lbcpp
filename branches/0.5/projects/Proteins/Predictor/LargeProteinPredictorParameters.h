@@ -261,11 +261,13 @@ public:
     useDsbProbability(false), useNormDsbProbability(false)
   {}
 
-  static std::vector<StreamPtr> createStreams()
+  static std::vector<StreamPtr> createStreams(String restrictToVariableBefore = String::empty)
   {
     const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    const size_t restrictToVaraible = restrictToVariableBefore == String::empty ? n : largeProteinParametersClass->findMemberVariable(restrictToVariableBefore);
+
     std::vector<StreamPtr> res(n);
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < restrictToVaraible; ++i)
     {
       const TypePtr varType = largeProteinParametersClass->getMemberVariableType(i);
       const String varName = largeProteinParametersClass->getMemberVariableName(i);

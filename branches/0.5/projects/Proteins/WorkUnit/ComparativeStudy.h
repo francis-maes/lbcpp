@@ -115,15 +115,15 @@ public:
     
     files.clear();
     directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.kNN.trace"));
-    parseFiles(context, files);
+    parseFiles(context, files, T("kNN"));
 
     files.clear();
     directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.Dumb.trace"));
-    parseFiles(context, files);
+    parseFiles(context, files, T("Dumb"));
 
     files.clear();
     directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.x3.trace"));
-    parseFiles(context, files);
+    parseFiles(context, files, T("x3"));
 
     return true;
   }
@@ -155,15 +155,16 @@ protected:
     ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f).staticCast<ExecutionTrace>();
     jassert(trace);
     const Variable res = trace->getRootNode()->findFirstNode()->getReturnValue();
-    if (!res.isDouble())
+    if (res.isConvertibleToDouble())
+      return res.toDouble();
+    else      
     {
       context.warningCallback(T("Error in Trace: ") + f.getFileName());
       return DBL_MAX;
     }
-    return res.getDouble();
   }
 
-  void parseFiles(ExecutionContext& context, const juce::OwnedArray<File>& files) const
+  void parseFiles(ExecutionContext& context, const juce::OwnedArray<File>& files, const String& name) const
   {
     if (files.size() == 0)
       return;
@@ -183,12 +184,15 @@ protected:
     }
 
     // Print results
-    OutputStream* o = context.getFile(T("result.plot")).createOutputStream();
+    File outputFile = context.getFile(T("result.") + name + (".plot"));
+    outputFile.deleteFile();
+    OutputStream* o = outputFile.createOutputStream();
     for (ScoresMap::iterator it = results.begin(); it != results.end(); ++it)
     {
       context.enterScope(T("Num. Parameters: ") + String((int)it->first));
       double sum = 0;
       std::vector<std::pair<size_t, double> > subResults = it->second;
+      context.resultCallback(T("Num. Parameters"), it->first);
       context.resultCallback(T("Num. Experiments"), subResults.size());
       for (size_t i = 0; i < subResults.size(); ++i)
       {
@@ -243,7 +247,7 @@ protected:
     }
 
     // Print results
-    OutputStream* o = context.getFile(T("result.plot")).createOutputStream();
+    OutputStream* o = context.getFile(T("result.SVM.plot")).createOutputStream();
 
     typedef std::map<size_t, std::map<double, std::map<double, double> > > SubScoresMap;
     typedef std::map<double, std::map<double, double> > GammaScoresMap;
@@ -319,7 +323,7 @@ public:
     for (size_t i = 0; i < numFolds; ++i)
       res->push(computeFold(context, parameters, proteins->invFold(i, numFolds), proteins->fold(i, numFolds)));
 
-    return res;
+    return res->getMean();
   }
 
   double computeFold(ExecutionContext& context, const LargeProteinParametersPtr& parameters, const ContainerPtr& train, const ContainerPtr& test) const
@@ -346,7 +350,7 @@ public:
     if (learningMachineName.startsWith(T("SVM")))
     {
       StringArray tokens;
-      tokens.addTokens(learningMachineName, T(":"), false);
+      tokens.addTokens(learningMachineName, T(":"), NULL);
       int svmC = tokens[1].getIntValue();
       int svmGamma = tokens[2].getIntValue();
       predictor->learner = new PreProcessInputCompositeFunction(

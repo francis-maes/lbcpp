@@ -332,7 +332,7 @@ protected:
     return false;
   }
 };
-
+/*
 class ProteinLearnerFunction : public SimpleUnaryFunction
 {
 public:
@@ -432,7 +432,7 @@ protected:
   String optimizerFile;
   String learningMachine;
 };
-
+*/
 class ExporteDisulfidePatternScoreObject : public DisulfidePatternScoreObject
 {
 public:

@@ -131,6 +131,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/CB513AndRS126Box.h
   WorkUnit/StudentTestsBox.h
   WorkUnit/ComparativeStudy.h
+  WorkUnit/FeatureFunctionSelectionPipeline.h
   WorkUnit/ESANN11.h
   WorkUnit/PlosComputationalBiologyJournal.h
   WorkUnit/ProteinWorkUnitLibrary.xml
