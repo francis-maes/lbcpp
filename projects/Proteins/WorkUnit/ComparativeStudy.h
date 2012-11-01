@@ -347,11 +347,20 @@ public:
   {
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameters);
     // Extra-Trees - Default settings
-    if (learningMachineName == T("ExtraTrees"))
+    if (learningMachineName.startsWith(T("ExtraTrees")))
     {
       size_t x3Trees = 1000;
       size_t x3Attributes = 0;
-      size_t x3Splits = 1;
+      size_t x3Splits = 1;      
+
+      StringArray tokens;
+      tokens.addTokens(learningMachineName, T(":"), NULL);
+      if (tokens.size() > 1)
+      {
+        x3Trees = tokens[1].getIntValue();
+        x3Attributes = tokens[2].getIntValue();
+        x3Splits = tokens[3].getIntValue();
+      }
       bool x3LowMemory = true;
       predictor->learner = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, false, x3LowMemory);
     } 
