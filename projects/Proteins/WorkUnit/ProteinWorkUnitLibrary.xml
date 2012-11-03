@@ -449,13 +449,11 @@
   </class>
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
 
-
   <class name="PlosComputationalBiologyJournal" base="WorkUnit">
-    <variable type="File" name="fastaFile"/>
-    <variable type="File" name="pssmFile"/>
+    <variable type="File" name="fastaFile" shortName="fasta"/>
+    <variable type="File" name="pssmFile" shortName="pssm"/>
+    <variable type="File" name="outputFile" shortName="o"/>
   </class>
-  
-  <class name="ExportDisulfidePatternEvaluator" base="SupervisedEvaluator"/>
 
   <class name="TestStudentDistributionWorkUnit" base="WorkUnit"/>
 
