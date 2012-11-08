@@ -1,6 +1,30 @@
-Variants of NRPA:
-  ok Beam-NRPA
-  * Random+frequent sub-trees as "active variables"
-  * Scripts to output latex summary tables
+ Problem
+  ColoProblem
+  ExpressionProblem
+    BooleanExpressionProblem
+	  BooleanMultiplexerProblem
+	  BooleanParityProblem
+	SanteFeTrailProblem
+	SymbolicRegressionProblem
+	  KozaSymbolicRegressionProblem
+	  F8SymbolicRegressionProblem
+  ContinuousProblem
+    OptimizeExpressionSamplerProblem
+	ExpressionSearchProbabilitiesProblem
+	ContinuousDerivableProblem
+	  LogLinearActionCodeLearningProblem
+  DecoratorProblem
+    ExpressionToSearchProblem
+	MaxIterationsDecoratorProblem
+	  MCGPEvaluationDecoratorProblem
+	  EvaluatorDecoratorProblem
+	    SingleObjectiveEvaluatorDecoratorProblem
+		HyperVolumeEvaluatorDecoratorProblem
+  ProblemFromSharkObjectiveFunction
+    SingleObjectiveSharkMOProblem
+	  AckleyProblem,  GriewangkProblem, ... RosenbrockRotatedProblem
+	ZDTMOProblem
+	  ZDT1MOProblem ... ZDT6MOProblem
 
-  * Optimize Random-sampler
+NewProblem
+  MorpionProblem
