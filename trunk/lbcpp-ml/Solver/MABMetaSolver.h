@@ -22,7 +22,7 @@ public:
     : IterativeSolver(numIterations), baseOptimizer(baseOptimizer), numInstances(numInstances), explorationCoefficient(explorationCoefficient) {}
   MABMetaSolver() {}
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     jassert(pool);
     size_t armIndex = pool->selectAndPlayArm(context);
@@ -36,9 +36,9 @@ public:
     return true;
   }
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
 
     FitnessLimitsPtr limits = problem->getFitnessLimits();
     pool = new BanditPool(new BPObjective(), explorationCoefficient);
@@ -46,12 +46,13 @@ public:
     for (size_t i = 0; i < numInstances; ++i)
     {
       IterativeSolverPtr optimizer = baseOptimizer->cloneAndCast<IterativeSolver>();
-      optimizer->configure(context, problem, solutions, initialSolution, verbosityQuiet);
-      pool->createArm(optimizer);
+      ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+      optimizer->startSolver(context, problem, compositeSolverCallback(callback, fillParetoFrontSolverCallback(front)), startingSolution);
+      pool->createArm(new Pair(optimizer, front));
     }
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
     if (verbosity >= verbosityDetailed)
     {
@@ -64,7 +65,7 @@ public:
     {
       IterativeSolverPtr optimizer = pool->getArmObject(i).staticCast<IterativeSolver>();
       jassert(optimizer);
-      optimizer->clear(context);
+      optimizer->stopSolver(context);
     }
     pool = BanditPoolPtr();
   }
@@ -87,11 +88,13 @@ protected:
 
     virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {
-      IterativeSolverPtr optimizer = object.staticCast<IterativeSolver>();
+      const PairPtr& pair = object.staticCast<Pair>();
+      IterativeSolverPtr optimizer = pair->getFirst().getObjectAndCast<IterativeSolver>();
+      ParetoFrontPtr front = pair->getSecond().getObjectAndCast<ParetoFront>();
       jassert(optimizer);
       double score = currentScore;
-      bool shouldContinue = optimizer->iteration(context, instanceIndex);
-      currentScore = optimizer->getSolutions().staticCast<ParetoFront>()->computeHyperVolume();
+      bool shouldContinue = optimizer->iterateSolver(context, instanceIndex);
+      currentScore = front->computeHyperVolume();
       if (!shouldContinue)
         return -DBL_MAX; // optimizer has converged, kill the arm
       else

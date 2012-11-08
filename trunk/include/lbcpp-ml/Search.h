@@ -149,8 +149,8 @@ extern SearchSamplerPtr logLinearActionCodeSearchSampler(SearchActionCodeGenerat
 class SearchAlgorithm : public Solver
 {
 public:
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity);
-  virtual void clear(ExecutionContext& context);
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution);
+  virtual void stopSolver(ExecutionContext& context);
 
 protected:
   SearchDomainPtr domain;

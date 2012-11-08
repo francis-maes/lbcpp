@@ -72,11 +72,14 @@ protected:
 };
 
 /////////////////////////
-class ExpressionToSearchProblem : public DecoratorProblem
+class ExpressionToSearchProblem : public NewProblem
 {
 public:
   ExpressionToSearchProblem(ProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation)
-    : DecoratorProblem(expressionProblem)
+    : expressionProblem(expressionProblem), maxSize(maxSize), usePostfixNotation(usePostfixNotation) {}
+  ExpressionToSearchProblem() {}
+
+  virtual void initialize(ExecutionContext& context)
   {
     ExpressionDomainPtr expressionDomain = expressionProblem->getDomain().staticCast<ExpressionDomain>();
     SearchStatePtr initialState;
@@ -88,26 +91,33 @@ public:
     //if (pruneActions)
     //  initialState = new PrunedSearchState(new SearchNode(NULL, initialState));
 
-    domain = new SearchDomain(initialState);
+    setDomain(new SearchDomain(initialState));
+    for (size_t i = 0; i < expressionProblem->getNumObjectives(); ++i)
+      addObjective(new Obj(expressionProblem.staticCast<NewProblem>()->getObjective(i)));
   }
 
-  ExpressionToSearchProblem() {}
-
-  virtual DomainPtr getDomain() const
-    {return domain;}
-  
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
-    ExpressionPtr expression = trajectory->getFinalState()->getConstructedObject().staticCast<Expression>();
-    return problem->evaluate(context, expression);
-  }
-
-  //ProblemPtr getExpressionProblem() const
-  //  {return problem;}
-  
 protected:
-  SearchDomainPtr domain;
+  ProblemPtr expressionProblem;
+  size_t maxSize;
+  bool usePostfixNotation;
+
+  struct Obj : public Objective
+  {
+    Obj(ObjectivePtr decorated)
+      : decorated(decorated) {}
+
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {decorated->getObjectiveRange(worst, best);}
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+    {
+      SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
+      ExpressionPtr expression = trajectory->getFinalState()->getConstructedObject().staticCast<Expression>();
+      return decorated->evaluate(context, expression);
+    }
+
+  protected:
+    ObjectivePtr decorated;
+  };
 };
 
 //////////////////////////////////////
@@ -119,9 +129,9 @@ public:
     : codeGenerator(codeGenerator), numArms(numArms), maxExpressionSize(maxExpressionSize), usePostfixNotation(usePostfixNotation) {}
   MABSamplerExpressionSolver() : numArms(0) {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
 
     SearchStatePtr initialState;
     if (usePostfixNotation)
@@ -141,7 +151,7 @@ public:
     }
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     pool->play(context, 1, false);
     if ((iter + 1) % numArms == 0)
@@ -153,12 +163,12 @@ public:
     return true;
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
     context.enterScope("All arms");
     pool->displayAllArms(context);
     context.leaveScope();
-    IterativeSolver::clear(context);
+    IterativeSolver::stopSolver(context);
     pool = BanditPoolPtr();
   }
 
@@ -169,7 +179,6 @@ public:
 
     virtual void getObjectiveRange(double& worst, double& best) const
     {
-      // TODO: check !
       worst = owner->problem->getFitnessLimits()->getLowerLimit(0);
       best = owner->problem->getFitnessLimits()->getUpperLimit(0);
     }
@@ -180,9 +189,11 @@ public:
       SamplerPtr sampler = logLinearActionCodeSearchSampler(owner->codeGenerator);
       sampler->setVariable(sampler->getClass()->findMemberVariable("parameters"), object.staticCast<DenseDoubleVector>());
       SolverPtr solver = stepSearchAlgorithm(lookAheadSearchAlgorithm(rolloutSearchAlgorithm(sampler)));
-      SolutionContainerPtr solutions = solver->optimize(context, searchProblem);
-      owner->solutions->insertSolution(solutions->getSolution(0), solutions->getFitness(0));
-      return solutions->getFitness(0)->getValue(0);
+
+      FitnessPtr bestFitness;
+      SolverCallbackPtr callback = compositeSolverCallback(owner->getCallback(), storeBestFitnessSolverCallback(bestFitness));
+      solver->solve(context, searchProblem, callback);
+      return bestFitness;
     }
 
   private:
@@ -259,15 +270,15 @@ public:
     : sampler(sampler), tournamentSize(tournamentSize) {}
   MinimalisticIncrementalEvolver() : tournamentSize(0) {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     currentSampler = sampler->cloneAndCast<Sampler>();
     currentSampler->initialize(context, problem->getDomain());
     currentSolutions = new SolutionVector(problem->getFitnessLimits());
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
   }
   
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     ObjectPtr solution = currentSampler->sample(context);
     FitnessPtr fitness = evaluate(context, solution);
@@ -280,9 +291,9 @@ public:
     return true;
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
-    IterativeSolver::clear(context);
+    IterativeSolver::stopSolver(context);
     currentSolutions = SolutionVectorPtr();
     currentSampler = SamplerPtr();
   }
@@ -434,7 +445,7 @@ public:
   RandomWithActiveSubTreesSolver(size_t populationSize = 100, size_t numGenerations = 0, size_t numBests = 30, size_t numActiveSubTrees = 10)
     : PopulationBasedSolver(populationSize, numGenerations), numBests(numBests), numActiveSubTrees(numActiveSubTrees) {}
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     RandomWithActiveSubTreesSamplerPtr sampler = new RandomWithActiveSubTreesSampler();
     sampler->setSubTrees(subTrees);
@@ -453,7 +464,7 @@ public:
     return true;
   }
   
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
     {subTrees.clear();}
 
   void makePopulationStatistics(ExecutionContext& context, SolutionVectorPtr population)
@@ -541,23 +552,24 @@ protected:
 
 ///////////////////////////////////////////////////////////
 
-class MCGPEvaluationDecoratorProblem : public MaxIterationsDecoratorProblem
+class MCGPEvaluationSolverCallback : public SolverCallback
 {
 public:
-  MCGPEvaluationDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations)
-    : MaxIterationsDecoratorProblem(problem, maxNumEvaluations)
+  virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
   {
+    numEvaluations = 0;
     nextEvaluationCount = 1;
     startingTime = Time::getMillisecondCounterHiRes() / 1000.0;
     nextEvaluationDeltaTime = 0.001;
+    bestFitness = FitnessPtr();
   }
 
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
-    FitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
+    ++numEvaluations;
 
-    if (!bestFitness || res->strictlyDominates(bestFitness))
-      bestFitness = res;
+    if (!bestFitness || fitness->strictlyDominates(bestFitness))
+      bestFitness = fitness;
 
     while (numEvaluations >= nextEvaluationCount)
     {
@@ -572,7 +584,7 @@ public:
       nextEvaluationDeltaTime *= 1.5;
     }
 
-    return res;
+    return true;
   }
   
   const std::vector<double>& getFitnessPerEvaluationCount() const
@@ -580,6 +592,9 @@ public:
 
   const std::vector<double>& getFitnessPerCpuTime() const
     {return fitnessPerCpuTime;}
+
+  FitnessPtr getBestFitness() const
+    {return bestFitness;}
 
 protected:
   std::vector<double> fitnessPerEvaluationCount;  
@@ -589,9 +604,10 @@ protected:
   double nextEvaluationDeltaTime;
 
   FitnessPtr bestFitness;
+  size_t numEvaluations;
 };
 
-typedef ReferenceCountedObjectPtr<MCGPEvaluationDecoratorProblem> MCGPEvaluationDecoratorProblemPtr;
+typedef ReferenceCountedObjectPtr<MCGPEvaluationSolverCallback> MCGPEvaluationSolverCallbackPtr;
 
 class MCGPSandBox : public WorkUnit
 {
@@ -849,11 +865,12 @@ protected:
     ProblemPtr problem = this->problem;
     if (!solver.isInstanceOf<TreeGPOperationsSolver>() && !solver.isInstanceOf<TreeGPSamplersSolver>() && !solver.isInstanceOf<TestSolver>() && !solver.isInstanceOf<MABSamplerExpressionSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
-    MCGPEvaluationDecoratorProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(problem, numEvaluations);
-    SolutionContainerPtr solutions = solver->optimize(context, decoratedProblem, ObjectPtr(), verbose ? Solver::verbosityDetailed : Solver::verbosityQuiet);
-    info.fitnessPerEvaluationCount = decoratedProblem->getFitnessPerEvaluationCount();
-    info.fitnessPerCpuTime = decoratedProblem->getFitnessPerCpuTime();
-    return solutions->getFitness(0)->getValue(0);
+    MCGPEvaluationSolverCallbackPtr callback = new MCGPEvaluationSolverCallback();
+    solver->setVerbosity(verbose ? verbosityDetailed : verbosityQuiet);
+    solver->solve(context, problem, compositeSolverCallback(callback, maxEvaluationsSolverCallback(numEvaluations)));
+    info.fitnessPerEvaluationCount = callback->getFitnessPerEvaluationCount();
+    info.fitnessPerCpuTime = callback->getFitnessPerCpuTime();
+    return callback->getBestFitness()->getValue(0);
   }
 
   void mergeResults(std::vector<double>& res, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)

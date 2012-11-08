@@ -17,27 +17,45 @@
 namespace lbcpp
 {
 
-class OptimizeExpressionSamplerProblem : public ContinuousProblem
+class OptimizeExpressionSamplerObjective : public Objective
+{
+public:
+  OptimizeExpressionSamplerObjective(SamplerPtr sampler, ProblemPtr targetProblem) 
+    : sampler(sampler), targetProblem(targetProblem) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {targetProblem.staticCast<NewProblem>()->getObjective(0)->getObjectiveRange(worst, best);}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
+    SamplerPtr sampler = this->sampler->cloneAndCast<Sampler>();
+    sampler->setVariable(sampler->getClass()->findMemberVariable("parameters"), parameters);
+    sampler->initialize(context, targetProblem->getDomain());
+    SolverPtr solver = stepSearchAlgorithm(lookAheadSearchAlgorithm(rolloutSearchAlgorithm(sampler)));
+    FitnessPtr bestFitness;
+    solver->solve(context, targetProblem, storeBestFitnessSolverCallback(bestFitness));
+    return bestFitness;
+  }
+
+protected:
+  SamplerPtr sampler;
+  ProblemPtr targetProblem;
+};
+
+class OptimizeExpressionSamplerProblem : public NewProblem
 {
 public:
   OptimizeExpressionSamplerProblem(SearchActionCodeGeneratorPtr codeGenerator, ProblemPtr targetProblem)
     : codeGenerator(codeGenerator), targetProblem(targetProblem)
-  {
-    size_t numCodes = codeGenerator->getNumCodes(targetProblem->getDomain().staticCast<SearchDomain>()->getInitialState());
-    domain = new ContinuousDomain(std::vector< std::pair<double, double> >(numCodes, std::make_pair(-5.0, 5.0)));
-    limits = targetProblem->getFitnessLimits();
-  }
+    {initialize(defaultExecutionContext());}
   OptimizeExpressionSamplerProblem() {}
    
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual void initialize(ExecutionContext& context)
   {
-    DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
-    SamplerPtr sampler = logLinearActionCodeSearchSampler(codeGenerator);
-    sampler->setVariable(sampler->getClass()->findMemberVariable("parameters"), parameters);
-    sampler->initialize(context, targetProblem->getDomain());
-    SolverPtr solver = stepSearchAlgorithm(lookAheadSearchAlgorithm(rolloutSearchAlgorithm(sampler)));
-    SolutionVectorPtr solutions = solver->optimize(context, targetProblem);
-    return solutions->getFitness(0);
+    size_t numCodes = codeGenerator->getNumCodes(targetProblem->getDomain().staticCast<SearchDomain>()->getInitialState());
+    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(numCodes, std::make_pair(-5.0, 5.0))));
+    addObjective(new OptimizeExpressionSamplerObjective(logLinearActionCodeSearchSampler(codeGenerator), targetProblem));
   }
 
 protected:
@@ -64,7 +82,9 @@ public:
     SolverPtr samplerSolver = crossEntropySolver(diagonalGaussianSampler(), 1000, 300, 10, false);
 
     context.enterScope("Optimizing sampler");
-    SolutionContainerPtr samplerSolutions = samplerSolver->optimize(context, samplerProblem, ObjectPtr(), Solver::verbosityDetailed);
+    samplerSolver->setVerbosity(verbosityDetailed);
+    ParetoFrontPtr samplerSolutions = new ParetoFront();
+    samplerSolver->solve(context, samplerProblem, fillParetoFrontSolverCallback(samplerSolutions));
     DenseDoubleVectorPtr samplerParameters = samplerSolutions->getSolution(0).staticCast<DenseDoubleVector>();
     context.resultCallback("samplerParameters", samplerParameters);
     context.leaveScope();
@@ -89,9 +109,10 @@ public:
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("stats");
     for (size_t i = 0; i < 10; ++i)
     {
-      ProblemPtr decoratedProblem = new MCGPEvaluationDecoratorProblem(searchProblem, numEvaluations);
-      SolutionContainerPtr solutions = finalSolver->optimize(context, decoratedProblem);
-      double score = solutions->getFitness(0)->getValue(0);
+      FitnessPtr bestFitness;
+      finalSolver->solve(context, searchProblem,
+        compositeSolverCallback(storeBestFitnessSolverCallback(bestFitness), maxEvaluationsSolverCallback(numEvaluations)));
+      double score = bestFitness->getValue(0);
       stats->push(score);
       context.progressCallback(new ProgressionState(i+1, 10, "Runs"));
     }

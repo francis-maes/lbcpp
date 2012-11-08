@@ -33,6 +33,9 @@ public:
   
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
     {double res; evaluate(context, object.staticCast<DenseDoubleVector>(), &res, NULL); return res;}
+
+  bool testDerivativeWithRandomDirection(ExecutionContext& context, const DenseDoubleVectorPtr& parameters);
+  bool testDerivative(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, const DoubleVectorPtr& direction);
 };
 
 class StochasticObjective : public Objective

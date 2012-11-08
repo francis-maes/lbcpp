@@ -14,50 +14,42 @@ using namespace lbcpp;
 /*
 ** Solver
 */
-SolutionContainerPtr Solver::createDefaultSolutionContainer(FitnessLimitsPtr limits) const
-  {return new ParetoFront(limits);}
-
-void Solver::configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+void Solver::startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
 {
   this->problem = problem;
-  this->solutions = solutions;
-  this->verbosity = verbosity;
+  this->callback = callback;
+  callback->solverStarted(context, refCountedPointerFromThis(this));
 }
 
-void Solver::clear(ExecutionContext& context)
+void Solver::stopSolver(ExecutionContext& context)
 {
+  callback->solverStopped(context, refCountedPointerFromThis(this));
   problem = ProblemPtr();
-  solutions = SolutionContainerPtr();
-  verbosity = verbosityQuiet;
+  callback = SolverCallbackPtr();
 }
 
-SolutionContainerPtr Solver::optimize(ExecutionContext& context, ProblemPtr problem, ObjectPtr initialSolution, Verbosity verbosity)
+void Solver::solve(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
 {
-  SolutionContainerPtr res = createDefaultSolutionContainer(problem->getFitnessLimits());
-  
-  configure(context, problem, res, initialSolution, verbosity);
-  optimize(context);
-  if (verbosity >= verbosityProgressAndResult)
-    context.resultCallback("solutions", res);
-  clear(context);
-  return res;
+  startSolver(context, problem, callback, startingSolution);
+  runSolver(context);
+  stopSolver(context);
 }
 
-FitnessPtr Solver::evaluate(ExecutionContext& context, const ObjectPtr& solution)
+FitnessPtr Solver::evaluate(ExecutionContext& context, const ObjectPtr& object)
 {
-  jassert(problem && solutions);
-  FitnessPtr fitness = problem->evaluate(context, solution);
+  jassert(problem && callback);
+  FitnessPtr fitness = problem->evaluate(context, object);
   for (size_t i = 0; i < fitness->getNumValues(); ++i)
     jassert(isNumberValid(fitness->getValue(i)));
   jassert(fitness->getNumValues() == problem->getFitnessLimits()->getNumDimensions());
-  solutions->insertSolution(solution, fitness);
+  callback->solutionEvaluated(context, refCountedPointerFromThis(this), object, fitness);
   return fitness;
 }
 
 /*
 ** IterativeSolver
 */
-void IterativeSolver::optimize(ExecutionContext& context)
+void IterativeSolver::runSolver(ExecutionContext& context)
 {
   bool shouldContinue = true;
   for (size_t i = 0; (!numIterations || i < numIterations) && !problem->shouldStop() && shouldContinue; ++i)
@@ -70,10 +62,11 @@ void IterativeSolver::optimize(ExecutionContext& context)
       context.resultCallback("iteration", i + 1);
     }
 
-    shouldContinue = iteration(context, i);
+    shouldContinue = iterateSolver(context, i);
 
     if (verbosity >= verbosityDetailed)
     {
+#if 0
       if (solutions->getNumSolutions() > 0)
       {
         if (problem->getNumObjectives() == 1)
@@ -102,6 +95,7 @@ void IterativeSolver::optimize(ExecutionContext& context)
             context.resultCallback("hyperVolume", front->computeHyperVolume());
         }
       }
+#endif // 0
       context.leaveScope();
     }
     if (verbosity >= verbosityProgressAndResult)

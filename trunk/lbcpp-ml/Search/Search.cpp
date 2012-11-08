@@ -91,11 +91,11 @@ ObjectPtr SearchSampler::sample(ExecutionContext& context) const
 /*
 ** SearchAlgorithm
 */
-void SearchAlgorithm::configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+void SearchAlgorithm::startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
 {
-  Solver::configure(context, problem, solutions, initialSolution, verbosity);
+  Solver::startSolver(context, problem, callback, startingSolution);
   domain = problem->getDomain().staticCast<SearchDomain>();
-  trajectory = initialSolution.staticCast<SearchTrajectory>();
+  trajectory = startingSolution.staticCast<SearchTrajectory>();
   if (trajectory)
     trajectory = trajectory->cloneAndCast<SearchTrajectory>();
   else
@@ -105,9 +105,9 @@ void SearchAlgorithm::configure(ExecutionContext& context, ProblemPtr problem, S
   }
 }
 
-void SearchAlgorithm::clear(ExecutionContext& context)
+void SearchAlgorithm::stopSolver(ExecutionContext& context)
 {
-  Solver::clear(context);
+  Solver::stopSolver(context);
   domain = SearchDomainPtr();
   trajectory = SearchTrajectoryPtr();
 }
@@ -121,10 +121,7 @@ void DecoratorSearchAlgorithm::subSearch(ExecutionContext& context)
   if (state->isFinalState())
     evaluate(context, trajectory->cloneAndCast<SearchTrajectory>());
   else
-  {
-    SolutionContainerPtr subSolutions = algorithm->optimize(context, problem, trajectory, verbosity > verbosityQuiet ? (Verbosity)(verbosity - 1) : verbosityQuiet);
-    solutions->insertSolutions(subSolutions);
-  }
+    algorithm->solve(context, problem, callback, trajectory);
 }
 
 /*

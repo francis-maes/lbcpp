@@ -16,46 +16,27 @@
 namespace lbcpp
 {
 
-class ExpressionSearchProbabilitiesProblem : public ContinuousProblem
+class ExpressionSearchProbabilitiesObjective : public Objective
 {
 public:
-  ExpressionSearchProbabilitiesProblem(ExpressionDomainPtr domain, size_t maxSize, bool usePostfixNotation)
-    : expressionDomain(domain), maxSize(maxSize), usePostfixNotation(usePostfixNotation)
+  ExpressionSearchProbabilitiesObjective(ExpressionDomainPtr expressionDomain, size_t maxSize, bool usePostfixNotation, const std::vector<size_t>& countPerArity)
+    : expressionDomain(expressionDomain), maxSize(maxSize), usePostfixNotation(usePostfixNotation), countPerArity(countPerArity) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
   {
-    countPerArity.push_back(domain->getNumConstants() + domain->getNumInputs() + domain->getNumActiveVariables());
-    size_t maxArity = domain->getMaxFunctionArity();
-    for (size_t arity = 1; arity <= maxArity; ++arity)
-    {
-      size_t count = 0;
-      for (size_t j = 0; j < domain->getNumFunctions(); ++j)
-        if (domain->getFunction(j)->getNumInputs() == arity)
-          ++count;
-      countPerArity.push_back(count);
-    }
-    size_t n = countPerArity.size() + 1;
-
-    startingSolution = new DenseDoubleVector(n, 1.0);
-    for (size_t i = 0; i < countPerArity.size(); ++i)
-      startingSolution->setValue(i, countPerArity[i]);
-    startingSolution->setValue(n-1, 1.0);
-    startingSolution->multiplyByScalar(1.0 / startingSolution->l1norm());
-    startingSolution->resize(2 * n);
-    for (size_t i = 0; i < n; ++i)
-      startingSolution->setValue(i + n, startingSolution->getValue(i));
-
-    this->domain = new ContinuousDomain(std::vector< std::pair<double, double> >(n * 2, std::make_pair(0.0, 1.0)));
-    this->limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(0.0, log2((double)maxSize)))); // objective: maximize entropy
-    //this->limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // objective: minimize error between expectation
+    worst = 0.0; best = log2((double)maxSize); // objective : maximize entropy
+    //worst = DBL_MAX; best = 0.0; // objective: minimize error between expectation
   }
 
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
     enum {precision = 1000};
     DenseDoubleVectorPtr probabilities = normalizeProbabilities(object.staticCast<DenseDoubleVector>());
     DenseDoubleVectorPtr histogram = estimateHistogram(context, precision, probabilities->getValues());
-    return new Fitness(histogram->computeEntropy(), limits);
+    return histogram->computeEntropy();
   }
 
+  
   double computeExpectation(const DenseDoubleVectorPtr& histogram) const
   {
     double res = 0.0;
@@ -135,16 +116,14 @@ public:
     return histogram;
   }
   
-  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
-    {return startingSolution;}
 
 protected:
-  std::vector<size_t> countPerArity;
-  DenseDoubleVectorPtr startingSolution;
   ExpressionDomainPtr expressionDomain;
   size_t maxSize;
   bool usePostfixNotation;
-  
+
+  std::vector<size_t> countPerArity;
+
   double lerp(const std::vector<double>& probabilities, size_t index, size_t currentSize) const
   {
     double k = juce::jlimit(0.0, 1.0, currentSize / (double)(maxSize - 1));
@@ -211,6 +190,50 @@ protected:
   }
 };
 
+typedef ReferenceCountedObjectPtr<ExpressionSearchProbabilitiesObjective> ExpressionSearchProbabilitiesObjectivePtr;
+
+class ExpressionSearchProbabilitiesProblem : public NewProblem
+{
+public:
+  ExpressionSearchProbabilitiesProblem(ExpressionDomainPtr expressionDomain, size_t maxSize, bool usePostfixNotation)
+    : expressionDomain(expressionDomain), maxSize(maxSize), usePostfixNotation(usePostfixNotation)
+    {initialize(defaultExecutionContext());}
+  
+  virtual void initialize(ExecutionContext& context)
+  {
+    std::vector<size_t> countPerArity;
+    countPerArity.push_back(expressionDomain->getNumConstants() + expressionDomain->getNumInputs() + expressionDomain->getNumActiveVariables());
+    size_t maxArity = expressionDomain->getMaxFunctionArity();
+    for (size_t arity = 1; arity <= maxArity; ++arity)
+    {
+      size_t count = 0;
+      for (size_t j = 0; j < expressionDomain->getNumFunctions(); ++j)
+        if (expressionDomain->getFunction(j)->getNumInputs() == arity)
+          ++count;
+      countPerArity.push_back(count);
+    }
+    size_t n = countPerArity.size() + 1;
+
+    DenseDoubleVectorPtr startingSolution = new DenseDoubleVector(n, 1.0);
+    for (size_t i = 0; i < countPerArity.size(); ++i)
+      startingSolution->setValue(i, countPerArity[i]);
+    startingSolution->setValue(n-1, 1.0);
+    startingSolution->multiplyByScalar(1.0 / startingSolution->l1norm());
+    startingSolution->resize(2 * n);
+    for (size_t i = 0; i < n; ++i)
+      startingSolution->setValue(i + n, startingSolution->getValue(i));
+    setInitialGuess(startingSolution);
+
+    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(n * 2, std::make_pair(0.0, 1.0))));
+    addObjective(new ExpressionSearchProbabilitiesObjective(expressionDomain, maxSize, usePostfixNotation, countPerArity));
+  }
+
+protected:
+  ExpressionDomainPtr expressionDomain;
+  size_t maxSize;
+  bool usePostfixNotation;
+};
+
 typedef ReferenceCountedObjectPtr<ExpressionSearchProbabilitiesProblem> ExpressionSearchProbabilitiesProblemPtr;
 
 class SampleExpressionTrajectories : public WorkUnit
@@ -256,24 +279,28 @@ protected:
     context.enterScope(String("Optimizing probabilities with ") + (usePostfixNotation ? "postfix" : "prefix") + " notation");
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
     ExpressionSearchProbabilitiesProblemPtr problem = new ExpressionSearchProbabilitiesProblem(this->problem->getDomain(), maxExpressionSize, usePostfixNotation);
+    ExpressionSearchProbabilitiesObjectivePtr objective = problem->getObjective(0).staticCast<ExpressionSearchProbabilitiesObjective>();
     SolverPtr solver = crossEntropySolver(diagonalGaussianDistributionSampler(), 100, 30, 20, false);
-    SolutionContainerPtr solutions = solver->optimize(context, problem, ObjectPtr(), Solver::verbosityAll);
-    DenseDoubleVectorPtr probabilities = problem->normalizeProbabilities(solutions->getSolution(0).staticCast<DenseDoubleVector>());
-    context.resultCallback("initial", problem->proposeStartingSolution(context));
+    solver->setVerbosity(verbosityAll);
+    ParetoFrontPtr solutions = new ParetoFront();
+    solver->solve(context, problem, fillParetoFrontSolverCallback(solutions));
+    DenseDoubleVectorPtr probabilities = objective->normalizeProbabilities(solutions->getSolution(0).staticCast<DenseDoubleVector>());
+    context.resultCallback("initial", problem->getInitialGuess());
     context.resultCallback("optimized", probabilities);
     context.leaveScope();
-    computeHistogramForProbabilities(context, "initial", problem->proposeStartingSolution(context), usePostfixNotation);
+    computeHistogramForProbabilities(context, "initial", problem->getInitialGuess(), usePostfixNotation);
     computeHistogramForProbabilities(context, "optimized", probabilities, usePostfixNotation);
 
-    return problem->makeSampler(context, probabilities->getValues());
+    return objective->makeSampler(context, probabilities->getValues());
   }
 
   void computeHistogramForProbabilities(ExecutionContext& context, const String& name, const DenseDoubleVectorPtr& probabilities, bool usePostfixNotation)
   {
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
     ExpressionSearchProbabilitiesProblemPtr test = new ExpressionSearchProbabilitiesProblem(problem->getDomain(), maxExpressionSize, usePostfixNotation);
+    ExpressionSearchProbabilitiesObjectivePtr objective = test->getObjective(0).staticCast<ExpressionSearchProbabilitiesObjective>();
 
-    DenseDoubleVectorPtr histo = test->estimateHistogram(context, numExpressions, probabilities->getValues());
+    DenseDoubleVectorPtr histo = objective->estimateHistogram(context, numExpressions, probabilities->getValues());
     context.enterScope(name + " -> " + String(histo->computeEntropy()));
     for (size_t i = 0; i < histo->getNumValues(); ++i)
     {

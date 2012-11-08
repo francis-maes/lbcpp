@@ -58,11 +58,12 @@ protected:
     for (size_t run = 0; run < numRuns; ++run)
     {
       context.enterScope("Run " + String((int)run+1));
-      MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problem, numEvaluations));
-
-      ParetoFrontPtr pareto = solver->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
-      context.resultCallback("pareto", pareto);
-      double result = pareto->getFitness(0)->getValue(0);
+      ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+      SolverCallbackPtr callback = compositeSolverCallback(fillParetoFrontSolverCallback(front), maxEvaluationsSolverCallback(numEvaluations));
+      solver->setVerbosity((SolverVerbosity)verbosity);
+      solver->solve(context, problem, callback);
+      context.resultCallback("front", front);
+      double result = front->getFitness(0)->getValue(0);
       results->push(result);
       context.leaveScope(result);
       if (numRuns > 1)

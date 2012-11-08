@@ -26,7 +26,7 @@ protected:
 
   double numActions;
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void runSolver(ExecutionContext& context)
   {
     SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actions = state->getActionDomain();

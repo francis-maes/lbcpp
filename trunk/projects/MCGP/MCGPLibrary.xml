@@ -13,7 +13,7 @@
     <variable type="SearchNode" name="node"/>
   </class>
   
-  <class name="ExpressionToSearchProblem" base="DecoratorProblem"/>
+  <class name="ExpressionToSearchProblem" base="Problem"/>
   
   <!-- Symbolic Regression Problems -->
   <class name="KozaSymbolicRegressionProblem" base="Problem" abstract="yes"/>
@@ -174,7 +174,7 @@
   </class>
 
 
-  <class name="OptimizeExpressionSamplerProblem" base="ContinuousProblem">
+  <class name="OptimizeExpressionSamplerProblem" base="Problem">
     <variable type="SearchActionCodeGenerator" name="codeGenerator"/>
     <variable type="Problem" name="targetProblem"/>
   </class>

@@ -17,7 +17,7 @@
 namespace lbcpp
 {
   
-class LogLinearActionCodeLearningProblem : public ContinuousDerivableProblem
+class LogLinearActionCodeLearningObjective : public DifferentiableObjective
 {
 public:
   struct Example
@@ -26,19 +26,17 @@ public:
     std::map<size_t, size_t> countsPerAction;
   };
 
-  LogLinearActionCodeLearningProblem(size_t numParameters, const std::vector<Example>& examples, double regularizer)
-    : examples(examples), regularizer(regularizer)
-  {
-    domain = new ContinuousDomain(std::vector<std::pair<double, double> >(numParameters, std::make_pair(-DBL_MAX, DBL_MAX)));
-    limits = new FitnessLimits(std::vector<std::pair<double, double> >(1, std::make_pair(DBL_MAX, 0.0))); // minimization problem
-  }
+  LogLinearActionCodeLearningObjective(const std::vector<Example>& examples, double regularizer)
+    : examples(examples), regularizer(regularizer) {}
 
-  // minimize sum_examples (-sum_selectedActions (actionSelectedCount * theta[selectedAction])
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = DBL_MAX; best = 0.0;}
+
+    // minimize sum_examples (-sum_selectedActions (actionSelectedCount * theta[selectedAction])
   //                        +sum_selectedActions (actionSelectedCount) * log sum_i exp(theta[example.availableAction[i])) / num_examples
   //                + lambda * sumOfSquares(theta) / 2
-  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, size_t objectiveNumber, double* value, DoubleVectorPtr* gradient)
+  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, double* value, DoubleVectorPtr* gradient)
   {
-    jassert(objectiveNumber == 0);
     jassert(!value || *value == 0.0);
 
     DenseDoubleVectorPtr denseGradient;
@@ -100,6 +98,29 @@ protected:
     {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
 };
 
+class LogLinearActionCodeLearningProblem : public NewProblem
+{
+public:
+  typedef LogLinearActionCodeLearningObjective::Example Example;
+
+  LogLinearActionCodeLearningProblem(size_t numParameters, const std::vector<Example>& examples, double regularizer)
+    : numParameters(numParameters), examples(examples), regularizer(regularizer)
+  {
+    initialize(defaultExecutionContext());
+  }
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ContinuousDomain(std::vector<std::pair<double, double> >(numParameters, std::make_pair(-DBL_MAX, DBL_MAX))));
+    addObjective(new LogLinearActionCodeLearningObjective(examples, regularizer));
+  }
+
+protected:
+  size_t numParameters;
+  std::vector<Example> examples;
+  double regularizer;
+};
+
 class LogLinearActionCodeSearchSampler : public SearchSampler
 {
 public:
@@ -155,14 +176,20 @@ public:
     else
       parameters->ensureSize(highestActionCode + 1);
 
-    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(highestActionCode + 1, dataset, regularizer);
+    ProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(highestActionCode + 1, dataset, regularizer);
+    learningProblem.staticCast<NewProblem>()->setInitialGuess(parameters);
 
+    // test derivative 
+    DifferentiableObjectivePtr objective = learningProblem.staticCast<NewProblem>()->getObjective(0).staticCast<DifferentiableObjective>();
     for (size_t i = 0; i < 10; ++i)
-      learningProblem->testDerivativeWithRandomDirection(context, parameters);
+      objective->testDerivativeWithRandomDirection(context, parameters);
+    // ----
 
     SolverPtr optimizer = lbfgsOptimizer(5);
     context.enterScope("LBFGS");
-    ParetoFrontPtr front = optimizer->optimize(context, learningProblem, parameters, Solver::verbosityAll);
+    optimizer->setVerbosity(verbosityAll);
+    ParetoFrontPtr front = new ParetoFront();
+    optimizer->solve(context, learningProblem, fillParetoFrontSolverCallback(front), parameters);
     context.leaveScope();
     if (front->getNumSolutions())
       parameters = front->getSolution(0).staticCast<DenseDoubleVector>();

@@ -37,31 +37,30 @@ public:
   LBFGSOptimizer(size_t numIterations = 0)
     : IterativeSolver(numIterations) {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
-    this->problem = problem.staticCast<ContinuousDerivableProblem>();
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
     lbfgsInitialize(domain->getNumDimensions());
-    parameters = initialSolution.staticCast<DenseDoubleVector>();
+    parameters = startingSolution.staticCast<DenseDoubleVector>();
     if (!parameters)
-      parameters = problem->proposeStartingSolution(context);
+      parameters = problem.staticCast<NewProblem>()->getInitialGuess();
     parameters = parameters->cloneAndCast<DenseDoubleVector>();
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter) // returns false if the optimizer has converged
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter) // returns false if the optimizer has converged
   {
     double value = 0.0;
     DoubleVectorPtr gradient;
-    problem->evaluate(context, parameters, 0, &value, &gradient);
-    solutions->insertSolution(parameters->cloneAndCast<DenseDoubleVector>(), new Fitness(value, problem->getFitnessLimits()));
+    DifferentiableObjectivePtr objective = problem.staticCast<NewProblem>()->getObjective(0).staticCast<DifferentiableObjective>();
+    objective->evaluate(context, parameters, &value, &gradient);
+    callback->solutionEvaluated(context, refCountedPointerFromThis(this), parameters, new Fitness(value, problem->getFitnessLimits()));
     DenseDoubleVectorPtr denseGradient = gradient->toDenseDoubleVector();
     int res = lbfgsStep(parameters->getValuePointer(0), value, denseGradient->getValuePointer(0));
     return (res == 1);
   }
 
 private:
-  ContinuousDerivableProblemPtr problem;
   DenseDoubleVectorPtr parameters;
 
   int numVariables;

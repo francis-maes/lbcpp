@@ -266,21 +266,25 @@ public:
   {
     context.enterScope(optimizer->toShortString());
 
-    HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
+    DenseDoubleVectorPtr cpuTimes = new DenseDoubleVector(0, 0.0);
+    DenseDoubleVectorPtr hyperVolumes = new DenseDoubleVector(0, 0.0);
+    size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
+    ParetoFrontPtr front = new ParetoFront();
+    SolverCallbackPtr callback = compositeSolverCallback(
+      fillParetoFrontSolverCallback(front),
+      hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),
+      maxEvaluationsSolverCallback(numEvaluations));
 
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), Solver::verbosityProgressAndResult);
-    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+    optimizer->setVerbosity(verbosityProgressAndResult);
+    optimizer->solve(context, problem, callback);
 
-    std::vector<double> hyperVolumes = decorator->getHyperVolumes();
-    std::vector<double> cpuTimes = decorator->getCpuTimes();
-
-    for (size_t i = 0; i < hyperVolumes.size(); ++i)
+    for (size_t i = 0; i < hyperVolumes->getNumValues(); ++i)
     {
-      size_t numEvaluations = i * decorator->getEvaluationPeriod();
+      size_t numEvaluations = i * evaluationPeriod;
       context.enterScope(String((int)numEvaluations));
       context.resultCallback("numEvaluations", numEvaluations);
-      context.resultCallback("hyperVolume", hyperVolumes[i]);
-      context.resultCallback("cpuTime", cpuTimes[i]);
+      context.resultCallback("hyperVolume", hyperVolumes->getValue(i));
+      context.resultCallback("cpuTime", cpuTimes->getValue(i));
       context.leaveScope();
     }
 

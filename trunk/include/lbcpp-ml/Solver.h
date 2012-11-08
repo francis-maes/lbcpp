@@ -10,43 +10,76 @@
 # define LBCPP_ML_SOLVER_H_
 
 # include "Problem.h"
+# include "SolutionContainer.h"
 
 namespace lbcpp
 {
 
+/*
+** SolverCallback
+*/
+class SolverCallback : public Object
+{
+public:
+  virtual void solverStarted(ExecutionContext& context, SolverPtr solver) {}
+  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness) = 0; // return false to stop optimization
+  virtual void solverStopped(ExecutionContext& context, SolverPtr solver) {}
+};
+
+extern SolverCallbackPtr storeBestFitnessSolverCallback(FitnessPtr& bestFitness);
+extern SolverCallbackPtr fillParetoFrontSolverCallback(ParetoFrontPtr front);
+extern SolverCallbackPtr maxEvaluationsSolverCallback(size_t maxEvaluations);
+
+extern SolverCallbackPtr singleObjectiveEvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores);
+extern SolverCallbackPtr hyperVolumeEvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores);
+
+extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, SolverCallbackPtr callback2);
+extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, SolverCallbackPtr callback2, SolverCallbackPtr callback3);
+  
+/*
+** Verbosity
+*/
+enum SolverVerbosity
+{
+  verbosityQuiet = 0,
+  verbosityProgressAndResult,
+  verbosityDetailed,
+  verbosityAll
+};
+
+/*
+** Solver
+*/
 class Solver : public Object
 {
 public:
   Solver() : verbosity(verbosityQuiet) {}
   
-  enum Verbosity
-  {
-    verbosityQuiet = 0,
-    verbosityProgressAndResult,
-    verbosityDetailed,
-    verbosityAll
-  };
+  void setVerbosity(SolverVerbosity verbosity)
+    {this->verbosity = verbosity;}
 
-  virtual SolutionContainerPtr createDefaultSolutionContainer(FitnessLimitsPtr limits) const;
+  SolverVerbosity getVerbosity() const
+    {return verbosity;}
 
-  SolutionContainerPtr optimize(ExecutionContext& context, ProblemPtr problem, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet);
+  void solve(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution = ObjectPtr());
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet);
-  virtual void optimize(ExecutionContext& context) = 0;
-  virtual void clear(ExecutionContext& context);
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution = ObjectPtr());
+  virtual void runSolver(ExecutionContext& context) = 0;
+  virtual void stopSolver(ExecutionContext& context);
   
   ProblemPtr getProblem() const
     {return problem;}
 
-  SolutionContainerPtr getSolutions() const
-    {return solutions;}
-
+  SolverCallbackPtr getCallback() const
+    {return callback;}
+  
 protected:
   typedef std::pair<ObjectPtr, FitnessPtr> SolutionAndFitnessPair;
 
   ProblemPtr problem;
-  SolutionContainerPtr solutions;
-  Verbosity verbosity;
+  SolverCallbackPtr callback;
+  SolverVerbosity verbosity;
+  bool shouldStop;
 
   FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
 };
@@ -60,9 +93,9 @@ public:
   IterativeSolver(size_t numIterations = 0)
     : numIterations(numIterations) {}
 
-  virtual bool iteration(ExecutionContext& context, size_t iter) = 0; // returns false if the optimizer has converged
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter) = 0; // returns false if the optimizer has converged
 
-  virtual void optimize(ExecutionContext& context);
+  virtual void runSolver(ExecutionContext& context);
 
 protected:
   friend class IterativeSolverClass;
