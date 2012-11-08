@@ -355,38 +355,16 @@ public:
     {return new IfFoodAheadSantaFeTrailAction(inputs[0].getObjectAndCast<SantaFeTrailAction>(), inputs[1].getObjectAndCast<SantaFeTrailAction>());}
 };
 
-/*
-** Problem
-*/
-class SantaFeTrailProblem : public ExpressionProblem
+class SanteFeTrailObjective : public Objective
 {
 public:
-  SantaFeTrailProblem(size_t maxNumSteps) : maxNumSteps(maxNumSteps)
-    {initialize(defaultExecutionContext());}
-  SantaFeTrailProblem() {}
+  SanteFeTrailObjective(SantaFeTrailWorldPtr world, size_t maxNumSteps)
+    : world(world), maxNumSteps(maxNumSteps) {}
 
-  virtual void initialize(ExecutionContext& context)
-  {
-    // define domain
-    domain = new ExpressionDomain();
-    domain->addConstant(Variable(new MoveSantaFeTrailAction(), santaFeTrailActionClass));
-    domain->addConstant(Variable(new LeftSantaFeTrailAction(), santaFeTrailActionClass));
-    domain->addConstant(Variable(new RightSantaFeTrailAction(), santaFeTrailActionClass));
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = (double)world->getInitialNumPellets();}
 
-    domain->addFunction(new Progn2SantaFeTrailFunction());
-    domain->addFunction(new Progn3SantaFeTrailFunction());
-    domain->addFunction(new IfFoodAheadSantaFeTrailFunction());
-
-    domain->addTargetType(santaFeTrailActionClass);
-
-    // create world
-    world = new SantaFeTrailWorld();
-
-    // fitness limits
-    limits->setLimits(0, 0, world->getInitialNumPellets()); // the aim: maximize the number of eaten pellets
-  }
-  
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
 #if 0
 	  std::vector<SantaFeTrailActionPtr> elseActions;
@@ -405,28 +383,55 @@ public:
 	  std::cout << "PPPFPFPFP: " << testState->getNumEatenPellets() << std::endl;
 #endif // 0
 
-    // retrieve expression and compute it
     ExpressionPtr expression = object.staticCast<Expression>();
     Variable dummy;
     SantaFeTrailActionPtr action = expression->compute(context, &dummy).getObjectAndCast<SantaFeTrailAction>();
 
-    // initialize state and execute action
     SantaFeTrailStatePtr state = new SantaFeTrailState(world, maxNumSteps);
     while (!state->isTimeExhausted() && !state->areAllPelletsEaten())
       action->execute(state);
     
-    // construct fitness
-    std::vector<double> fitness(1);
-    fitness[0] = (double)state->getNumEatenPellets();
-    return new Fitness(fitness, limits);
+    return (double)state->getNumEatenPellets();
+  }
+
+protected:
+  SantaFeTrailWorldPtr world;
+  size_t maxNumSteps;
+};
+
+/*
+** Problem
+*/
+class SantaFeTrailProblem : public NewProblem
+{
+public:
+  SantaFeTrailProblem(size_t maxNumSteps) : maxNumSteps(maxNumSteps)
+    {initialize(defaultExecutionContext());}
+  SantaFeTrailProblem() {}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    // define domain
+    ExpressionDomainPtr domain = new ExpressionDomain();
+    domain->addConstant(Variable(new MoveSantaFeTrailAction(), santaFeTrailActionClass));
+    domain->addConstant(Variable(new LeftSantaFeTrailAction(), santaFeTrailActionClass));
+    domain->addConstant(Variable(new RightSantaFeTrailAction(), santaFeTrailActionClass));
+
+    domain->addFunction(new Progn2SantaFeTrailFunction());
+    domain->addFunction(new Progn3SantaFeTrailFunction());
+    domain->addFunction(new IfFoodAheadSantaFeTrailFunction());
+
+    domain->addTargetType(santaFeTrailActionClass);
+    setDomain(domain);
+
+    // define objective
+    addObjective(new SanteFeTrailObjective(new SantaFeTrailWorld(), maxNumSteps));
   }
 
 protected:
   friend class SantaFeTrailProblemClass;
 
   size_t maxNumSteps;
-
-  SantaFeTrailWorldPtr world;
 };
 
 }; /* namespace lbcpp */

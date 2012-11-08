@@ -247,7 +247,7 @@ public:
 protected:
   friend class SampleExpressionTrajectoriesClass;
 
-  ExpressionProblemPtr problem;
+  ProblemPtr problem;
   size_t numExpressions;
   size_t maxExpressionSize;
 

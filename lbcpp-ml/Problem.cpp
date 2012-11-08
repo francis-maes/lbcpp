@@ -11,6 +11,18 @@
 using namespace lbcpp;
 
 /*
+** NewProblem
+*/
+bool NewProblem::loadFromString(ExecutionContext& context, const String& str)
+{
+  if (!Problem::loadFromString(context, str))
+    return false;
+  initialize(context);
+  return true;
+}
+
+
+/*
 ** ContinuousDerivableProblem
 */
 FitnessPtr ContinuousDerivableProblem::evaluate(ExecutionContext& context, const ObjectPtr& object)

@@ -13,14 +13,19 @@
 
 namespace lbcpp
 {
-  
-class BooleanExpressionProblem : public ExpressionProblem
+
+// TODO: factorize somewhere
+class BooleanAccuracyObjective : public Objective
 {
 public:
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    jassert(cache);
+  BooleanAccuracyObjective(LuapeSamplesCachePtr cache, VariableExpressionPtr output)
+    : cache(cache), output(output) {}
 
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = 1.0;}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
     // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
     LuapeSampleVectorPtr predictions = cache->getSamples(context, expression);
@@ -36,13 +41,7 @@ public:
         ++numSuccesses;
     }
 
-    //if (numSuccesses != 32)
-    //  std::cout << expression->toShortString() << " => " << numSuccesses << std::endl;
-
-    // construct the Fitness
-    std::vector<double> fitness(1);
-    fitness[0] = (double)numSuccesses;
-    return new Fitness(fitness, limits);
+    return numSuccesses / (double)supervisions->getNumElements();
   }
 
 protected:
@@ -50,7 +49,7 @@ protected:
   VariableExpressionPtr output;
 };
 
-class BooleanParityProblem : public BooleanExpressionProblem
+class BooleanParityProblem : public NewProblem
 {
 public:
   BooleanParityProblem(size_t numBits) : numBits(numBits)
@@ -59,7 +58,7 @@ public:
 
   virtual void initialize(ExecutionContext& context)
   {
-    domain = new ExpressionDomain();
+    ExpressionDomainPtr domain = new ExpressionDomain();
     for (size_t i = 0; i < numBits; ++i)
 		  domain->addInput(booleanType, "b" + String((int)i));
 
@@ -69,14 +68,13 @@ public:
     domain->addFunction(norBooleanFunction());
 
     domain->addTargetType(booleanType);
-    output = domain->createSupervision(booleanType, "y");
-    
-    // fitness limits
-    size_t numCases = (1 << numBits);
-    limits->setLimits(0, 0.0, (double)numCases); // number of correct cases, should be maximized
+    setDomain(domain);
 
+    VariableExpressionPtr output = domain->createSupervision(booleanType, "y");
+    
     // data
-    cache = domain->createCache(numCases);
+    size_t numCases = (1 << numBits);
+    LuapeSamplesCachePtr cache = domain->createCache(numCases);
     BooleanVectorPtr supervisionValues = new BooleanVector(numCases);
 		for (size_t i = 0; i < numCases; ++i)
 		{
@@ -95,6 +93,9 @@ public:
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
     cache->recomputeCacheSize();
     cache->disableCaching();
+
+    // objective
+    addObjective(new BooleanAccuracyObjective(cache, output));
   }
 
 protected:

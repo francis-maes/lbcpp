@@ -158,32 +158,6 @@ typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 extern ClassPtr expressionDomainClass;
 
 /*
-** Expression Problems
-*/
-class ExpressionProblem : public Problem
-{
-public:
-  ExpressionProblem();
-
-  virtual DomainPtr getDomain() const
-    {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
-    {return limits;}
-
-  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const;
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
-
-  virtual void initialize(ExecutionContext& context) = 0;
-
-protected:
-  ExpressionDomainPtr domain;
-  FitnessLimitsPtr limits;
-};
-
-typedef ReferenceCountedObjectPtr<ExpressionProblem> ExpressionProblemPtr;
-
-/*
 ** Expression Search Spaces
 */
 class ExpressionState : public SearchState
