@@ -22,7 +22,7 @@ public:
     : NRPASolver(sampler, level, numIterationsPerLevel), beamSizeAtFirstLevel(beamSizeAtFirstLevel), beamSizeAtHigherLevels(beamSizeAtHigherLevels) {}
   BeamNRPASolver() : beamSizeAtFirstLevel(0), beamSizeAtHigherLevels(0) {}
   
-  virtual void optimize(ExecutionContext& context)
+  virtual void runSolver(ExecutionContext& context)
     {solveRecursively(context, sampler, level);}
 
 protected:

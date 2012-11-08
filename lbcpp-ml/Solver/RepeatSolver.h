@@ -21,12 +21,8 @@ public:
     : IterativeSolver(numIterations), solver(solver) {}
   RepeatSolver() {}
   
-  virtual bool iteration(ExecutionContext& context, size_t iter)
-  {
-    SolutionContainerPtr solutions = solver->optimize(context, problem, ObjectPtr(), verbosity > verbosityQuiet ? (Verbosity)(verbosity - 1) : verbosityQuiet);
-    this->solutions->insertSolutions(solutions);
-    return true;
-  }
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
+    {solver->solve(context, problem, callback); return true;}
 
 protected:
   friend class RepeatSolverClass;

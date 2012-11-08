@@ -25,17 +25,21 @@ public:
 protected:
   friend class StepSearchAlgorithmClass;
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void runSolver(ExecutionContext& context)
   {
     SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actions = state->getActionDomain();
     size_t n = actions->getNumElements();
 
+    SolverCallbackPtr previousCallback = callback;
+    ParetoFrontPtr front = new ParetoFront();
+    callback = compositeSolverCallback(fillParetoFrontSolverCallback(front), previousCallback);
+
     while (!state->isFinalState() && !problem->shouldStop())
     {
       subSearch(context);
 
-      SearchTrajectoryPtr bestTrajectory = this->solutions->getSolution(0).staticCast<SearchTrajectory>();
+      SearchTrajectoryPtr bestTrajectory = front->getSolution(0).staticCast<SearchTrajectory>();
       if (!bestTrajectory)
         break;
       ObjectPtr selectedAction = bestTrajectory->getAction(trajectory->getLength());
@@ -61,6 +65,7 @@ protected:
       }
 #endif // 0
     }
+    callback = previousCallback;
   }
 };
 

@@ -43,6 +43,7 @@ SET(LBCPP_ML_SOLVER_SOURCES
   Solver/CrossEntropySolver.h
   Solver/RepeatSolver.h
   Solver/MABMetaSolver.h
+  Solver/SolverCallbacks.h
   Solver/SolverLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SolverLibrary.cpp
 )

@@ -22,13 +22,13 @@ public:
     : IterativeSolver(numIterations), sampler(sampler) {}
   RandomSolver() {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     sampler->initialize(context, problem->getDomain());
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     ObjectPtr object = sampler->sample(context);
     FitnessPtr fitness = evaluate(context, object);

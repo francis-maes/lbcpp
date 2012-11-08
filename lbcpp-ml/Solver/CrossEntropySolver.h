@@ -24,15 +24,15 @@ public:
     : PopulationBasedSolver(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropySolver() : elitist(false) {}
   
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     currentSampler = this->sampler;
     currentSampler->initialize(context, problem->getDomain());
     currentParents = SolutionVectorPtr();
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     if (verbosity >= verbosityDetailed)
       context.resultCallback("currentSampler", currentSampler->cloneAndCast<Sampler>());
@@ -51,11 +51,11 @@ public:
     return !currentSampler->isDeterministic();
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
     if (verbosity >= verbosityProgressAndResult)
       context.resultCallback("sampler", currentSampler);
-    Solver::clear(context);
+    Solver::stopSolver(context);
   }
 
  protected:

@@ -133,13 +133,13 @@ public:
   GeneratePerturbationExamples(SamplerPtr sampler, PerturbatorPtr perturbator, size_t count)
     : sampler(sampler), perturbator(perturbator), count(count) {}
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     sampler->initialize(context, problem->getDomain());
     perturbator->initialize(context, problem->getDomain());
   }
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void runSolver(ExecutionContext& context)
   {
     File outputFile = context.getFile("examples.txt");
     if (outputFile.exists())
@@ -155,7 +155,7 @@ public:
     }
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
   }
 
@@ -178,9 +178,9 @@ public:
     return new TestSolver(initialSampler, populationSize, maxGenerations);
   }
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     initialSampler->initialize(context, problem->getDomain());
     //subsequentSampler->initialize(context, problem->getDomain());
   }
@@ -203,7 +203,7 @@ public:
     return std::make_pair(ExpressionPtr(), ExpressionPtr()); 
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     if (iter == 0)
     {
@@ -262,7 +262,7 @@ public:
     return true;
   }
    
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
     population = SolutionVectorPtr();
   }
@@ -366,14 +366,14 @@ public:
     return new TreeGPSamplersSolver(initialSampler, subsequentSampler, populationSize, maxGenerations);
   }
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     initialSampler->initialize(context, problem->getDomain());
     subsequentSampler->initialize(context, problem->getDomain());
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     if (iter == 0)
     {
@@ -419,7 +419,7 @@ public:
     return true;
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
     population = SolutionVectorPtr();
   }

@@ -254,13 +254,13 @@ public:
     return new TreeGPOperationsSolver(initialSampler, compositeSolutionsOperator(operators), populationSize, maxGenerations);
   }
 
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution = ObjectPtr(), Verbosity verbosity = verbosityQuiet)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     initialSampler->initialize(context, problem->getDomain());
   }
 
-  virtual bool iteration(ExecutionContext& context, size_t iter)
+  virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     if (iter == 0)
     {
@@ -288,7 +288,7 @@ public:
     return true;
   }
 
-  virtual void clear(ExecutionContext& context)
+  virtual void stopSolver(ExecutionContext& context)
   {
     population = SolutionVectorPtr();
   }

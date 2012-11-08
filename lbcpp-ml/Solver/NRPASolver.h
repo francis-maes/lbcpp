@@ -22,13 +22,13 @@ public:
     : sampler(sampler), level(level), numIterationsPerLevel(numIterationsPerLevel) {}
   NRPASolver() : level(0), numIterationsPerLevel(0) {}
   
-  virtual void configure(ExecutionContext& context, ProblemPtr problem, SolutionContainerPtr solutions, ObjectPtr initialSolution, Verbosity verbosity)
+  virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    Solver::configure(context, problem, solutions, initialSolution, verbosity);
+    Solver::startSolver(context, problem, callback, startingSolution);
     sampler->initialize(context, problem->getDomain());
   }
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void runSolver(ExecutionContext& context)
     {solveRecursively(context, sampler, level);}
 
 protected:

@@ -106,38 +106,44 @@ protected:
     for (size_t i = 0; i < numRuns; ++i)
       for (size_t j = 0; j < problems.size(); ++j)
       {
-        MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problems[j], numEvaluations));
-
-        ParetoFrontPtr front = optimizer->optimize(context, decorator);
-        jassert(!front->isEmpty());
-        stats.push(front->getFitness(0)->getValue(0));
+        FitnessPtr bestFitness;
+        SolverCallbackPtr callback = compositeSolverCallback(storeBestFitnessSolverCallback(bestFitness), maxEvaluationsSolverCallback(numEvaluations));
+        optimizer->solve(context, problems[j], callback);
+        jassert(bestFitness);
+        stats.push(bestFitness->getValue(0));
       }
     return stats.getMean();
   }
 
   double solveWithSingleObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
-    SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
-
     context.enterScope(optimizer->toShortString());
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
+
+    DenseDoubleVectorPtr cpuTimes = new DenseDoubleVector(0, 0.0);
+    DenseDoubleVectorPtr scores = new DenseDoubleVector(0, 0.0);
+    size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
+    ParetoFrontPtr front = new ParetoFront();
+    SolverCallbackPtr callback = compositeSolverCallback(
+      fillParetoFrontSolverCallback(front),
+      singleObjectiveEvaluatorSolverCallback(evaluationPeriod, cpuTimes, scores),
+      maxEvaluationsSolverCallback(numEvaluations));
+
+    optimizer->setVerbosity((SolverVerbosity)verbosity);
+    optimizer->solve(context, problem, callback);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("front", front);
-    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
     if (verbosity >= 1)
     {
       context.enterScope("curve");
-      std::vector<double> cpuTimes = decorator->getCpuTimes();
-      std::vector<double> scores = decorator->getScores();
 
-      for (size_t i = 0; i < scores.size(); ++i)
+      for (size_t i = 0; i < scores->getNumValues(); ++i)
       {
-        size_t numEvaluations = i * decorator->getEvaluationPeriod();
+        size_t numEvaluations = i * evaluationPeriod;
         context.enterScope(String((int)numEvaluations));
         context.resultCallback("numEvaluations", numEvaluations);
-        context.resultCallback("score", scores[i]);
-        context.resultCallback("cpuTime", cpuTimes[i]);
+        context.resultCallback("score", scores->getValue(i));
+        context.resultCallback("cpuTime", cpuTimes->getValue(i));
         context.leaveScope();
       }
       context.leaveScope();
@@ -195,26 +201,34 @@ protected:
 
   void solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
-    HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
-
     context.enterScope(optimizer->toShortString());
-    ParetoFrontPtr front = optimizer->optimize(context, decorator, ObjectPtr(), (Solver::Verbosity)verbosity);
+
+    DenseDoubleVectorPtr cpuTimes = new DenseDoubleVector(0, 0.0);
+    DenseDoubleVectorPtr hyperVolumes = new DenseDoubleVector(0, 0.0);
+    size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
+    ParetoFrontPtr front = new ParetoFront();
+    SolverCallbackPtr callback = compositeSolverCallback(
+      fillParetoFrontSolverCallback(front),
+      hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),
+      maxEvaluationsSolverCallback(numEvaluations));
+
+
+    optimizer->setVerbosity((SolverVerbosity)verbosity);
+    optimizer->solve(context, problem, callback);
     context.resultCallback("optimizer", optimizer);
-    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+    //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
     if (verbosity >= 1)
     {
       context.enterScope("curve");
-      std::vector<double> hyperVolumes = decorator->getHyperVolumes();
-      std::vector<double> cpuTimes = decorator->getCpuTimes();
 
-      for (size_t i = 0; i < hyperVolumes.size(); ++i)
+      for (size_t i = 0; i < hyperVolumes->getNumValues(); ++i)
       {
-        size_t numEvaluations = i * decorator->getEvaluationPeriod();
+        size_t numEvaluations = i * evaluationPeriod;
         context.enterScope(String((int)numEvaluations));
         context.resultCallback("numEvaluations", numEvaluations);
-        context.resultCallback("hyperVolume", hyperVolumes[i]);
-        context.resultCallback("cpuTime", cpuTimes[i]);
+        context.resultCallback("hyperVolume", hyperVolumes->getValue(i));
+        context.resultCallback("cpuTime", cpuTimes->getValue(i));
         context.leaveScope();
       }
       context.leaveScope();
