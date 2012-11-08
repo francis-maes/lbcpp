@@ -22,8 +22,6 @@ GENERATE_INTROSPECTION_CODE(LossFunction/LossFunctionLibrary.xml LossFunctionLib
 
 GENERATE_INTROSPECTION_CODE(DecisionProblem/DecisionProblemLibrary.xml DecisionProblemLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/ExpressionBuilderLibrary.xml ExpressionBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
@@ -245,15 +243,6 @@ SET(LBCPP_DECISION_PROBLEM_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionProblemLibrary.cpp
 )
 
-#### Optimizer ####
-
-SET(LBCPP_OPTIMIZER_SOURCES
-  ../include/lbcpp/Optimizer/BanditPool.h
-  Optimizer/BanditPool.cpp
-  Optimizer/OptimizerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
-)
-
 #### Luape ####
 
 SET(LBCPP_LUAPE_SOURCES
@@ -439,9 +428,6 @@ SET(LBCPP_SOURCES
   # Decision Problem
   ${LBCPP_DECISION_PROBLEM_SOURCES}
  
-  # Optimizer
-  ${LBCPP_OPTIMIZER_SOURCES}
- 
   # Luape
   ${LBCPP_LUAPE_SOURCES}
     ${LBCPP_LUAPE_NODE_BUILDER_SOURCES}
@@ -491,9 +477,6 @@ SOURCE_SUB_GROUP2(CleanMe LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCT
 
 ## DecisionProblem
 SOURCE_SUB_GROUP(CleanMe DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
-
-## Optimizer
-SOURCE_SUB_GROUP(CleanMe Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 
 ## Luape
 SOURCE_SUB_GROUP(CleanMe Luape FILES ${LBCPP_LUAPE_SOURCES})

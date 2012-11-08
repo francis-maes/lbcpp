@@ -26,6 +26,15 @@ typedef ReferenceCountedObjectPtr<DiscreteDomain> DiscreteDomainPtr;
 class ContinuousDomain;
 typedef ReferenceCountedObjectPtr<ContinuousDomain> ContinuousDomainPtr;
 
+class Objective;
+typedef ReferenceCountedObjectPtr<Objective> ObjectivePtr;
+
+class DifferentiableObjective;
+typedef ReferenceCountedObjectPtr<DifferentiableObjective> DifferentiableObjectivePtr;
+
+class StochasticObjective;
+typedef ReferenceCountedObjectPtr<StochasticObjective> StochasticObjectivePtr;
+
 class FitnessLimits;
 typedef ReferenceCountedObjectPtr<FitnessLimits> FitnessLimitsPtr;
 

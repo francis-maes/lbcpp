@@ -16,6 +16,7 @@ GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
   ../include/lbcpp-ml/Domain.h
+  ../include/lbcpp-ml/Objective.h
   ../include/lbcpp-ml/Fitness.h
   ../include/lbcpp-ml/SolutionContainer.h
   ../include/lbcpp-ml/SolutionComparator.h
@@ -30,6 +31,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/PostfixExpression.h
   ../include/lbcpp-ml/ExpressionDomain.h
   ../include/lbcpp-ml/ExpressionSampler.h
+  ../include/lbcpp-ml/BanditPool.h
 )
 
 
@@ -122,6 +124,7 @@ SET(LBCPP_ML_TOPLEVEL_SOURCES
   Domain.cpp
   Fitness.cpp
   Problem.cpp
+  BanditPool.cpp
 )
 
 SET(LBCPP_ML_MAIN_SOURCES

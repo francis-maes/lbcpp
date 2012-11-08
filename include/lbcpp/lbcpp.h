@@ -59,7 +59,6 @@
 # include "Execution/TestUnit.h"
 
 # include "DecisionProblem/DecisionProblem.h"
-# include "Optimizer/BanditPool.h"
 
 # include "Luape/LuapeInference.h"
 # include "Luape/LuapeLearner.h"
