@@ -14,25 +14,20 @@
   </class>
   
   <class name="ExpressionToSearchProblem" base="DecoratorProblem"/>
-
-  <!-- Expression Problems -->
-  <class name="ExpressionProblem" base="Problem" abstract="yes"/>
   
   <!-- Symbolic Regression Problems -->
-  <class name="SymbolicRegressionProblem" base="ExpressionProblem" abstract="yes"/>
-  <class name="KozaSymbolicRegressionProblem" base="SymbolicRegressionProblem" abstract="yes"/>
+  <class name="KozaSymbolicRegressionProblem" base="Problem" abstract="yes"/>
   <class name="QuarticSymbolicRegressionProblem" base="KozaSymbolicRegressionProblem" shortName="quartic"/>
   <!--
-  <class name="F8SymbolicRegressionProblem" base="SymbolicRegressionProblem" shortName="symbreg">
+  <class name="F8SymbolicRegressionProblem" base="Problem" shortName="symbreg">
     <variable type="PositiveInteger" name="functionIndex"/>
   </class>-->
 
   <!-- Boolean Problems -->
-  <class name="BooleanExpressionProblem" base="ExpressionProblem" abstract="yes"/>
-  <class name="BooleanParityProblem" base="BooleanExpressionProblem" shortName="parity">
+  <class name="BooleanParityProblem" base="Problem" shortName="parity">
     <variable type="PositiveInteger" name="numBits"/>
   </class>
-  <class name="BooleanMultiplexerProblem" base="BooleanExpressionProblem" shortName="multiplexer">
+  <class name="BooleanMultiplexerProblem" base="Problem" shortName="multiplexer">
     <variable type="PositiveInteger" name="numAddressBits"/>
   </class>
 
@@ -61,7 +56,7 @@
   <class name="Progn3SantaFeTrailFunction" base="SantaFeTrailFunction"/>
   <class name="IfFoodAheadSantaFeTrailFunction" base="SantaFeTrailFunction"/>
 
-  <class name="SantaFeTrailProblem" base="ExpressionProblem" shortName="ant">
+  <class name="SantaFeTrailProblem" base="Problem" shortName="ant">
     <variable type="PositiveInteger" name="maxNumSteps"/>
   </class>
 
@@ -164,7 +159,7 @@
 
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
-    <variable type="ExpressionProblem" name="problem"/>
+    <variable type="Problem" name="problem"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
@@ -173,7 +168,7 @@
   </class>
 
   <class name="SampleExpressionTrajectories" base="WorkUnit">
-    <variable type="ExpressionProblem" name="problem"/>
+    <variable type="Problem" name="problem"/>
     <variable type="PositiveInteger" name="numExpressions"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
@@ -184,7 +179,7 @@
     <variable type="Problem" name="targetProblem"/>
   </class>
   <class name="OptimizeExpressionSamplerSandBox" base="WorkUnit">
-    <variable type="ExpressionProblem" name="problem"/>
+    <variable type="Problem" name="problem"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>

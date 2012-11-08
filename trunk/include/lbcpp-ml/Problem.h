@@ -64,6 +64,16 @@ public:
     return new Fitness(o, limits);
   }
 
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
+
+  void reinitialize(ExecutionContext& context)
+  {
+    domain = DomainPtr();
+    objectives.clear();
+    initialGuess = ObjectPtr();
+    initialize(context);
+  }
+
 protected:
   DomainPtr domain;
   std::vector<ObjectivePtr> objectives;

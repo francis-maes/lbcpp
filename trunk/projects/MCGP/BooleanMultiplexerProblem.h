@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class BooleanMultiplexerProblem : public BooleanExpressionProblem
+class BooleanMultiplexerProblem : public NewProblem
 {
 public:
   BooleanMultiplexerProblem(size_t numAddressBits) : numAddressBits(numAddressBits)
@@ -27,7 +27,7 @@ public:
     size_t numDataBits = (1 << numAddressBits);
     size_t numBits = numAddressBits + numDataBits;
 
-    domain = new ExpressionDomain();
+    ExpressionDomainPtr domain = new ExpressionDomain();
     for (size_t i = 0; i < numAddressBits; ++i)
 		  domain->addInput(booleanType, "a" + String((int)i));
     for (size_t i = 0; i < numDataBits; ++i)
@@ -39,14 +39,13 @@ public:
     domain->addFunction(ifThenElseBooleanFunction());
 
     domain->addTargetType(booleanType);
-    output = domain->createSupervision(booleanType, "y");
-    
-    // fitness limits
-    size_t numCases = (1 << numBits);
-    limits->setLimits(0, 0.0, (double)numCases); // number of correct cases, should be maximized
+    setDomain(domain);
 
+    VariableExpressionPtr output = domain->createSupervision(booleanType, "y");
+    
     // data
-    cache = domain->createCache(numCases);
+    size_t numCases = (1 << numBits);
+    LuapeSamplesCachePtr cache = domain->createCache(numCases);
     BooleanVectorPtr supervisionValues = new BooleanVector(numCases);
 		for (size_t i = 0; i < numCases; ++i)
 		{
@@ -69,6 +68,9 @@ public:
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
     cache->recomputeCacheSize();
     cache->disableCaching();
+
+    // objective
+    addObjective(new BooleanAccuracyObjective(cache, output));
   }
 
 protected:

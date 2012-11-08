@@ -14,12 +14,19 @@
 namespace lbcpp
 {
 
-class SymbolicRegressionProblem : public ExpressionProblem
+// TODO: factorize somewhere
+class SymbolicRegressionObjective : public Objective
 {
 public:
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  SymbolicRegressionObjective(LuapeSamplesCachePtr cache, VariableExpressionPtr output)
+    : cache(cache), output(output) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = 1.0;}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
-    // retrieve predictions and supervisions
+     // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
     LuapeSampleVectorPtr predictions = cache->getSamples(context, expression);
     DenseDoubleVectorPtr supervisions = cache->getNodeCache(output);
@@ -37,13 +44,7 @@ public:
     squaredError /= (double)supervisions->getNumValues();
 
     // construct the Fitness
-    std::vector<double> fitness(1);
-    fitness[0] = 1.0 / (1.0 + sqrt(squaredError));
-    //fitness[1] = expression->getTreeSize();
-
-
-    //std::cout << PostfixExpressionSequence::fromNode(expression)->toShortString() << " => " << res.getMean() << std::endl;
-    return new Fitness(fitness, limits);
+    return 1.0 / (1.0 + sqrt(squaredError));
   }
 
 protected:
@@ -51,7 +52,7 @@ protected:
   VariableExpressionPtr output;
 };
 
-class KozaSymbolicRegressionProblem : public SymbolicRegressionProblem
+class KozaSymbolicRegressionProblem : public NewProblem
 {
 public:
   virtual void getInputDomain(double& lowerLimit, double& upperLimit)
@@ -61,7 +62,7 @@ public:
 
   virtual void initialize(ExecutionContext& context)
   {
-    domain = new ExpressionDomain();
+    ExpressionDomainPtr domain = new ExpressionDomain();
     domain->addInput(doubleType, "x");
 
 		domain->addFunction(addDoubleFunction());
@@ -73,15 +74,13 @@ public:
 		domain->addFunction(cosDoubleFunction());
 		domain->addFunction(expDoubleFunction());
     domain->addFunction(protectedLogDoubleFunction());
+    setDomain(domain);
 
-    output = domain->createSupervision(doubleType, "y");
+    VariableExpressionPtr output = domain->createSupervision(doubleType, "y");
     
-    // fitness limits
-    limits->setLimits(0, 0.0, 1.0); // should maximize 1/(1 + rmse)
-
     // data
     const size_t numSamples = 20;
-    cache = domain->createCache(numSamples);
+    LuapeSamplesCachePtr cache = domain->createCache(numSamples);
     DenseDoubleVectorPtr supervisionValues = new DenseDoubleVector(numSamples, 0.0);
     double lowerLimit, upperLimit;
     getInputDomain(lowerLimit, upperLimit);
@@ -96,20 +95,23 @@ public:
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
     cache->recomputeCacheSize();
     cache->disableCaching();
+
+    addObjective(new SymbolicRegressionObjective(cache, output));
   }
 };
 
 class QuarticSymbolicRegressionProblem : public KozaSymbolicRegressionProblem
 {
 public:
-  QuarticSymbolicRegressionProblem() {initialize(defaultExecutionContext());}
+  QuarticSymbolicRegressionProblem()
+    {initialize(defaultExecutionContext());}
 
   virtual double computeFunction(double x) const
     {return x * (x * (x * (x + 1.0) + 1.0) + 1.0);}
 };
 
 #if 0
-class F8SymbolicRegressionProblem : public SymbolicRegressionProblem
+class F8SymbolicRegressionProblem : public NewProblem
 {
 public:
   F8SymbolicRegressionProblem(size_t functionIndex)
@@ -119,7 +121,7 @@ public:
   virtual void initialize(ExecutionContext& context)
   {
     jassert(functionIndex >= 0 && functionIndex < 8);
-    domain = new ExpressionDomain();
+    ExpressionDomainPtr domain = new ExpressionDomain();
     domain->addInput(doubleType, "x");
 
 		domain->addConstant(1.0);
@@ -133,15 +135,16 @@ public:
 		domain->addFunction(subDoubleFunction());
 		domain->addFunction(mulDoubleFunction());
 		domain->addFunction(divDoubleFunction());
+    setDomain(domain);
 
-    output = domain->createSupervision(doubleType, "y");
+    VariableExpressionPtr output = domain->createSupervision(doubleType, "y");
     
     // fitness limits
     limits->setLimits(0, getWorstError(), 0.0); // absolute error: should be minimized
 
     // data
     const size_t numSamples = 20;
-    cache = domain->createCache(numSamples);
+    LuapeSamplesCachePtr cache = domain->createCache(numSamples);
     DenseDoubleVectorPtr supervisionValues = new DenseDoubleVector(numSamples, 0.0);
     double lowerLimit, upperLimit;
     getInputDomain(lowerLimit, upperLimit);
@@ -156,6 +159,8 @@ public:
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
     cache->recomputeCacheSize();
     cache->disableCaching();
+
+    addObjective(new SymbolicRegressionObjective(cache, output));
   }
 
 protected:

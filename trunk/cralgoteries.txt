@@ -1,12 +1,4 @@
- Problem
-  ExpressionProblem
-    BooleanExpressionProblem
-	  BooleanMultiplexerProblem
-	  BooleanParityProblem
-	SanteFeTrailProblem
-	SymbolicRegressionProblem
-	  KozaSymbolicRegressionProblem
-	  F8SymbolicRegressionProblem
+Problem
   ContinuousProblem
     OptimizeExpressionSamplerProblem
 	ExpressionSearchProbabilitiesProblem
@@ -28,3 +20,11 @@ NewProblem
 	  AckleyProblem,  GriewangkProblem, ... RosenbrockRotatedProblem
 	ZDTMOProblem
 	  ZDT1MOProblem ... ZDT6MOProblem
+  ExpressionProblem
+    BooleanExpressionProblem
+	  BooleanMultiplexerProblem
+	  BooleanParityProblem
+	SanteFeTrailProblem
+	SymbolicRegressionProblem
+	  KozaSymbolicRegressionProblem
+	  F8SymbolicRegressionProblem

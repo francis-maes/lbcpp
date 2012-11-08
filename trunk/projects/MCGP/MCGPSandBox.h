@@ -103,8 +103,8 @@ public:
     return problem->evaluate(context, expression);
   }
 
-  ExpressionProblemPtr getExpressionProblem() const
-    {return problem.staticCast<ExpressionProblem>();}
+  //ProblemPtr getExpressionProblem() const
+  //  {return problem;}
   
 protected:
   SearchDomainPtr domain;
@@ -728,7 +728,7 @@ public:
 protected:
   friend class MCGPSandBoxClass;
 
-  ExpressionProblemPtr problem;
+  ProblemPtr problem;
   size_t numEvaluations;
   size_t numRuns;
   size_t maxExpressionSize;
@@ -845,7 +845,7 @@ protected:
 
   double runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation)
   {
-    problem->initialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
+    problem.staticCast<NewProblem>()->reinitialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
     ProblemPtr problem = this->problem;
     if (!solver.isInstanceOf<TreeGPOperationsSolver>() && !solver.isInstanceOf<TreeGPSamplersSolver>() && !solver.isInstanceOf<TestSolver>() && !solver.isInstanceOf<MABSamplerExpressionSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);
