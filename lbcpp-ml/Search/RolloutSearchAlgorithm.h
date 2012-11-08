@@ -31,7 +31,7 @@ public:
     SearchStatePtr state = trajectory->getFinalState();
     while (!state->isFinalState())
     {
-      if (problem->shouldStop())
+      if (callback->shouldStop())
         return;
       ObjectPtr action = sampler->sampleAction(context, state);
       trajectory->append(action);

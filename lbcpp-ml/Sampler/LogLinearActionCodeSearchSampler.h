@@ -98,7 +98,7 @@ protected:
     {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
 };
 
-class LogLinearActionCodeLearningProblem : public NewProblem
+class LogLinearActionCodeLearningProblem : public Problem
 {
 public:
   typedef LogLinearActionCodeLearningObjective::Example Example;
@@ -177,10 +177,10 @@ public:
       parameters->ensureSize(highestActionCode + 1);
 
     ProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(highestActionCode + 1, dataset, regularizer);
-    learningProblem.staticCast<NewProblem>()->setInitialGuess(parameters);
+    learningProblem->setInitialGuess(parameters);
 
     // test derivative 
-    DifferentiableObjectivePtr objective = learningProblem.staticCast<NewProblem>()->getObjective(0).staticCast<DifferentiableObjective>();
+    DifferentiableObjectivePtr objective = learningProblem->getObjective(0).staticCast<DifferentiableObjective>();
     for (size_t i = 0; i < 10; ++i)
       objective->testDerivativeWithRandomDirection(context, parameters);
     // ----

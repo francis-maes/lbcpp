@@ -24,7 +24,7 @@ public:
     : sampler(sampler), targetProblem(targetProblem) {}
 
   virtual void getObjectiveRange(double& worst, double& best) const
-    {targetProblem.staticCast<NewProblem>()->getObjective(0)->getObjectiveRange(worst, best);}
+    {targetProblem->getObjective(0)->getObjectiveRange(worst, best);}
 
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
@@ -43,7 +43,7 @@ protected:
   ProblemPtr targetProblem;
 };
 
-class OptimizeExpressionSamplerProblem : public NewProblem
+class OptimizeExpressionSamplerProblem : public Problem
 {
 public:
   OptimizeExpressionSamplerProblem(SearchActionCodeGeneratorPtr codeGenerator, ProblemPtr targetProblem)

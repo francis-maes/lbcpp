@@ -18,12 +18,10 @@ void Solver::startSolver(ExecutionContext& context, ProblemPtr problem, SolverCa
 {
   this->problem = problem;
   this->callback = callback;
-  callback->solverStarted(context, refCountedPointerFromThis(this));
 }
 
 void Solver::stopSolver(ExecutionContext& context)
 {
-  callback->solverStopped(context, refCountedPointerFromThis(this));
   problem = ProblemPtr();
   callback = SolverCallbackPtr();
 }
@@ -31,7 +29,9 @@ void Solver::stopSolver(ExecutionContext& context)
 void Solver::solve(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
 {
   startSolver(context, problem, callback, startingSolution);
+  callback->solverStarted(context, refCountedPointerFromThis(this));
   runSolver(context);
+  callback->solverStopped(context, refCountedPointerFromThis(this));
   stopSolver(context);
 }
 
@@ -52,7 +52,7 @@ FitnessPtr Solver::evaluate(ExecutionContext& context, const ObjectPtr& object)
 void IterativeSolver::runSolver(ExecutionContext& context)
 {
   bool shouldContinue = true;
-  for (size_t i = 0; (!numIterations || i < numIterations) && !problem->shouldStop() && shouldContinue; ++i)
+  for (size_t i = 0; (!numIterations || i < numIterations) && !callback->shouldStop() && shouldContinue; ++i)
   {
     //Object::displayObjectAllocationInfo(std::cout);
 
@@ -112,7 +112,7 @@ void IterativeSolver::runSolver(ExecutionContext& context)
 SolutionVectorPtr PopulationBasedSolver::sampleAndEvaluatePopulation(ExecutionContext& context, SamplerPtr sampler, size_t populationSize)
 {
   SolutionVectorPtr res = new SolutionVector(problem->getFitnessLimits());
-  for (size_t i = 0; i < populationSize && !problem->shouldStop(); ++i)
+  for (size_t i = 0; i < populationSize && !callback->shouldStop(); ++i)
   {
     ObjectPtr solution = problem->getDomain()->projectIntoDomain(sampler->sample(context));
     FitnessPtr fitness = evaluate(context, solution);
@@ -125,7 +125,7 @@ SolutionVectorPtr PopulationBasedSolver::sampleAndEvaluatePopulation(ExecutionCo
 void PopulationBasedSolver::computeMissingFitnesses(ExecutionContext& context, const SolutionVectorPtr& population)
 {
   size_t n = population->getNumSolutions();
-  for (size_t i = 0; i < n && !problem->shouldStop(); ++i)
+  for (size_t i = 0; i < n && !callback->shouldStop(); ++i)
     if (!population->getFitness(i))
       population->setFitness(i, evaluate(context, population->getSolution(i)));
 }

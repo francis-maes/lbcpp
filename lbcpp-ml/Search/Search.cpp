@@ -121,7 +121,11 @@ void DecoratorSearchAlgorithm::subSearch(ExecutionContext& context)
   if (state->isFinalState())
     evaluate(context, trajectory->cloneAndCast<SearchTrajectory>());
   else
-    algorithm->solve(context, problem, callback, trajectory);
+  {
+    algorithm->startSolver(context, problem, callback, trajectory);
+    algorithm->runSolver(context);
+    algorithm->stopSolver(context);
+  }
 }
 
 /*

@@ -72,11 +72,12 @@ protected:
 };
 
 /////////////////////////
-class ExpressionToSearchProblem : public NewProblem
+class ExpressionToSearchProblem : public Problem
 {
 public:
   ExpressionToSearchProblem(ProblemPtr expressionProblem, size_t maxSize, bool usePostfixNotation)
-    : expressionProblem(expressionProblem), maxSize(maxSize), usePostfixNotation(usePostfixNotation) {}
+    : expressionProblem(expressionProblem), maxSize(maxSize), usePostfixNotation(usePostfixNotation)
+    {initialize(defaultExecutionContext());}
   ExpressionToSearchProblem() {}
 
   virtual void initialize(ExecutionContext& context)
@@ -93,7 +94,7 @@ public:
 
     setDomain(new SearchDomain(initialState));
     for (size_t i = 0; i < expressionProblem->getNumObjectives(); ++i)
-      addObjective(new Obj(expressionProblem.staticCast<NewProblem>()->getObjective(i)));
+      addObjective(new Obj(expressionProblem->getObjective(i)));
   }
 
 protected:
@@ -564,7 +565,7 @@ public:
     bestFitness = FitnessPtr();
   }
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
     ++numEvaluations;
 
@@ -583,8 +584,6 @@ public:
       fitnessPerCpuTime.push_back(bestFitness->getValue(0));
       nextEvaluationDeltaTime *= 1.5;
     }
-
-    return true;
   }
   
   const std::vector<double>& getFitnessPerEvaluationCount() const
@@ -645,6 +644,8 @@ public:
     }
     else
       jassertfalse;
+    solvers.push_back(std::make_pair(treeGP1, "treegp"));
+    solvers.push_back(std::make_pair(treeGP2, "treegp-samplers"));
 
     SamplerPtr randomSampler = randomSearchSampler();
     //solvers.push_back(std::make_pair(new RandomWithActiveSubTreesSolver(1000, numEvaluations / 1000, 300, 50), "random-ast10"));
@@ -709,9 +710,7 @@ public:
 
       
     
-    solvers.push_back(std::make_pair(treeGP1, "treegp"));
-    solvers.push_back(std::make_pair(treeGP2, "treegp-samplers"));
-
+    
 
    
     //solvers.push_back(std::make_pair(ceSolver(100, 30, false, 0.1), "ce(100, 30, false, 0.1"));
@@ -861,7 +860,7 @@ protected:
 
   double runSolverOnce(ExecutionContext& context, SolverPtr solver, SolverInfo& info, bool usePostfixNotation)
   {
-    problem.staticCast<NewProblem>()->reinitialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
+    problem->reinitialize(context); // reinitialize problem (necessary because some problems such as koza symbolic regression are indeed distributions over problems)
     ProblemPtr problem = this->problem;
     if (!solver.isInstanceOf<TreeGPOperationsSolver>() && !solver.isInstanceOf<TreeGPSamplersSolver>() && !solver.isInstanceOf<TestSolver>() && !solver.isInstanceOf<MABSamplerExpressionSolver>())
       problem = new ExpressionToSearchProblem(problem, maxExpressionSize, usePostfixNotation);

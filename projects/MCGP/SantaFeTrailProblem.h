@@ -402,7 +402,7 @@ protected:
 /*
 ** Problem
 */
-class SantaFeTrailProblem : public NewProblem
+class SantaFeTrailProblem : public Problem
 {
 public:
   SantaFeTrailProblem(size_t maxNumSteps) : maxNumSteps(maxNumSteps)

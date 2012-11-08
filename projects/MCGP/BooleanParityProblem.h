@@ -49,7 +49,7 @@ protected:
   VariableExpressionPtr output;
 };
 
-class BooleanParityProblem : public NewProblem
+class BooleanParityProblem : public Problem
 {
 public:
   BooleanParityProblem(size_t numBits) : numBits(numBits)

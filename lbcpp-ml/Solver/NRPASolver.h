@@ -40,7 +40,7 @@ protected:
 
   SolutionAndFitnessPair solveRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
   {
-    if (problem->shouldStop())
+    if (callback->shouldStop())
       return SolutionAndFitnessPair();
       
     if (level == 0)
@@ -71,7 +71,7 @@ protected:
             break;
         }
 
-        if (isTopLevel && problem->shouldStop())
+        if (isTopLevel && callback->shouldStop())
           break;
       }
       return std::make_pair(bestSolution, bestFitness);

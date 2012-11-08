@@ -35,7 +35,7 @@ protected:
     ParetoFrontPtr front = new ParetoFront();
     callback = compositeSolverCallback(fillParetoFrontSolverCallback(front), previousCallback);
 
-    while (!state->isFinalState() && !problem->shouldStop())
+    while (!state->isFinalState() && !callback->shouldStop())
     {
       subSearch(context);
 

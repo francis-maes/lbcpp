@@ -52,7 +52,7 @@ protected:
   VariableExpressionPtr output;
 };
 
-class KozaSymbolicRegressionProblem : public NewProblem
+class KozaSymbolicRegressionProblem : public Problem
 {
 public:
   virtual void getInputDomain(double& lowerLimit, double& upperLimit)
@@ -111,7 +111,7 @@ public:
 };
 
 #if 0
-class F8SymbolicRegressionProblem : public NewProblem
+class F8SymbolicRegressionProblem : public Problem
 {
 public:
   F8SymbolicRegressionProblem(size_t functionIndex)

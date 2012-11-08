@@ -584,7 +584,7 @@ public:
   }
 };
 
-class MorpionProblem : public NewProblem
+class MorpionProblem : public Problem
 {
 public:
   MorpionProblem(size_t crossLength, bool isDisjoint)

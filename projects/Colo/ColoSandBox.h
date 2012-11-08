@@ -84,7 +84,7 @@ protected:
   double bestScore;
 };
 
-class ColoProblem : public NewProblem
+class ColoProblem : public Problem
 {
 public:
   ColoProblem(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)

@@ -42,7 +42,7 @@ protected:
 
     for (size_t i = 0; i < selectedActions.size(); ++i)
     {
-      if (problem->shouldStop())
+      if (callback->shouldStop())
         break;
       ObjectPtr action = selectedActions[i];
       Variable stateBackup;

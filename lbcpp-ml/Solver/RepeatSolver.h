@@ -22,7 +22,12 @@ public:
   RepeatSolver() {}
   
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
-    {solver->solve(context, problem, callback); return true;}
+  {
+    solver->startSolver(context, problem, callback);
+    solver->runSolver(context);
+    solver->stopSolver(context);
+    return true;
+  }
 
 protected:
   friend class RepeatSolverClass;

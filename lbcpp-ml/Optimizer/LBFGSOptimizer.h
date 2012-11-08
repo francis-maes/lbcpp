@@ -44,7 +44,7 @@ public:
     lbfgsInitialize(domain->getNumDimensions());
     parameters = startingSolution.staticCast<DenseDoubleVector>();
     if (!parameters)
-      parameters = problem.staticCast<NewProblem>()->getInitialGuess();
+      parameters = problem->getInitialGuess();
     parameters = parameters->cloneAndCast<DenseDoubleVector>();
   }
 
@@ -52,7 +52,7 @@ public:
   {
     double value = 0.0;
     DoubleVectorPtr gradient;
-    DifferentiableObjectivePtr objective = problem.staticCast<NewProblem>()->getObjective(0).staticCast<DifferentiableObjective>();
+    DifferentiableObjectivePtr objective = problem->getObjective(0).staticCast<DifferentiableObjective>();
     objective->evaluate(context, parameters, &value, &gradient);
     callback->solutionEvaluated(context, refCountedPointerFromThis(this), parameters, new Fitness(value, problem->getFitnessLimits()));
     DenseDoubleVectorPtr denseGradient = gradient->toDenseDoubleVector();
