@@ -192,7 +192,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ExpressionSearchProbabilitiesObjective> ExpressionSearchProbabilitiesObjectivePtr;
 
-class ExpressionSearchProbabilitiesProblem : public NewProblem
+class ExpressionSearchProbabilitiesProblem : public Problem
 {
 public:
   ExpressionSearchProbabilitiesProblem(ExpressionDomainPtr expressionDomain, size_t maxSize, bool usePostfixNotation)

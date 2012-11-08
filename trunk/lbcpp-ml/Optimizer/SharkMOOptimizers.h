@@ -55,7 +55,7 @@ public:
   
   virtual bool ProposeStartingPoint(double*& point) const
   {
-    DenseDoubleVectorPtr solution = problem.staticCast<NewProblem>()->getInitialGuess().staticCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr solution = problem->getInitialGuess().staticCast<DenseDoubleVector>();
     if (!solution)
       return false;
     memcpy(point, solution->getValuePointer(0), sizeof (double) * m_dimension);

@@ -43,7 +43,7 @@ protected:
   double bestScore;
 };
 
-class ProblemFromSharkObjectiveFunction : public NewProblem
+class ProblemFromSharkObjectiveFunction : public Problem
 {
 public:
   ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective)

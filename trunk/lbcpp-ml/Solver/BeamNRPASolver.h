@@ -55,7 +55,7 @@ protected:
 
   Beam solveRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
   {
-    if (problem->shouldStop())
+    if (callback->shouldStop())
       return Beam();
       
     if (level == 0)
@@ -78,7 +78,7 @@ protected:
           newBeam.push_back(element);
           Beam beam1 = solveRecursively(context, element.sampler, level - 1);
           for (size_t k = 0; k < beam1.size(); ++k)
-            if (beam1[k].solution) // may be null if "problem->shouldStop()"
+            if (beam1[k].solution) // may be null if "callback->shouldStop()"
             {
               SamplerPtr sampler = element.sampler->cloneAndCast<Sampler>();
               sampler->reinforce(context, beam1[k].solution, 1.0);
@@ -87,7 +87,7 @@ protected:
         }
         
         beam = beamSize < newBeam.size() ? selectNBests(newBeam, beamSize) : newBeam;
-        if (problem->shouldStop())
+        if (callback->shouldStop())
           break;
       }
       return beam;

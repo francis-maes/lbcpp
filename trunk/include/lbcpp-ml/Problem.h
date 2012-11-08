@@ -19,68 +19,46 @@ namespace lbcpp
 class Problem : public Object
 {
 public:
-  virtual DomainPtr getDomain() const = 0;
-  virtual FitnessLimitsPtr getFitnessLimits() const = 0;
-
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object) = 0;
-
-  virtual bool shouldStop() const
-    {return false;}
-
-  size_t getNumObjectives() const
-    {return getFitnessLimits()->getNumObjectives();}
-};
-
-class NewProblem : public Problem
-{
-public:
-  virtual DomainPtr getDomain() const
+  /*
+  ** Domain
+  */
+  DomainPtr getDomain() const
     {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
-  {
-    if (!limits)
-    {
-      std::vector<std::pair<double, double> > l(objectives.size());
-      for (size_t i = 0; i < l.size(); ++i)
-        objectives[i]->getObjectiveRange(l[i].first, l[i].second);
-      const_cast<NewProblem* >(this)->limits = new FitnessLimits(l);
-    }
-    return limits;
-  }
-
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    FitnessLimitsPtr limits = getFitnessLimits();
-    std::vector<double> o(objectives.size());
-    for (size_t i = 0; i < o.size(); ++i)
-      o[i] = objectives[i]->evaluate(context, object);
-    return new Fitness(o, limits);
-  }
-
-  void reinitialize(ExecutionContext& context)
-  {
-    domain = DomainPtr();
-    objectives.clear();
-    initialGuess = ObjectPtr();
-    initialize(context);
-  }
-  
-  ObjectivePtr getObjective(size_t index) const
-    {jassert(index < objectives.size()); return objectives[index];}
-
-  ObjectPtr getInitialGuess() const
-    {return initialGuess;}
   
   void setDomain(DomainPtr domain)
     {this->domain = domain;}
+  
+  /*
+  ** Objectives
+  */
+  size_t getNumObjectives() const
+    {return objectives.size();}
 
+  ObjectivePtr getObjective(size_t index) const
+    {jassert(index < objectives.size()); return objectives[index];}
+  
   void addObjective(ObjectivePtr objective)
     {objectives.push_back(objective);}
+
+  /*
+  ** Initial Guess
+  */
+  ObjectPtr getInitialGuess() const
+    {return initialGuess;}
 
   void setInitialGuess(ObjectPtr initialGuess)
     {this->initialGuess = initialGuess;}
 
+  /*
+  ** Evaluation
+  */
+  FitnessLimitsPtr getFitnessLimits() const;
+  FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
+
+  /*
+  ** Loading / Initialization
+  */
+  void reinitialize(ExecutionContext& context);
   virtual bool loadFromString(ExecutionContext& context, const String& str);
 
 protected:

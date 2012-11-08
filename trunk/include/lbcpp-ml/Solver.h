@@ -22,8 +22,11 @@ class SolverCallback : public Object
 {
 public:
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver) {}
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness) = 0; // return false to stop optimization
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness) = 0;
   virtual void solverStopped(ExecutionContext& context, SolverPtr solver) {}
+
+  virtual bool shouldStop()
+    {return false;}
 };
 
 extern SolverCallbackPtr storeBestFitnessSolverCallback(FitnessPtr& bestFitness);
@@ -79,8 +82,7 @@ protected:
   ProblemPtr problem;
   SolverCallbackPtr callback;
   SolverVerbosity verbosity;
-  bool shouldStop;
-
+  
   FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
 };
 

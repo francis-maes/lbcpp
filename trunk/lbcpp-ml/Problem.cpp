@@ -56,11 +56,40 @@ bool DifferentiableObjective::testDerivative(ExecutionContext& context, const De
 }
 
 /*
-** NewProblem
+** Problem
 */
-bool NewProblem::loadFromString(ExecutionContext& context, const String& str)
+FitnessLimitsPtr Problem::getFitnessLimits() const
 {
-  if (!Problem::loadFromString(context, str))
+  if (!limits)
+  {
+    std::vector<std::pair<double, double> > l(objectives.size());
+    for (size_t i = 0; i < l.size(); ++i)
+      objectives[i]->getObjectiveRange(l[i].first, l[i].second);
+    const_cast<Problem* >(this)->limits = new FitnessLimits(l);
+  }
+  return limits;
+}
+
+FitnessPtr Problem::evaluate(ExecutionContext& context, const ObjectPtr& object)
+{
+  FitnessLimitsPtr limits = getFitnessLimits();
+  std::vector<double> o(objectives.size());
+  for (size_t i = 0; i < o.size(); ++i)
+    o[i] = objectives[i]->evaluate(context, object);
+  return new Fitness(o, limits);
+}
+
+void Problem::reinitialize(ExecutionContext& context)
+{
+  domain = DomainPtr();
+  objectives.clear();
+  initialGuess = ObjectPtr();
+  initialize(context);
+}
+
+bool Problem::loadFromString(ExecutionContext& context, const String& str)
+{
+  if (!Object::loadFromString(context, str))
     return false;
   initialize(context);
   return true;

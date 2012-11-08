@@ -230,7 +230,7 @@ public:
 
       size_t numNegatives = 0, numPositives = 0;
 
-      for (size_t i = 0; i < n && !problem->shouldStop(); i += 2)
+      for (size_t i = 0; i < n && !callback->shouldStop(); i += 2)
       {
         ExpressionPtr solution1 = parentsSampler->sample(context);
         ExpressionPtr solution2 = parentsSampler->sample(context);

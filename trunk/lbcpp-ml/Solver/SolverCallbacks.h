@@ -29,18 +29,24 @@ public:
       callbacks[i]->solverStarted(context, solver);
   }
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
-    bool cont = true;
     for (size_t i = 0; i < callbacks.size(); ++i)
-      cont &= callbacks[i]->solutionEvaluated(context, solver, object, fitness);
-    return cont;
+      callbacks[i]->solutionEvaluated(context, solver, object, fitness);
   }
   
   virtual void solverStopped(ExecutionContext& context, SolverPtr solver)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
       callbacks[i]->solverStopped(context, solver);
+  }
+  
+  virtual bool shouldStop()
+  {
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      if (callbacks[i]->shouldStop())
+        return true;
+    return false;
   }
 
 protected:
@@ -55,11 +61,10 @@ public:
   StoreBestFitnessSolverCallback(FitnessPtr& bestFitness) : res(res) {}
   StoreBestFitnessSolverCallback() : res(*(FitnessPtr* )0) {}
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
     if (fitness->strictlyDominates(res))
       res = fitness;
-    return true;
   }
 
 protected:
@@ -72,8 +77,8 @@ public:
   FillParetoFrontSolverCallback(ParetoFrontPtr front = ParetoFrontPtr())
     : front(front) {}
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
-    {front->insertSolution(object, fitness); return true;}
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+    {front->insertSolution(object, fitness);}
   
   virtual void solverStopped(ExecutionContext& context, SolverPtr solver)
   {
@@ -96,8 +101,11 @@ public:
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
     {numEvaluations = 0;}
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
-    {++numEvaluations; return numEvaluations <= maxEvaluations;}
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+    {++numEvaluations;}
+
+  virtual bool shouldStop()
+    {return numEvaluations >= maxEvaluations;}
 
 protected:
   friend class MaxEvaluationsSolverCallbackClass;
@@ -121,7 +129,7 @@ public:
     startTime = juce::Time::getMillisecondCounterHiRes() / 1000.0;
   }
   
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
     ++numEvaluations;
     if (numEvaluations % evaluationPeriod == 0)
@@ -129,7 +137,6 @@ public:
       evaluate(context, solver);
       cpuTimes->appendValue(juce::Time::getMillisecondCounterHiRes() / 1000.0 - startTime);
     }
-    return true;
   }
 
 protected:
@@ -158,11 +165,11 @@ public:
   virtual void evaluate(ExecutionContext& context, SolverPtr solver)
     {scores->appendValue(bestFitness->getValue(0));}
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
     if (!bestFitness || fitness->strictlyDominates(bestFitness))
       bestFitness = fitness;
-    return EvaluatorSolverCallback::solutionEvaluated(context, solver, object, fitness);
+    EvaluatorSolverCallback::solutionEvaluated(context, solver, object, fitness);
   }
 
 protected:
@@ -188,10 +195,10 @@ public:
   virtual void evaluate(ExecutionContext& context, SolverPtr solver)
     {scores->appendValue(front->computeHyperVolume(solver->getProblem()->getFitnessLimits()->getWorstPossibleFitness()));}
 
-  virtual bool solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
     front->insertSolution(object, fitness);
-    return EvaluatorSolverCallback::solutionEvaluated(context, solver, object, fitness);
+    EvaluatorSolverCallback::solutionEvaluated(context, solver, object, fitness);
   }
 
 protected:

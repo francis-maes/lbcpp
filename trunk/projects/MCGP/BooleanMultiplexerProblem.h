@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class BooleanMultiplexerProblem : public NewProblem
+class BooleanMultiplexerProblem : public Problem
 {
 public:
   BooleanMultiplexerProblem(size_t numAddressBits) : numAddressBits(numAddressBits)
