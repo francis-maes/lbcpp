@@ -19,6 +19,7 @@
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/ExpressionSampler.h>
 # include <lbcpp-ml/Search.h>
+# include <lbcpp-ml/BanditPool.h>
 # include "TreeGPOperations.h"
 # include "TreeGPSamplers.h"
 # include <algorithm>
@@ -161,7 +162,7 @@ public:
     pool = BanditPoolPtr();
   }
 
-  struct BanditObjective : public BanditPoolObjective
+  struct BanditObjective : public StochasticObjective
   {
     BanditObjective(MABSamplerExpressionSolver* owner)
       : owner(owner) {}
@@ -173,11 +174,11 @@ public:
       best = owner->problem->getFitnessLimits()->getUpperLimit(0);
     }
 
-    virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {
       ProblemPtr searchProblem = new ExpressionToSearchProblem(owner->problem, owner->maxExpressionSize, owner->usePostfixNotation);
       SamplerPtr sampler = logLinearActionCodeSearchSampler(owner->codeGenerator);
-      sampler->setVariable(sampler->getClass()->findMemberVariable("parameters"), parameter.getObjectAndCast<DenseDoubleVector>());
+      sampler->setVariable(sampler->getClass()->findMemberVariable("parameters"), object.staticCast<DenseDoubleVector>());
       SolverPtr solver = stepSearchAlgorithm(lookAheadSearchAlgorithm(rolloutSearchAlgorithm(sampler)));
       SolutionContainerPtr solutions = solver->optimize(context, searchProblem);
       owner->solutions->insertSolution(solutions->getSolution(0), solutions->getFitness(0));

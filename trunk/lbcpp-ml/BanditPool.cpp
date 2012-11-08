@@ -6,10 +6,19 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Optimizer/BanditPool.h>
+#include <lbcpp-ml/BanditPool.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <algorithm>
 using namespace lbcpp;
+
+BanditPool::BanditPool(const StochasticObjectivePtr& objective, double explorationCoefficient, bool optimizeMax, bool useMultiThreading) 
+  : objective(objective), explorationCoefficient(explorationCoefficient), optimizeMax(optimizeMax), useMultiThreading(useMultiThreading)
+{
+}
+
+BanditPool::BanditPool() : explorationCoefficient(0.0)
+{
+}
 
 void BanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showProgression)
 {
@@ -54,8 +63,8 @@ void BanditPool::playIterations(ExecutionContext& context, size_t numIterations,
   }
 }
 
-const Variable& BanditPool::getArmParameter(size_t index) const
-  {jassert(index < arms.size()); return arms[index].parameter;}
+const ObjectPtr& BanditPool::getArmObject(size_t index) const
+  {jassert(index < arms.size()); return arms[index].object;}
 
 double BanditPool::getArmMeanObjective(size_t index) const
   {jassert(index < arms.size()); return arms[index].getMeanObjectiveValue();}
@@ -66,21 +75,21 @@ double BanditPool::getArmMeanReward(size_t index) const
 size_t BanditPool::getArmPlayedCount(size_t index) const
   {jassert(index < arms.size()); return arms[index].playedCount;}
 
-void BanditPool::setArmParameter(size_t index, const Variable& parameter)
-  {jassert(index < arms.size()); arms[index].parameter = parameter;}
+void BanditPool::setArmObject(size_t index, const ObjectPtr& object)
+  {jassert(index < arms.size()); arms[index].object = object;}
 
 struct PlayArmWorkUnit : public WorkUnit
 {
-  PlayArmWorkUnit(BanditPoolObjectivePtr objective, const Variable& parameter, size_t instanceIndex, size_t armIndex)
-    : objective(objective), parameter(parameter), instanceIndex(instanceIndex), armIndex(armIndex) {}
+  PlayArmWorkUnit(StochasticObjectivePtr objective, const ObjectPtr& object, size_t instanceIndex, size_t armIndex)
+    : objective(objective), object(object), instanceIndex(instanceIndex), armIndex(armIndex) {}
 
-  BanditPoolObjectivePtr objective;
-  Variable parameter;
+  StochasticObjectivePtr objective;
+  ObjectPtr object;
   size_t instanceIndex;
   size_t armIndex;
 
   virtual Variable run(ExecutionContext& context)
-   {return objective->computeObjective(context, parameter, instanceIndex);}
+   {return objective->evaluate(context, object, instanceIndex);}
 };
 
 size_t BanditPool::selectAndPlayArm(ExecutionContext& context)
@@ -90,7 +99,7 @@ size_t BanditPool::selectAndPlayArm(ExecutionContext& context)
     return (size_t)-1;
 
   Arm& arm = arms[index];
-  WorkUnitPtr workUnit = new PlayArmWorkUnit(objective, arm.parameter, arm.playedCount, index);
+  WorkUnitPtr workUnit = new PlayArmWorkUnit(objective, arm.object, arm.playedCount, index);
   if (useMultiThreading && context.isMultiThread())
     context.pushWorkUnit(workUnit, this, false);
   else
@@ -146,9 +155,9 @@ void BanditPool::displayAllArms(ExecutionContext& context)
   for (size_t i = 0; i < order.size(); ++i)
   {
     Arm& arm = arms[order[i].first];
-    context.enterScope(arm.parameter.toShortString());
+    context.enterScope(arm.object->toShortString());
     context.resultCallback("rank", i);
-    context.resultCallback("parameter", arm.parameter.toShortString());
+    context.resultCallback("object", arm.object->toShortString());
     context.resultCallback("playedCount", arm.playedCount);
     context.resultCallback("meanReward", arm.rewardSum / arm.playedCount);
     context.resultCallback("meanObjectiveValue", arm.objectiveValueSum / arm.playedCount);
@@ -161,7 +170,7 @@ void BanditPool::displayArmInformation(ExecutionContext& context, size_t order, 
   const Arm& arm = arms[armIndex];
   double objectiveValue = optimizeMax ? arm.objectiveValueBest : arm.getMeanObjectiveValue();
   context.informationCallback(T("[") + String((int)order+1) + T("] ") + 
-    arm.parameter.toShortString() + T(" -> ") + String(objectiveValue) +
+    arm.object->toShortString() + T(" -> ") + String(objectiveValue) +
       T(" (played ") + String((int)arm.playedCount) + T(" times)"));
 }
 
@@ -224,13 +233,13 @@ size_t BanditPool::sampleArmWithHighestReward(ExecutionContext& context) const
 void BanditPool::reserveArms(size_t count)
   {arms.reserve(count);}
 
-size_t BanditPool::createArm(const Variable& parameter)
+size_t BanditPool::createArm(const ObjectPtr& object)
 {
-  jassert(parameter.exists());
+  jassert(object);
   size_t index = arms.size();
   arms.push_back(Arm());
   Arm& arm = arms[index];
-  arm.parameter = parameter;
+  arm.object = object;
   pushArmIntoQueue(index, DBL_MAX);
   return index;
 }

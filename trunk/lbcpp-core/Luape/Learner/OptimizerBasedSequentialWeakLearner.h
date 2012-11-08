@@ -25,7 +25,7 @@ public:
   virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     PostfixExpressionTypeSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
-    ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
+    LObjectivePtr objective = new LObjective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);
     optimizationProblem->setInitialState(new ExpressionBuilderState(problem, typeSearchSpace));
@@ -70,9 +70,9 @@ protected:
   size_t totalNumCalls;
   size_t totalNumUniqueCalls;
 
-  struct Objective : public SimpleUnaryFunction
+  struct LObjective : public SimpleUnaryFunction
   {
-    Objective(LuapeLearnerPtr weakLearner,
+    LObjective(LuapeLearnerPtr weakLearner,
               ExpressionDomainPtr problem,
               const IndexSetPtr& examples,
               bool useRandomSplit)
@@ -82,7 +82,7 @@ protected:
 
     virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {
-      Objective& pthis = *const_cast<Objective* >(this);
+      LObjective& pthis = *const_cast<LObjective* >(this);
 
       ++pthis.numCalls;
 
@@ -157,7 +157,7 @@ protected:
     }
   };
 
-  typedef ReferenceCountedObjectPtr<Objective> ObjectivePtr;
+  typedef ReferenceCountedObjectPtr<LObjective> LObjectivePtr;
 };
 
 typedef ReferenceCountedObjectPtr<OptimizerBasedSequentialWeakLearner> OptimizerBasedSequentialWeakLearnerPtr;

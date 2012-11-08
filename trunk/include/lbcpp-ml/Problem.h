@@ -10,6 +10,7 @@
 # define LBCPP_ML_PROBLEM_H_
 
 # include "Domain.h"
+# include "Objective.h"
 # include "Fitness.h"
 
 namespace lbcpp

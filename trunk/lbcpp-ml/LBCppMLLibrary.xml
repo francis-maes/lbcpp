@@ -12,8 +12,15 @@
 
   <include file="lbcpp-ml/Problem.h"/>
   <include file="lbcpp-ml/Perturbator.h"/>
+  <include file="lbcpp-ml/BanditPool.h"/>
 
-  <!-- CORE -->
+  <!-- Objective -->
+  <class name="ScalarProperty" abstract="yes"/>
+  <class name="Objective" base="ScalarProperty" abstract="yes"/>
+  <class name="StochasticObjective" base="Objective" abstract="yes"/>
+  <class name="DifferentiableObjective" base="Objective" abstract="yes"/>
+  
+  <!-- Domain -->
   <class name="Domain" abstract="yes"/>
   <class name="DiscreteDomain" base="Domain">
     <variable type="ObjectVector[Object]" name="elements"/>
@@ -22,6 +29,7 @@
     <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
   </class>
 
+  <!-- Fitness -->
   <class name="FitnessLimits" base="ContinuousDomain"/>
 
   <class name="Fitness">
@@ -29,6 +37,7 @@
     <variable type="FitnessLimits" name="limits"/>
   </class>
 
+  <!-- Solution Vectors -->
   <class name="SolutionVector">
     <variable type="FitnessLimits" name="limits"/>
     <variable type="ObjectVector[Pair[Object,Fitness]]" name="solutions"/>
@@ -58,4 +67,12 @@
   <class name="SingleObjectiveEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
   <class name="HyperVolumeEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
 
+  <!-- Bandit Pool -->
+  <class name="BanditPool">
+    <variable type="StochasticObjective" name="objective"/>
+    <variable type="Double" name="explorationCoefficient"/>
+    <variable type="Boolean" name="optimizeMax"/>
+    <variable type="Boolean" name="useMultiThreading"/>
+  </class>
+  
 </library>

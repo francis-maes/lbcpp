@@ -10,7 +10,7 @@
 # define LBCPP_ML_SOLVER_MAB_META_H_
 
 # include <lbcpp-ml/Solver.h>
-# include <lbcpp/Optimizer/BanditPool.h>
+# include <lbcpp-ml/BanditPool.h>
 
 namespace lbcpp
 {
@@ -41,7 +41,7 @@ public:
     IterativeSolver::configure(context, problem, solutions, initialSolution, verbosity);
 
     FitnessLimitsPtr limits = problem->getFitnessLimits();
-    pool = new BanditPool(new Objective(), explorationCoefficient);
+    pool = new BanditPool(new BPObjective(), explorationCoefficient);
     pool->reserveArms(numInstances);
     for (size_t i = 0; i < numInstances; ++i)
     {
@@ -62,7 +62,7 @@ public:
     }
     for (size_t i = 0; i < numInstances; ++i)
     {
-      IterativeSolverPtr optimizer = pool->getArmParameter(i).getObjectAndCast<IterativeSolver>();
+      IterativeSolverPtr optimizer = pool->getArmObject(i).staticCast<IterativeSolver>();
       jassert(optimizer);
       optimizer->clear(context);
     }
@@ -78,16 +78,16 @@ protected:
 
   BanditPoolPtr pool;
 
-  struct Objective : public BanditPoolObjective
+  struct BPObjective : public StochasticObjective
   {
-    Objective() : currentScore(-DBL_MAX) {}
+    BPObjective() : currentScore(-DBL_MAX) {}
 
     virtual void getObjectiveRange(double& worst, double& best) const
       {worst = 0.0; best = 1.0;}
 
-    virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {
-      IterativeSolverPtr optimizer = parameter.getObjectAndCast<IterativeSolver>();
+      IterativeSolverPtr optimizer = object.staticCast<IterativeSolver>();
       jassert(optimizer);
       double score = currentScore;
       bool shouldContinue = optimizer->iteration(context, instanceIndex);

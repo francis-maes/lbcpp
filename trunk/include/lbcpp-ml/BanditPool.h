@@ -1,50 +1,41 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BanditPool.h                   | Monte Carlo Bandit Pool         |
+| Filename: BanditPool.h                   | Bandit Pool                     |
 | Author  : Francis Maes                   |                                 |
 | Started : 08/04/2012 15:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OPTIMIZER_BANDIT_POOL_H_
-# define LBCPP_OPTIMIZER_BANDIT_POOL_H_
+#ifndef LBCPP_ML_BANDIT_POOL_H_
+# define LBCPP_ML_BANDIT_POOL_H_
 
 # include <lbcpp/Core/Variable.h>
+# include "predeclarations.h"
+# include <lbcpp-ml/Objective.h>
 # include <queue>
 
 namespace lbcpp
 {
 
-class BanditPoolObjective : public Object
-{
-public:
-  virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
-  virtual void getObjectiveRange(double& worst, double& best) const = 0;
-  virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<BanditPoolObjective> BanditPoolObjectivePtr;
-
 class BanditPool : public Object, public ExecutionContextCallback
 {
 public:
-  BanditPool(const BanditPoolObjectivePtr& objective, double explorationCoefficient, bool optimizeMax = false, bool useMultiThreading = false) 
-    : objective(objective), explorationCoefficient(explorationCoefficient), optimizeMax(optimizeMax), useMultiThreading(useMultiThreading) {}
-  BanditPool() : explorationCoefficient(0.0) {}
+  BanditPool(const StochasticObjectivePtr& objective, double explorationCoefficient, bool optimizeMax = false, bool useMultiThreading = false);
+  BanditPool();
 
   size_t getNumArms() const
     {return arms.size();}
 
   void reserveArms(size_t count);
-  size_t createArm(const Variable& parameter);
+  size_t createArm(const ObjectPtr& object);
   void destroyArm(size_t index);
   
-  const Variable& getArmParameter(size_t index) const;
+  const ObjectPtr& getArmObject(size_t index) const;
   double getArmMeanObjective(size_t index) const;
   double getArmMeanReward(size_t index) const;
   size_t getArmPlayedCount(size_t index) const;
 
-  void setArmParameter(size_t index, const Variable& parameter);
+  void setArmObject(size_t index, const ObjectPtr& object);
 
   size_t selectAndPlayArm(ExecutionContext& context);
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
@@ -62,7 +53,7 @@ public:
 protected:
   friend class BanditPoolClass;
 
-  BanditPoolObjectivePtr objective; // samples rewards in range [0,1]
+  StochasticObjectivePtr objective;
   double explorationCoefficient;
   bool optimizeMax;
   bool useMultiThreading;
@@ -78,7 +69,7 @@ protected:
     double rewardMin;
     double rewardMax;
 
-    Variable parameter;
+    ObjectPtr object;
 
     void observe(double objectiveValue, double reward)
     {
@@ -129,4 +120,4 @@ typedef ReferenceCountedObjectPtr<BanditPool> BanditPoolPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OPTIMIZER_BANDIT_POOL_H_
+#endif // !LBCPP_ML_BANDIT_POOL_H_

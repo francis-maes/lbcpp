@@ -10,8 +10,8 @@
 # define LBCPP_MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_
 
 # include <lbcpp-ml/ExpressionDomain.h>
+# include <lbcpp-ml/BanditPool.h>
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Optimizer/BanditPool.h>
 # include "MCGPSandBox.h"
 
 namespace lbcpp
