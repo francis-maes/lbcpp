@@ -584,26 +584,28 @@ public:
   }
 };
 
-class MorpionProblem : public Problem
+class MorpionObjective : public Objective
 {
 public:
-  MorpionProblem(size_t crossLength = 5, bool isDisjoint = false)
-    : crossLength(crossLength), isDisjoint(isDisjoint)
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = 200.0;}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+    {return (double)object.staticCast<SearchTrajectory>()->getLength();}
+};
+
+class MorpionProblem : public NewProblem
+{
+public:
+  MorpionProblem(size_t crossLength, bool isDisjoint)
+    : crossLength(crossLength), isDisjoint(isDisjoint) 
+    {initialize(defaultExecutionContext());}
+  MorpionProblem() : crossLength(0), isDisjoint(false) {}
+
+  virtual void initialize(ExecutionContext& context)
   {
-    domain = new SearchDomain(new MorpionState(crossLength, isDisjoint));
-    limits = new FitnessLimits(std::vector< std::pair<double, double> >(1, std::make_pair(0.0, 200.0)));
-  }
-
-  virtual DomainPtr getDomain() const
-    {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
-    {return limits;}
-
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    size_t numLines = object.staticCast<SearchTrajectory>()->getLength();
-    return new Fitness((double)numLines, limits);
+    setDomain(new SearchDomain(new MorpionState(crossLength, isDisjoint)));
+    addObjective(new MorpionObjective());
   }
 
 protected:
@@ -611,9 +613,6 @@ protected:
 
   size_t crossLength;
   bool isDisjoint;
-
-  SearchDomainPtr domain;
-  FitnessLimitsPtr limits;
 };
 
 /*

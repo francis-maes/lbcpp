@@ -34,6 +34,55 @@ public:
     {return getFitnessLimits()->getNumObjectives();}
 };
 
+class NewProblem : public Problem
+{
+public:
+  virtual DomainPtr getDomain() const
+    {return domain;}
+
+  virtual FitnessLimitsPtr getFitnessLimits() const
+  {
+    if (!limits)
+    {
+      std::vector<std::pair<double, double> > l(objectives.size());
+      for (size_t i = 0; i < l.size(); ++i)
+        objectives[i]->getObjectiveRange(l[i].first, l[i].second);
+      const_cast<NewProblem* >(this)->limits = new FitnessLimits(l);
+    }
+    return limits;
+  }
+
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
+    {return initialGuess;}
+  
+  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    FitnessLimitsPtr limits = getFitnessLimits();
+    std::vector<double> o(objectives.size());
+    for (size_t i = 0; i < o.size(); ++i)
+      o[i] = objectives[i]->evaluate(context, object);
+    return new Fitness(o, limits);
+  }
+
+protected:
+  DomainPtr domain;
+  std::vector<ObjectivePtr> objectives;
+  ObjectPtr initialGuess;
+
+  virtual void initialize(ExecutionContext& context) {}
+
+  void setDomain(DomainPtr domain)
+    {this->domain = domain;}
+
+  void addObjective(ObjectivePtr objective)
+    {objectives.push_back(objective);}
+
+private:
+  FitnessLimitsPtr limits;
+};
+
+
+
 class ContinuousProblem : public Problem
 {
 public:
