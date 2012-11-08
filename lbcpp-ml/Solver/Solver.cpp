@@ -120,7 +120,7 @@ SolutionVectorPtr PopulationBasedSolver::sampleAndEvaluatePopulation(ExecutionCo
   SolutionVectorPtr res = new SolutionVector(problem->getFitnessLimits());
   for (size_t i = 0; i < populationSize && !problem->shouldStop(); ++i)
   {
-    ObjectPtr solution = sampler->sample(context);
+    ObjectPtr solution = problem->getDomain()->projectIntoDomain(sampler->sample(context));
     FitnessPtr fitness = evaluate(context, solution);
     res->insertSolution(solution, fitness);
   }

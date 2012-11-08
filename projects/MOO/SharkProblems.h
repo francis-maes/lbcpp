@@ -17,56 +17,68 @@
 namespace lbcpp
 {
 
-class ProblemFromSharkObjectiveFunction : public Problem
+class ObjectiveFromSharkObjectiveFunction : public Objective
+{
+public:
+  ObjectiveFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, size_t objectiveIndex, double worstScore, double bestScore)
+    : objective(objective), objectiveIndex(objectiveIndex), worstScore(worstScore), bestScore(bestScore) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = worstScore; best = bestScore;}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    DenseDoubleVectorPtr vector = object.staticCast<DenseDoubleVector>();
+    jassert(vector);
+    std::vector<double> res;
+    objective->result(vector->getValues(), res);
+    jassert(objectiveIndex < res.size());
+    return res[objectiveIndex];
+  }
+
+protected:
+  ObjectiveFunctionVS<double>* objective;
+  size_t objectiveIndex;
+  double worstScore;
+  double bestScore;
+};
+
+class ProblemFromSharkObjectiveFunction : public NewProblem
 {
 public:
   ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective)
-    : objective(objective)
-  {
-    const BoxConstraintHandler* box = static_cast<const BoxConstraintHandler*>(objective->getConstraintHandler());
-    if (box)
-    {
-      std::vector< std::pair<double, double> > limits(box->dimension());
-      for (size_t i = 0; i < limits.size(); ++i)
-      {
-        limits[i].first = box->lowerBound((unsigned int)i);
-        limits[i].second = box->upperBound((unsigned int)i);
-      }
-      domain = new ContinuousDomain(limits);
-    }
-  }
+    : objective(objective) {}
 
   virtual ~ProblemFromSharkObjectiveFunction()
     {delete objective;}
 
-  virtual DomainPtr getDomain() const
-    {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
+  virtual void initialize(ExecutionContext& context)
   {
-    if (!limits)
+    if (!domain)
     {
-      std::vector< std::pair<double, double> > v(objective->objectives(), std::make_pair(DBL_MAX, 0.0));
-      adjustLimits(v);
-      const_cast<ProblemFromSharkObjectiveFunction* >(this)->limits = new FitnessLimits(v);
+      const BoxConstraintHandler* box = static_cast<const BoxConstraintHandler*>(objective->getConstraintHandler());
+      if (box)
+      {
+        std::vector< std::pair<double, double> > limits(box->dimension());
+        for (size_t i = 0; i < limits.size(); ++i)
+        {
+          limits[i].first = box->lowerBound((unsigned int)i);
+          limits[i].second = box->upperBound((unsigned int)i);
+        }
+        setDomain(new ContinuousDomain(limits));
+      }
     }
-    return limits;
-  }
 
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
-  {
-    DenseDoubleVectorPtr vector = solution.staticCast<DenseDoubleVector>();
-    jassert(vector);
-    std::vector<double> res;
-    objective->result(vector->getValues(), res);
-    return new Fitness(res, limits);
-  }
+    for (size_t i = 0; i < objective->objectives(); ++i)
+    {
+      double worst, best;
+      getObjectiveRange(i, worst, best);
+      addObjective(new ObjectiveFromSharkObjectiveFunction(objective, i, worst, best));
+    }
 
-  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
-  {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(domain->getNumDimensions(), 0.0);
-    objective->ProposeStartingPoint(res->getValues());
-    return res;
+    DenseDoubleVectorPtr initialGuess = new DenseDoubleVector(domain.staticCast<ContinuousDomain>()->getNumDimensions(), 0.0);
+    objective->ProposeStartingPoint(initialGuess->getValues());
+    setInitialGuess(initialGuess);
   }
 
   virtual String toShortString() const
@@ -79,11 +91,9 @@ public:
   }
 
 protected:
-  ContinuousDomainPtr domain;
-  FitnessLimitsPtr limits;
   ObjectiveFunctionVS<double>* objective;
-
-  virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const {}
+  
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const = 0;
 };
 
 /*
@@ -102,31 +112,67 @@ protected:
   double max;
 };
 
-struct AckleyProblem : public SingleObjectiveSharkMOProblem
-  { AckleyProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Ackley((unsigned)numDimensions), 20.0) {} };
-
-struct GriewangkProblem : public SingleObjectiveSharkMOProblem
-  { GriewangkProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Griewangk((unsigned)numDimensions), 400.0) {} };
-
-struct RastriginProblem : public SingleObjectiveSharkMOProblem
-  { RastriginProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Rastrigin((unsigned)numDimensions), 400.0) {} };
-
-struct RosenbrockProblem : public SingleObjectiveSharkMOProblem
+struct AckleyProblem : public ProblemFromSharkObjectiveFunction
 {
-  RosenbrockProblem(size_t numDimensions = 30)
-    : SingleObjectiveSharkMOProblem(new Rosenbrock((unsigned)numDimensions), 4000.0) 
-  {
-    domain = new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
-  }
+  AckleyProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Ackley((unsigned)numDimensions))
+    {initialize(defaultExecutionContext());}
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = 20.0; best = 0.0;}
 };
 
-struct RosenbrockRotatedProblem : public SingleObjectiveSharkMOProblem
+struct GriewangkProblem : public ProblemFromSharkObjectiveFunction
 {
-  RosenbrockRotatedProblem(size_t numDimensions = 30)
-    : SingleObjectiveSharkMOProblem(new RosenbrockRotated((unsigned)numDimensions))
+  GriewangkProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Griewangk((unsigned)numDimensions))
+    {initialize(defaultExecutionContext());}
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = 400.0; best = 0.0;}
+};
+
+struct RastriginProblem : public ProblemFromSharkObjectiveFunction
+{
+  RastriginProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Rastrigin((unsigned)numDimensions))
+    {initialize(defaultExecutionContext());}
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = 400.0; best = 0.0;}
+};
+
+struct RosenbrockProblem : public ProblemFromSharkObjectiveFunction
+{
+  RosenbrockProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Rosenbrock((unsigned)numDimensions)), numDimensions(numDimensions)
+    {initialize(defaultExecutionContext());}
+
+  virtual void initialize(ExecutionContext& context)
   {
-    domain = new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
+    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    ProblemFromSharkObjectiveFunction::initialize(context);
   }
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = 4000.0; best = 0.0;}
+
+protected:
+  size_t numDimensions;
+};
+
+struct RosenbrockRotatedProblem : public ProblemFromSharkObjectiveFunction
+{
+  RosenbrockRotatedProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new RosenbrockRotated((unsigned)numDimensions)), numDimensions(numDimensions)
+    {initialize(defaultExecutionContext());}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    ProblemFromSharkObjectiveFunction::initialize(context);
+  }
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = 10.0; best = 0.0;}
+
+protected:
+  size_t numDimensions;
 };
 
 
@@ -137,10 +183,11 @@ class ZDTMOProblem : public ProblemFromSharkObjectiveFunction
 {
 public:
   ZDTMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
-    : ProblemFromSharkObjectiveFunction(objective), max1(10.0), max2(10.0) {} // TMP !!
+    : ProblemFromSharkObjectiveFunction(objective), max1(10.0), max2(10.0)
+    {initialize(defaultExecutionContext());}
 
-  virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const
-    {res[0].first = max1; res[1].first = max2;}
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = objectiveIndex == 1 ? max2 : max1; best = 0.0;}
 
 private:
   double max1;

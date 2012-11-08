@@ -7,6 +7,7 @@
   </class>
   <class name="ColoDomain" base="Domain"/>
   <class name="ColoProblem" base="Problem">
+    <variable type="File" name="javaDirectory"/>
     <variable type="File" name="modelDirectory"/>
   </class>
   <class name="ColoSampler" base="Sampler">

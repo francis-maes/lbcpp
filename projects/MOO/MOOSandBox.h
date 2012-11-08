@@ -26,7 +26,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    testSingleObjectiveOptimizers(context);
+    //testSingleObjectiveOptimizers(context);
     testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
     return true;
