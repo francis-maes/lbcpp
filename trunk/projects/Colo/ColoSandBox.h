@@ -52,9 +52,6 @@ class ColoDomain : public Domain
 public:
   size_t getNumFlags() const
     {return 33;}
-
-  virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
-    {return object;}
 };
 
 typedef ReferenceCountedObjectPtr<ColoDomain> ColoDomainPtr;
@@ -63,42 +60,57 @@ extern void* createColoJavaWrapper(ExecutionContext& context, const File& javaDi
 extern std::vector<double> evaluateColoJavaWrapper(void* wrapper, const ColoObjectPtr& colo);
 extern void freeColoJavaWrapper(void* wrapper);
 
-class ColoProblem : public Problem
+class ColoObjective : public Objective
+{
+public:
+  ColoObjective(void* wrapper, size_t objectiveNumber, double worstScore, double bestScore)
+    : wrapper(wrapper), objectiveNumber(objectiveNumber), worstScore(worstScore), bestScore(bestScore) {}
+  ColoObjective() : wrapper(NULL), objectiveNumber(0), worstScore(0.0), bestScore(0.0) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = worstScore; best = bestScore;}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    std::vector<double> scores = evaluateColoJavaWrapper(wrapper, object.staticCast<ColoObject>()); // FIXME: evaluate single objective at a time
+    jassert(objectiveNumber < scores.size());
+    return scores[objectiveNumber];
+  }
+
+protected:
+  void* wrapper;
+  size_t objectiveNumber;
+  double worstScore;
+  double bestScore;
+};
+
+class ColoProblem : public NewProblem
 {
 public:
   ColoProblem(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
-  {
-    domain = new ColoDomain();
-    std::vector< std::pair<double, double> > v(2);
-    v[0].first = 2.0; v[1].first = 0.5; // computational cost (minimization)
-    v[1].first = 0.5; v[1].second = 2.0; // speed-up (maximization)
-    limits = new FitnessLimits(v);
-    wrapper = createColoJavaWrapper(context, javaDirectory, modelDirectory);
-  }
+    : javaDirectory(javaDirectory), modelDirectory(modelDirectory)
+    {initialize(context);}
   ColoProblem() {}
-
+  
   virtual ~ColoProblem()
     {if (wrapper) freeColoJavaWrapper(wrapper);}
 
-  bool isLoaded() const
-    {return wrapper != NULL;}
-
-  virtual DomainPtr getDomain() const
-    {return domain;}
-
-  virtual FitnessLimitsPtr getFitnessLimits() const
-    {return limits;}
-
-  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-    {return new Fitness(evaluateColoJavaWrapper(wrapper, object.staticCast<ColoObject>()), limits);}
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ColoDomain());
+    wrapper = createColoJavaWrapper(context, javaDirectory, modelDirectory);
+    if (wrapper)
+    {
+      addObjective(new ColoObjective(wrapper, 0, 2.0, 0.5)); // computational cost (minimization)
+      addObjective(new ColoObjective(wrapper, 1, 0.5, 2.0)); // speed-up (maximization)
+    }
+  }
 
 protected:
   friend class ColoProblemClass;
 
+  File javaDirectory;
   File modelDirectory;
-
-  ColoDomainPtr domain;
-  FitnessLimitsPtr limits;
   void* wrapper;
 };
 
@@ -234,7 +246,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ColoProblemPtr problem = new ColoProblem(context, javaDirectory, modelDirectory);
-    if (!problem->isLoaded())
+    if (!problem->getNumObjectives())
       return false;
 
     runOptimizer(context, problem, randomSolver(new ColoSampler(), numEvaluations));

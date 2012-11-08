@@ -12,7 +12,8 @@
   <class name="SearchDomain" base="Domain">
     <variable type="SearchState" name="initialState"/>
   </class>
-
+  <class name="MaximizeSearchTrajectoryLengthObjective" base="Objective"/>
+  
   <class name="SearchActionCodeGenerator" base="Object" abstract="yes"/>
 
   <class name="SearchAlgorithm" base="Solver" abstract="yes"/>

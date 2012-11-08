@@ -1,5 +1,4 @@
  Problem
-  ColoProblem
   ExpressionProblem
     BooleanExpressionProblem
 	  BooleanMultiplexerProblem
@@ -20,11 +19,12 @@
 	  EvaluatorDecoratorProblem
 	    SingleObjectiveEvaluatorDecoratorProblem
 		HyperVolumeEvaluatorDecoratorProblem
+  
+NewProblem
+  MorpionProblem
+  ColoProblem
   ProblemFromSharkObjectiveFunction
     SingleObjectiveSharkMOProblem
 	  AckleyProblem,  GriewangkProblem, ... RosenbrockRotatedProblem
 	ZDTMOProblem
 	  ZDT1MOProblem ... ZDT6MOProblem
-
-NewProblem
-  MorpionProblem

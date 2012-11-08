@@ -102,6 +102,19 @@ protected:
 };
 
 /*
+** Objective
+*/
+class MaximizeSearchTrajectoryLengthObjective : public Objective
+{
+public:
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = DBL_MAX;}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+    {return (double)object.staticCast<SearchTrajectory>()->getLength();}
+};
+
+/*
 ** Sampler
 */
 class SearchSampler : public Sampler

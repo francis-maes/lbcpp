@@ -584,16 +584,6 @@ public:
   }
 };
 
-class MorpionObjective : public Objective
-{
-public:
-  virtual void getObjectiveRange(double& worst, double& best) const
-    {worst = 0.0; best = 200.0;}
-
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
-    {return (double)object.staticCast<SearchTrajectory>()->getLength();}
-};
-
 class MorpionProblem : public NewProblem
 {
 public:
@@ -605,7 +595,7 @@ public:
   virtual void initialize(ExecutionContext& context)
   {
     setDomain(new SearchDomain(new MorpionState(crossLength, isDisjoint)));
-    addObjective(new MorpionObjective());
+    addObjective(new MaximizeSearchTrajectoryLengthObjective());
   }
 
 protected:

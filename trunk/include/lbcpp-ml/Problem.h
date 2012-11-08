@@ -77,6 +77,9 @@ protected:
   void addObjective(ObjectivePtr objective)
     {objectives.push_back(objective);}
 
+  void setInitialGuess(ObjectPtr initialGuess)
+    {this->initialGuess = initialGuess;}
+
 private:
   FitnessLimitsPtr limits;
 };
