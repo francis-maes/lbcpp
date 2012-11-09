@@ -4,7 +4,6 @@
 
   <include file="lbcpp-ml/Expression.h"/>
   <include file="lbcpp-ml/ExpressionDomain.h"/>
-  <include file="lbcpp-ml/ExpressionUniverse.h"/>
     
   <!-- Expressions-->
   <class name="Expression" base="Object" abstract="yes">
@@ -40,8 +39,7 @@
     <variable type="Expression" name="missingNode"/>
   </class>
 
-  <!-- Universe -->
-  <class name="ExpressionUniverse" base="Object"/>
+  <!-- Domain -->
   <class name="ExpressionDomain" base="Domain"/>
 
   <!-- Expression Samplers -->

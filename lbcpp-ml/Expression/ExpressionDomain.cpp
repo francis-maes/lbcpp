@@ -10,13 +10,6 @@
 #include "../../lbcpp-core/Luape/NodeBuilder/NodeBuilderDecisionProblem.h"
 using namespace lbcpp;
 
-ExpressionDomain::ExpressionDomain(ExpressionUniversePtr universe)
-  : universe(universe)
-{
-  if (!universe)
-    this->universe = new ExpressionUniverse();
-}
-
 String ExpressionDomain::toShortString() const
 {
   String res;

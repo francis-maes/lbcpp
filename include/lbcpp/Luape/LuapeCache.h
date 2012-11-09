@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_CACHE_H_
 # define LBCPP_LUAPE_CACHE_H_
 
-# include <lbcpp-ml/ExpressionUniverse.h>
+# include "ExpressionUniverse.h"
 # include "../Core/Vector.h"
 # include "../Data/DoubleVector.h"
 # include "../Data/IndexSet.h"

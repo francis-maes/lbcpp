@@ -19,7 +19,10 @@ class LuapeInference : public ExpressionDomain
 {
 public:
   LuapeInference(const ExpressionUniversePtr& universe = ExpressionUniversePtr())
-    : ExpressionDomain(universe) {}
+    : universe(universe) {}
+
+  ExpressionUniversePtr getUniverse() const
+    {return universe;}
 
   /*
   ** Samples cache
@@ -52,6 +55,7 @@ public:
 //void setLearner(const LuapeLearnerPtr& learner, bool verbose = false);
 
 protected:
+  ExpressionUniversePtr universe;
   ExpressionPtr node;
   LuapeSamplesCachePtr trainingCache;
   LuapeSamplesCachePtr validationCache;

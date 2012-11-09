@@ -63,7 +63,8 @@ void SequentialNodeBuilder::clone(ExecutionContext& context, const ObjectPtr& ta
 ExpressionPtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const ExpressionDomainPtr& problem)
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
-  universe = problem->getUniverse();
+  //universe = problem->getUniverse();
+  jassertfalse; // broken
   typeSearchSpace = problem->getSearchSpace(context, complexity, true);
   jassert(typeSearchSpace);
 

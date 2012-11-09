@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp-ml/ExpressionUniverse.h>
+#include <lbcpp/Luape/ExpressionUniverse.h>
 #include <lbcpp-ml/Expression.h>
 using namespace lbcpp;
 

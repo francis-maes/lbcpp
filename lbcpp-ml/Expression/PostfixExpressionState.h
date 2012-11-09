@@ -53,7 +53,7 @@ public:
     if (stateBackup)
       *stateBackup = ObjectPtr(new Backup(stack));
     if (action)
-      PostfixExpressionSequence::apply(domain->getUniverse(), stack, action);
+      PostfixExpressionSequence::apply(stack, action);
     else
       isYielded = true;
     trajectory.push_back(action);
