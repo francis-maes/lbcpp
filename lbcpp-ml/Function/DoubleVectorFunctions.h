@@ -41,20 +41,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + "." + enumeration->getElementName(index);}
 
-  Variable computeObject(const ObjectPtr& input) const
-  {
-    DenseDoubleVectorPtr denseInput = input.dynamicCast<DenseDoubleVector>();
-    if (denseInput)
-      return Variable(denseInput->getValue(index), outputType);
-    else
-      return input.staticCast<DoubleVector>()->getElement(index);
-  }
+  ObjectPtr computeObject(const ObjectPtr& input) const
+    {return input.staticCast<DoubleVector>()->getElement(index).toObject();}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(outputType);
-  }
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
@@ -118,7 +109,7 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "stats(" + inputs[0]->toShortString() + ")";}
 
-  Variable computeObject(const ObjectPtr& object) const
+  ObjectPtr computeObject(const ObjectPtr& object) const
   {
     const DoubleVectorPtr& vector = object.staticCast<DoubleVector>();
     ScalarVariableStatistics stats;
@@ -154,11 +145,8 @@ public:
     return res;
   }
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(scalarVariableStatisticsPerceptionClass);
-  }
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 };
 
 class GetDoubleVectorExtremumsFunction : public UnaryObjectFunction<GetDoubleVectorExtremumsFunction>
@@ -189,7 +177,7 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return T("extremums(") + inputs[0]->toShortString() + T(")");}
 
-  Variable computeObject(const ObjectPtr& input) const
+  ObjectPtr computeObject(const ObjectPtr& input) const
   {
     const DoubleVectorPtr& vector = input.dynamicCast<DoubleVector>();
     int argmin = vector->getIndexOfMinimumValue();
@@ -200,11 +188,8 @@ public:
       argmax >= 0 ? Variable(argmax, enumeration) : Variable::missingValue(enumeration));
   }
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(outputClass);
-  }
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {

@@ -38,10 +38,10 @@ LuapeSampleVectorPtr Function::compute(ExecutionContext& context, const std::vec
 
   for (size_t i = 0; i < n; ++i)
   {
-    std::vector<Variable> inputValues(inputs.size());
+    std::vector<ObjectPtr> inputValues(inputs.size());
     for (size_t j = 0; j < inputValues.size(); ++j)
     {
-      inputValues[j] = *it[j];
+      inputValues[j] = (*it[j]).toObject();
       ++(it[j]);
     }
     res->setElement(i, compute(context, &inputValues[0]));

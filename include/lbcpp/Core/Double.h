@@ -25,9 +25,17 @@ public:
 
   double get() const
     {return value;}
+  
+  static double get(ObjectPtr object)
+    {return object.staticCast<NewDouble>()->get();}
 
   virtual String toShortString() const
-    {return String(value, 2);}
+  {
+    if (!value)
+      return T("0");
+    String res = positiveNumberToShortString(fabs(value));
+    return value < 0.0 ? T("-") + res : res;
+  }
 
   virtual String toString() const
     {return String(value);}
@@ -47,6 +55,31 @@ public:
 
 private:
   double value;
+
+
+  static String positiveNumberToShortString(double d)
+  {
+    int l1 = (int)log10(d);
+    int l3 = (int)(floor(l1 / 3.0) * 3.0);
+    
+    double Z = pow(10.0, (double)l3);
+    String res = String(d / Z, 3 - abs(l1 - l3));
+    int numZeros = 0;
+    int pos = res.length() - 1;
+    while (pos > 0 && res[pos] == '0')
+      --pos, ++numZeros;
+    if (pos > 0 && res[pos] == '.')
+      ++numZeros;
+    if (numZeros)
+      res = res.dropLastCharacters(numZeros);
+    if (l3 != 0)
+    {
+      res += T("e");
+      res += (l3 > 0 ? T("+") : T("-"));
+      res += String((int)abs(l3));
+    }
+    return res;
+  }
 };
 
 extern ClassPtr newDoubleClass;

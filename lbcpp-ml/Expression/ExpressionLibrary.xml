@@ -16,7 +16,7 @@
     <variable type="PositiveInteger" name="inputIndex"/>
   </class>
   <class name="ConstantExpression" base="Expression">
-    <variable type="Variable" name="value"/>
+    <variable type="Object" name="value"/>
   </class>
   <class name="FunctionExpression" base="Expression">
     <variable type="Function" name="function"/>

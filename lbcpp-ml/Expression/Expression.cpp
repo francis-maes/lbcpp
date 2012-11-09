@@ -26,9 +26,6 @@ Expression::Expression(const TypePtr& type)
 {
 }
 
-Variable Expression::compute(ExecutionContext& context) const
-    {return compute(context, new LuapeInstanceCache());}
-
 void Expression::addImportance(double delta)
 {
   jassert(isNumberValid(delta));
@@ -168,7 +165,7 @@ ExpressionPtr Expression::sampleSubNode(RandomGeneratorPtr random) const
 LuapeSampleVectorPtr Expression::compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   IndexSetPtr idx = indices ? indices : data->getAllIndices();
-  VectorPtr samples = data->getSamples(refCountedPointerFromThis(this));
+  VectorPtr samples = data->getSamplesByExpression(refCountedPointerFromThis(this));
   if (samples)
     return LuapeSampleVector::createCached(idx, samples);
   else
@@ -190,14 +187,8 @@ VariableExpression::VariableExpression() : inputIndex(0)
 String VariableExpression::toShortString() const
   {return name;}
 
-Variable VariableExpression::compute(ExecutionContext& context, const Variable* inputs) const
+ObjectPtr VariableExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {return inputs[inputIndex];}
-
-Variable VariableExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  jassert(false); // the value should already have been cached
-  return Variable();
-}
 
 LuapeSampleVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
@@ -208,18 +199,15 @@ LuapeSampleVectorPtr VariableExpression::computeSamples(ExecutionContext& contex
 /*
 ** ConstantExpression
 */
-ConstantExpression::ConstantExpression(const Variable& value)
-  : Expression(value.getType()), value(value)
+ConstantExpression::ConstantExpression(const ObjectPtr& value)
+  : Expression(value->getClass()), value(value)
 {
 }
 
 String ConstantExpression::toShortString() const
-  {return value.toShortString();}
+  {return value->toShortString();}
 
-Variable ConstantExpression::compute(ExecutionContext& context, const Variable* inputs) const
-  {return value;}
-
-Variable ConstantExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+ObjectPtr ConstantExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {return value;}
 
 LuapeSampleVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
@@ -267,38 +255,30 @@ void FunctionExpression::initialize()
   delete [] inputTypes;
 }
 
-Variable FunctionExpression::compute(ExecutionContext& context, const Variable* inputs) const
+ObjectPtr FunctionExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
   size_t n = arguments.size();
   if (n == 0)
     return function->compute(context, NULL);
   else if (n == 1)
   {
-    Variable v = arguments[0]->compute(context, inputs);
+    ObjectPtr v = arguments[0]->compute(context, inputs);
     return function->compute(context, &v);
   }
   else if (n == 2)
   {
-    Variable v[2];
+    ObjectPtr v[2];
     v[0] = arguments[0]->compute(context, inputs);
     v[1] = arguments[1]->compute(context, inputs);
     return function->compute(context, v);
   }
   else
   {
-    std::vector<Variable> inputValues(arguments.size());
+    std::vector<ObjectPtr> inputValues(arguments.size());
     for (size_t i = 0; i < arguments.size(); ++i)
       inputValues[i] = arguments[i]->compute(context, inputs);
     return function->compute(context, &inputValues[0]);
   }
-}
-
-Variable FunctionExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  std::vector<Variable> inputValues(arguments.size());
-  for (size_t i = 0; i < arguments.size(); ++i)
-    inputValues[i] = cache->compute(context, arguments[i]);
-  return function->compute(context, &inputValues[0]);
 }
 
 LuapeSampleVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
@@ -353,18 +333,11 @@ String TestExpression::toShortString() const
   return res + T(")");
 }
 
-Variable TestExpression::compute(ExecutionContext& context, const Variable* inputs) const
+ObjectPtr TestExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
-  Variable condition = conditionNode->compute(context, inputs);
-  ExpressionPtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
-  return subNode ? subNode->compute(context, inputs) : Variable::missingValue(type);
-}
-
-Variable TestExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  Variable condition = conditionNode->compute(context, cache);
-  ExpressionPtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
-  return subNode ? subNode->compute(context, cache) : Variable::missingValue(type);
+  ObjectPtr condition = conditionNode->compute(context, inputs);
+  ExpressionPtr subNode = (condition ? (NewBoolean::get(condition) ? successNode : failureNode) : missingNode);
+  return subNode ? subNode->compute(context, inputs) : ObjectPtr();
 }
 
 void TestExpression::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
@@ -560,24 +533,18 @@ ScalarSumExpression::ScalarSumExpression(bool convertToProbabilities, bool compu
 {
 }
 
-Variable ScalarSumExpression::compute(ExecutionContext& context, const Variable* inputs) const
+ObjectPtr ScalarSumExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
   double res = 0.0;
   for (size_t i = 0; i < nodes.size(); ++i)
-    res += nodes[i]->compute(context, inputs).getDouble();
+  {
+    ObjectPtr value = nodes[i]->compute(context, inputs);
+    if (value)
+      res += NewDouble::get(value);
+  }
   if (computeAverage)
     res /= (double)nodes.size();
-  return Variable(res, type);
-}
-
-Variable ScalarSumExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  double res = 0.0;
-  for (size_t i = 0; i < nodes.size(); ++i)
-    res += cache->compute(context, nodes[i]).getDouble();
-  if (computeAverage)
-    res /= (double)nodes.size();
-  return Variable(res, type);
+  return new NewDouble(res);
 }
 
 VectorPtr ScalarSumExpression::createEmptyOutputs(size_t numSamples) const
@@ -607,26 +574,13 @@ VectorSumExpression::VectorSumExpression(EnumerationPtr enumeration, bool conver
 {
 }
 
-Variable VectorSumExpression::compute(ExecutionContext& context, const Variable* inputs) const
+ObjectPtr VectorSumExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
   ClassPtr doubleVectorClass = type;
   DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
   for (size_t i = 0; i < nodes.size(); ++i)
   {
-    DenseDoubleVectorPtr value = nodes[i]->compute(context, inputs).getObjectAndCast<DenseDoubleVector>();
-    if (value)
-      value->addTo(res);
-  }
-  return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
-}
-
-Variable VectorSumExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  ClassPtr doubleVectorClass = type;
-  DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
-  for (size_t i = 0; i < nodes.size(); ++i)
-  {
-    DenseDoubleVectorPtr value = cache->compute(context, nodes[i]).getObjectAndCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr value = nodes[i]->compute(context, inputs).staticCast<DenseDoubleVector>();
     if (value)
       value->addTo(res);
   }
@@ -700,26 +654,14 @@ CreateSparseVectorExpression::CreateSparseVectorExpression(const std::vector<Exp
 CreateSparseVectorExpression::CreateSparseVectorExpression()
   : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
 
-Variable CreateSparseVectorExpression::compute(ExecutionContext& context, const Variable* inputs) const
+ObjectPtr CreateSparseVectorExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
   SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getType());
   for (size_t i = 0; i < nodes.size(); ++i)
   {
-    Variable v = nodes[i]->compute(context, inputs);
-    if (v.exists())
-      res->incrementValue((size_t)v.getInteger(), 1.0);
-  }
-  return res;
-}
-
-Variable CreateSparseVectorExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getType());
-  for (size_t i = 0; i < nodes.size(); ++i)
-  {
-    Variable v = cache->compute(context, nodes[i]);
-    if (v.exists())
-      res->incrementValue((size_t)v.getInteger(), 1.0);
+    ObjectPtr v = nodes[i]->compute(context, inputs);
+    if (v)
+      res->incrementValue((size_t)NewInteger::get(v), 1.0);
   }
   return res;
 }

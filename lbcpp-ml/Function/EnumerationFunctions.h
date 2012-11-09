@@ -36,11 +36,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" == ") + Variable(value, enumeration).toShortString();}
   
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    if (inputs[0].isMissingValue())
-      return Variable::missingValue(booleanType);
-    return (size_t)inputs[0].getInteger() == value;
+    if (!inputs[0])
+      return ObjectPtr();
+    return new NewBoolean(NewInteger::get(inputs[0]) == (juce::int64)value);
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const

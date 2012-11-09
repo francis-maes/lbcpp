@@ -314,11 +314,11 @@ public:
   virtual String toShortString() const
     {return "progn2";}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
     std::vector<SantaFeTrailActionPtr> actions(2);
-    actions[0] = inputs[0].getObjectAndCast<SantaFeTrailAction>();
-    actions[1] = inputs[1].getObjectAndCast<SantaFeTrailAction>();
+    actions[0] = inputs[0].staticCast<SantaFeTrailAction>();
+    actions[1] = inputs[1].staticCast<SantaFeTrailAction>();
     return new SequenceSantaFeTrailAction(actions);
   }
 };
@@ -332,12 +332,12 @@ public:
   virtual String toShortString() const
     {return "progn3";}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
     std::vector<SantaFeTrailActionPtr> actions(3);
-    actions[0] = inputs[0].getObjectAndCast<SantaFeTrailAction>();
-    actions[1] = inputs[1].getObjectAndCast<SantaFeTrailAction>();
-    actions[2] = inputs[2].getObjectAndCast<SantaFeTrailAction>();
+    actions[0] = inputs[0].staticCast<SantaFeTrailAction>();
+    actions[1] = inputs[1].staticCast<SantaFeTrailAction>();
+    actions[2] = inputs[2].staticCast<SantaFeTrailAction>();
     return new SequenceSantaFeTrailAction(actions);
   }
 };
@@ -351,8 +351,8 @@ public:
   virtual String toShortString() const
     {return "if-food-ahead";}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return new IfFoodAheadSantaFeTrailAction(inputs[0].getObjectAndCast<SantaFeTrailAction>(), inputs[1].getObjectAndCast<SantaFeTrailAction>());}
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return new IfFoodAheadSantaFeTrailAction(inputs[0].staticCast<SantaFeTrailAction>(), inputs[1].staticCast<SantaFeTrailAction>());}
 };
 
 class SanteFeTrailObjective : public Objective
@@ -384,8 +384,8 @@ public:
 #endif // 0
 
     ExpressionPtr expression = object.staticCast<Expression>();
-    Variable dummy;
-    SantaFeTrailActionPtr action = expression->compute(context, &dummy).getObjectAndCast<SantaFeTrailAction>();
+    ObjectPtr dummy;
+    SantaFeTrailActionPtr action = expression->compute(context, &dummy).staticCast<SantaFeTrailAction>();
 
     SantaFeTrailStatePtr state = new SantaFeTrailState(world, maxNumSteps);
     while (!state->isTimeExhausted() && !state->areAllPelletsEaten())
@@ -413,9 +413,9 @@ public:
   {
     // define domain
     ExpressionDomainPtr domain = new ExpressionDomain();
-    domain->addConstant(Variable(new MoveSantaFeTrailAction(), santaFeTrailActionClass));
-    domain->addConstant(Variable(new LeftSantaFeTrailAction(), santaFeTrailActionClass));
-    domain->addConstant(Variable(new RightSantaFeTrailAction(), santaFeTrailActionClass));
+    domain->addConstant(new MoveSantaFeTrailAction());
+    domain->addConstant(new LeftSantaFeTrailAction());
+    domain->addConstant(new RightSantaFeTrailAction());
 
     domain->addFunction(new Progn2SantaFeTrailFunction());
     domain->addFunction(new Progn3SantaFeTrailFunction());

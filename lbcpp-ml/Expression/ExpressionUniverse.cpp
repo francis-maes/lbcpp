@@ -14,7 +14,7 @@ ExpressionUniverse::ExpressionUniverse() : maxFunctionDepth((size_t)-1), maxObse
 {
 }
 
-ConstantExpressionPtr ExpressionUniverse::makeConstantNode(const Variable& constantValue)
+ConstantExpressionPtr ExpressionUniverse::makeConstantNode(const ObjectPtr& constantValue)
 {
   if (constantValue.exists())
     return new ConstantExpression(constantValue);

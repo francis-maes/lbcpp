@@ -13,53 +13,6 @@
 using namespace lbcpp;
 
 /*
-** LuapeInstanceCache
-*/
-void LuapeInstanceCache::setInputObject(const std::vector<VariableExpressionPtr>& inputs, const ObjectPtr& object)
-{
-  ContainerPtr container = object.dynamicCast<Container>();
-  if (container)
-  {
-    size_t n = container->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-      set(inputs[i], container->getElement(i));
-  }
-  else
-  {
-    size_t n = object->getNumVariables();
-    if (n == inputs.size())
-    {
-      for (size_t i = 0; i < n; ++i)
-        set(inputs[i], object->getVariable(i));
-    }
-    else
-    {
-      jassert(inputs.size() == 1 && inputs[0]->getType() == object->getClass());
-      set(inputs[0], object);
-    }
-  }
-}
-
-void LuapeInstanceCache::set(const ExpressionPtr& node, const Variable& value)
-{
-  jassert(m.find(node) == m.end());
-  m[node] = value;
-}
-
-Variable LuapeInstanceCache::compute(ExecutionContext& context, const ExpressionPtr& node)
-{
-  NodeToValueMap::const_iterator it = m.find(node);
-  if (it == m.end())
-  {
-    Variable res = node->compute(context, LuapeInstanceCachePtr(this));
-    m[node] = res;
-    return res;
-  }
-  else
-    return it->second;
-}
-
-/*
 ** LuapeSampleVector
 */
 LuapeSampleVector::LuapeSampleVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType)
@@ -477,6 +430,9 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Exp
         return false;
   }
 
+  jassertfalse; // broken
+  return true;
+#if 0
   LuapeSampleVectorPtr outputs = getSamples(context, node, allIndices);
   for (LuapeSampleVector::const_iterator it = outputs->begin(); it != outputs->end(); ++it)
   {
@@ -498,6 +454,7 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Exp
     }
   }
   return true;
+#endif // 0
 }
 
 struct NodeTypeCacheInformation

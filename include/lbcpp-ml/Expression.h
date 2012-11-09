@@ -16,8 +16,6 @@
 namespace lbcpp
 {
 
-class LuapeInstanceCache;
-typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
 class LuapeSamplesCache;
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
 
@@ -32,10 +30,8 @@ public:
   void setType(const TypePtr& type)
     {this->type = type;}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const = 0;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
-  Variable compute(ExecutionContext& context) const;
-
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
+  
   LuapeSampleVectorPtr compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
 
   virtual size_t getNumSubNodes() const
@@ -92,8 +88,7 @@ public:
   VariableExpression();
 
   virtual String toShortString() const;
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
   virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   lbcpp_UseDebuggingNewOperator
@@ -111,26 +106,25 @@ protected:
 class ConstantExpression : public Expression
 {
 public:
-  ConstantExpression(const Variable& value);
+  ConstantExpression(const ObjectPtr& value);
   ConstantExpression() {}
 
   virtual String toShortString() const;
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
   virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
-  const Variable& getValue() const
+  const ObjectPtr& getValue() const
     {return value;}
 
-  void setValue(const Variable& value)
-    {type = value.getType(); this->value = value;}
+  void setValue(const ObjectPtr& value)
+    {type = value->getClass(); this->value = value;}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ConstantExpressionClass;
 
-  Variable value;
+  ObjectPtr value;
 };
 
 /*
@@ -146,8 +140,7 @@ public:
 
   virtual String toShortString() const;
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
   virtual size_t getNumSubNodes() const
     {return arguments.size();}
@@ -195,8 +188,7 @@ public:
   TestExpression() {}
 
   virtual String toShortString() const;
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
   virtual size_t getNumSubNodes() const;
   virtual const ExpressionPtr& getSubNode(size_t index) const;
@@ -295,8 +287,7 @@ public:
   ScalarSumExpression(const std::vector<ExpressionPtr>& nodes, bool convertToProbabilities, bool computeAverage);
   ScalarSumExpression(bool convertToProbabilities = false, bool computeAverage = true);
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
 protected:
   friend class ScalarSumExpressionClass;
@@ -314,8 +305,7 @@ public:
   VectorSumExpression(EnumerationPtr enumeration, bool convertToProbabilities);
   VectorSumExpression() {}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
 protected:
   friend class VectorSumExpressionClass;
@@ -335,8 +325,7 @@ public:
   CreateSparseVectorExpression(const std::vector<ExpressionPtr>& nodes);
   CreateSparseVectorExpression();
     
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;

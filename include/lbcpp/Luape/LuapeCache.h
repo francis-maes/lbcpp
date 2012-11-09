@@ -18,23 +18,6 @@ namespace lbcpp
 {
 
 /*
-** LuapeInstanceCache
-*/
-class LuapeInstanceCache : public Object
-{
-public:
-  void setInputObject(const std::vector<VariableExpressionPtr>& inputs, const ObjectPtr& object);
-  void set(const ExpressionPtr& node, const Variable& value);
-  Variable compute(ExecutionContext& context, const ExpressionPtr& node);
-
-protected:
-  typedef std::map<ExpressionPtr, Variable> NodeToValueMap;
-  NodeToValueMap m;
-};
-
-typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
-
-/*
 ** LuapeSampleVector
 */
 class LuapeSampleVector : public Object

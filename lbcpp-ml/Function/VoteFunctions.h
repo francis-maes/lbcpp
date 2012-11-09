@@ -32,18 +32,22 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return outputType;}
 
-  virtual Variable computeVote(double input) const = 0;
+  virtual ObjectPtr computeVote(double input) const = 0;
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return computeVote(inputs[0].toDouble());}
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+  {
+    if (!inputs[0])
+      return ObjectPtr();
+    return computeVote(NewDouble::get(inputs[0]));
+  }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
     LuapeSampleVectorPtr weakPredictions = inputs[0];
     if (weakPredictions->getElementsType() == booleanType)
     {
-      Variable negativeVote = computeVote(0.0);
-      Variable positiveVote = computeVote(1.0);
+      ObjectPtr negativeVote = computeVote(0.0);
+      ObjectPtr positiveVote = computeVote(1.0);
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
       for (LuapeSampleVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
@@ -83,19 +87,19 @@ public:
   ScalarVoteFunction(double vote = 0.0)
     : VoteFunction(doubleType), vote(vote) {}
 
-  virtual Variable computeVote(double input) const
-    {return (input * 2 - 1) * vote;}
+  virtual ObjectPtr computeVote(double input) const
+    {return new NewDouble((input * 2 - 1) * vote);}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    if (inputs[0].exists())
-      return computeVote(inputs[0].toDouble());
+    if (inputs[0])
+      return computeVote(NewDouble::get(inputs[0]));
     else
-      return 0.0;
+      return new NewDouble();
   }
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return "vote(" + inputs[0]->toShortString() + ", " + Variable(vote).toShortString() + ")";}
+    {return "vote(" + inputs[0]->toShortString() + ", " + ObjectPtr(new NewDouble(vote))->toShortString() + ")";}
 
 protected:
   friend class ScalarVoteFunctionClass;
@@ -110,7 +114,7 @@ public:
     : VoteFunction(vote->getClass()), vote(vote) {}
   VectorVoteFunction() {}
 
-  virtual Variable computeVote(double input) const
+  virtual ObjectPtr computeVote(double input) const
   {
     DenseDoubleVectorPtr res = vote->cloneAndCast<DenseDoubleVector>();
     res->multiplyByScalar(input * 2 - 1);

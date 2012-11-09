@@ -32,11 +32,8 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(inputClass ? inputClass : objectClass);}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const ObjectPtr& object = inputs[0].getObject();
-    return object ? pthis().computeObject(object) : Variable();
-  }
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? pthis().computeObject(inputs[0]) : ObjectPtr();}
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
@@ -50,7 +47,7 @@ public:
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
-          res->set(i, pthis().computeObject(object).getObject());
+          res->set(i, pthis().computeObject(object));
       }
       return new LuapeSampleVector(objects->getIndices(), res);
     }
@@ -62,7 +59,7 @@ public:
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
-          res->setValue(i, pthis().computeObject(object).getDouble());
+          res->setValue(i, NewDouble::get(pthis().computeObject(object)));
       }
       return new LuapeSampleVector(objects->getIndices(), res);
     }
@@ -130,14 +127,11 @@ public:
     return inputs[0]->toShortString() + "." + (member->getShortName().isNotEmpty() ? member->getShortName() : member->getName());
   }
 
-  Variable computeObject(const ObjectPtr& object) const
-    {return inputClass->getMemberVariableValue(object.get(), variableIndex);}
+  ObjectPtr computeObject(const ObjectPtr& object) const
+    {return inputClass->getMemberVariableValue(object.get(), variableIndex).toObject();}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(outputType);
-  }
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
@@ -186,14 +180,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
-  Variable computeObject(const ObjectPtr& object) const
-    {return Variable(object.staticCast<Container>()->getNumElements(), positiveIntegerType);} 
+  ObjectPtr computeObject(const ObjectPtr& object) const
+    {return new NewInteger(object.staticCast<Container>()->getNumElements());} // positiveInteger
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(positiveIntegerType);
-  }
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 };
 
 }; /* namespace lbcpp */

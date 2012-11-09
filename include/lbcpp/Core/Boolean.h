@@ -26,6 +26,9 @@ public:
   bool get() const
     {return value;}
 
+  static bool get(ObjectPtr object)
+    {return object.staticCast<NewBoolean>()->get();}
+
   virtual String toShortString() const
     {return value ? "true" : "false";}
 
