@@ -95,20 +95,33 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/ExpressionDomain.cpp
   Expression/ExpressionSampler.cpp
   Expression/PostfixExpression.cpp
+  Expression/ExpressionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
+)
+
+SET(LBCPP_ML_EXPRESSION_SAMPLER_SOURCES
   Expression/FullExpressionSampler.h
   Expression/GrowExpressionSampler.h
+)
+
+SET(LBCPP_ML_EXPRESSION_PERTURBATOR_SOURCES
   Expression/KozaExpressionPerturbator.h
   Expression/InsertExpressionPerturbator.h
   Expression/SwapExpressionPerturbator.h
   Expression/ShrinkExpressionPerturbator.h
   Expression/SubTreeCrossOverExpressionPerturbator.h
+)
+
+SET(LBCPP_ML_EXPRESSION_SEARCH_SOURCES
   Expression/ExpressionActionDomainsCache.h
   Expression/PrefixExpressionState.h
   Expression/PostfixExpressionState.h
   Expression/TypedPostfixExpressionState.h
+)
+
+SET(LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES
+  Expression/ClassificationObjectives.h
   Expression/RegressionObjectives.h
-  Expression/ExpressionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
 )
 
 SET(LBCPP_ML_SEARCH_SOURCES
@@ -144,6 +157,10 @@ SET(LBCPP_ML_SOURCES
   ${LBCPP_ML_COMPARATOR_SOURCES}
   ${LBCPP_ML_FUNCTION_SOURCES}
   ${LBCPP_ML_EXPRESSION_SOURCES}
+    ${LBCPP_ML_EXPRESSION_SAMPLER_SOURCES}
+    ${LBCPP_ML_EXPRESSION_PERTURBATOR_SOURCES}
+    ${LBCPP_ML_EXPRESSION_SEARCH_SOURCES}
+    ${LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES}
   ${LBCPP_ML_SEARCH_SOURCES}
   ${LBCPP_ML_TOPLEVEL_SOURCES}
   ${LBCPP_ML_MAIN_SOURCES}
@@ -157,6 +174,10 @@ SOURCE_GROUP(Sampler FILES ${LBCPP_ML_SAMPLER_SOURCES})
 SOURCE_GROUP(Comparator FILES ${LBCPP_ML_COMPARATOR_SOURCES})
 SOURCE_GROUP(Function FILES ${LBCPP_ML_FUNCTION_SOURCES})
 SOURCE_GROUP(Expression FILES ${LBCPP_ML_EXPRESSION_SOURCES})
+SOURCE_SUB_GROUP(Expression Sampler FILES ${LBCPP_ML_EXPRESSION_SAMPLER_SOURCES})
+SOURCE_SUB_GROUP(Expression Perturbator FILES ${LBCPP_ML_EXPRESSION_PERTURBATOR_SOURCES})
+SOURCE_SUB_GROUP(Expression Search FILES ${LBCPP_ML_EXPRESSION_SEARCH_SOURCES})
+SOURCE_SUB_GROUP(Expression Objective FILES ${LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES})
 SOURCE_GROUP(Search FILES ${LBCPP_ML_SEARCH_SOURCES})
 SOURCE_GROUP(Main FILES ${LBCPP_ML_MAIN_SOURCES})
 

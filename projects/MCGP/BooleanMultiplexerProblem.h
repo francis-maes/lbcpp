@@ -10,7 +10,6 @@
 # define LBCPP_MCGP_BOOLEAN_MULTIPLEXER_PROBLEM_H_
 
 # include <lbcpp-ml/ExpressionDomain.h>
-# include "BooleanParityProblem.h"
 
 namespace lbcpp
 {
@@ -70,7 +69,7 @@ public:
     cache->disableCaching();
 
     // objective
-    addObjective(new BooleanAccuracyObjective(cache, output));
+    addObjective(binaryAccuracyObjective(cache, output));
   }
 
 protected:
