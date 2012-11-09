@@ -58,11 +58,6 @@
 # include "Execution/WorkUnit.h"
 # include "Execution/TestUnit.h"
 
-# include "DecisionProblem/DecisionProblem.h"
-
-# include "Luape/LuapeInference.h"
-# include "Luape/LuapeLearner.h"
-
 #ifdef LBCPP_USER_INTERFACE
 # include "UserInterface/UserInterfaceManager.h"
 #endif
