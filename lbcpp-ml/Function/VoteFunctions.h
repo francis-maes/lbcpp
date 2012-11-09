@@ -11,7 +11,6 @@
 
 # include <lbcpp-ml/Function.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
@@ -41,37 +40,37 @@ public:
     return computeVote(NewDouble::get(inputs[0]));
   }
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    LuapeSampleVectorPtr weakPredictions = inputs[0];
+    DataVectorPtr weakPredictions = inputs[0];
     if (weakPredictions->getElementsType() == booleanType)
     {
       ObjectPtr negativeVote = computeVote(0.0);
       ObjectPtr positiveVote = computeVote(1.0);
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
-      for (LuapeSampleVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
+      for (DataVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
       {
         unsigned char c = it.getRawBoolean();
         if (c < 2)
           res->setElement(index, c == 1 ? positiveVote : negativeVote);
         ++index;
       }
-      return new LuapeSampleVector(weakPredictions->getIndices(), res);
+      return new DataVector(weakPredictions->getIndices(), res);
     }
     else
     {
       jassert(weakPredictions->getElementsType() == probabilityType);
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
-      for (LuapeSampleVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
+      for (DataVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
       {
         double d = it.getRawDouble();
         if (d != doubleMissingValue)
           res->setElement(index, computeVote(d));
         ++index;
       }
-      return new LuapeSampleVector(weakPredictions->getIndices(), res);
+      return new DataVector(weakPredictions->getIndices(), res);
     }
   }
 

@@ -23,7 +23,7 @@ public:
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const = 0;
   virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
-  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const = 0;
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const DataVectorPtr& weakPredictions) const = 0;
   virtual Variable negateVote(const Variable& vote) const = 0;
   virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const ExpressionDomainPtr& problem, const Variable& vote) const = 0;
   
@@ -50,7 +50,7 @@ public:
     const ExpressionUniversePtr& universe = problem->getUniverse();
 
     jassert(weakNode);
-    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    DataVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     Variable vote = computeVote(context, problem, weakPredictions);
     if (!vote.exists())
       return ExpressionPtr();

@@ -13,7 +13,6 @@
 # include "Expression.h"
 # include "Problem.h"
 # include "Search.h"
-# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {

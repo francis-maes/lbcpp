@@ -25,7 +25,7 @@ public:
 
   virtual void setSupervisions(const VectorPtr& supervisions) = 0;
   virtual void setWeights(const DenseDoubleVectorPtr& weights) = 0;
-  virtual void setPredictions(const LuapeSampleVectorPtr& predictions) = 0;
+  virtual void setPredictions(const DataVectorPtr& predictions) = 0;
 
   virtual void update() = 0;
   virtual void flipPrediction(size_t index) = 0; // flip from negative prediction to positive prediction
@@ -37,7 +37,7 @@ public:
   virtual Variable computeVote(const IndexSetPtr& indices) = 0;
 
   // these three functions have side effects on the currently stored predictions
-  double compute(const LuapeSampleVectorPtr& predictions);
+  double compute(const DataVectorPtr& predictions);
 
   double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples);
   double findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
@@ -61,12 +61,12 @@ public:
   const DenseDoubleVectorPtr& getWeights() const
     {return weights;}
 
-  virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
+  virtual void setPredictions(const DataVectorPtr& predictions)
     {this->predictions = predictions; invalidate();}
 
 protected:
   DenseDoubleVectorPtr weights;
-  LuapeSampleVectorPtr predictions;
+  DataVectorPtr predictions;
 
   double getWeight(size_t index) const
     {return weights ? weights->getValue(index) : 1.0;}

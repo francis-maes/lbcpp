@@ -14,8 +14,8 @@
 namespace lbcpp
 {
 
-class LuapeSampleVector;
-typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
+class DataVector;
+typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
 
 class LuapeSamplesCache;
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;

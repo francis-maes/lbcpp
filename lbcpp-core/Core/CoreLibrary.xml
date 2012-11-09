@@ -62,10 +62,6 @@
     <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
   </class>
 
-  <class name="VariableVector" base="Vector[Variable]">
-    <constructor arguments="size_t initialSize"/>
-  </class>
-
   <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
 
   <!-- Map -->

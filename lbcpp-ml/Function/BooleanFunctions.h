@@ -11,7 +11,6 @@
 
 # include <lbcpp-ml/Function.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
@@ -34,9 +33,9 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? new NewBoolean(!NewBoolean::get(inputs[0])) : ObjectPtr();}
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    LuapeSampleVector::const_iterator it = inputs[0]->begin();
+    DataVector::const_iterator it = inputs[0]->begin();
     size_t n = inputs[0]->size();
 
     BooleanVectorPtr res = new BooleanVector(n);
@@ -48,7 +47,7 @@ public:
       *dest++ = (b == 2 ? 2 : 1 - b);
       ++it;
     }
-    return new LuapeSampleVector(inputs[0]->getIndices(), res);
+    return new DataVector(inputs[0]->getIndices(), res);
   }
 };
 
@@ -76,10 +75,10 @@ public:
     return new NewBoolean(computeBoolean(NewBoolean::get(inputs[0]), NewBoolean::get(inputs[1])));
   }
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    LuapeSampleVector::const_iterator it1 = inputs[0]->begin();
-    LuapeSampleVector::const_iterator it2 = inputs[1]->begin();
+    DataVector::const_iterator it1 = inputs[0]->begin();
+    DataVector::const_iterator it2 = inputs[1]->begin();
     size_t n = inputs[0]->size();
     jassert(n == inputs[1]->size());
 
@@ -97,7 +96,7 @@ public:
       ++it1;
       ++it2;
     }
-    return new LuapeSampleVector(inputs[0]->getIndices(), res);
+    return new DataVector(inputs[0]->getIndices(), res);
   }
 };
 
@@ -173,11 +172,11 @@ public:
     return NewBoolean::get(inputs[0]) ? inputs[1] : inputs[2];
   }
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    LuapeSampleVector::const_iterator it1 = inputs[0]->begin();
-    LuapeSampleVector::const_iterator it2 = inputs[1]->begin();
-    LuapeSampleVector::const_iterator it3 = inputs[2]->begin();
+    DataVector::const_iterator it1 = inputs[0]->begin();
+    DataVector::const_iterator it2 = inputs[1]->begin();
+    DataVector::const_iterator it3 = inputs[2]->begin();
     size_t n = inputs[0]->size();
     jassert(n == inputs[1]->size() && n == inputs[2]->size());
 
@@ -194,7 +193,7 @@ public:
       ++it1, ++it2, ++it3;
     }
 
-    return new LuapeSampleVector(inputs[0]->getIndices(), res);
+    return new DataVector(inputs[0]->getIndices(), res);
   }
 };
 

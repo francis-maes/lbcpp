@@ -27,7 +27,7 @@ public:
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
 
-  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const DataVectorPtr& weakPredictions) const
   {
     BinaryClassificationSplitObjectivePtr objective = this->objective.staticCast<BinaryClassificationSplitObjective>();
     objective->setPredictions(weakPredictions);
@@ -81,7 +81,7 @@ public:
 
   virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
-    LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
+    DataVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
     DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
     size_t n = predictions->size();
     
@@ -90,7 +90,7 @@ public:
     jassert(n == weights->getNumValues());
     
     double sumOfWeights = 0.0;
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       size_t index = it.getIndex();
       double supervision = supervisions->getValue(index) * 2 - 1.0; // scale from probabilities to {-1,1}

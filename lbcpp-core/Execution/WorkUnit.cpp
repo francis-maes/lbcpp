@@ -194,11 +194,11 @@ String WorkUnit::getUsageString() const
 ObjectPtr CompositeWorkUnit::run(ExecutionContext& context)
 {
   const size_t n = getNumWorkUnits();
-  VariableVectorPtr results = variableVector(n);
+  ObjectVectorPtr results = new ObjectVector(objectClass, n);
   for (size_t i = 0; i < n; ++i)
   {
     WorkUnitPtr workUnit = getWorkUnit(i);
-    Variable result = context.run(workUnit, pushChildrenIntoStack);
+    ObjectPtr result = context.run(workUnit, pushChildrenIntoStack);
     results->setElement(i, result);
   }
   return results;

@@ -11,6 +11,7 @@
 
 # include "predeclarations.h"
 # include <lbcpp-ml/ExpressionDomain.h>
+# include "ExpressionUniverse.h"
 
 namespace lbcpp
 {

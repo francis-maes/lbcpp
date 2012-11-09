@@ -329,7 +329,7 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
 
       std::vector<FunctionPtr> functions;
       // fixme: ExpressionUniverse
-      enumerateFunctionVariables(ExpressionUniversePtr(), function, inputTypes, tmp, 0, functions);
+      enumerateFunctionVariables(function, inputTypes, tmp, 0, functions);
 
       for (size_t j = 0; j < functions.size(); ++j)
         applyFunctionAndBuildSuccessor(domain, state, functions[j], nodeTypes, maxDepth);
@@ -337,10 +337,13 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
   }
 }
 
-void PostfixExpressionTypeSpace::enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
+void PostfixExpressionTypeSpace::enumerateFunctionVariables(const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
 {
   if (variableIndex == variables.size())
-    res.push_back(universe->makeFunction(function->getClass(), variables));
+  {
+    //res.push_back(universe->makeFunction(function->getClass(), variables));
+    jassertfalse; // broken
+  }
   else
   {
     ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
@@ -350,7 +353,7 @@ void PostfixExpressionTypeSpace::enumerateFunctionVariables(const ExpressionUniv
       for (size_t i = 0; i < n; ++i)
       {
         variables[variableIndex] = values->getElement(i).getObject();
-        enumerateFunctionVariables(universe, function, inputTypes, variables, variableIndex + 1, res);
+        enumerateFunctionVariables(function, inputTypes, variables, variableIndex + 1, res);
       }
     }
   }

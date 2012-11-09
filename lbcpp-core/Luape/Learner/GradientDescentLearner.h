@@ -133,7 +133,7 @@ public:
       return false;
     
     context.enterScope(T("Computing training features"));
-    LuapeSampleVectorPtr featureSamples = problem->getTrainingCache()->getSamples(context, featureFunction, examples);
+    DataVectorPtr featureSamples = problem->getTrainingCache()->getSamples(context, featureFunction, examples);
     trainingFeatures = featureSamples->getVector().staticCast<ObjectVector>();
     jassert(trainingFeatures);
     context.leaveScope();
@@ -141,7 +141,7 @@ public:
     if (problem->getValidationCache())
     {
       context.enterScope(T("Computing validation features"));
-      LuapeSampleVectorPtr featureSamples = problem->getValidationCache()->getSamples(context, featureFunction, examples);
+      DataVectorPtr featureSamples = problem->getValidationCache()->getSamples(context, featureFunction, examples);
       validationFeatures = featureSamples->getVector().staticCast<ObjectVector>();
       jassert(validationFeatures);
       context.leaveScope();

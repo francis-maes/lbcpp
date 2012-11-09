@@ -8,7 +8,7 @@
 
 #include "precompiled.h"
 #include <lbcpp-ml/Expression.h>
-#include <lbcpp/Luape/LuapeCache.h>
+#include <lbcpp-ml/DataTable.h>
 #include <algorithm>
 using namespace lbcpp;
 
@@ -162,12 +162,12 @@ ExpressionPtr Expression::sampleSubNode(RandomGeneratorPtr random) const
   return getSubNode(random->sampleSize(n));
 }
 
-LuapeSampleVectorPtr Expression::compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr Expression::compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   IndexSetPtr idx = indices ? indices : data->getAllIndices();
   VectorPtr samples = data->getSamplesByExpression(refCountedPointerFromThis(this));
   if (samples)
-    return LuapeSampleVector::createCached(idx, samples);
+    return DataVector::createCached(idx, samples);
   else
     return computeSamples(context, data, idx);
 }
@@ -190,10 +190,10 @@ String VariableExpression::toShortString() const
 ObjectPtr VariableExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {return inputs[inputIndex];}
 
-LuapeSampleVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   jassertfalse; // if we reach this point, then the data for this variable is missing in the data table
-  return LuapeSampleVectorPtr();
+  return DataVectorPtr();
 }
 
 /*
@@ -210,8 +210,8 @@ String ConstantExpression::toShortString() const
 ObjectPtr ConstantExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {return value;}
 
-LuapeSampleVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
-  {return LuapeSampleVector::createConstant(indices, value);}
+DataVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+  {return DataVector::createConstant(indices, value);}
 
 /*
 ** FunctionExpression
@@ -281,14 +281,14 @@ ObjectPtr FunctionExpression::compute(ExecutionContext& context, const ObjectPtr
   }
 }
 
-LuapeSampleVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
-  std::vector<LuapeSampleVectorPtr> inputs(arguments.size());
+  std::vector<DataVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
     inputs[i] = arguments[i]->compute(context, data, indices);
 
   //double startTime = Time::getMillisecondCounterHiRes();
-  LuapeSampleVectorPtr res = function->compute(context, inputs, type);
+  DataVectorPtr res = function->compute(context, inputs, type);
   //double endTime = Time::getMillisecondCounterHiRes();
   //cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
   return res;
@@ -340,14 +340,14 @@ ObjectPtr TestExpression::compute(ExecutionContext& context, const ObjectPtr* in
   return subNode ? subNode->compute(context, inputs) : ObjectPtr();
 }
 
-void TestExpression::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
+void TestExpression::dispatchIndices(const DataVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
 {
   failureIndices = new IndexSet();
   failureIndices->reserve(conditionValues->size() / 4);
   successIndices = new IndexSet();
   successIndices->reserve(conditionValues->size() / 4);
   missingIndices = new IndexSet();
-  for (LuapeSampleVector::const_iterator it = conditionValues->begin(); it != conditionValues->end(); ++it)
+  for (DataVector::const_iterator it = conditionValues->begin(); it != conditionValues->end(); ++it)
   {
     switch (it.getRawBoolean())
     {
@@ -359,10 +359,10 @@ void TestExpression::dispatchIndices(const LuapeSampleVectorPtr& conditionValues
   }
 }
 
-LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   jassert(indices->size());
-  LuapeSampleVectorPtr conditions = conditionNode->compute(context, data, indices);
+  DataVectorPtr conditions = conditionNode->compute(context, data, indices);
   size_t n = conditions->size();
 
   VectorPtr resultVector;
@@ -382,7 +382,7 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
       dv[2] = NewDouble::get(v[2]);
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
-      for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
+      for (DataVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
         *ptr++ = dv[it.getRawBoolean()];
       resultVector = res;
     }
@@ -390,7 +390,7 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
     {
       ObjectVectorPtr res = new ObjectVector(type, n);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
+      for (DataVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
         res->set(i, v[it.getRawBoolean()]);
       resultVector = res;
     }
@@ -400,7 +400,7 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
     IndexSetPtr failureIndices, successIndices, missingIndices;
     dispatchIndices(conditions, failureIndices, successIndices, missingIndices);
 
-    LuapeSampleVectorPtr subValues[3];
+    DataVectorPtr subValues[3];
     subValues[0] = getSubSamples(context, failureNode, data, failureIndices);
     subValues[1] = getSubSamples(context, successNode, data, successIndices);
     subValues[2] = getSubSamples(context, missingNode, data, missingIndices);
@@ -409,7 +409,7 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
     jassert(subValues[1]->getElementsType() == elementsType);
     jassert(subValues[2]->getElementsType() == elementsType);
 
-    LuapeSampleVector::const_iterator it[3];
+    DataVector::const_iterator it[3];
     it[0] = subValues[0]->begin();
     it[1] = subValues[1]->begin();
     it[2] = subValues[2]->begin();
@@ -418,9 +418,9 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
     {
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
-      for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt)
+      for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt)
       {
-        LuapeSampleVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
+        DataVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
         *ptr++ = currentIt.getRawDouble();
         ++currentIt;
       }
@@ -430,9 +430,9 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
     {
       ObjectVectorPtr res = new ObjectVector(type, n);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
+      for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
       {
-        LuapeSampleVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
+        DataVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
         res->set(i, currentIt.getRawObject());
         ++currentIt;
       }
@@ -442,20 +442,20 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
     {
       VectorPtr res = vector(type, n);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
+      for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
       {
-        LuapeSampleVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
+        DataVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
         res->setElement(i, *currentIt);
         ++currentIt;
       }
       resultVector = res;
     }
   }
-  return new LuapeSampleVector(indices, resultVector);
+  return new DataVector(indices, resultVector);
 }
 
-LuapeSampleVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const
-  {return subNode ? subNode->compute(context, data, subIndices) : LuapeSampleVector::createConstant(subIndices, ObjectPtr());}
+DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const
+  {return subNode ? subNode->compute(context, data, subIndices) : DataVector::createConstant(subIndices, ObjectPtr());}
 
 /*
 ** SequenceExpression
@@ -473,9 +473,9 @@ String SequenceExpression::toShortString() const
   return res;
 }
 
-LuapeSampleVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
-  std::vector<LuapeSampleVectorPtr> nodeValues(nodes.size());
+  std::vector<DataVectorPtr> nodeValues(nodes.size());
   for (size_t i = 0; i < nodeValues.size(); ++i)
     nodeValues[i] = nodes[i]->compute(context, data, indices);
 
@@ -483,24 +483,27 @@ LuapeSampleVectorPtr SequenceExpression::computeSamples(ExecutionContext& contex
   for (size_t i = 0; i < nodeValues.size(); ++i)
     updateOutputs(outputs, nodeValues[i], i);
 
-  return new LuapeSampleVector(indices, outputs);
+  return new DataVector(indices, outputs);
 }
 
-void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
+void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<DataTablePtr>& cachesToUpdate)
 {
   size_t index = nodes.size();
   jassert(node);
   nodes.push_back(node);
 
+  jassertfalse; // broken
+#if 0
   // update caches
   for (size_t i = 0; i < cachesToUpdate.size(); ++i)
   {
-    LuapeSamplesCachePtr cache = cachesToUpdate[i];
+    DataTablePtr cache = cachesToUpdate[i];
     //size_t n = cache->getNumSamples();
     VectorPtr outputs = cache->getNodeCache(this);
     jassert(outputs);
     updateOutputs(outputs, cache->getSamples(context, node), index);
   }
+#endif // 0
 }
 
 /*
@@ -534,11 +537,11 @@ ObjectPtr ScalarSumExpression::compute(ExecutionContext& context, const ObjectPt
 VectorPtr ScalarSumExpression::createEmptyOutputs(size_t numSamples) const
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, numSamples, 0.0);}
 
-void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
+void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
   const DenseDoubleVectorPtr& a = outputs.staticCast<DenseDoubleVector>();
   double* dest = a->getValuePointer(0);
-  for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it)
+  for (DataVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it)
   {
     double value = it.getRawDouble();
     if (value == doubleMissingValue)
@@ -571,9 +574,9 @@ ObjectPtr VectorSumExpression::compute(ExecutionContext& context, const ObjectPt
   return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
 }
 
-LuapeSampleVectorPtr VectorSumExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr VectorSumExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
-  LuapeSampleVectorPtr res = SequenceExpression::computeSamples(context, data, indices);
+  DataVectorPtr res = SequenceExpression::computeSamples(context, data, indices);
   if (convertToProbabilities)
   {
     //jassert(false); // FIXME
@@ -592,13 +595,13 @@ VectorPtr VectorSumExpression::createEmptyOutputs(size_t numSamples) const
   return res;
 }
  
-void VectorSumExpression::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
+void VectorSumExpression::updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());
   jassert(newNodeValues->getElementsType()->inheritsFrom(denseDoubleVectorClass()));
   size_t i = 0;
-  for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
+  for (DataVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
   {
     const DenseDoubleVectorPtr& newNodeValue = it.getRawObject().staticCast<DenseDoubleVector>();
     if (newNodeValue)
@@ -659,13 +662,13 @@ VectorPtr CreateSparseVectorExpression::createEmptyOutputs(size_t numSamples) co
   return res;
 }
 
-void CreateSparseVectorExpression::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
+void CreateSparseVectorExpression::updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const
 { 
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());
   jassert(newNodeValues->getElementsType() == positiveIntegerType);
   size_t i = 0;
-  for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
+  for (DataVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
   {
     int newNodeValue = it.getRawInteger();
     if (newNodeValue >= 0)

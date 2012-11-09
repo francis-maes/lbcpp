@@ -86,7 +86,7 @@ protected:
 //    context.informationCallback(conditionNode->toShortString() + T(" [") + String(conditionNode->getSubNode(0)->getImportance()) + T("]"));
 
     // otherwise split examples...
-    LuapeSampleVectorPtr conditionValues = problem->getTrainingCache()->getSamples(context, conditionNode, examples);
+    DataVectorPtr conditionValues = problem->getTrainingCache()->getSamples(context, conditionNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     TestExpression::dispatchIndices(conditionValues, failureExamples, successExamples, missingExamples);
 

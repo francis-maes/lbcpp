@@ -10,7 +10,6 @@
 # define LBCPP_ML_EXPRESSION_POSTFIX_H_
 
 # include "Expression.h"
-# include <lbcpp/Luape/ExpressionUniverse.h>
 # include "Search.h"
 
 namespace lbcpp
@@ -142,7 +141,7 @@ private:
   static void insertType(std::vector<TypePtr>& types, const TypePtr& type);
 
   void buildSuccessors(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
-  void enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res);
+  void enumerateFunctionVariables(const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res);
   void applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
   bool acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const;
   bool prune(PostfixExpressionTypeStatePtr state); // return true if state is prunable

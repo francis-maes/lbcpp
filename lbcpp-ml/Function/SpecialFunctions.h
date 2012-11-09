@@ -11,7 +11,6 @@
 
 # include <lbcpp-ml/Function.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 # include "DoubleFunctions.h"
 # include <algorithm>
 
@@ -46,15 +45,15 @@ public:
     return new NewBoolean(NewDouble::get(inputs[0]) >= threshold);
   }
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    const LuapeSampleVectorPtr& scalars = inputs[0];
+    const DataVectorPtr& scalars = inputs[0];
     jassert(scalars->size());
     if (scalars->getElementsType() == doubleType)
     {
       BooleanVectorPtr res = new BooleanVector(scalars->size());
       unsigned char* dest = res->getData();
-      for (LuapeSampleVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
+      for (DataVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
       {
         double value = it.getRawDouble();
         if (value == doubleMissingValue)
@@ -62,7 +61,7 @@ public:
         else
           *dest++ = (value >= threshold ? 1 : 0);
       }
-      return new LuapeSampleVector(scalars->getIndices(), res);
+      return new DataVector(scalars->getIndices(), res);
     }
     else
       return Function::compute(context, inputs, outputType);
@@ -139,7 +138,7 @@ public:
     {return (Flags)allSameArgIrrelevantFlag;}
 };
 
-class NormalizerFunction : public UnaryDoubleLuapeFuntion
+class NormalizerFunction : public UnaryDoubleFunction
 {
 public:
   NormalizerFunction()

@@ -16,9 +16,6 @@
 namespace lbcpp
 {
 
-class LuapeSamplesCache;
-typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
-
 class Expression : public Object
 {
 public:
@@ -32,7 +29,7 @@ public:
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
   
-  LuapeSampleVectorPtr compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
+  DataVectorPtr compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
 
   virtual size_t getNumSubNodes() const
     {return 0;}
@@ -66,14 +63,13 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeGraph;
   friend class ExpressionClass;
 
   TypePtr type;
   size_t allocationIndex;
   double importance;
 
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const = 0;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const = 0;
 };
 
 extern ClassPtr expressionClass;
@@ -89,7 +85,7 @@ public:
 
   virtual String toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -111,7 +107,7 @@ public:
 
   virtual String toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   const ObjectPtr& getValue() const
     {return value;}
@@ -170,7 +166,7 @@ protected:
   FunctionPtr function;
   std::vector<ExpressionPtr> arguments;
 
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   void initialize();
 };
@@ -193,7 +189,7 @@ public:
   virtual size_t getNumSubNodes() const;
   virtual const ExpressionPtr& getSubNode(size_t index) const;
 
-  static void dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices);
+  static void dispatchIndices(const DataVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices);
 
   const ExpressionPtr& getCondition() const
     {return conditionNode;}
@@ -226,9 +222,9 @@ protected:
   ExpressionPtr successNode;
   ExpressionPtr missingNode;
 
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
-  LuapeSampleVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const;
+  DataVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const;
 };
 
 /*
@@ -249,7 +245,7 @@ public:
   virtual const ExpressionPtr& getSubNode(size_t index) const
     {return nodes[index];}
   
-  void pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate = std::vector<LuapeSamplesCachePtr>());
+  void pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<DataTablePtr>& cachesToUpdate = std::vector<DataTablePtr>());
 
   void clearNodes()
     {nodes.clear();}
@@ -272,8 +268,8 @@ protected:
   std::vector<ExpressionPtr> nodes;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 };
 
 typedef ReferenceCountedObjectPtr<SequenceExpression> SequenceExpressionPtr;
@@ -296,7 +292,7 @@ protected:
   bool computeAverage;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
 };
 
 class VectorSumExpression : public SequenceExpression
@@ -313,8 +309,8 @@ protected:
   bool convertToProbabilities;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
-  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
 };
@@ -329,7 +325,7 @@ public:
 
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
 };
 
 }; /* namespace lbcpp */
