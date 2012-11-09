@@ -38,27 +38,24 @@ public:
     domain->addFunction(protectedLogDoubleFunction());
     setDomain(domain);
 
-    VariableExpressionPtr output = domain->createSupervision(doubleType, "y");
     
     // data
     const size_t numSamples = 20;
-    LuapeSamplesCachePtr cache = domain->createCache(numSamples);
-    DenseDoubleVectorPtr supervisionValues = new DenseDoubleVector(numSamples, 0.0);
+    
+    DataTablePtr data = new DataTable(numSamples);
+    VariableExpressionPtr supervision = domain->createSupervision(doubleType, "y");
+    data->addColumn(domain->getInput(0));
+    data->addColumn(supervision);
+
     double lowerLimit, upperLimit;
     getInputDomain(lowerLimit, upperLimit);
 		for (size_t i = 0; i < numSamples; ++i)
 		{
 			double x = context.getRandomGenerator()->sampleDouble(lowerLimit, upperLimit);
-      double y = computeFunction(x);
-
-      cache->setInputObject(domain->getInputs(), i, new DenseDoubleVector(1, x));
-			supervisionValues->setValue(i, y);
+      data->setSample(i, 0, new NewDouble(x));
+      data->setSample(i, 1, new NewDouble(computeFunction(x)));
 		}
-    cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
-    cache->recomputeCacheSize();
-    cache->disableCaching();
-
-    addObjective(normalizedRMSERegressionObjective(cache, output));
+    addObjective(normalizedRMSERegressionObjective(data, supervision));
   }
 };
 
@@ -99,15 +96,16 @@ public:
 		domain->addFunction(divDoubleFunction());
     setDomain(domain);
 
-    VariableExpressionPtr output = domain->createSupervision(doubleType, "y");
-    
     // fitness limits
     limits->setLimits(0, getWorstError(), 0.0); // absolute error: should be minimized
 
     // data
     const size_t numSamples = 20;
-    LuapeSamplesCachePtr cache = domain->createCache(numSamples);
-    DenseDoubleVectorPtr supervisionValues = new DenseDoubleVector(numSamples, 0.0);
+    DataTablePtr data = new DataTable(numSamples);
+    VariableExpressionPtr supervision = domain->createSupervision(doubleType, "y");
+    data->addColumn(domain->getInput(0));
+    data->addColumn(supervision);
+
     double lowerLimit, upperLimit;
     getInputDomain(lowerLimit, upperLimit);
 		for (size_t i = 0; i < numSamples; ++i)
@@ -115,14 +113,10 @@ public:
 			double x = lowerLimit + (upperLimit - lowerLimit) * i / (numSamples - 1.0);// random->sampleDouble(lowerLimit, upperLimit);
       double y = computeFunction(x);
 
-      cache->setInputObject(domain->getInputs(), i, new DenseDoubleVector(1, x));
-			supervisionValues->setValue(i, y);
+      data->setSample(i, 0, new Double(x));
+      data->setSample(i, 1, new Double(computeFunction(x)));
 		}
-    cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
-    cache->recomputeCacheSize();
-    cache->disableCaching();
-
-    addObjective(normalizedRMSERegressionObjective(cache, output));
+    addObjective(normalizedRMSERegressionObjective(data, supervision));
   }
 
 protected:

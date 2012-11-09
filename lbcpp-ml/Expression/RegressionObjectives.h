@@ -17,7 +17,7 @@ namespace lbcpp
 class MSERegressionObjective : public SupervisedLearningObjective
 {
 public:
-  MSERegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision)
+  MSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision)
     : SupervisedLearningObjective(data, supervision) {}
   MSERegressionObjective() {}
 
@@ -29,7 +29,7 @@ public:
      // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
     LuapeSampleVectorPtr predictions = computePredictions(context, expression);
-    DenseDoubleVectorPtr supervisions = getSupervisions(context).staticCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr supervisions = getSupervisions().staticCast<DenseDoubleVector>();
     
     // compute mean absolute error
     double squaredError = 0.0;
@@ -49,7 +49,7 @@ public:
 class RMSERegressionObjective : public MSERegressionObjective
 {
 public:
-  RMSERegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision)
+  RMSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision)
     : MSERegressionObjective(data, supervision) {}
   RMSERegressionObjective() {}
 
@@ -60,7 +60,7 @@ public:
 class NormalizedRMSERegressionObjective : public RMSERegressionObjective
 {
 public:
-  NormalizedRMSERegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision)
+  NormalizedRMSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision)
     : RMSERegressionObjective(data, supervision) {}
   NormalizedRMSERegressionObjective() {}
 

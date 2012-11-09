@@ -11,6 +11,7 @@
 
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Luape/LuapeCache.h>
+# include "DataTable.h"
 
 namespace lbcpp
 {
@@ -60,7 +61,7 @@ public:
 class LearningObjective : public StochasticObjective
 {
 public:
-  LearningObjective(LuapeSamplesCachePtr data = LuapeSamplesCachePtr())
+  LearningObjective(DataTablePtr data = DataTablePtr())
     : data(data) {}
 
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
@@ -70,23 +71,23 @@ public:
     {return data->getNumSamples();}
 
   LuapeSampleVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const
-    {return data->getSamples(context, expression);}
+    {return expression->compute(context, data);}
 
 protected:
   friend class LearningObjectiveClass;
 
-  LuapeSamplesCachePtr data;
+  DataTablePtr data;
 };
 
 class SupervisedLearningObjective : public LearningObjective
 {
 public:
-  SupervisedLearningObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision)
+  SupervisedLearningObjective(DataTablePtr data, VariableExpressionPtr supervision)
     : LearningObjective(data), supervision(supervision) {}
   SupervisedLearningObjective() {}
 
-  VectorPtr getSupervisions(ExecutionContext& context) const
-    {return data->getNodeCache(supervision);}
+  VectorPtr getSupervisions() const
+    {return data->getSamples(supervision);}
 
 protected:
   friend class SupervisedLearningObjectiveClass;
@@ -94,11 +95,12 @@ protected:
   VariableExpressionPtr supervision;
 };
 
-extern SupervisedLearningObjectivePtr binaryAccuracyObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr binaryAccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr multiClassAccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision);
 
-extern SupervisedLearningObjectivePtr mseRegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
-extern SupervisedLearningObjectivePtr rmseRegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
-extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr mseRegressionObjective(DataTablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr rmseRegressionObjective(DataTablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision);
 
 // todo: StochasticDifferentiableObjective
 

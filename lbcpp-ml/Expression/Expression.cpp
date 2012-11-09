@@ -165,6 +165,16 @@ ExpressionPtr Expression::sampleSubNode(RandomGeneratorPtr random) const
   return getSubNode(random->sampleSize(n));
 }
 
+LuapeSampleVectorPtr Expression::compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+{
+  IndexSetPtr idx = indices ? indices : data->getAllIndices();
+  VectorPtr samples = data->getSamples(refCountedPointerFromThis(this));
+  if (samples)
+    return LuapeSampleVector::createCached(idx, samples);
+  else
+    return computeSamples(context, data, idx);
+}
+
 /*
 ** VariableExpression
 */
@@ -189,9 +199,9 @@ Variable VariableExpression::compute(ExecutionContext& context, const LuapeInsta
   return Variable();
 }
 
-LuapeSampleVectorPtr VariableExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
-  jassert(false); // the value should already have been cached
+  jassertfalse; // if we reach this point, then the data for this variable is missing in the data table
   return LuapeSampleVectorPtr();
 }
 
@@ -212,7 +222,7 @@ Variable ConstantExpression::compute(ExecutionContext& context, const Variable* 
 Variable ConstantExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
   {return value;}
 
-LuapeSampleVectorPtr ConstantExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
   {return LuapeSampleVector::createConstant(indices, value);}
 
 /*
@@ -291,16 +301,16 @@ Variable FunctionExpression::compute(ExecutionContext& context, const LuapeInsta
   return function->compute(context, &inputValues[0]);
 }
 
-LuapeSampleVectorPtr FunctionExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   std::vector<LuapeSampleVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
-    inputs[i] = cache->getSamples(context, arguments[i], indices);
+    inputs[i] = arguments[i]->compute(context, data, indices);
 
-  double startTime = Time::getMillisecondCounterHiRes();
+  //double startTime = Time::getMillisecondCounterHiRes();
   LuapeSampleVectorPtr res = function->compute(context, inputs, type);
-  double endTime = Time::getMillisecondCounterHiRes();
-  cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
+  //double endTime = Time::getMillisecondCounterHiRes();
+  //cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
   return res;
 }
 
@@ -376,13 +386,12 @@ void TestExpression::dispatchIndices(const LuapeSampleVectorPtr& conditionValues
   }
 }
 
-LuapeSampleVectorPtr TestExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   jassert(indices->size());
-  LuapeSampleVectorPtr conditions = cache->getSamples(context, conditionNode, indices);
+  LuapeSampleVectorPtr conditions = conditionNode->compute(context, data, indices);
   size_t n = conditions->size();
 
-  double startTime;
   VectorPtr resultVector;
 
   if (successNode.isInstanceOf<ConstantExpression>() && failureNode.isInstanceOf<ConstantExpression>() && missingNode.isInstanceOf<ConstantExpression>())
@@ -391,8 +400,7 @@ LuapeSampleVectorPtr TestExpression::compute(ExecutionContext& context, const Lu
     v[0] = failureNode.staticCast<ConstantExpression>()->getValue();
     v[1] = successNode.staticCast<ConstantExpression>()->getValue();
     v[2] = missingNode.staticCast<ConstantExpression>()->getValue();
-    startTime = Time::getMillisecondCounterHiRes();
-
+    
     if (v[0].isDouble() && v[1].isDouble() && v[2].isDouble())
     {
       double dv[3];
@@ -436,11 +444,10 @@ LuapeSampleVectorPtr TestExpression::compute(ExecutionContext& context, const Lu
     dispatchIndices(conditions, failureIndices, successIndices, missingIndices);
 
     LuapeSampleVectorPtr subValues[3];
-    subValues[0] = getSubSamples(context, failureNode, cache, failureIndices);
-    subValues[1] = getSubSamples(context, successNode, cache, successIndices);
-    subValues[2] = getSubSamples(context, missingNode, cache, missingIndices);
-    startTime = Time::getMillisecondCounterHiRes();
-
+    subValues[0] = getSubSamples(context, failureNode, data, failureIndices);
+    subValues[1] = getSubSamples(context, successNode, data, successIndices);
+    subValues[2] = getSubSamples(context, missingNode, data, missingIndices);
+    
     TypePtr elementsType = subValues[0]->getElementsType();
     jassert(subValues[1]->getElementsType() == elementsType);
     jassert(subValues[2]->getElementsType() == elementsType);
@@ -487,13 +494,11 @@ LuapeSampleVectorPtr TestExpression::compute(ExecutionContext& context, const Lu
       resultVector = res;
     }
   }
-  double endTime = Time::getMillisecondCounterHiRes();
-  cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
   return new LuapeSampleVector(indices, resultVector);
 }
 
-LuapeSampleVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const
-  {return subNode ? cache->getSamples(context, subNode, subIndices) : LuapeSampleVector::createConstant(subIndices, Variable::missingValue(type));}
+LuapeSampleVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const
+  {return subNode ? subNode->compute(context, data, subIndices) : LuapeSampleVector::createConstant(subIndices, Variable::missingValue(type));}
 
 /*
 ** SequenceExpression
@@ -511,18 +516,15 @@ String SequenceExpression::toShortString() const
   return res;
 }
 
-LuapeSampleVectorPtr SequenceExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
   std::vector<LuapeSampleVectorPtr> nodeValues(nodes.size());
   for (size_t i = 0; i < nodeValues.size(); ++i)
-    nodeValues[i] = cache->getSamples(context, nodes[i], indices);
+    nodeValues[i] = nodes[i]->compute(context, data, indices);
 
-  double startTime = Time::getMillisecondCounterHiRes();
   VectorPtr outputs = createEmptyOutputs(indices->size());
   for (size_t i = 0; i < nodeValues.size(); ++i)
     updateOutputs(outputs, nodeValues[i], i);
-  double endTime = Time::getMillisecondCounterHiRes();
-  cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
 
   return new LuapeSampleVector(indices, outputs);
 }
@@ -631,9 +633,9 @@ Variable VectorSumExpression::compute(ExecutionContext& context, const LuapeInst
   return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
 }
 
-LuapeSampleVectorPtr VectorSumExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr VectorSumExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
 {
-  LuapeSampleVectorPtr res = SequenceExpression::compute(context, cache, indices);
+  LuapeSampleVectorPtr res = SequenceExpression::computeSamples(context, data, indices);
   if (convertToProbabilities)
   {
     //jassert(false); // FIXME

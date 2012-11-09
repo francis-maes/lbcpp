@@ -155,6 +155,38 @@ protected:
 
 typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;
 
+class IntegerVector : public Vector
+{
+public:
+  IntegerVector(size_t initialSize, juce::int64 initialValue);
+  IntegerVector(size_t initialSize);
+  IntegerVector() {}
+
+  // Vector
+  virtual void clear();
+  virtual void reserve(size_t size);
+  virtual void resize(size_t size);
+
+  virtual void prepend(const Variable& value);
+  virtual void append(const Variable& value);
+  virtual void remove(size_t index);
+
+  // Container
+  virtual TypePtr getElementsType() const
+    {return newIntegerClass;}
+    
+  virtual size_t getNumElements() const;
+  virtual Variable getElement(size_t index) const;
+  virtual void setElement(size_t index, const Variable& value);
+
+  static juce::int64 missingValue;
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  std::vector<juce::int64> v;
+};
+
 class ObjectVector : public Vector
 {
 public:
@@ -358,11 +390,13 @@ extern ClassPtr vectorClass(TypePtr elementsType = anyType);
 extern ClassPtr genericVectorClass(TypePtr elementsType);
 extern ClassPtr objectVectorClass(TypePtr elementsType);
 extern ClassPtr booleanVectorClass;
+extern ClassPtr integerVectorClass;
 extern ClassPtr variableVectorClass;
 
 extern VectorPtr vector(TypePtr elementsType, size_t initialSize = 0);
 extern VectorPtr genericVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr booleanVector(size_t initialSize);
+extern VectorPtr integerVector(size_t initialSize);
 extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr variableVector(size_t initialSize);
 

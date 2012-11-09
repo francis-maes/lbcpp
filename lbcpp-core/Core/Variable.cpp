@@ -68,6 +68,20 @@ int Variable::compare(const Variable& otherValue) const
     return exists() ? 1 : -1;
 }
 
+ObjectPtr Variable::toObject() const
+{
+  if (isMissingValue())
+    return ObjectPtr();
+  if (isBoolean())
+    return new NewBoolean(getBoolean());
+  if (isInteger())
+    return new NewInteger(getInteger());
+  if (isDouble())
+    return new NewDouble(getDouble());
+  jassert(isObject());
+  return getObject();
+}
+
 Variable Variable::clone(ExecutionContext& context) const
 {
   if (isObject())

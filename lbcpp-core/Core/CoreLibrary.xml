@@ -9,6 +9,11 @@
   <include file="lbcpp/Core/XmlSerialisation.h"/>
 
   <class name="Library" base="Object" abstract="yes"/>
+
+  <!-- Builtin Types -->
+  <class name="NewBoolean"/>
+  <class name="NewInteger"/>
+  <class name="NewDouble"/>
   
   <!-- Pair -->
   <template name="Pair" base="Object">
@@ -47,6 +52,10 @@
   </template>
 
   <class name="BooleanVector" base="Vector[Boolean]">
+    <constructor arguments="size_t initialSize"/>
+  </class>
+
+  <class name="IntegerVector" base="Vector[Integer]">
     <constructor arguments="size_t initialSize"/>
   </class>
 

@@ -32,6 +32,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/ExpressionDomain.h
   ../include/lbcpp-ml/ExpressionSampler.h
   ../include/lbcpp-ml/BanditPool.h
+  ../include/lbcpp-ml/DataTable.h
 )
 
 
@@ -140,6 +141,7 @@ SET(LBCPP_ML_TOPLEVEL_SOURCES
   Fitness.cpp
   Problem.cpp
   BanditPool.cpp
+  DataTable.cpp
 )
 
 SET(LBCPP_ML_MAIN_SOURCES

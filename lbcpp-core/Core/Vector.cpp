@@ -349,11 +349,23 @@ static inline unsigned char booleanVariableToByte(const Variable& v)
   {jassert(v.isBoolean()); return v.isMissingValue() ? 2 : (v.getBoolean() ? 1 : 0);}
 
 Variable BooleanVector::getElement(size_t index) const
-  {jassert(index < v.size()); return byteToBooleanVariable(v[index]);}
+{
+  jassert(index < v.size());
+  unsigned char b = v[index];
+  if (b == 2)
+    return Variable::missingValue(newBooleanClass);
+  else
+    return Variable(new NewBoolean(b == 1), newBooleanClass);
+}
 
 void BooleanVector::setElement(size_t index, const Variable& value)
 {
-  if (checkInheritance(value, booleanType))
+  if (value.isObject())
+  {
+    NewBooleanPtr boolean = value.getObjectAndCast<NewBoolean>();
+    v[index] = (boolean ? (boolean->get() ? 1 : 0) : 2);
+  }
+  else if (checkInheritance(value, booleanType))
     v[index] = booleanVariableToByte(value);
 }
 
@@ -373,6 +385,57 @@ void BooleanVector::append(const Variable& value)
   {v.push_back(booleanVariableToByte(value));}
 
 void BooleanVector::remove(size_t index)
+  {v.erase(v.begin() + index);}
+
+/*
+** IntegerVector
+*/
+juce::int64 IntegerVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
+
+IntegerVector::IntegerVector(size_t initialSize, juce::int64 initialValue)
+  : Vector(integerVectorClass), v(initialSize, initialValue)
+{
+}
+
+IntegerVector::IntegerVector(size_t initialSize)
+  : Vector(integerVectorClass), v(initialSize, missingValue)
+{
+}
+
+size_t IntegerVector::getNumElements() const
+  {return v.size();}
+
+Variable IntegerVector::getElement(size_t index) const
+{
+  jassert(index < v.size());
+  if (v[index] == missingValue)
+    return Variable::missingValue(newIntegerClass);
+  else
+    return Variable(new NewInteger(v[index]), newIntegerClass);
+}
+
+void IntegerVector::setElement(size_t index, const Variable& value)
+{
+  NewIntegerPtr integer = value.getObjectAndCast<NewInteger>();
+  v[index] = (integer ? integer->get() : missingValue);
+}
+
+void IntegerVector::reserve(size_t size)
+  {v.reserve(size);}
+
+void IntegerVector::resize(size_t size)
+  {v.resize(size);}
+
+void IntegerVector::clear()
+  {v.clear();}
+
+void IntegerVector::prepend(const Variable& value)
+  {v.insert(v.begin(), value.getObject().staticCast<NewInteger>()->get());}
+
+void IntegerVector::append(const Variable& value)
+  {v.push_back(value.getObject().staticCast<NewInteger>()->get());}
+
+void IntegerVector::remove(size_t index)
   {v.erase(v.begin() + index);}
 
 /*
@@ -553,6 +616,8 @@ VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
     return objectVector(elementsType, initialSize);
   else if (elementsType->inheritsFrom(doubleType))
     return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
+  else if (elementsType->inheritsFrom(integerType))
+    return integerVector(initialSize);
   else if (elementsType == anyType)
     return variableVector(initialSize);
   else
