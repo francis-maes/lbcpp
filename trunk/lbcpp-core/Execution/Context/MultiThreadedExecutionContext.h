@@ -529,7 +529,7 @@ public:
     int numRemainingWorkUnits;
     ObjectPtr result;
     if (pushIntoStack)
-      enterScope(workUnits->getName(), workUnits);
+      enterScope(workUnits->toShortString(), workUnits);
     CompositeWorkUnitPtr wus = workUnits;
     ThreadOwnedExecutionContext::startParallelRun(*this, wus, threadPool->getWaitingQueue(), numRemainingWorkUnits, result);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);

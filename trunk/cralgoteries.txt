@@ -1,0 +1,4 @@
+
+ * Enlever les Dynamic Object
+ * Reparer et refactorer les Curves
+ * Concept de "FileType/FileLoader"

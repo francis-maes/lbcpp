@@ -37,7 +37,7 @@ class EnumerationElement : public Object
 public:
   EnumerationElement(const String& name = String::empty, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty);
 
-  virtual String getName() const
+  const String& getName() const
     {return name;}
 
   const String& getOneLetterCode() const

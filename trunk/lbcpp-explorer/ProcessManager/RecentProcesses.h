@@ -21,7 +21,7 @@ typedef ReferenceCountedObjectPtr<RecentProcesses> RecentProcessesPtr;
 class RecentProcesses : public Object
 {
 public:
-  virtual String getName() const
+  virtual String toShortString() const
     {return T("RecentProcesses");}
 
   static RecentProcessesPtr getInstance(ExecutionContext& context = defaultExecutionContext())

@@ -21,9 +21,16 @@ void Table::addColumn(const ObjectPtr& key, const TypePtr& type)
   Column c;
   c.key = key;
   c.type = type;
-  c.data = vector(type, allIndices->size());
+  c.data = vector(type, getNumRows());
   columnMap[key] = columns.size();
   columns.push_back(c);
+}
+
+void Table::resize(size_t numRows)
+{
+  for (size_t i = 0; i < columns.size(); ++i)
+    columns[i].data->resize(numRows);
+  allIndices = new IndexSet(0, numRows);
 }
 
 String Table::getDescription(size_t index) const

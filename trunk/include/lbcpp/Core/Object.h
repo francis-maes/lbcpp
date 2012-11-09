@@ -53,19 +53,6 @@ public:
   static void displayObjectAllocationInfo(std::ostream& ostr);
 
   /**
-  ** Name getter.
-  **
-  ** Note that not all Objects implement this function. Furthermore,
-  ** there is not particular semantic assigned to the name of an Object:
-  ** The getName() function may be used in different ways depending
-  ** on the kinds of Objects.
-  **
-  ** @return object name.
-  */
-  virtual String getName() const
-    {return getClassName() + T("::getName() unimplemented");}
-
-  /**
   ** Converts the current object to a string.
   **
   ** @return the current object (string form).
@@ -252,17 +239,17 @@ public:
   NameableObject(const String& name = T("Unnamed"))
     : name(name) {}
 
-  virtual String getName() const
-    {return name;}
-
   virtual String toString() const
     {return getClassName() + T(" ") + name;}
 
   virtual String toShortString() const
     {return name;}
 
-  virtual void setName(const String& name)
+  void setName(const String& name)
     {this->name = name;}
+
+  const String& getName() const
+    {return name;}
 
   lbcpp_UseDebuggingNewOperator
 

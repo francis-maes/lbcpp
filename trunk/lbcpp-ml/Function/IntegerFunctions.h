@@ -19,10 +19,10 @@ class BinaryIntegerFunction : public HomogeneousBinaryFunction
 {
 public:
   BinaryIntegerFunction()
-    : HomogeneousBinaryFunction(integerType) {}
+    : HomogeneousBinaryFunction(newIntegerClass) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type->inheritsFrom(integerType) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
+    {return type->inheritsFrom(newIntegerClass) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const = 0;
 

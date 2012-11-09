@@ -19,7 +19,7 @@ class UnaryDoubleFunction : public HomogeneousUnaryFunction
 {
 public:
   UnaryDoubleFunction()
-    : HomogeneousUnaryFunction(doubleType), vectorClass(simpleDenseDoubleVectorClass) {}
+    : HomogeneousUnaryFunction(newDoubleClass), vectorClass(simpleDenseDoubleVectorClass) {}
 
   virtual double computeDouble(double value) const = 0;
 
@@ -146,7 +146,7 @@ class BinaryDoubleFunction : public HomogeneousBinaryFunction
 {
 public:
   BinaryDoubleFunction()
-    : HomogeneousBinaryFunction(doubleType) {}
+    : HomogeneousBinaryFunction(newDoubleClass) {}
 
   virtual double computeDouble(double first, double second) const = 0;
 

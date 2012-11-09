@@ -82,15 +82,6 @@ SET(LBCPP_CORE_TYPE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/CoreTypeLibrary.cpp
 )
 
-SET(LBCPP_CORE_OBJECT_SOURCES
-  Core/Object/SparseVectorHelper.h
-  Core/Object/SparseGenericObject.h
-  Core/Object/SparseDoubleObject.h
-  Core/Object/DenseGenericObject.h
-  Core/Object/DenseDoubleObject.h
-  Core/Object/DenseObjectObject.h
-)
-
 #### Data ####
 
 SET(LBCPP_DATA_SOURCES
@@ -246,8 +237,6 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/VariableTreeView.cpp
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
-    UserInterface/Component/ContainerTableListBox.h
-    UserInterface/Component/ContainerTableListBox.cpp
     UserInterface/Component/ContainerCurveEditor.h
     UserInterface/Component/ContainerCurveEditor.cpp
     UserInterface/Component/ExecutionTraceTreeViewItem.h
@@ -294,7 +283,6 @@ SET(LBCPP_SOURCES
   ${LBCPP_CORE_SOURCES}
     ${LBCPP_CORE_IMPL_HEADERS}
     ${LBCPP_CORE_TYPE_SOURCES}
-    ${LBCPP_CORE_OBJECT_SOURCES}
 
   # Data
   ${LBCPP_DATA_SOURCES}
@@ -333,7 +321,6 @@ SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
 SOURCE_SUB_GROUP(Core impl FILES ${LBCPP_CORE_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
-SOURCE_SUB_GROUP(Core Object FILES ${LBCPP_CORE_OBJECT_SOURCES})
 
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})

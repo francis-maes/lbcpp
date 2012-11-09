@@ -19,7 +19,7 @@ extern void flushErrorAndWarningMessages(const String& title);
 
 Component* createComponentForObject(ExecutionContext& context, ObjectPtr object, const String& explicitName)
 {
-  String name = explicitName.isEmpty() ? object->getName() : explicitName;
+  String name = explicitName.isEmpty() ? object->toShortString() : explicitName;
 
   if (!object)
     return NULL;
@@ -53,8 +53,8 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
 
     if (elementsType->inheritsFrom(sumType(doubleType, integerType)))
       return userInterfaceManager().createVariableTreeView(context, container);
-    if (!elementsType->isNamedType() && elementsType->getNumMemberVariables() > 1)
-      return userInterfaceManager().createContainerTableListBox(context, container);
+    //if (!elementsType->isNamedType() && elementsType->getNumMemberVariables() > 1)
+    //return userInterfaceManager().createContainerTableListBox(context, container);
     else
       return new ContainerSelectorComponent(container);
   }

@@ -22,7 +22,7 @@ class NotBooleanFunction : public HomogeneousUnaryFunction
 {
 public:
   NotBooleanFunction()
-    : HomogeneousUnaryFunction(booleanType) {}
+    : HomogeneousUnaryFunction(newBooleanClass) {}
   
   virtual String toShortString() const
     {return "!";}
@@ -58,7 +58,7 @@ class BinaryBooleanFunction : public HomogeneousBinaryFunction
 {
 public:
   BinaryBooleanFunction()
-    : HomogeneousBinaryFunction(booleanType) {}
+    : HomogeneousBinaryFunction(newBooleanClass) {}
 
   virtual bool computeBoolean(bool first, bool second) const = 0;
   
@@ -157,7 +157,7 @@ public:
 class IfThenElseBooleanFunction : public HomogeneousTernaryFunction
 {
 public:
-  IfThenElseBooleanFunction() : HomogeneousTernaryFunction(booleanType) {}
+  IfThenElseBooleanFunction() : HomogeneousTernaryFunction(newBooleanClass) {}
   
   virtual String toShortString() const
     {return "if-then-else";}

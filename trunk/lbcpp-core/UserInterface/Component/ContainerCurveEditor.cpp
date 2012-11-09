@@ -24,7 +24,8 @@ public:
   {
     selectedCurves = configuration->getSelectedCurves();
     size_t keyVariableIndex = configuration->getKeyVariableIndex();
-    table->makeOrder(keyVariableIndex, true, order);
+    jassertfalse; // broken
+    //table->makeOrder(keyVariableIndex, true, order);
     computeBounds();
     if (!areBoundsValid())
     {

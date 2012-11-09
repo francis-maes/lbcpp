@@ -54,8 +54,6 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   virtual int compare(const ObjectPtr& otherObject) const;
     
-  void makeOrder(size_t variableIndex, bool increasingOrder, std::vector<size_t>& res) const;
-
   /*
   ** Lua
   */

@@ -10,6 +10,7 @@
 #include "ContainerCurveEditor.h"
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Core/Library.h>
+#include <lbcpp/Data/Table.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 using juce::Graphics;
@@ -95,10 +96,10 @@ public:
   TabbedExecutionTraceResultsSelectorComponent(const PairPtr& pair)
     : TabbedVariableSelectorComponent(pair)
   {
-    table = pair->getSecond().getObjectAndCast<Container>();
+    table = pair->getSecond().getObjectAndCast<Table>();
     if (table)
     {
-      addTab(T("Curves"), Colours::white);
+      //addTab(T("Curves"), Colours::white); // FIXME
       addTab(T("Table"), Colours::white);
     }
 
@@ -132,10 +133,11 @@ public:
 
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
   {
-    if (tabName == T("Curves"))
-      return new ContainerCurveEditor(context, table, new ContainerCurveEditorConfiguration(table->getElementsType()));
-    else if (tabName == T("Table"))
-      return userInterfaceManager().createContainerTableListBox(context, table);
+    // FIXME: Curves broken
+    //if (tabName == T("Curves"))
+    //  return new ContainerCurveEditor(context, table, new ContainerCurveEditorConfiguration(table->getElementsType()));
+    /*else*/ if (tabName == T("Table"))
+      return userInterfaceManager().createComponentIfExists(context, table, "Table");
     else if (tabName == T("Results"))
       return userInterfaceManager().createVariableTreeView(context, variable, tabName, true, true, false, false);
     else
@@ -143,7 +145,7 @@ public:
   }
 
 protected:
-  ContainerPtr table;
+  TablePtr table;
   ObjectPtr results;
 
   static bool hasUIComponent(TypePtr type)
@@ -166,11 +168,7 @@ juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionCon
     if (pair)
       return new TabbedExecutionTraceResultsSelectorComponent(pair);
 
-    ContainerPtr container = variable.dynamicCast<Container>();
-    if (container && !container->getElementsType()->isNamedType())
-      return userInterfaceManager().createContainerTableListBox(context, container);
-    else
-      return userInterfaceManager().createVariableTreeView(context, variable, name, true, true, false, false);
+    return userInterfaceManager().createVariableTreeView(context, variable, name, true, true, false, false);
   }
   return NULL;
 }
@@ -198,24 +196,16 @@ void ExecutionTraceTreeView::timerCallback()
           if (!hasResults && !hasSubItems)
             continue;
           
-          ObjectPtr results;
-          ContainerPtr table;
+          VectorPtr results;
+          TablePtr table;
           if (hasResults)
-            results = trace->getResultsObject(*context);
+            results = trace->getResultsVector(*context);
 
           if (hasSubItems)
           {
             table = trace->getChildrenResultsTable(*context);
-            if (table)
-            {
-              size_t numConvertibleToDouble = 0;
-              TypePtr type = table->getElementsType();
-              for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
-                if (type->getMemberVariableType(i)->isConvertibleToDouble())
-                  ++numConvertibleToDouble;
-              if (numConvertibleToDouble <= 1)
-                table = ContainerPtr(); // do not display tables that have only one column
-            }
+            if (table && table->getNumColumns() == 1)
+              table = TablePtr(); // do not display tables that have only one column
           }
 
           if (results || table)
