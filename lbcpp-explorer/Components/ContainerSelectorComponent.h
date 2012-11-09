@@ -23,7 +23,7 @@ class ContainerSelectorComponent : public juce::ListBox, public VariableSelector
 {
 public:
   ContainerSelectorComponent(ContainerPtr container)
-    : juce::ListBox(container->getName(), new Model(this, container)), container(container)
+    : juce::ListBox(container->toShortString(), new Model(this, container)), container(container)
     {setMultipleSelectionEnabled(true);}
   
   virtual ~ContainerSelectorComponent()

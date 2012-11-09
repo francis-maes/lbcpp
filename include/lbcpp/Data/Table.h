@@ -22,12 +22,13 @@ public:
   Table() {}
 
   void addColumn(const ObjectPtr& key, const TypePtr& type);
+  void resize(size_t numRows);
 
   size_t getNumColumns() const
     {return columns.size();}
 
   size_t getNumRows() const
-    {return allIndices->size();} 
+    {return allIndices ? allIndices->size() : 0;}
 
   String getDescription(size_t index) const;
 

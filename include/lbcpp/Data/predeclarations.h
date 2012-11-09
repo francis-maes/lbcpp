@@ -50,6 +50,9 @@ typedef ReferenceCountedObjectPtr<SparseDoubleVector> SparseDoubleVectorPtr;
 class DenseDoubleVector;
 typedef ReferenceCountedObjectPtr<DenseDoubleVector> DenseDoubleVectorPtr;
 
+class Table;
+typedef ReferenceCountedObjectPtr<Table> TablePtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PREDECLARATIONS_H_

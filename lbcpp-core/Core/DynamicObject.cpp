@@ -8,11 +8,6 @@
 #include "precompiled.h"
 #include <lbcpp/Core/DynamicObject.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include "Object/SparseGenericObject.h"
-#include "Object/SparseDoubleObject.h"
-#include "Object/DenseGenericObject.h"
-#include "Object/DenseObjectObject.h"
-#include "Object/DenseDoubleObject.h"
 using namespace lbcpp;
 
 DynamicClass::~DynamicClass()
@@ -59,6 +54,9 @@ bool DynamicClass::initialize(ExecutionContext& context)
 
 ObjectPtr DynamicClass::createDenseObject() const
 {
+  jassertfalse; // broken
+  return ObjectPtr();
+  /*
   jassert(getNumMemberVariables());
   const_cast<DynamicClass* >(this)->ensureVariablesTypeIsComputed();
   if (variablesType == onlyDoubleVariables)
@@ -66,17 +64,20 @@ ObjectPtr DynamicClass::createDenseObject() const
   else if (variablesType == onlyObjectVariables)
     return new DenseObjectObject(refCountedPointerFromThis(this));
   else
-    return new DenseGenericObject(refCountedPointerFromThis(this));
+    return new DenseGenericObject(refCountedPointerFromThis(this));*/
 }
 
 ObjectPtr DynamicClass::createSparseObject() const
 { 
+  jassertfalse; // broken
+  return ObjectPtr();
+  /*
   jassert(variables.size());
   const_cast<DynamicClass* >(this)->ensureVariablesTypeIsComputed();
   if (variablesType == onlyDoubleVariables)
     return new SparseDoubleObject(refCountedPointerFromThis(this));
   else
-    return new SparseGenericObject(refCountedPointerFromThis(this));
+    return new SparseGenericObject(refCountedPointerFromThis(this));*/
 }
 
 Variable DynamicClass::getMemberVariableValue(const Object* pthis, size_t index) const

@@ -98,18 +98,6 @@ extern ExecutionContext& defaultExecutionContext();
 class DynamicClass;
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
-class SparseDoubleObject;
-typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;
-
-class DenseObjectObject;
-typedef ReferenceCountedObjectPtr<DenseObjectObject> DenseObjectObjectPtr;
-
-class DenseDoubleObject;
-typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;
-
-class DenseGenericObject;
-typedef ReferenceCountedObjectPtr<DenseGenericObject> DenseGenericObjectPtr;
-
 class Function;
 typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 

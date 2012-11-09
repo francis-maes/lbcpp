@@ -562,14 +562,19 @@ size_t ObjectVector::getSizeInBytes(bool recursively) const
 VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
 {
   jassert(elementsType);
-  if (elementsType->inheritsFrom(booleanType))
+  if (elementsType->inheritsFrom(booleanType) || elementsType->inheritsFrom(newBooleanClass))
     return booleanVector(initialSize);
+  else if (elementsType->inheritsFrom(doubleType) || elementsType->inheritsFrom(newDoubleClass))
+  {
+    if (elementsType->inheritsFrom(newDoubleClass))
+      return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType), initialSize);
+    else
+      return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
+  }
+  else if (elementsType->inheritsFrom(newIntegerClass))
+    return integerVector(elementsType, initialSize);
   else if (elementsType->inheritsFrom(objectClass))
     return objectVector(elementsType, initialSize);
-  else if (elementsType->inheritsFrom(doubleType))
-    return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
-  else if (elementsType->inheritsFrom(integerType))
-    return integerVector(elementsType, initialSize);
   else
     return genericVector(elementsType, initialSize);
 }

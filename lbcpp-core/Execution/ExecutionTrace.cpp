@@ -10,6 +10,7 @@
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Data/Table.h>
 using namespace lbcpp;
 
 /*
@@ -297,41 +298,28 @@ std::vector< std::pair<String, ObjectPtr> > ExecutionTraceNode::getResults() con
   return res;
 }
 
-ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
+VectorPtr ExecutionTraceNode::getResultsVector(ExecutionContext& context) const
 {
   std::vector< std::pair<String, ObjectPtr> > results = getResults();
   if (results.empty())
-    return ObjectPtr();
-
-  DynamicClassPtr resultsClass = new DynamicClass(description + T(" results"));
-  for (size_t i = 0; i < results.size(); ++i)
-    resultsClass->addMemberVariable(context, results[i].second->getClass(), results[i].first);
-  resultsClass->initialize(context);
-
-  ObjectPtr res = resultsClass->createDenseObject();
-  for (size_t i = 0; i < results.size(); ++i)
-  {
-    int idx = resultsClass->findMemberVariable(results[i].first);
-    if (idx >= 0)
-      res->setVariable((size_t)idx, results[i].second);
-  }
-  return res;
+    return VectorPtr();
+  ClassPtr elementsType = objectVectorClass(pairClass(stringType, objectClass));
+  return lbcpp::nativeToVariable(results, elementsType).getObject();
 }
 
-VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) const
+TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) const
 {
   ScopedLock _(subItemsLock);
-  size_t numRows = subItems.size();
 
   // (variable name, variable type) -> index in common class
-  typedef std::map<std::pair<String, TypePtr>, size_t> SignatureToIndexMap;
-  SignatureToIndexMap mapping;
+  typedef std::map<String, std::pair<size_t, ObjectPtr> > ColumnsMap;
+  ColumnsMap mapping;
 
   /*
-  ** Create common class
+  ** Create columns
   */
   size_t numChildNodes = 0;
-  DynamicClassPtr resultsClass = new DynamicClass(description + T(" row"));
+  size_t numRows = subItems.size();
   for (size_t i = 0; i < numRows; ++i)
   {
     ExecutionTraceNodePtr childNode = subItems[i].dynamicCast<ExecutionTraceNode>();
@@ -339,53 +327,53 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
       continue;
     ++numChildNodes;
     std::vector< std::pair<String, ObjectPtr> > childResults = childNode->getResults();
+    childResults.insert(childResults.begin(), std::make_pair("name", new NewString(childNode->toShortString())));
     for (size_t j = 0; j < childResults.size(); ++j)
     {
+      String name = childResults[j].first;
       TypePtr type = childResults[j].second->getClass();
-      //if (type->inheritsFrom(objectClass))
-      //  type = objectClass; // we distinguish only between atomic types
-      std::pair<String, TypePtr> key(childResults[j].first, type);
 
-      SignatureToIndexMap::iterator it = mapping.find(key);
+      ColumnsMap::iterator it = mapping.find(name);
       if (it == mapping.end())
       {
-        mapping[key] = resultsClass->getNumMemberVariables();
-        String name = key.first;
-        if (resultsClass->findMemberVariable(name) >= 0)
-          name += T(" (") + key.second->getName() + T(")");
-        resultsClass->addMemberVariable(context, key.second, name);
+        size_t index = mapping.size();
+        mapping[name] = std::make_pair(index, type);
       }
+      else
+        it->second.second = Type::findCommonBaseType(type, it->second.second);
     }
   }
-  if (!resultsClass->getNumMemberVariables())
-    return VectorPtr();
-  resultsClass->initialize(context);
 
   /*
-  ** Convert to common class and fill vector
+  ** Create table
   */
-  VectorPtr res = vector(resultsClass);
-  res->reserve(numChildNodes);
+  std::vector< std::pair<String, TypePtr> > columns(mapping.size());
+  for (ColumnsMap::const_iterator it = mapping.begin(); it != mapping.end(); ++it)
+    columns[it->second.first] = std::make_pair(it->first, it->second.second);
+  TablePtr res = new Table(numChildNodes);
+  for (size_t i = 0; i < columns.size(); ++i)
+    res->addColumn(new NewString(columns[i].first), columns[i].second);
+
+  /*
+  ** Fill table
+  */
+  size_t index = 0;
   for (size_t i = 0; i < numRows; ++i)
   {
     ExecutionTraceNodePtr childNode = subItems[i].dynamicCast<ExecutionTraceNode>();
     if (!childNode)
       continue;
 
-    ObjectPtr row = resultsClass->createDenseObject();
     std::vector< std::pair<String, ObjectPtr> > childResults = childNode->getResults();
+    childResults.insert(childResults.begin(), std::make_pair("name", new NewString(childNode->toShortString())));
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      TypePtr type = childResults[j].second->getClass();
-      //if (type->inheritsFrom(objectClass))
-      //  type = objectClass; // we distinguish only between atomic types
-      std::pair<String, TypePtr> key(childResults[j].first, type);
-
-      SignatureToIndexMap::iterator it = mapping.find(key);
+      String name = childResults[j].first;
+      ColumnsMap::iterator it = mapping.find(name);
       jassert(it != mapping.end());
-      row->setVariable(it->second, childResults[j].second);
+      res->setElement(index, it->second.first, childResults[j].second);
     }
-    res->append(row);
+    ++index;
   }
   return res;
 }

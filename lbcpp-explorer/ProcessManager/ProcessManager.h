@@ -163,7 +163,7 @@ public:
   virtual ~ProcessManager()
     {killAllRunningProcesses();}
 
-  virtual String getName() const
+  virtual String toShortString() const
     {return T("Process Manager");}
 
   virtual juce::Component* createComponent() const;

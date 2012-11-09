@@ -14,6 +14,7 @@
 # include "../Core/Vector.h"
 # include "../Core/Pair.h"
 # include "../Core/DynamicObject.h"
+# include "../Data/predeclarations.h"
 
 namespace lbcpp
 {
@@ -102,8 +103,8 @@ public:
   void setResult(const String& name, const ObjectPtr& value);
   std::vector< std::pair<String, ObjectPtr> > getResults() const;
 
-  ObjectPtr getResultsObject(ExecutionContext& context) const;
-  VectorPtr getChildrenResultsTable(ExecutionContext& context) const;
+  VectorPtr getResultsVector(ExecutionContext& context) const;
+  TablePtr getChildrenResultsTable(ExecutionContext& context) const;
 
   /*
   ** Progression

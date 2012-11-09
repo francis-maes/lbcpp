@@ -20,7 +20,7 @@ class RecentFileVector : public Object
 public:
   RecentFileVector() : recentFiles(vector(localFileType)) {}
 
-  virtual String getName() const
+  virtual String toShortString() const
     {return T("RecentFileVector");}
 
   File getRecentDirectory() const

@@ -333,6 +333,9 @@ bool ARFFDataParser::parseSparseDataLine(const String& line)
   }
   
   // get attributes
+  // broken
+  jassertfalse;
+#if 0
   Variable supervision;
   DenseGenericObjectPtr inputs = new DenseGenericObject(features);
   for (size_t i = 0; i < numTokens; ++i)
@@ -363,6 +366,7 @@ bool ARFFDataParser::parseSparseDataLine(const String& line)
     }
   }
   setResult(finalizeData(Variable::pair(inputs, supervision, getElementsType())));
+#endif // 0
   return true;
 }
 

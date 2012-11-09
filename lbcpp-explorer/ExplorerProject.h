@@ -49,7 +49,7 @@ typedef ReferenceCountedObjectPtr<RecentWorkUnitConfiguration> RecentWorkUnitCon
 class RecentWorkUnitsConfiguration : public Object
 {
 public:
-  virtual String getName() const
+  String toShortString() const
     {return T("RecentWorkUnitsConfiguration");}
 
   size_t getNumRecentWorkUnits() const
@@ -103,7 +103,7 @@ public:
   void save(ExecutionContext& context);
   void close(ExecutionContext& context);
 
-  String getName() const
+  virtual String toShortString() const
     {return rootDirectory.getFileName();}
 
   /*
