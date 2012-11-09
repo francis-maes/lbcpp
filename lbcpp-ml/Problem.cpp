@@ -60,7 +60,7 @@ DataVectorPtr LearningObjective::computePredictions(ExecutionContext& context, E
   {return expression->compute(context, data);}
 
 VectorPtr SupervisedLearningObjective::getSupervisions() const
-  {return data->getSamplesByExpression(supervision);}
+  {return data->getDataByKey(supervision);}
 
 
 /*

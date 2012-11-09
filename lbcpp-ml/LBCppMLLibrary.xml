@@ -21,7 +21,7 @@
   <class name="DifferentiableObjective" base="Objective" abstract="yes"/>
 
   <class name="LearningObjective" base="StochasticObjective" abstract="yes">
-    <variable type="DataTable" name="data"/>
+    <variable type="Table" name="data"/>
   </class>
   <class name="SupervisedLearningObjective" base="LearningObjective" abstract="yes">
     <variable type="VariableExpression" name="supervision"/>
@@ -68,8 +68,4 @@
     <variable type="Boolean" name="useMultiThreading"/>
   </class>
 
-  <!-- Data Table -->
-  <class name="DataTable"/>
-  <uicomponent name="DataTableComponent" type="DataTable"/>
-  
 </library>

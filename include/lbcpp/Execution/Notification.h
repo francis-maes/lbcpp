@@ -11,7 +11,6 @@
 
 # include "ExecutionContext.h"
 # include "../Core/Variable.h"
-# include "../Data/Consumer.h"
 
 namespace lbcpp
 {
@@ -36,7 +35,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;
 
-class NotificationQueue : public Consumer
+class NotificationQueue : public Object
 {
 public:
   virtual void consume(ExecutionContext& context, const Variable& variable)

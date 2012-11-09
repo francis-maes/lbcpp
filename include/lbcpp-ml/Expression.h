@@ -10,11 +10,173 @@
 # define LBCPP_LUAPE_NODE_H_
 
 # include "Function.h"
-# include <lbcpp/Data/IndexSet.h>
-# include "DataTable.h"
+# include <lbcpp/Data/Table.h>
+# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {
+
+/*
+** DataVector
+*/
+class DataVector;
+typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
+
+class DataVector : public Object
+{
+public:
+  enum Implementation
+  {
+    constantValueImpl = 0,
+    ownedVectorImpl,
+    cachedVectorImpl,
+    noImpl
+  };
+
+  DataVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType);
+  DataVector(const IndexSetPtr& indices, const VectorPtr& ownedVector);
+  DataVector();
+
+  static DataVectorPtr createConstant(IndexSetPtr indices, const ObjectPtr& constantValue);
+  static DataVectorPtr createCached(IndexSetPtr indices, const VectorPtr& cachedVector);
+  
+  const TypePtr& getElementsType() const
+    {return elementsType;}
+
+  struct const_iterator
+  {
+    typedef std::vector<size_t>::const_iterator index_iterator;
+
+    const_iterator(const DataVector* owner, size_t position, index_iterator it)
+      : owner(owner), position(position), it(it) {}
+    const_iterator(const const_iterator& other)
+      : owner(other.owner), position(other.position), it(other.it) {}
+    const_iterator() : owner(NULL), position(0) {}
+
+    const_iterator& operator =(const const_iterator& other)
+      {owner = other.owner; position = other.position; it = other.it; return *this;}
+
+    const_iterator& operator ++()
+    {
+      ++position;
+      ++it;
+      return *this;
+    }
+
+    inline Variable operator *() const
+    {
+      switch (owner->implementation)
+      {
+      case constantValueImpl: return owner->constantRawObject;
+      case ownedVectorImpl: return owner->vector->getElement(position);
+      case cachedVectorImpl: return owner->vector->getElement(*it);
+      default: jassert(false); return Variable();
+      }
+    }
+
+    inline unsigned char getRawBoolean() const
+    {
+      if (owner->implementation == constantValueImpl)
+        return owner->constantRawBoolean;
+      size_t index = (owner->implementation == ownedVectorImpl ? position : *it);
+      if (owner->elementsType == booleanType)
+        return owner->vector.staticCast<BooleanVector>()->getData()[index];
+      else if (owner->elementsType == probabilityType)
+      {
+        double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
+        return value == doubleMissingValue ? 2 : (value > 0.5 ? 1 : 0);
+      }
+      else
+      {
+        jassert(owner->elementsType == doubleType);
+        double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
+        return value == doubleMissingValue ? 2 : (value > 0 ? 1 : 0);
+      }
+    }
+
+    inline int getRawInteger() const
+    {
+      switch (owner->implementation)
+      {
+      case constantValueImpl: return (int)NewInteger::get(owner->constantRawObject);
+      case ownedVectorImpl: return owner->vector->getElement(position).getInteger();
+      case cachedVectorImpl: return owner->vector->getElement(*it).getInteger();
+      default: jassert(false); return 0;
+      }
+    }
+
+    inline double getRawDouble() const
+    {
+      switch (owner->implementation)
+      {
+      case constantValueImpl: return owner->constantRawDouble;
+      case ownedVectorImpl: return owner->vector.staticCast<DenseDoubleVector>()->getValue(position);
+      case cachedVectorImpl: return owner->vector.staticCast<DenseDoubleVector>()->getValue(*it);
+      default: jassert(false); return 0.0;
+      }
+    }
+
+    inline const ObjectPtr& getRawObject() const
+    {
+      switch (owner->implementation)
+      {
+      case constantValueImpl: return owner->constantRawObject;
+      case ownedVectorImpl: return owner->vector.staticCast<ObjectVector>()->get(position);
+      case cachedVectorImpl: return owner->vector.staticCast<ObjectVector>()->get(*it);
+      default: jassert(false); static ObjectPtr empty; return empty;
+      }
+    }
+
+    bool operator ==(const const_iterator& other) const
+      {return owner == other.owner && position == other.position;}
+
+    bool operator !=(const const_iterator& other) const
+      {return owner != other.owner || position != other.position;}
+
+    size_t getIndex() const
+      {return *it;}
+
+  private:
+    friend class DataVector;
+
+    const DataVector* owner;
+    size_t position;
+    index_iterator it;
+  };
+
+  const_iterator begin() const
+    {return const_iterator(this, 0, indices->begin());}
+
+  const_iterator end() const
+    {return const_iterator(this, indices->size(), indices->end());}
+
+  size_t size() const
+    {return indices->size();}
+
+  const IndexSetPtr& getIndices() const
+    {return indices;}
+
+  Implementation getImplementation() const
+    {return implementation;}
+
+  const VectorPtr& getVector() const
+    {return vector;}
+
+  Variable sampleElement(RandomGeneratorPtr random) const;
+
+protected:
+  Implementation implementation;
+  IndexSetPtr indices;
+  TypePtr elementsType;
+
+  unsigned char constantRawBoolean;
+  double constantRawDouble;
+  ObjectPtr constantRawObject;
+
+  VectorPtr vector;       // ownedVectorImpl and cachedVectorImpl
+};
+
+typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
 
 class Expression : public Object
 {
@@ -29,7 +191,7 @@ public:
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
   
-  DataVectorPtr compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
+  DataVectorPtr compute(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
 
   virtual size_t getNumSubNodes() const
     {return 0;}
@@ -69,7 +231,7 @@ protected:
   size_t allocationIndex;
   double importance;
 
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const = 0;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const = 0;
 };
 
 extern ClassPtr expressionClass;
@@ -85,7 +247,7 @@ public:
 
   virtual String toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -107,7 +269,7 @@ public:
 
   virtual String toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   const ObjectPtr& getValue() const
     {return value;}
@@ -166,7 +328,7 @@ protected:
   FunctionPtr function;
   std::vector<ExpressionPtr> arguments;
 
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   void initialize();
 };
@@ -222,9 +384,9 @@ protected:
   ExpressionPtr successNode;
   ExpressionPtr missingNode;
 
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
-  DataVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const;
+  DataVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const;
 };
 
 /*
@@ -245,7 +407,7 @@ public:
   virtual const ExpressionPtr& getSubNode(size_t index) const
     {return nodes[index];}
   
-  void pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<DataTablePtr>& cachesToUpdate = std::vector<DataTablePtr>());
+  void pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<TablePtr>& cachesToUpdate = std::vector<TablePtr>());
 
   void clearNodes()
     {nodes.clear();}
@@ -269,7 +431,7 @@ protected:
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
   virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 };
 
 typedef ReferenceCountedObjectPtr<SequenceExpression> SequenceExpressionPtr;
@@ -310,7 +472,7 @@ protected:
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
   virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
 };

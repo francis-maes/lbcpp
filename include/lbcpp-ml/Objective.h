@@ -10,7 +10,7 @@
 # define LBCPP_ML_OBJECTIVE_H_
 
 # include <lbcpp/Data/DoubleVector.h>
-# include "DataTable.h"
+# include <lbcpp/Data/Table.h>
 # include "Expression.h"
 
 namespace lbcpp
@@ -61,27 +61,27 @@ public:
 class LearningObjective : public StochasticObjective
 {
 public:
-  LearningObjective(DataTablePtr data = DataTablePtr())
+  LearningObjective(TablePtr data = TablePtr())
     : data(data) {}
 
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {jassertfalse; return 0.0;}
   
   virtual size_t getNumInstances() const
-    {return data->getNumSamples();}
+    {return data->getNumRows();}
 
   DataVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const;
 
 protected:
   friend class LearningObjectiveClass;
 
-  DataTablePtr data;
+  TablePtr data;
 };
 
 class SupervisedLearningObjective : public LearningObjective
 {
 public:
-  SupervisedLearningObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  SupervisedLearningObjective(TablePtr data, VariableExpressionPtr supervision)
     : LearningObjective(data), supervision(supervision) {}
   SupervisedLearningObjective() {}
 
@@ -93,12 +93,12 @@ protected:
   VariableExpressionPtr supervision;
 };
 
-extern SupervisedLearningObjectivePtr binaryAccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision);
-extern SupervisedLearningObjectivePtr multiClassAccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr binaryAccuracyObjective(TablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr multiClassAccuracyObjective(TablePtr data, VariableExpressionPtr supervision);
 
-extern SupervisedLearningObjectivePtr mseRegressionObjective(DataTablePtr data, VariableExpressionPtr supervision);
-extern SupervisedLearningObjectivePtr rmseRegressionObjective(DataTablePtr data, VariableExpressionPtr supervision);
-extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr mseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr rmseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(TablePtr data, VariableExpressionPtr supervision);
 
 // todo: StochasticDifferentiableObjective
 

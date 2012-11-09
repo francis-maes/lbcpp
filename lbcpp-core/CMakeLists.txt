@@ -106,10 +106,6 @@ SET(LBCPP_DATA_SOURCES
   Data/RandomGenerator.cpp  
   ../include/lbcpp/Data/RandomVariable.h  
   Data/RandomVariable.cpp
-  ../include/lbcpp/Data/Consumer.h
-  Data/Consumer.cpp
-  ../include/lbcpp/Data/Cache.h
-  Data/Cache.cpp
   ../include/lbcpp/Data/IndexSet.h
   Data/IndexSet.cpp
   ../include/lbcpp/Data/BinaryKey.h
@@ -117,7 +113,8 @@ SET(LBCPP_DATA_SOURCES
   Data/BinaryConfusionMatrix.cpp
   ../include/lbcpp/Data/IterationFunction.h
   Data/IterationFunction.hpp
-
+  ../include/lbcpp/Data/Table.h
+  Data/Table.cpp
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )
@@ -136,7 +133,6 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/LibSVMDataParser.cpp
   Data/Stream/ARFFDataParser.h
   Data/Stream/ARFFDataParser.cpp
-  Data/Stream/SaveToFileConsumer.h
   Data/Stream/BuiltinTypeStream.h
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
@@ -248,6 +244,8 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/ObjectEditor.cpp
     UserInterface/Component/VariableTreeView.h
     UserInterface/Component/VariableTreeView.cpp
+	UserInterface/Component/TableComponent.h
+	UserInterface/Component/TableComponent.cpp
     UserInterface/Component/ContainerTableListBox.h
     UserInterface/Component/ContainerTableListBox.cpp
     UserInterface/Component/ContainerCurveEditor.h

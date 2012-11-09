@@ -38,17 +38,8 @@ typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
 class SymmetricMatrix;
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
 
-class Consumer;
-typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
-
 class RandomGenerator;
 typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
-
-class Cache;
-typedef ReferenceCountedObjectPtr<Cache> CachePtr;
-
-class AverageValuesCache;
-typedef ReferenceCountedObjectPtr<AverageValuesCache> AverageValuesCachePtr;
 
 class DoubleVector;
 typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
