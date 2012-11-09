@@ -18,7 +18,7 @@ namespace lbcpp
 class GradientDescentLearner : public IterativeLearner
 {
 public:
-  GradientDescentLearner(LearningObjectivePtr objective, IterationFunctionPtr learningRate, size_t maxIterations)
+  GradientDescentLearner(SplitObjectivePtr objective, IterationFunctionPtr learningRate, size_t maxIterations)
     : IterativeLearner(objective, maxIterations), learningRate(learningRate) {}
   GradientDescentLearner() {}
 
@@ -124,7 +124,7 @@ class ClassifierSGDLearner : public GradientDescentLearner
 {
 public:
   ClassifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations)
-    : GradientDescentLearner(discreteAdaBoostMHLearningObjective(), learningRate, maxIterations), lossFunction(lossFunction) {}
+    : GradientDescentLearner(discreteAdaBoostMHSplitObjective(), learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
 
   virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)

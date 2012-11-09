@@ -106,6 +106,7 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/PrefixExpressionState.h
   Expression/PostfixExpressionState.h
   Expression/TypedPostfixExpressionState.h
+  Expression/RegressionObjectives.h
   Expression/ExpressionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
 )

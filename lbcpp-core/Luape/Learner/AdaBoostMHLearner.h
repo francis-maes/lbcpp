@@ -13,12 +13,12 @@
 
 namespace lbcpp
 {
-class AdaBoostMHLearningObjective : public ClassificationLearningObjective
+class AdaBoostMHSplitObjective : public ClassificationSplitObjective
 {
 public:
   virtual void initialize(const LuapeInferencePtr& problem)
   {
-    ClassificationLearningObjective::initialize(problem);
+    ClassificationSplitObjective::initialize(problem);
     for (size_t i = 0; i < 3; ++i)
       for (size_t j = 0; j < 2; ++j)
         mu[i][j] = new DenseDoubleVector(doubleVectorClass, numLabels);
@@ -156,12 +156,12 @@ protected:
   }
 };
 
-typedef ReferenceCountedObjectPtr<AdaBoostMHLearningObjective> AdaBoostMHLearningObjectivePtr;
+typedef ReferenceCountedObjectPtr<AdaBoostMHSplitObjective> AdaBoostMHSplitObjectivePtr;
 
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(AdaBoostMHLearningObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+  AdaBoostMHLearner(AdaBoostMHSplitObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
     : WeightBoostingLearner(objective, weakLearner, maxIterations, treeDepth) {}
   AdaBoostMHLearner() {}
 
@@ -190,7 +190,7 @@ public:
     size_t numLabels = labels->getNumElements();
     size_t n = predictions->getNumElements();
 
-    DenseDoubleVectorPtr signedSupervisions = objective.staticCast<AdaBoostMHLearningObjective>()->getSupervisions();
+    DenseDoubleVectorPtr signedSupervisions = objective.staticCast<AdaBoostMHSplitObjective>()->getSupervisions();
     jassert(signedSupervisions->getNumElements() == n * numLabels);
     double* supervisionsPtr = signedSupervisions.staticCast<DenseDoubleVector>()->getValuePointer(0);
 
@@ -229,7 +229,7 @@ public:
     size_t numLabels = labels->getNumElements();
     size_t n = predictions->size();
 
-    DenseDoubleVectorPtr signedSupervisions = objective.staticCast<AdaBoostMHLearningObjective>()->getSupervisions();
+    DenseDoubleVectorPtr signedSupervisions = objective.staticCast<AdaBoostMHSplitObjective>()->getSupervisions();
     jassert(signedSupervisions->getNumElements() == n * numLabels);
     double sumOfWeights = 0.0;
     for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
@@ -262,7 +262,7 @@ public:
 /*
 ** Discrete AdaBoost.MH
 */
-class DiscreteAdaBoostMHLearningObjective : public AdaBoostMHLearningObjective
+class DiscreteAdaBoostMHSplitObjective : public AdaBoostMHSplitObjective
 {
 public:
   virtual double computeObjective()
@@ -291,14 +291,14 @@ class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
   DiscreteAdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : AdaBoostMHLearner(new DiscreteAdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
+    : AdaBoostMHLearner(new DiscreteAdaBoostMHSplitObjective(), weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
   virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
-    AdaBoostMHLearningObjectivePtr objective = this->objective.staticCast<AdaBoostMHLearningObjective>();
+    AdaBoostMHSplitObjectivePtr objective = this->objective.staticCast<AdaBoostMHSplitObjective>();
     objective->setPredictions(weakPredictions);
     objective->ensureIsUpToDate();
     
@@ -343,7 +343,7 @@ public:
 /*
 ** Real AdaBoost.MH
 */
-class RealAdaBoostMHLearningObjective : public AdaBoostMHLearningObjective
+class RealAdaBoostMHSplitObjective : public AdaBoostMHSplitObjective
 {
 public:
   virtual double computeObjective()
@@ -386,14 +386,14 @@ class RealAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
   RealAdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : AdaBoostMHLearner(new RealAdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
+    : AdaBoostMHLearner(new RealAdaBoostMHSplitObjective(), weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 
   virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
-    AdaBoostMHLearningObjectivePtr objective = this->objective.staticCast<AdaBoostMHLearningObjective>();
+    AdaBoostMHSplitObjectivePtr objective = this->objective.staticCast<AdaBoostMHSplitObjective>();
     objective->setPredictions(weakPredictions);
     objective->ensureIsUpToDate();
     

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LearningObjective.h            | Learning Objectives             |
+| Filename: SplitObjective.h               | Splitting Objectives            |
 | Author  : Francis Maes                   |                                 |
 | Started : 04/01/2012 20:33               |                                 |
 `------------------------------------------/                                 |
@@ -15,10 +15,10 @@
 namespace lbcpp
 {
 
-class LearningObjective : public Object
+class SplitObjective : public Object
 {
 public:
-  LearningObjective() : upToDate(false) {}
+  SplitObjective() : upToDate(false) {}
 
   virtual void initialize(const LuapeInferencePtr& problem)
     {setSupervisions(problem->getTrainingSupervisions());}
@@ -50,9 +50,9 @@ protected:
   bool upToDate;
 };
 
-typedef ReferenceCountedObjectPtr<LearningObjective> LearningObjectivePtr;
+typedef ReferenceCountedObjectPtr<SplitObjective> SplitObjectivePtr;
 
-class SupervisedLearningObjective : public LearningObjective
+class SupervisedSplitObjective : public SplitObjective
 {
 public:
   virtual void setWeights(const DenseDoubleVectorPtr& weights)
@@ -72,9 +72,9 @@ protected:
     {return weights ? weights->getValue(index) : 1.0;}
 };
 
-typedef ReferenceCountedObjectPtr<SupervisedLearningObjective> SupervisedLearningObjectivePtr;
+typedef ReferenceCountedObjectPtr<SupervisedSplitObjective> SupervisedSplitObjectivePtr;
 
-class RegressionLearningObjective : public SupervisedLearningObjective
+class RegressionSplitObjective : public SupervisedSplitObjective
 {
 public:
   virtual void setSupervisions(const VectorPtr& supervisions);
@@ -100,12 +100,12 @@ protected:
   ScalarVariableMeanAndVariance missings;
 };
 
-typedef ReferenceCountedObjectPtr<RegressionLearningObjective> RegressionLearningObjectivePtr;
+typedef ReferenceCountedObjectPtr<RegressionSplitObjective> RegressionSplitObjectivePtr;
 
-class BinaryClassificationLearningObjective : public SupervisedLearningObjective
+class BinaryClassificationSplitObjective : public SupervisedSplitObjective
 {
 public:
-  BinaryClassificationLearningObjective();
+  BinaryClassificationSplitObjective();
 
   virtual void setSupervisions(const VectorPtr& supervisions);
   virtual Variable computeVote(const IndexSetPtr& indices);
@@ -123,7 +123,7 @@ public:
     {return missingWeight;}
 
 protected:
-  friend class BinaryClassificationLearningObjectiveClass;
+  friend class BinaryClassificationSplitObjectiveClass;
 
   DenseDoubleVectorPtr supervisions;
 
@@ -132,12 +132,12 @@ protected:
   double missingWeight;
 };
 
-typedef ReferenceCountedObjectPtr<BinaryClassificationLearningObjective> BinaryClassificationLearningObjectivePtr;
+typedef ReferenceCountedObjectPtr<BinaryClassificationSplitObjective> BinaryClassificationSplitObjectivePtr;
 
-class ClassificationLearningObjective : public SupervisedLearningObjective
+class ClassificationSplitObjective : public SupervisedSplitObjective
 {
 public:
-  ClassificationLearningObjective() : numLabels(0) {}
+  ClassificationSplitObjective() : numLabels(0) {}
 
   virtual void initialize(const LuapeInferencePtr& problem);
 
@@ -147,15 +147,15 @@ protected:
   ClassPtr doubleVectorClass;
 };
 
-typedef ReferenceCountedObjectPtr<ClassificationLearningObjective> ClassificationLearningObjectivePtr;
+typedef ReferenceCountedObjectPtr<ClassificationSplitObjective> ClassificationSplitObjectivePtr;
 
-extern ClassificationLearningObjectivePtr discreteAdaBoostMHLearningObjective();
-extern ClassificationLearningObjectivePtr realAdaBoostMHLearningObjective();
+extern ClassificationSplitObjectivePtr discreteAdaBoostMHSplitObjective();
+extern ClassificationSplitObjectivePtr realAdaBoostMHSplitObjective();
 
-class InformationGainBinaryLearningObjective : public BinaryClassificationLearningObjective
+class InformationGainBinarySplitObjective : public BinaryClassificationSplitObjective
 {
 public:
-  InformationGainBinaryLearningObjective(bool normalize = true);
+  InformationGainBinarySplitObjective(bool normalize = true);
 
   virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
@@ -165,7 +165,7 @@ public:
   virtual Variable computeVote(const IndexSetPtr& indices);
 
 protected:
-  friend class InformationGainBinaryLearningObjectiveClass;
+  friend class InformationGainBinarySplitObjectiveClass;
 
   bool normalize;
 
@@ -177,10 +177,10 @@ protected:
   DenseDoubleVectorPtr labelConditionalProbabilities[3];
 };
 
-class InformationGainLearningObjective : public ClassificationLearningObjective
+class InformationGainSplitObjective : public ClassificationSplitObjective
 {
 public:
-  InformationGainLearningObjective(bool normalize = true);
+  InformationGainSplitObjective(bool normalize = true);
 
   virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
@@ -190,7 +190,7 @@ public:
   virtual Variable computeVote(const IndexSetPtr& indices);
 
 protected:
-  friend class InformationGainLearningObjectiveClass;
+  friend class InformationGainSplitObjectiveClass;
 
   bool normalize;
 

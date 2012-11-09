@@ -41,8 +41,8 @@ typedef ReferenceCountedObjectPtr<IterativeLearner> IterativeLearnerPtr;
 class BoostingLearner;
 typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 
-class LearningObjective;
-typedef ReferenceCountedObjectPtr<LearningObjective> LearningObjectivePtr;
+class SplitObjective;
+typedef ReferenceCountedObjectPtr<SplitObjective> SplitObjectivePtr;
 
 class PostfixExpressionSequence;
 typedef ReferenceCountedObjectPtr<PostfixExpressionSequence> PostfixExpressionSequencePtr;

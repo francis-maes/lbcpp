@@ -253,8 +253,8 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LuapeInference.cpp
   ../include/lbcpp/Luape/ExpressionBuilder.h
   Luape/ExpressionBuilder.cpp
-  ../include/lbcpp/Luape/LearningObjective.h
-  Luape/LearningObjective.cpp
+  ../include/lbcpp/Luape/SplitObjective.h
+  Luape/SplitObjective.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
   Luape/LuapeLibrary.xml

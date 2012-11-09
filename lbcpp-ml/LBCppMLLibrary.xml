@@ -19,7 +19,14 @@
   <class name="Objective" base="ScalarProperty" abstract="yes"/>
   <class name="StochasticObjective" base="Objective" abstract="yes"/>
   <class name="DifferentiableObjective" base="Objective" abstract="yes"/>
-  
+
+  <class name="LearningObjective" base="StochasticObjective" abstract="yes">
+    <variable type="LuapeSamplesCache" name="data"/>
+  </class>
+  <class name="SupervisedLearningObjective" base="LearningObjective" abstract="yes">
+    <variable type="VariableExpression" name="supervision"/>
+  </class>
+
   <!-- Domain -->
   <class name="Domain" abstract="yes"/>
   <class name="DiscreteDomain" base="Domain">

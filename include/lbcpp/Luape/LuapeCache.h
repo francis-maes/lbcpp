@@ -281,6 +281,8 @@ public:
   void ensureActualSizeIsCorrect() const;
 
 protected:
+  friend class LuapeSamplesCacheClass;
+
   ExpressionUniversePtr universe;
 
   typedef std::map<ExpressionPtr, NodeCache> NodeCacheMap;

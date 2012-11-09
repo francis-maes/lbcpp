@@ -125,4 +125,17 @@
     <variable type="DiscreteDomain" name="availableActions"/>
   </class>
 
+  <!-- Objectives -->
+  <class name="MSERegressionObjective" base="SupervisedLearningObjective">
+    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision"/>
+  </class>
+  
+  <class name="RMSERegressionObjective" base="MSERegressionObjective">
+    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+  </class>
+  
+  <class name="NormalizedRMSERegressionObjective" base="RMSERegressionObjective">
+    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+  </class>
+
 </library>

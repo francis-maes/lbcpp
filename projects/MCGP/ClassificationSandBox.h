@@ -10,6 +10,10 @@
 # define LBCPP_MCGP_CLASSIFICATION_SANDBOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Data/Stream.h>
+# include <lbcpp/Core/DynamicObject.h>
+# include <lbcpp/Luape/LuapeCache.h>
+# include <lbcpp-ml/Expression.h>
 
 namespace lbcpp
 {
@@ -210,24 +214,24 @@ public:
   
   virtual Variable run(ExecutionContext& context)
   {
-    File tsFile = dataFile.withFileExtension("txt");
-
-    // load data
-    DynamicClassPtr inputClass = new DynamicClass("inputs");
-    DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
-    ContainerPtr data = loadData(context, dataFile, inputClass, labels);
-    if (!data || !data->getNumElements())
+    VariableExpressionPtr supervision;
+    LuapeSamplesCachePtr dataset = loadDataFile(context, dataFile, supervision);
+    if (!dataset || !supervision)
       return false;
 
-    // display data info
-    size_t numVariables = inputClass->getNumMemberVariables();
-    size_t numExamples = data->getNumElements();
+    size_t numVariables = dataset->getNumberOfCachedNodes() - 1;
+    size_t numExamples = dataset->getNumSamples();
+    size_t numLabels = supervision->getType().staticCast<Enumeration>()->getNumElements();
+
     context.informationCallback(String((int)numExamples) + T(" examples, ") +
                                 String((int)numVariables) + T(" variables, ") +
-                                String((int)labels->getNumElements()) + T(" labels"));
-//    context.informationCallback(String((int)trainingSize) + T(" training examples, ") + String((int)(numExamples - trainingSize)) + T(" testing examples"));
+                                String((int)numLabels) + T(" labels"));
 
-    // make splits
+    context.resultCallback("dataset", dataset);
+    context.resultCallback("supervision", supervision);
+
+    /* make splits
+    File tsFile = dataFile.withFileExtension("txt");
     std::vector< std::pair< ContainerPtr, ContainerPtr > > splits;
     context.enterScope(T("Splits"));
     if (makeSplits(context, tsFile, inputClass, data, splits) && verbosity > 0)
@@ -238,7 +242,7 @@ public:
     }
     context.leaveScope(splits.size());
     if (!splits.size())
-      return false;
+      return false;*/
    /* if (foldNumber >= splits.size())
     {
       context.errorCallback(T("Invalid fold number"));
@@ -260,23 +264,50 @@ private:
   size_t maxExamples;
   size_t verbosity;
 
-  ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
-  { 
-    static const bool sparseData = true;
+  LuapeSamplesCachePtr loadDataFile(ExecutionContext& context, const File& file, VariableExpressionPtr& supervision)
+  {
+    LuapeSamplesCachePtr res;
 
     context.enterScope(T("Loading ") + file.getFileName());
+    static const bool sparseData = true;
+    
+    DynamicClassPtr inputClass = new DynamicClass("inputs");
+    DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
+
     TextParserPtr parser;
     if (file.getFileExtension() == T(".jdb"))
       parser = new JDBDataParser(context, file, inputClass, labels, sparseData);
     else
       parser = classificationARFFDataParser(context, file, inputClass, labels, sparseData);
-    ContainerPtr res = parser->load(maxExamples);
-    if (res && !res->getNumElements())
-      res = ContainerPtr();
-    context.leaveScope(res ? res->getNumElements() : 0);
+    ContainerPtr container = parser->load(maxExamples);
+    if (container && container->getNumElements())
+    {
+      PairPtr p = container->getElement(0).getObjectAndCast<Pair>();
+      
+      TypePtr inputType = p->getFirst().getType();
+      TypePtr outputType = p->getSecond().getType();
+
+      std::vector<VariableExpressionPtr> inputs(inputType->getNumMemberVariables());
+      for (size_t i = 0; i < inputs.size(); ++i)
+        inputs[i] = new VariableExpression(inputType->getMemberVariableType(i), inputType->getMemberVariableName(i), i);
+      supervision = new VariableExpression(outputType, "supervision", inputs.size());
+
+      res = new LuapeSamplesCache(ExpressionUniversePtr(), inputs, container->getNumElements());
+      VectorPtr supervisionValues = vector(outputType, container->getNumElements());
+      for (size_t i = 0; i < container->getNumElements(); ++i)
+      {
+        PairPtr p = container->getElement(i).getObjectAndCast<Pair>();
+        res->setInputObject(inputs, i, p->getFirst().getObject());
+        supervisionValues->setElement(i, p->getSecond());
+      }
+      res->cacheNode(context, supervision, supervisionValues, "Supervision", false);
+    }
+
+    context.leaveScope(res ? res->getNumSamples() : 0);
     return res;
   }
 
+  /*
   bool makeSplits(ExecutionContext& context, const File& tsFile, DynamicClassPtr inputClass, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
   {
     if (tsFile.existsAsFile())
@@ -338,7 +369,7 @@ private:
     for (size_t i = 0; i < n; ++i)
       res->setValue(i, example->getVariable(i).toDouble());
     return res;
-  }
+  }*/
 };
 
 }; /* namespace lbcpp */

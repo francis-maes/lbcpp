@@ -18,7 +18,7 @@ class GradientBoostingLearner : public BoostingLearner
 {
 public:
   GradientBoostingLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
-    : BoostingLearner(new RegressionLearningObjective(), weakLearner, maxIterations, treeDepth), learningRate(learningRate) {}
+    : BoostingLearner(new RegressionSplitObjective(), weakLearner, maxIterations, treeDepth), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
   virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
@@ -155,7 +155,7 @@ public:
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
-    RegressionLearningObjectivePtr objective = this->objective.staticCast<RegressionLearningObjective>();
+    RegressionSplitObjectivePtr objective = this->objective.staticCast<RegressionSplitObjective>();
     objective->setPredictions(weakPredictions);
     successVote = objective->getPositivesMean();
     failureVote = objective->getNegativesMean();

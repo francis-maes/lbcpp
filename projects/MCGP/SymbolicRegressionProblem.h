@@ -14,44 +14,6 @@
 namespace lbcpp
 {
 
-// TODO: factorize somewhere
-class SymbolicRegressionObjective : public Objective
-{
-public:
-  SymbolicRegressionObjective(LuapeSamplesCachePtr cache, VariableExpressionPtr output)
-    : cache(cache), output(output) {}
-
-  virtual void getObjectiveRange(double& worst, double& best) const
-    {worst = 0.0; best = 1.0;}
-
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-     // retrieve predictions and supervisions
-    ExpressionPtr expression = object.staticCast<Expression>();
-    LuapeSampleVectorPtr predictions = cache->getSamples(context, expression);
-    DenseDoubleVectorPtr supervisions = cache->getNodeCache(output);
-    
-    // compute mean absolute error
-    double squaredError = 0.0;
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
-    {
-      double prediction = it.getRawDouble();
-      if (prediction == doubleMissingValue || !isNumberValid(prediction))
-        prediction = 0.0;
-      double delta = supervisions->getValue(it.getIndex()) - prediction;
-      squaredError += delta * delta;
-    }
-    squaredError /= (double)supervisions->getNumValues();
-
-    // construct the Fitness
-    return 1.0 / (1.0 + sqrt(squaredError));
-  }
-
-protected:
-  LuapeSamplesCachePtr cache;
-  VariableExpressionPtr output;
-};
-
 class KozaSymbolicRegressionProblem : public Problem
 {
 public:
@@ -96,7 +58,7 @@ public:
     cache->recomputeCacheSize();
     cache->disableCaching();
 
-    addObjective(new SymbolicRegressionObjective(cache, output));
+    addObjective(normalizedRMSERegressionObjective(cache, output));
   }
 };
 
@@ -160,7 +122,7 @@ public:
     cache->recomputeCacheSize();
     cache->disableCaching();
 
-    addObjective(new SymbolicRegressionObjective(cache, output));
+    addObjective(normalizedRMSERegressionObjective(cache, output));
   }
 
 protected:
