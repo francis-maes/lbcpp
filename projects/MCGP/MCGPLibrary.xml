@@ -183,6 +183,14 @@
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
+  
+  <!-- Classification Sand Box -->
+
+  <class name="ClassificationSandBox" base="WorkUnit">
+    <variable type="File" name="dataFile"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+  </class>
 
 
 </library>
