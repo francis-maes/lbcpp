@@ -70,5 +70,6 @@
 
   <!-- Data Table -->
   <class name="DataTable"/>
+  <uicomponent name="DataTableComponent" type="DataTable"/>
   
 </library>

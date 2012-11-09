@@ -142,6 +142,8 @@ SET(LBCPP_ML_TOPLEVEL_SOURCES
   Problem.cpp
   BanditPool.cpp
   DataTable.cpp
+  DataTableComponent.h
+  DataTableComponent.cpp
 )
 
 SET(LBCPP_ML_MAIN_SOURCES

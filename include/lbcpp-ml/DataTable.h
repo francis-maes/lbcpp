@@ -28,14 +28,25 @@ public:
   size_t getNumColumns() const
     {return columns.size();}
 
+  String getColumnName(size_t index) const;
+
+  ExpressionPtr getExpression(size_t index) const
+    {jassert(index < columns.size()); return columns[index].expression;}
+
+  VectorPtr getSamples(size_t index) const
+    {jassert(index < columns.size()); return columns[index].samples;}
+
+  VectorPtr getSamplesByExpression(const ExpressionPtr& expression) const;
+
   void addColumn(const ExpressionPtr& expression);
 
   void setSample(size_t rowIndex, size_t columnIndex, const ObjectPtr& value);
   ObjectPtr getSample(size_t rowIndex, size_t columnIndex) const;
-  VectorPtr getSamples(const ExpressionPtr& expression) const;
 
   IndexSetPtr getAllIndices() const
     {return allIndices;}
+
+  void makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size_t>& res) const;
 
 private:
   IndexSetPtr allIndices;
