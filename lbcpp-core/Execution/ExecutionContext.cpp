@@ -47,11 +47,11 @@ void ExecutionContext::leaveScope()
   leaveScope(res);
 }
 
-Variable ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
+ObjectPtr ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {
   if (pushIntoStack)
     enterScope(workUnit);
-  Variable res = workUnit->run(*this);
+  ObjectPtr res = workUnit->run(*this);
   if (pushIntoStack)
     leaveScope(res);
   return res;
@@ -165,8 +165,8 @@ int ExecutionContext::run(LuaState& state)
 {
   ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
   WorkUnitPtr workUnit = state.checkObject(2, workUnitClass);
-  Variable res = pthis->run(workUnit, true);
-  if (!res.exists())
+  ObjectPtr res = pthis->run(workUnit, true);
+  if (!res)
     return 0;
   state.pushVariable(res);
   return 1;
@@ -178,13 +178,13 @@ public:
   LuaExecutionContextCallback(LuaState& state, int functionReference)
     : state((lua_State* )state), functionReference(functionReference) {}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const ObjectPtr& result, const ExecutionTracePtr& trace)
   {
     {
       ScopedLock _(state.lock);
       state.pushReference(functionReference);
       state.pushObject(workUnit);
-      state.pushVariable(result);
+      state.pushObject(result);
       state.call(2, 0);
       state.freeReference(functionReference);
     }

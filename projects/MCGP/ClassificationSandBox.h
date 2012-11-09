@@ -102,7 +102,7 @@ public:
   bool parseExample(char* line)
   {
     ObjectPtr inputs = sparseData ? features->createSparseObject() : features->createDenseObject();
-    Variable output;
+    ObjectPtr output;
     bool isFirst = true;
     for (size_t i = 0; true; ++i)
     {
@@ -112,7 +112,7 @@ public:
       isFirst = false;
 
       if (i == outputColumnIndex)
-        output = Variable(labels->findOrAddElement(context, token), labels);
+        output = new NewEnumValue(labels, labels->findOrAddElement(context, token));
       else
       {
         int index = columnToVariable[i];
@@ -211,13 +211,13 @@ class ClassificationSandBox : public WorkUnit
 public:
   ClassificationSandBox() : maxExamples(0), verbosity(0) {}
   
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     std::vector<VariableExpressionPtr> inputs;
     VariableExpressionPtr supervision;
     DataTablePtr dataset = loadDataFile(context, dataFile, inputs, supervision);
     if (!dataset || !supervision)
-      return false;
+      return new NewBoolean(false);
 
     size_t numVariables = inputs.size();
     size_t numExamples = dataset->getNumSamples();
@@ -254,7 +254,7 @@ public:
 
     // todo:
 
-    return true;
+    return new NewBoolean(true);
   }
   
 private:
@@ -304,7 +304,7 @@ private:
         ObjectPtr inputObject = p->getFirst().getObject();
         for (size_t j = 0; j < inputs.size(); ++j)
           res->setSample(i, j, inputObject->getVariable(j).toObject());
-        res->setSample(i, inputs.size(), new NewInteger(p->getSecond().getInteger()));
+        res->setSample(i, inputs.size(), p->getSecond().getObject());
       }
     }
 

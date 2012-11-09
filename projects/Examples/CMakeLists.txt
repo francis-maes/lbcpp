@@ -9,7 +9,6 @@ GENERATE_INTROSPECTION_CODE(ExamplesLibrary.xml ExamplesLibrary.cpp)
 SET(LBCPP_EXAMPLES_SOURCES
   precompiled.h
   precompiled.cpp
-  MissingValuesExample.h
   SimpleIntrospectionExample.h
   WorkUnitExample.h
   RandomGeneratorExample.h

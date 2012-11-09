@@ -52,7 +52,7 @@ double SplitObjective::computeObjectiveWithEventualStump(ExecutionContext& conte
 
 double SplitObjective::findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
-  setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
+  setPredictions(LuapeSampleVector::createConstant(indices, ObjectPtr()));
   ensureIsUpToDate();
 
   if (sortedDoubleValues->getNumValues() == 0)

@@ -134,46 +134,6 @@ PostfixExpressionTypeSpacePtr ExpressionDomain::createTypeSearchSpace(ExecutionC
   return res;
 }
 
-static void enumerateExhaustively(ExecutionContext& context, ExpressionBuilderStatePtr state, std::vector<ExpressionPtr>& res, bool verbose)
-{
-  if (state->isFinalState() && state->getStackSize() == 1)
-  {
-    ExpressionPtr node = state->getStackElement(0);
-    res.push_back(node);
-    //if (verbose)
-    //  context.informationCallback(node->toShortString());
-  }
-  else
-  {
-    ContainerPtr actions = state->getAvailableActions();
-    size_t n = actions->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable stateBackup;
-      Variable action = actions->getElement(i);
-      double reward;
-      state->performTransition(context, action, reward, &stateBackup);
-      enumerateExhaustively(context, state, res, verbose);
-      state->undoTransition(context, stateBackup);
-    }
-  }
-}
-
-void ExpressionDomain::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose, const PostfixExpressionSequencePtr& subSequence) const
-{
-  PostfixExpressionTypeSpacePtr typeSearchSpace;
-  if (subSequence)
-    typeSearchSpace = createTypeSearchSpace(context, subSequence->computeTypeState(), complexity, verbose); // create on-demand
-  else
-    typeSearchSpace = getSearchSpace(context, complexity, verbose); // use cached version
-
-  ExpressionBuilderStatePtr state = new ExpressionBuilderState(refCountedPointerFromThis(this), typeSearchSpace, subSequence);
-  enumerateExhaustively(context, state, res, verbose);
-}
-
-LuapeSamplesCachePtr ExpressionDomain::createCache(size_t size, size_t maxCacheSizeInMb) const
-    {return new LuapeSamplesCache(universe, inputs, size, maxCacheSizeInMb);}
-
 std::vector<ExpressionPtr> ExpressionDomain::getTerminals() const
 {
   std::vector<ExpressionPtr> res;

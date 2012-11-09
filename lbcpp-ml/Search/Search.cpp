@@ -158,7 +158,13 @@ DiscreteDomainPtr SearchNode::getPrunedActionDomain() const
 }
 
 static bool isSameAction(const ObjectPtr& action1, const ObjectPtr& action2)
-  {return Variable(action1) == Variable(action2);}
+{
+  if (action1 && action2)
+    return action1->compare(action2) == 0;
+  if (!action1 && !action2)
+    return true;
+  return false;
+}
 
 SearchNodePtr SearchNode::getSuccessor(ExecutionContext& context, const ObjectPtr& action)
 {

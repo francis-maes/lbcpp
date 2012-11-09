@@ -392,13 +392,13 @@ void BooleanVector::remove(size_t index)
 */
 juce::int64 IntegerVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
 
-IntegerVector::IntegerVector(size_t initialSize, juce::int64 initialValue)
-  : Vector(integerVectorClass), v(initialSize, initialValue)
+IntegerVector::IntegerVector(TypePtr elementsType, size_t initialSize, juce::int64 initialValue)
+  : Vector(integerVectorClass(elementsType)), v(initialSize, initialValue)
 {
 }
 
-IntegerVector::IntegerVector(size_t initialSize)
-  : Vector(integerVectorClass), v(initialSize, missingValue)
+IntegerVector::IntegerVector(TypePtr elementsType, size_t initialSize)
+  : Vector(integerVectorClass(elementsType)), v(initialSize, missingValue)
 {
 }
 
@@ -411,7 +411,13 @@ Variable IntegerVector::getElement(size_t index) const
   if (v[index] == missingValue)
     return Variable::missingValue(newIntegerClass);
   else
-    return Variable(new NewInteger(v[index]), newIntegerClass);
+  {
+    ClassPtr elementsType = getElementsType();
+    if (elementsType.isInstanceOf<Enumeration>())
+      return new NewEnumValue(elementsType, v[index]);
+    else
+      return new NewInteger(elementsType, v[index]);
+  }
 }
 
 void IntegerVector::setElement(size_t index, const Variable& value)
@@ -617,7 +623,7 @@ VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
   else if (elementsType->inheritsFrom(doubleType))
     return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
   else if (elementsType->inheritsFrom(integerType))
-    return integerVector(initialSize);
+    return integerVector(elementsType, initialSize);
   else if (elementsType == anyType)
     return variableVector(initialSize);
   else

@@ -29,7 +29,7 @@ public:
     {
     }
 
-    virtual Variable run(ExecutionContext& context)
+    virtual ObjectPtr run(ExecutionContext& context)
     {
       jassert(results);
 
@@ -39,7 +39,7 @@ public:
         Variable res = context.run(workUnits->getWorkUnit(i), pushIntoStack);
         results->setElement(i, res);
       }
-      return true;
+      return new NewBoolean(true);
     }
     
   private:
@@ -80,7 +80,7 @@ public:
 
   struct Entry
   {
-    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, Variable* result, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, ObjectPtr* result, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
       : workUnit(workUnit), stack(stack), pushIntoStack(pushIntoStack), counterToDecrementWhenDone(counterToDecrementWhenDone), result(result), callback(callback) {}
     Entry() : counterToDecrementWhenDone(NULL) {}
 
@@ -88,15 +88,15 @@ public:
     ExecutionStackPtr stack;
     bool pushIntoStack;
     int* counterToDecrementWhenDone;
-    Variable* result;
+    ObjectPtr* result;
     ExecutionContextCallbackPtr callback;
 
     bool exists() const
       {return workUnit;}
   };
 
-  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, Variable* result = NULL);
-  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, VariableVectorPtr results = VariableVectorPtr());
+  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, ObjectPtr* result = NULL);
+  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, ObjectVectorPtr results = ObjectVectorPtr());
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack = true);
 
   Entry pop();
@@ -106,7 +106,7 @@ public:
   size_t getNumThreads() const
     {return numThreads;}
 
-  void pushCallbackCall(ExecutionContextCallbackPtr callback, const WorkUnitPtr& workUnit, const Variable& result)
+  void pushCallbackCall(ExecutionContextCallbackPtr callback, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     CallbackInfo info;
     info.callback = callback;
@@ -140,7 +140,7 @@ private:
   {
     ExecutionContextCallbackPtr callback;
     WorkUnitPtr workUnit;
-    Variable result;
+    ObjectPtr result;
   };
   std::list<CallbackInfo> callbacks;
 };
@@ -150,7 +150,7 @@ typedef ReferenceCountedObjectPtr<WaitingWorkUnitQueue> WaitingWorkUnitQueuePtr;
 /*
 ** WaitingWorkUnitQueue
 */
-void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone, bool pushIntoStack, Variable* result)
+void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone, bool pushIntoStack, ObjectPtr* result)
 {
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
@@ -159,7 +159,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), pushIntoStack, counterToDecrementWhenDone, result));
 }
 
-void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, VariableVectorPtr results)
+void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, ObjectVectorPtr results)
 {
   ExecutionStackPtr stack = s->cloneAndCast<ExecutionStack>();
 
@@ -172,7 +172,7 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
 
   *numRemainingWorkUnitsCounter = (int)n;
   for (size_t i = 0; i < n; ++i)
-    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results ? results->getPointerElement(i) : NULL));
+    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results ? &results->getObjects()[i] : NULL));
 }
 
 void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack)
@@ -277,7 +277,7 @@ private:
     context->threadBeginCallback(entryStack);
 
     // execute work unit
-    Variable result = context->run(entry.workUnit, entry.pushIntoStack);
+    ObjectPtr result = context->run(entry.workUnit, entry.pushIntoStack);
 
     // update result and counterToDecrement
     if (entry.result)
@@ -354,17 +354,17 @@ public:
   virtual bool isPaused() const
     {return false;}
  
-  virtual Variable run(const WorkUnitPtr& workUnit)
+  virtual ObjectPtr run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
   
-  static void startParallelRun(ExecutionContext& context, CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, Variable& result)
+  static void startParallelRun(ExecutionContext& context, CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, ObjectPtr& result)
   {
     size_t numWorkUnits = workUnits->getNumWorkUnits();
     size_t numThreads = waitingQueue->getNumThreads();
     size_t maxInParallel = numThreads * 5;
 
-    VectorPtr results = variableVector(numWorkUnits);
-    result = Variable(results);
+    VectorPtr results = new ObjectVector(objectClass, numWorkUnits);
+    result = results;
     if (numWorkUnits > maxInParallel)
     {
       // in this case, the GroupedCompositeWorkUnit is responsible for directly filling the results vector
@@ -378,9 +378,9 @@ public:
     }
   }
 
-  virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
+  virtual ObjectPtr run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
-    Variable result;
+    ObjectPtr result;
     int numRemainingWorkUnits;
     if (pushIntoStack)
       enterScope(workUnits);
@@ -514,20 +514,20 @@ public:
     {threadPool->getWaitingQueue()->flushCallbacks();}
     
 
-  virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
+  virtual ObjectPtr run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     int remainingWorkUnits = 1;
-    Variable result;
+    ObjectPtr result;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
     queue->push(workUnit, stack, &remainingWorkUnits, pushIntoStack, &result);
     threadPool->waitUntilWorkUnitsAreDone(remainingWorkUnits);
     return result;
   }
 
-  virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
+  virtual ObjectPtr run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
     int numRemainingWorkUnits;
-    Variable result;
+    ObjectPtr result;
     if (pushIntoStack)
       enterScope(workUnits->getName(), workUnits);
     CompositeWorkUnitPtr wus = workUnits;

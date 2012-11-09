@@ -70,7 +70,7 @@ class OptimizeExpressionSamplerSandBox : public WorkUnit
 public:
   OptimizeExpressionSamplerSandBox() : numEvaluations(10000), maxExpressionSize(20) {}
 
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     ExpressionDomainPtr domain = problem->getDomain();
     context.informationCallback(domain->toShortString());
@@ -91,7 +91,7 @@ public:
 
     testSamplerParameters(context, codeGenerator, new DenseDoubleVector(1, 0.0));
     testSamplerParameters(context, codeGenerator, samplerParameters);
-    return true;
+    return ObjectPtr();
   }
 
   void testSamplerParameters(ExecutionContext& context, SearchActionCodeGeneratorPtr codeGenerator, DenseDoubleVectorPtr parameters)

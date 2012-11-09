@@ -27,7 +27,7 @@
 #ifndef LBCPP_CORE_ENUMERATION_H_
 # define LBCPP_CORE_ENUMERATION_H_
 
-# include "Type.h"
+# include "Class.h"
 
 namespace lbcpp
 {
@@ -65,12 +65,12 @@ private:
 
 typedef ReferenceCountedObjectPtr<EnumerationElement> EnumerationElementPtr;
 
-class Enumeration : public Type
+class Enumeration : public Class
 {
 public:
   Enumeration(const String& name, const String& baseTypeName = T("EnumValue"));
   Enumeration(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
-    : Type(templateType, templateArguments, baseClass) {}
+    : Class(templateType, templateArguments, baseClass) {}
 
   virtual ClassPtr getClass() const;
 

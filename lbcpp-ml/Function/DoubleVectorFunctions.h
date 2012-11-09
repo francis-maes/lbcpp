@@ -184,8 +184,8 @@ public:
     int argmax = vector->getIndexOfMaximumValue();
 
     return new Pair(outputClass, 
-      argmin >= 0 ? Variable(argmin, enumeration) : Variable::missingValue(enumeration),
-      argmax >= 0 ? Variable(argmax, enumeration) : Variable::missingValue(enumeration));
+      argmin >= 0 ? ObjectPtr(new NewInteger(enumeration, argmin)) : ObjectPtr(),
+      argmax >= 0 ? ObjectPtr(new NewInteger(enumeration, argmax)) : ObjectPtr());
   }
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const

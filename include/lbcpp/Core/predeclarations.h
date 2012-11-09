@@ -57,6 +57,9 @@ typedef ReferenceCountedObjectPtr<NewInteger> NewIntegerPtr;
 class NewDouble;
 typedef ReferenceCountedObjectPtr<NewDouble> NewDoublePtr;
 
+class NewString;
+typedef ReferenceCountedObjectPtr<NewString> NewStringPtr;
+
 class VariableSignature;
 typedef ReferenceCountedObjectPtr<VariableSignature> VariableSignaturePtr;
 

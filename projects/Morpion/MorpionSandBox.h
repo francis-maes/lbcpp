@@ -25,7 +25,7 @@ public:
   virtual ProblemPtr createProblem(ExecutionContext& context) = 0;
   virtual void initializeSolvers(ExecutionContext& context, ProblemPtr problem) = 0;
 
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     solvers.clear();
     problem = createProblem(context);
@@ -36,7 +36,7 @@ public:
       ScalarVariableStatisticsPtr stats = runSolver(context, problem, solvers[i].second);
       context.leaveScope(stats);
     }
-    return true;
+    return ObjectPtr();
   }
 
 protected:

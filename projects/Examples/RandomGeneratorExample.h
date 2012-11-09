@@ -18,7 +18,7 @@ namespace lbcpp
 class RandomGeneratorExample : public WorkUnit
 {
 public:
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     static const size_t N = 1000000;
 
@@ -65,7 +65,7 @@ public:
     }
     context.leaveScope(true);
 
-    return true;
+    return ObjectPtr();
   }
 };
 

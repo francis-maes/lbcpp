@@ -92,7 +92,7 @@ protected:
 
   std::vector<Arm> arms;
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace);
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const ObjectPtr& result, const ExecutionTracePtr& trace);
   double getIndexScore(Arm& arm) const;
 
   struct ArmScoreComparator

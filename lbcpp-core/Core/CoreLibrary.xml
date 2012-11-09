@@ -13,7 +13,9 @@
   <!-- Builtin Types -->
   <class name="NewBoolean"/>
   <class name="NewInteger"/>
+  <class name="NewEnumValue" base="NewInteger"/>
   <class name="NewDouble"/>
+  <class name="NewString"/>
   
   <!-- Pair -->
   <template name="Pair" base="Object">
@@ -55,8 +57,9 @@
     <constructor arguments="size_t initialSize"/>
   </class>
 
-  <class name="IntegerVector" base="Vector[Integer]">
-    <constructor arguments="size_t initialSize"/>
+  <template name="IntegerVector" base="Vector[Integer]">
+    <parameter name="elementsType"/>
+    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
   </class>
 
   <class name="VariableVector" base="Vector[Variable]">

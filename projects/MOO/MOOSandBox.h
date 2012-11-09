@@ -24,12 +24,12 @@ class MOOSandBox : public WorkUnit
 public:
   MOOSandBox() : numEvaluations(1000), verbosity(1) {}
 
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     //testSingleObjectiveOptimizers(context);
     testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
-    return true;
+    return ObjectPtr();
   }
 
 protected:

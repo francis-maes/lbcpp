@@ -36,7 +36,7 @@ public:
   virtual DomainPtr getActionDomain() const
     {return node->getPrunedActionDomain();}
 
-  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
+  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, ObjectPtr* stateBackup = NULL)
   {
     jassert(node);
     if (stateBackup)
@@ -44,8 +44,8 @@ public:
     node = node->getSuccessor(context, action);
   }
 
-  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
-    {node = stateBackup.getObjectAndCast<SearchNode>();}
+  virtual void undoTransition(ExecutionContext& context, const ObjectPtr& stateBackup)
+    {node = stateBackup.staticCast<SearchNode>();}
 
   virtual bool isFinalState() const
     {return node->isFinalState();}
@@ -613,7 +613,7 @@ class MCGPSandBox : public WorkUnit
 public:
   MCGPSandBox() : numEvaluations(1000), numRuns(100), maxExpressionSize(10), verbose(false) {}
 
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     std::vector< std::pair<SolverPtr, String> > solvers;
 
@@ -737,7 +737,7 @@ public:
     context.enterScope("Results vs. time");
     displayResults(context, infos, true);
     context.leaveScope();
-    return true;
+    return ObjectPtr();
   }
 
 protected:

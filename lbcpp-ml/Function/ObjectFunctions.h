@@ -23,8 +23,8 @@ public:
   UnaryObjectFunction(ClassPtr inputClass = objectClass)
     : inputClass(inputClass) {}
 
-  Variable computeObject(const ObjectPtr& object) const
-    {jassert(false); return Variable();} // must be implemented
+  ObjectPtr computeObject(const ObjectPtr& object) const
+    {jassert(false); return ObjectPtr();} // must be implemented
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -72,8 +72,8 @@ public:
         const ObjectPtr& object = it.getRawObject();
         if (object)
         {
-          Variable v = pthis().computeObject(object);
-          res->getData()[i] = v.isMissingValue() ? 2 : (v.getBoolean() ? 1 : 0);
+          ObjectPtr v = pthis().computeObject(object);
+          res->getData()[i] = v ? 2 : (NewBoolean::get(v) ? 1 : 0);
         }
       }
       return new LuapeSampleVector(objects->getIndices(), res);

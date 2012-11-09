@@ -54,8 +54,8 @@ public:
   /*
   ** Work Units
   */
-  virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack = true);
-  virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
+  virtual ObjectPtr run(const WorkUnitPtr& workUnit, bool pushIntoStack = true);
+  virtual ObjectPtr run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)

@@ -243,11 +243,11 @@ class ColoSandBox : public WorkUnit
 public:
   ColoSandBox() : numEvaluations(1000) {}
 
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     ColoProblemPtr problem = new ColoProblem(context, javaDirectory, modelDirectory);
     if (!problem->getNumObjectives())
-      return false;
+      return new NewBoolean(false);
 
     runOptimizer(context, problem, randomSolver(new ColoSampler(), numEvaluations));
     runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, false));
@@ -259,7 +259,7 @@ public:
     runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler(), 2, 20, 10, 5, true));
     runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler2(), 2, 20, 10, 5, false));
     runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler2(), 2, 20, 10, 5, true));*/
-    return true;
+    return new NewBoolean(true);
   }
 
   void runOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)

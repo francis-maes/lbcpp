@@ -31,7 +31,7 @@ public:
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input);
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input1, const ExpressionPtr& input2);
 
-  FunctionPtr makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments);
+  FunctionPtr makeFunction(ClassPtr functionClass, const std::vector<ObjectPtr>& arguments);
 
   void observeNodeComputingTime(const ExpressionPtr& node, size_t numInstances, double timeInMilliseconds);
   double getExpectedComputingTime(const ExpressionPtr& node) const; // in milliseconds
@@ -56,7 +56,7 @@ public:
 protected:
   friend class ExpressionUniverseClass;
 
-  typedef std::pair<ClassPtr, std::vector<Variable> >  FunctionKey;
+  typedef std::pair<ClassPtr, std::vector<ObjectPtr> >  FunctionKey;
   typedef std::map<FunctionKey, FunctionPtr> FunctionsMap;
   FunctionsMap functions;
 

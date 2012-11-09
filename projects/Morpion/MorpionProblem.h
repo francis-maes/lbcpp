@@ -158,7 +158,7 @@ public:
   }
 #endif // 0
 
-	virtual void performTransition(ExecutionContext& context, const ObjectPtr& ac, Variable* stateBackup = NULL)
+	virtual void performTransition(ExecutionContext& context, const ObjectPtr& ac, ObjectPtr* stateBackup = NULL)
 	{
     MorpionActionPtr action = ac.staticCast<MorpionAction>();
     addLineOnBoard(action);
@@ -196,9 +196,9 @@ public:
 #endif // 0
 	}
 
-	virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
+	virtual void undoTransition(ExecutionContext& context, const ObjectPtr& stateBackup)
 	{
-    availableActions = stateBackup.getObjectAndCast<DiscreteDomain>();
+    availableActions = stateBackup.staticCast<DiscreteDomain>();
     jassert(history.size());
     MorpionActionPtr action = history.back();
     history.pop_back();
