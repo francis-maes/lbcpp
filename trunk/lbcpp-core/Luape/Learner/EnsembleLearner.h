@@ -55,8 +55,8 @@ public:
       ExpressionPtr baseModel = subLearn(context, baseLearner, ExpressionPtr(), problem, getSubSamples(context, i, examples));
       if (baseModel)
       {
-        sequenceNode->pushNode(context, baseModel, problem->getSamplesCaches());
-        //sequenceNode->setNode(i, ExpressionPtr()); // TMP: save memory !
+        jassertfalse; // broken
+        //sequenceNode->pushNode(context, baseModel, problem->getSamplesCaches());
       }
       else
         return ExpressionPtr();

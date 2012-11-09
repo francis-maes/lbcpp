@@ -28,12 +28,12 @@ public:
   {
      // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
-    LuapeSampleVectorPtr predictions = computePredictions(context, expression);
+    DataVectorPtr predictions = computePredictions(context, expression);
     DenseDoubleVectorPtr supervisions = getSupervisions().staticCast<DenseDoubleVector>();
     
     // compute mean absolute error
     double squaredError = 0.0;
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       double prediction = it.getRawDouble();
       if (prediction == doubleMissingValue || !isNumberValid(prediction))

@@ -68,14 +68,14 @@ public:
 
   virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
   {
-    LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    DataVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     if (samples->getElementsType() == booleanType)
       return objective->compute(samples);
      
     double minimumValue = DBL_MAX;
     double maximumValue = -DBL_MAX;
     bool isInteger = samples->getElementsType()->inheritsFrom(integerType);
-    for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
+    for (DataVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
     {
       double value = isInteger ? (double)it.getRawInteger() : it.getRawDouble();
       if (value < minimumValue)

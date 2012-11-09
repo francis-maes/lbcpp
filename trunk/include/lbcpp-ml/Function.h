@@ -16,8 +16,8 @@
 namespace lbcpp
 {
 
-class LuapeSampleVector;
-typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
+class DataVector;
+typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
 
 class Function : public Object
 {
@@ -50,7 +50,7 @@ public:
     {jassert(getNumVariables() == 0); return ContainerPtr();}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const;
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const;
 
   lbcpp_UseDebuggingNewOperator
 };

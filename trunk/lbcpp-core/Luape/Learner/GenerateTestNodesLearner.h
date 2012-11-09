@@ -41,7 +41,7 @@ public:
       ExpressionPtr condition = weakNodes[i];
       if (condition->getType() != booleanType)
       {
-        LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, condition, subset);
+        DataVectorPtr samples = problem->getTrainingCache()->getSamples(context, condition, subset);
         double threshold = samples->sampleElement(context.getRandomGenerator()).toDouble();
         condition = new FunctionExpression(stumpFunction(threshold), condition); // bypass universe
       }

@@ -12,42 +12,6 @@
 #include <algorithm>
 using namespace lbcpp;
 
-/*
-** LuapeSampleVector
-*/
-LuapeSampleVector::LuapeSampleVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType)
-  : implementation(implementation), indices(indices), elementsType(elementsType), constantRawBoolean(2) {}
-
-LuapeSampleVector::LuapeSampleVector(const IndexSetPtr& indices, const VectorPtr& ownedVector)
-  : implementation(ownedVectorImpl), indices(indices), elementsType(ownedVector->getElementsType()), constantRawBoolean(2), vector(ownedVector) {}
-
-LuapeSampleVector::LuapeSampleVector() : implementation(noImpl), constantRawBoolean(2)
-{
-}
-
-LuapeSampleVectorPtr LuapeSampleVector::createConstant(IndexSetPtr indices, const ObjectPtr& constantValue)
-{
-  LuapeSampleVectorPtr res(new LuapeSampleVector(constantValueImpl, indices, constantValue->getClass()));
-  res->constantRawBoolean = constantValue.dynamicCast<NewBoolean>() ? NewBoolean::get(constantValue) : 2;
-  res->constantRawDouble = constantValue.dynamicCast<NewDouble>() ? NewDouble::get(constantValue) : 0.0;
-  res->constantRawObject = constantValue;
-  return res;
-}
-
-Variable LuapeSampleVector::sampleElement(RandomGeneratorPtr random) const
-{
-  if (implementation == constantValueImpl)
-    return constantRawObject;
-  else
-    return vector->getElement(random->sampleSize(vector->getNumElements()));
-}
-
-LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const VectorPtr& cachedVector)
-{
-  LuapeSampleVectorPtr res(new LuapeSampleVector(cachedVectorImpl, indices, cachedVector->getElementsType()));
-  res->vector = cachedVector;
-  return res;
-}
 
 /*
 ** LuapeSamplesCache
@@ -269,14 +233,14 @@ bool LuapeSamplesCache::isCandidateForCaching(const ExpressionPtr& node) const
     return false;
 }
 
-LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const ExpressionPtr& node, const IndexSetPtr& examples)
+DataVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const ExpressionPtr& node, const IndexSetPtr& examples)
 {
   jassert(node);
   IndexSetPtr indices = examples ? examples : allIndices;
   
   // no indices => return empty array
   if (indices->empty())
-    return LuapeSampleVector::createConstant(indices, ObjectPtr());
+    return DataVector::createConstant(indices, ObjectPtr());
 
   // retrieve node information
   NodeCacheMap::iterator it = m.find(node);
@@ -306,12 +270,12 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
 
     if (nodeCache->samples)
       // return cached data
-      return LuapeSampleVector::createCached(indices, nodeCache->samples);
+      return DataVector::createCached(indices, nodeCache->samples);
   }
 
   // compute
   jassertfalse; // broken
-  LuapeSampleVectorPtr res;// = node->compute(context, refCountedPointerFromThis(this), indices);
+  DataVectorPtr res;// = node->compute(context, refCountedPointerFromThis(this), indices);
 
   // see if we should cache by opportunism
   if (nodeCache && indices == allIndices && res->getVector() &&
@@ -382,14 +346,14 @@ struct SortDoubleValuesOperator
   }
 };
 
-SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesFromSamples(const LuapeSampleVectorPtr& samples) const
+SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesFromSamples(const DataVectorPtr& samples) const
 {
   size_t n = samples->size();
   SparseDoubleVectorPtr res = new SparseDoubleVector(n);
   std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
   
   bool isDouble = (samples->getElementsType() == doubleType);
-  for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
+  for (DataVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
   {
     double value = isDouble ? it.getRawDouble() : (*it).toDouble();
     if (value != doubleMissingValue)
@@ -432,8 +396,8 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Exp
   jassertfalse; // broken
   return true;
 #if 0
-  LuapeSampleVectorPtr outputs = getSamples(context, node, allIndices);
-  for (LuapeSampleVector::const_iterator it = outputs->begin(); it != outputs->end(); ++it)
+  DataVectorPtr outputs = getSamples(context, node, allIndices);
+  for (DataVector::const_iterator it = outputs->begin(); it != outputs->end(); ++it)
   {
     size_t index = it.getIndex();
     LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());

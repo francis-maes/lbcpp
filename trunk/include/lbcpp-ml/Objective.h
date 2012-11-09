@@ -10,8 +10,8 @@
 # define LBCPP_ML_OBJECTIVE_H_
 
 # include <lbcpp/Data/DoubleVector.h>
-# include <lbcpp/Luape/LuapeCache.h>
 # include "DataTable.h"
+# include "Expression.h"
 
 namespace lbcpp
 {
@@ -70,8 +70,7 @@ public:
   virtual size_t getNumInstances() const
     {return data->getNumSamples();}
 
-  LuapeSampleVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const
-    {return expression->compute(context, data);}
+  DataVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const;
 
 protected:
   friend class LearningObjectiveClass;
@@ -86,8 +85,7 @@ public:
     : LearningObjective(data), supervision(supervision) {}
   SupervisedLearningObjective() {}
 
-  VectorPtr getSupervisions() const
-    {return data->getSamplesByExpression(supervision);}
+  VectorPtr getSupervisions() const;
 
 protected:
   friend class SupervisedLearningObjectiveClass;

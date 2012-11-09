@@ -11,6 +11,46 @@
 #include <algorithm>
 using namespace lbcpp;
 
+/*
+** DataVector
+*/
+DataVector::DataVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType)
+  : implementation(implementation), indices(indices), elementsType(elementsType), constantRawBoolean(2) {}
+
+DataVector::DataVector(const IndexSetPtr& indices, const VectorPtr& ownedVector)
+  : implementation(ownedVectorImpl), indices(indices), elementsType(ownedVector->getElementsType()), constantRawBoolean(2), vector(ownedVector) {}
+
+DataVector::DataVector() : implementation(noImpl), constantRawBoolean(2)
+{
+}
+
+DataVectorPtr DataVector::createConstant(IndexSetPtr indices, const ObjectPtr& constantValue)
+{
+  DataVectorPtr res(new DataVector(constantValueImpl, indices, constantValue->getClass()));
+  res->constantRawBoolean = constantValue.dynamicCast<NewBoolean>() ? NewBoolean::get(constantValue) : 2;
+  res->constantRawDouble = constantValue.dynamicCast<NewDouble>() ? NewDouble::get(constantValue) : 0.0;
+  res->constantRawObject = constantValue;
+  return res;
+}
+
+Variable DataVector::sampleElement(RandomGeneratorPtr random) const
+{
+  if (implementation == constantValueImpl)
+    return constantRawObject;
+  else
+    return vector->getElement(random->sampleSize(vector->getNumElements()));
+}
+
+DataVectorPtr DataVector::createCached(IndexSetPtr indices, const VectorPtr& cachedVector)
+{
+  DataVectorPtr res(new DataVector(cachedVectorImpl, indices, cachedVector->getElementsType()));
+  res->vector = cachedVector;
+  return res;
+}
+
+/*
+** DataTable
+*/
 DataTable::DataTable(size_t numSamples)
   : allIndices(new IndexSet(0, numSamples)) {}
 

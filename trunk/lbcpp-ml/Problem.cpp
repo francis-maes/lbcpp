@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp-ml/Problem.h>
+#include <lbcpp-ml/Expression.h>
 #include <lbcpp-ml/SolutionContainer.h>
 using namespace lbcpp;
 
@@ -54,6 +55,13 @@ bool DifferentiableObjective::testDerivative(ExecutionContext& context, const De
   }
   return res;
 }
+
+DataVectorPtr LearningObjective::computePredictions(ExecutionContext& context, ExpressionPtr expression) const
+  {return expression->compute(context, data);}
+
+VectorPtr SupervisedLearningObjective::getSupervisions() const
+  {return data->getSamplesByExpression(supervision);}
+
 
 /*
 ** Problem

@@ -25,7 +25,7 @@ void SplitObjective::ensureIsUpToDate()
   }
 }
 
-double SplitObjective::compute(const LuapeSampleVectorPtr& predictions)
+double SplitObjective::compute(const DataVectorPtr& predictions)
 {
   setPredictions(predictions);
   return computeObjective();
@@ -36,7 +36,7 @@ double SplitObjective::computeObjectiveWithEventualStump(ExecutionContext& conte
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
   {
-    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    DataVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     return compute(weakPredictions);
   }
   else
@@ -52,7 +52,7 @@ double SplitObjective::computeObjectiveWithEventualStump(ExecutionContext& conte
 
 double SplitObjective::findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
-  setPredictions(LuapeSampleVector::createConstant(indices, ObjectPtr()));
+  setPredictions(DataVector::createConstant(indices, ObjectPtr()));
   ensureIsUpToDate();
 
   if (sortedDoubleValues->getNumValues() == 0)
@@ -131,7 +131,7 @@ void RegressionSplitObjective::update()
   negatives.clear();
   missings.clear();
 
-  for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+  for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
   {
     double value = supervisions->getValue(it.getIndex());
     double weight = getWeight(it.getIndex());
@@ -199,7 +199,7 @@ void BinaryClassificationSplitObjective::update()
   errorWeight = 0.0;
   missingWeight = 0.0;
 
-  for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+  for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
   {
     size_t example = it.getIndex();
     bool sup = (supervisions->getValue(example) > 0.5);
@@ -288,7 +288,7 @@ void InformationGainBinarySplitObjective::update()
     labelConditionalProbabilities[i]->multiplyByScalar(0.0);
   
   sumOfWeights = 0.0;
-  for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+  for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
   {
     size_t index = it.getIndex();
     double weight = getWeight(index);
@@ -393,7 +393,7 @@ void InformationGainSplitObjective::update()
     labelConditionalProbabilities[i]->multiplyByScalar(0.0);
 
   sumOfWeights = 0.0;
-  for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+  for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
   {
     size_t index = it.getIndex();
     double weight = getWeight(index);

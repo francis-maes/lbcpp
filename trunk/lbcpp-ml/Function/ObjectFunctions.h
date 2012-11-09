@@ -11,7 +11,6 @@
 
 # include <lbcpp-ml/Function.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
@@ -35,39 +34,39 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? pthis().computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    LuapeSampleVectorPtr objects = inputs[0];
+    DataVectorPtr objects = inputs[0];
     size_t n = objects->size();
     if (outputType->inheritsFrom(objectClass))
     {
       ObjectVectorPtr res = new ObjectVector(outputType, n);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
+      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
           res->set(i, pthis().computeObject(object));
       }
-      return new LuapeSampleVector(objects->getIndices(), res);
+      return new DataVector(objects->getIndices(), res);
     }
     else if (outputType->inheritsFrom(doubleType))
     {
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, outputType, n, doubleMissingValue);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
+      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
           res->setValue(i, NewDouble::get(pthis().computeObject(object)));
       }
-      return new LuapeSampleVector(objects->getIndices(), res);
+      return new DataVector(objects->getIndices(), res);
     }
     else if (outputType->inheritsFrom(booleanType))
     {
       BooleanVectorPtr res = new BooleanVector(n);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
+      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
@@ -76,19 +75,19 @@ public:
           res->getData()[i] = v ? 2 : (NewBoolean::get(v) ? 1 : 0);
         }
       }
-      return new LuapeSampleVector(objects->getIndices(), res);
+      return new DataVector(objects->getIndices(), res);
     }
     else
     {
       VectorPtr res = vector(outputType, n);
       size_t i = 0;
-      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
+      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
           res->setElement(i, pthis().computeObject(object));
       }
-      return new LuapeSampleVector(objects->getIndices(), res);
+      return new DataVector(objects->getIndices(), res);
     }
   }
 

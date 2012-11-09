@@ -11,6 +11,7 @@
 
 # include "ObjectFunctions.h"
 # include <lbcpp/Data/DoubleVector.h>
+# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {

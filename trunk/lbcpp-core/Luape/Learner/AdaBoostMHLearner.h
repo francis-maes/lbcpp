@@ -55,7 +55,7 @@ public:
         mu[i][j]->multiplyByScalar(0.0);
 
     bool probabilityPredictions = (predictions->getElementsType() == probabilityType);
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       size_t example = it.getIndex();
       double* weightsPtr = weights->getValuePointer(numLabels * example);
@@ -222,7 +222,7 @@ public:
 
   virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
-    LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
+    DataVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
 
     const LuapeClassifierPtr& classifier = problem.staticCast<LuapeClassifier>();
     EnumerationPtr labels = classifier->getLabels();
@@ -232,7 +232,7 @@ public:
     DenseDoubleVectorPtr signedSupervisions = objective.staticCast<AdaBoostMHSplitObjective>()->getSupervisions();
     jassert(signedSupervisions->getNumElements() == n * numLabels);
     double sumOfWeights = 0.0;
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       const DenseDoubleVectorPtr& activations = it.getRawObject().staticCast<DenseDoubleVector>();
       if (activations)
@@ -294,7 +294,7 @@ public:
     : AdaBoostMHLearner(new DiscreteAdaBoostMHSplitObjective(), weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
-  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const DataVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
@@ -369,7 +369,7 @@ public:
 /*
     double Z = 0.0;
     const double* weightsPtr = weights->getValuePointer(0);
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       size_t example = it.getIndex();
       double* weightsPtr = weights->getValuePointer(numLabels * example);
@@ -389,7 +389,7 @@ public:
     : AdaBoostMHLearner(new RealAdaBoostMHSplitObjective(), weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 
-  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const DataVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 

@@ -9,7 +9,6 @@
 #include "precompiled.h"
 #include <lbcpp-ml/Function.h>
 #include <lbcpp-ml/Expression.h>
-#include <lbcpp/Luape/LuapeCache.h>
 using namespace lbcpp;
 
 String Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
@@ -25,14 +24,14 @@ String Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
   return res + T(")");
 }
 
-LuapeSampleVectorPtr Function::compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+DataVectorPtr Function::compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
 {
   jassert(inputs.size() && inputs.size() == getNumInputs());
 
   size_t n = inputs[0]->size();
   VectorPtr res = vector(outputType, n);
 
-  std::vector<LuapeSampleVector::const_iterator> it(inputs.size());
+  std::vector<DataVector::const_iterator> it(inputs.size());
   for (size_t i = 0; i < it.size(); ++i)
     it[i] = inputs[i]->begin();
 
@@ -46,7 +45,7 @@ LuapeSampleVectorPtr Function::compute(ExecutionContext& context, const std::vec
     }
     res->setElement(i, compute(context, &inputValues[0]));
   }
-  return new LuapeSampleVector(inputs[0]->getIndices(), res);
+  return new DataVector(inputs[0]->getIndices(), res);
 }
 
 bool Function::acceptInputsStack(const std::vector<ExpressionPtr>& stack) const

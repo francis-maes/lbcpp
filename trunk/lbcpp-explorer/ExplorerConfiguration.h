@@ -64,23 +64,7 @@ public:
 
   static void save(ExecutionContext& context)
     {getInstance()->saveToFile(context, getConfigurationFile(context));}
-/*
-  static Variable& getConfiguration(ExecutionContext& context, const String& typeName)
-  {
-    // FIXME !
-    VariableVectorPtr object = getInstance();
-    for (size_t i = 0; i < object->getNumElements(); ++i)
-    {
-      Variable& variable = object->getElement(i);
-      if (variable.getTypeName() == typeName)
-        return variable;
-    }
-    TypePtr type = typeManager().getType(context, typeName);
-    jassert(type);
-    object->append(Variable::create(type));
-    return object->getElement(object->getNumElements() - 1);
-  }
-*/
+
   RecentFileVectorPtr getRecentProjects() const
     {return recentProjects;}
 

@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp-ml/ExpressionDomain.h>
-#include "../../lbcpp-core/Luape/NodeBuilder/NodeBuilderDecisionProblem.h"
+#include <lbcpp-ml/PostfixExpression.h>
 using namespace lbcpp;
 
 String ExpressionDomain::toShortString() const
@@ -80,13 +80,7 @@ ExpressionPtr ExpressionDomain::getActiveVariable(size_t index) const
 
 bool ExpressionDomain::isTargetTypeAccepted(TypePtr type)
 {
-  if (!targetTypes.size())
-  {
-    // old definition for Luape weak learners
-    return type->inheritsFrom(booleanType) || type->inheritsFrom(doubleType) ||
-      (!type.isInstanceOf<Enumeration>() && type->inheritsFrom(integerType));
-  }
-
+  jassert(targetTypes.size());
   for (std::set<TypePtr>::const_iterator it = targetTypes.begin(); it != targetTypes.end(); ++it)
     if (type->inheritsFrom(*it))
       return true;

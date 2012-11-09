@@ -11,15 +11,14 @@
 
 # include <lbcpp-ml/Function.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
 
-class UnaryDoubleLuapeFuntion : public HomogeneousUnaryFunction
+class UnaryDoubleFunction : public HomogeneousUnaryFunction
 {
 public:
-  UnaryDoubleLuapeFuntion()
+  UnaryDoubleFunction()
     : HomogeneousUnaryFunction(doubleType), vectorClass(simpleDenseDoubleVectorClass) {}
 
   virtual double computeDouble(double value) const = 0;
@@ -33,17 +32,17 @@ public:
     return res == doubleMissingValue ? ObjectPtr() : ObjectPtr(new NewDouble(res));
   }
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& in, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& in, TypePtr outputType) const
   {
-    const LuapeSampleVectorPtr& inputs = in[0];
+    const DataVectorPtr& inputs = in[0];
     DenseDoubleVectorPtr res = new DenseDoubleVector(vectorClass, inputs->size(), 0.0);
     double* dest = res->getValuePointer(0);
-    for (LuapeSampleVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)
+    for (DataVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)
     {
       double value = it.getRawDouble();
       *dest++ = value == doubleMissingValue ? doubleMissingValue : computeDouble(value);
     }
-    return new LuapeSampleVector(inputs->getIndices(), res);
+    return new DataVector(inputs->getIndices(), res);
   }
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
@@ -53,7 +52,7 @@ protected:
   ClassPtr vectorClass;
 };
 
-class OppositeDoubleFunction : public UnaryDoubleLuapeFuntion
+class OppositeDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -63,7 +62,7 @@ public:
     {return -value;}
 };
 
-class InverseDoubleFunction : public UnaryDoubleLuapeFuntion
+class InverseDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -73,7 +72,7 @@ public:
     {return value ? 1.0 / value : doubleMissingValue;}
 };
 
-class AbsDoubleFunction : public UnaryDoubleLuapeFuntion
+class AbsDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -83,7 +82,7 @@ public:
     {return fabs(value);}
 };
 
-class LogDoubleFunction : public UnaryDoubleLuapeFuntion
+class LogDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -93,7 +92,7 @@ public:
     {return value <= 0.0 ? doubleMissingValue : log(value);}
 };
 
-class ProtectedLogDoubleFunction : public UnaryDoubleLuapeFuntion
+class ProtectedLogDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -103,7 +102,7 @@ public:
     {return value > 0.000001 ? log(fabs(value)) : 1.0;}
 };
 
-class ExpDoubleFunction : public UnaryDoubleLuapeFuntion
+class ExpDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -113,7 +112,7 @@ public:
     {return value >= 100 ? doubleMissingValue : exp(value);}
 };
 
-class SqrtDoubleFunction : public UnaryDoubleLuapeFuntion
+class SqrtDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -123,7 +122,7 @@ public:
     {return value < 0.0 ? doubleMissingValue : sqrt(value);}
 };
 
-class CosDoubleFunction : public UnaryDoubleLuapeFuntion
+class CosDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -133,7 +132,7 @@ public:
     {return cos(value);}
 };
 
-class SinDoubleFunction : public UnaryDoubleLuapeFuntion
+class SinDoubleFunction : public UnaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -162,10 +161,10 @@ public:
     return new NewDouble(res);
   }
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
-    LuapeSampleVector::const_iterator it1 = inputs[0]->begin();
-    LuapeSampleVector::const_iterator it2 = inputs[1]->begin();
+    DataVector::const_iterator it1 = inputs[0]->begin();
+    DataVector::const_iterator it2 = inputs[1]->begin();
     size_t n = inputs[0]->size();
     jassert(n == inputs[1]->size());
 
@@ -183,7 +182,7 @@ public:
       ++it1;
       ++it2;
     }
-    return new LuapeSampleVector(inputs[0]->getIndices(), res);
+    return new DataVector(inputs[0]->getIndices(), res);
   }
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const

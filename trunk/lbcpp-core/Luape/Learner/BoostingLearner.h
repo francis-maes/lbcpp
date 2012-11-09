@@ -49,7 +49,8 @@ public:
       TimedScope _(context, "add into node", verbose);
       if (contribution)
       {
-        node.staticCast<SequenceExpression>()->pushNode(context, contribution, problem->getSamplesCaches());
+        jassertfalse; // broken
+        //node.staticCast<SequenceExpression>()->pushNode(context, contribution, problem->getSamplesCaches());
         contributionAdded(context, problem, contribution);
       }
     }
@@ -103,7 +104,7 @@ protected:
     if (!testNode)
       testNode = new TestExpression(contribution.staticCast<FunctionExpression>()->getSubNode(0), contribution->getType()); // extract weak predictor from vote
 
-    LuapeSampleVectorPtr testValues = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    DataVectorPtr testValues = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     testNode->dispatchIndices(testValues, failureExamples, successExamples, missingExamples);
 

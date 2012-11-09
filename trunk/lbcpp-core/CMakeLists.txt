@@ -20,8 +20,6 @@ GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml Execut
 
 GENERATE_INTROSPECTION_CODE(LossFunction/LossFunctionLibrary.xml LossFunctionLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(DecisionProblem/DecisionProblemLibrary.xml DecisionProblemLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/ExpressionBuilderLibrary.xml ExpressionBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
@@ -66,8 +64,6 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/Map.h
   Core/Map.cpp
-  ../include/lbcpp/Core/OrderedMap.h
-  Core/OrderedMap.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
@@ -235,16 +231,6 @@ SET(LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES
   LossFunction/AllPairsRankingLossFunction.h
   LossFunction/MostViolatedPairRankingLossFunction.h
   LossFunction/BestAgainstAllRankingLossFunction.h
-)
-
-#### Decision Problem ####
-
-SET(LBCPP_DECISION_PROBLEM_SOURCES
-  ../include/lbcpp/DecisionProblem/DecisionProblem.h
-  DecisionProblem/DecisionProblem.cpp
-  ../include/lbcpp/DecisionProblem/Policy.h
-  DecisionProblem/DecisionProblemLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionProblemLibrary.cpp
 )
 
 #### Luape ####
@@ -480,9 +466,6 @@ SOURCE_SUB_GROUP2(CleanMe LossFunction Regression FILES ${LBCPP_LEARNING_LOSS_FU
 SOURCE_SUB_GROUP2(CleanMe LossFunction Discriminative FILES ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES})
 SOURCE_SUB_GROUP2(CleanMe LossFunction MultiClass FILES ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES})
 SOURCE_SUB_GROUP2(CleanMe LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES})
-
-## DecisionProblem
-SOURCE_SUB_GROUP(CleanMe DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
 
 ## Luape
 SOURCE_SUB_GROUP(CleanMe Luape FILES ${LBCPP_LUAPE_SOURCES})

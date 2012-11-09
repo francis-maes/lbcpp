@@ -40,7 +40,7 @@ public:
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const DataVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     SequenceExpressionPtr sequence = problem->getRootNode().staticCast<SequenceExpression>();
     VectorPtr predictions = problem->getTrainingPredictions();
@@ -88,7 +88,7 @@ public:
     const ExpressionUniversePtr& universe = problem->getUniverse();
 
     jassert(weakNode);
-    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    DataVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     Variable failureVote, successVote, missingVote;
     if (!computeVotes(context, problem, weakPredictions, failureVote, successVote, missingVote))
       return ExpressionPtr();
@@ -153,7 +153,7 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const DataVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     RegressionSplitObjectivePtr objective = this->objective.staticCast<RegressionSplitObjective>();
     objective->setPredictions(weakPredictions);

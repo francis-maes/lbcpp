@@ -557,60 +557,6 @@ size_t ObjectVector::getSizeInBytes(bool recursively) const
 }
 
 /*
-** VariableVector
-*/
-VariableVector::VariableVector(size_t initialSize)
-  : Vector(variableVectorClass), variables(initialSize)
-{
-}
-
-void VariableVector::clear()
-  {variables.clear();}
-
-void VariableVector::reserve(size_t size)
-  {variables.reserve(size);}
-
-void VariableVector::resize(size_t size)
-  {variables.resize(size);}
-
-void VariableVector::prepend(const Variable& value)
-  {variables.insert(variables.begin(), value);}
-
-void VariableVector::append(const Variable& value)
-  {variables.push_back(value);}
-
-void VariableVector::remove(size_t index)
-  {variables.erase(variables.begin() + index);}
-
-TypePtr VariableVector::getElementsType() const
-  {return anyType;}
-
-size_t VariableVector::getNumElements() const
-  {return variables.size();}
-
-Variable VariableVector::getElement(size_t index) const
-  {jassert(index < variables.size()); return variables[index];}
-
-void VariableVector::setElement(size_t index, const Variable& value)
-  {jassert(index < variables.size()); variables[index] = value;}
-
-void VariableVector::saveToXml(XmlExporter& exporter) const
-{
-  size_t n = getNumElements();
-  exporter.setAttribute(T("size"), (int)n);
-  for (size_t i = 0; i < n; ++i)
-    exporter.saveElement(i, getElement(i), anyType);
-}
-
-size_t VariableVector::getSizeInBytes(bool recursively) const
-{
-  size_t res = Object::getSizeInBytes(recursively);
-  res += sizeof (Variable) * variables.size();
-  return res;
-}
-
-
-/*
 ** Vector Constructor Method
 */
 VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
@@ -624,8 +570,6 @@ VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
     return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
   else if (elementsType->inheritsFrom(integerType))
     return integerVector(elementsType, initialSize);
-  else if (elementsType == anyType)
-    return variableVector(initialSize);
   else
     return genericVector(elementsType, initialSize);
 }
