@@ -18,12 +18,6 @@ GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(LossFunction/LossFunctionLibrary.xml LossFunctionLibrary.cpp)
-
-GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/ExpressionBuilderLibrary.xml ExpressionBuilderLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
-
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
@@ -62,8 +56,6 @@ SET(LBCPP_CORE_SOURCES
   Core/Container.cpp
   ../include/lbcpp/Core/Vector.h
   Core/Vector.cpp
-  ../include/lbcpp/Core/Map.h
-  Core/Map.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
@@ -201,99 +193,6 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextLibrary.cpp
 )
 
-#### Learning ####
-
-SET(LBCPP_LEARNING_LOSS_FUNCTION_SOURCES
-  ../include/lbcpp/Learning/LossFunction.h
-  LossFunction/LossFunction.cpp
-  LossFunction/LossFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LossFunctionLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES
-  LossFunction/SquareRegressionLossFunction.h
-)
-
-SET(LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES
-  LossFunction/HingeDiscriminativeLossFunction.h
-  LossFunction/LogBinomialDiscriminativeLossFunction.h
-  LossFunction/ExponentialDiscriminativeLossFunction.h
-)
-
-SET(LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES
-  LossFunction/OneAgainstAllMultiClassLossFunction.h
-  LossFunction/MostViolatedMultiClassLossFunction.h
-  LossFunction/LogBinomialMultiClassLossFunction.h
-)
-
-SET(LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES
-  LossFunction/AdditiveRankingLossFunction.h
-  LossFunction/AllPairsRankingLossFunction.h
-  LossFunction/MostViolatedPairRankingLossFunction.h
-  LossFunction/BestAgainstAllRankingLossFunction.h
-)
-
-#### Luape ####
-
-SET(LBCPP_LUAPE_SOURCES
-  ../include/lbcpp/Luape/predeclarations.h
-  ../include/lbcpp/Luape/LuapeCache.h
-  Luape/LuapeCache.cpp
-  ../include/lbcpp/Luape/LuapeInference.h
-  Luape/LuapeInference.cpp
-  ../include/lbcpp/Luape/ExpressionBuilder.h
-  Luape/ExpressionBuilder.cpp
-  ../include/lbcpp/Luape/SplitObjective.h
-  Luape/SplitObjective.cpp
-  ../include/lbcpp/Luape/LuapeLearner.h
-  Luape/LuapeLearner.cpp
-  ../include/lbcpp/Luape/ExpressionUniverse.h
-  Luape/ExpressionUniverse.cpp
-  Luape/LuapeLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
-)
-
-SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
-  Luape/NodeBuilder/NodeBuilderDecisionProblem.h
-  Luape/NodeBuilder/SingletonNodeBuilder.h
-  Luape/NodeBuilder/CompositeNodeBuilder.h
-  Luape/NodeBuilder/InputsNodeBuilder.h
-  Luape/NodeBuilder/ExhaustiveSequentialNodeBuilder.h
-  Luape/NodeBuilder/PolicyBasedNodeBuilder.h
-  Luape/NodeBuilder/RandomSequentialNodeBuilder.h
-  Luape/NodeBuilder/AdaptativeSamplingNodeBuilder.h  
-  Luape/NodeBuilder/ExpressionBuilderLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExpressionBuilderLibrary.cpp
-)
-
-SET(LBCPP_LUAPE_LEARNER_SOURCES
-  Luape/Learner/GradientDescentLearner.h
-  Luape/Learner/GenerateTestNodesLearner.h
-  Luape/Learner/LuapeLearnerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLearnerLibrary.cpp
-)
-
-SET(LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES
-  Luape/Learner/BoostingLearner.h
-  Luape/Learner/WeightBoostingLearner.h
-  Luape/Learner/AdaBoostLearner.h
-  Luape/Learner/AdaBoostMHLearner.h
-  Luape/Learner/GradientBoostingLearner.h
-)
-
-SET(LBCPP_LUAPE_LEARNER_WEAK_SOURCES
-  Luape/Learner/ExactWeakLearner.h
-  Luape/Learner/LaminatingWeakLearner.h
-  Luape/Learner/BanditBasedWeakLearner.h
-  Luape/Learner/OptimizerBasedSequentialWeakLearner.h
-)
-
-SET(LBCPP_LUAPE_LEARNER_META_SOURCES
-  Luape/Learner/TreeLearner.h
-  Luape/Learner/EnsembleLearner.h
-  Luape/Learner/CompositeLearner.h
-  Luape/Learner/AddActiveVariablesLearner.h
-)
 
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)
@@ -417,17 +316,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
     ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
 
-  # Decision Problem
-  ${LBCPP_DECISION_PROBLEM_SOURCES}
- 
-  # Luape
-  ${LBCPP_LUAPE_SOURCES}
-    ${LBCPP_LUAPE_NODE_BUILDER_SOURCES}
-    ${LBCPP_LUAPE_LEARNER_SOURCES}
-      ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES}
-      ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES}
-      ${LBCPP_LUAPE_LEARNER_META_SOURCES}	  
- 
   # Lua
   ${LBCPP_LUA_SOURCES}
     
@@ -459,21 +347,6 @@ SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
-
-## Learning
-SOURCE_SUB_GROUP(CleanMe LossFunction FILES ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe LossFunction Regression FILES ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe LossFunction Discriminative FILES ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe LossFunction MultiClass FILES ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES})
-
-## Luape
-SOURCE_SUB_GROUP(CleanMe Luape FILES ${LBCPP_LUAPE_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP3(CleanMe Luape Learner Boosting FILES ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES})
-SOURCE_SUB_GROUP3(CleanMe Luape Learner Weak FILES ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES})
-SOURCE_SUB_GROUP3(CleanMe Luape Learner Meta FILES ${LBCPP_LUAPE_LEARNER_META_SOURCES})
 
 ## Lua
 SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})

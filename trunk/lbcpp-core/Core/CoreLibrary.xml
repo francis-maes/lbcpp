@@ -64,17 +64,6 @@
 
   <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
 
-  <!-- Map -->
-  <template name="Map" base="Object" abstract="yes">
-    <parameter name="keysType"/>
-    <parameter name="valuesType"/>
-  </template>
-  
-  <template name="OrderedMap" base="Map[keysType,valuesType]" abstract="yes">
-    <parameter name="keysType"/>
-    <parameter name="valuesType"/>
-  </template>
-
   <!-- Dynamic Object -->
   <class name="DynamicClass" base="DefaultClass" abstract="yes"/>
 
