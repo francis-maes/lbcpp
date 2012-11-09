@@ -10,8 +10,8 @@
 # define LBCPP_LUAPE_UNIVERSE_H_
 
 # include "predeclarations.h"
-# include "Function.h"
-# include "Expression.h"
+# include <lbcpp-ml/Function.h>
+# include <lbcpp-ml/Expression.h>
 # include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp

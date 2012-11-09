@@ -11,7 +11,7 @@
 
 # include "predeclarations.h"
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp-ml/ExpressionUniverse.h>
+# include "ExpressionUniverse.h"
 # include <lbcpp-ml/PostfixExpression.h>
 # include <lbcpp/DecisionProblem/Policy.h>
 # include "LuapeInference.h"

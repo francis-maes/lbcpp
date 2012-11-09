@@ -11,7 +11,6 @@
 
 # include "Domain.h"
 # include "Expression.h"
-# include "ExpressionUniverse.h"
 # include "Problem.h"
 # include "Search.h"
 # include <lbcpp/Luape/LuapeCache.h>
@@ -25,11 +24,6 @@ namespace lbcpp
 class ExpressionDomain : public Domain
 {
 public:
-  ExpressionDomain(ExpressionUniversePtr universe = ExpressionUniversePtr());
-
-  const ExpressionUniversePtr& getUniverse() const
-    {return universe;}
-
   /*
   ** Inputs
   */
@@ -133,7 +127,6 @@ public:
 protected:
   friend class ExpressionDomainClass;
 
-  ExpressionUniversePtr universe;
   std::vector<VariableExpressionPtr> inputs;
   VariableExpressionPtr supervision;
   std::vector<ConstantExpressionPtr> constants;

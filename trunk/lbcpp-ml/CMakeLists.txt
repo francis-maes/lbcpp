@@ -27,7 +27,6 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Search.h
   ../include/lbcpp-ml/Function.h
   ../include/lbcpp-ml/Expression.h
-  ../include/lbcpp-ml/ExpressionUniverse.h
   ../include/lbcpp-ml/PostfixExpression.h
   ../include/lbcpp-ml/ExpressionDomain.h
   ../include/lbcpp-ml/ExpressionSampler.h
@@ -91,7 +90,6 @@ SET(LBCPP_ML_FUNCTION_SOURCES
 )
 
 SET(LBCPP_ML_EXPRESSION_SOURCES
-  Expression/ExpressionUniverse.cpp
   Expression/Expression.cpp
   Expression/ExpressionDomain.cpp
   Expression/ExpressionSampler.cpp

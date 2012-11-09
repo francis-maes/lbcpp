@@ -261,6 +261,8 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/SplitObjective.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
+  ../include/lbcpp/Luape/ExpressionUniverse.h
+  Luape/ExpressionUniverse.cpp
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
 )

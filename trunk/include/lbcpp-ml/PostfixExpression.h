@@ -10,7 +10,7 @@
 # define LBCPP_ML_EXPRESSION_POSTFIX_H_
 
 # include "Expression.h"
-# include "ExpressionUniverse.h"
+# include <lbcpp/Luape/ExpressionUniverse.h>
 # include "Search.h"
 
 namespace lbcpp
@@ -23,9 +23,9 @@ public:
   PostfixExpressionSequence() {}
   
   static PostfixExpressionSequencePtr fromNode(const ExpressionPtr& node);
-  ExpressionPtr toNode(const ExpressionUniversePtr& universe) const;
+  ExpressionPtr toNode() const;
 
-  static void apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element);
+  static void apply(std::vector<ExpressionPtr>& stack, const ObjectPtr& element);
 
   void appendNode(const ExpressionPtr& node);
   void append(const ObjectPtr& action)

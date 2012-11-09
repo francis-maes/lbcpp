@@ -83,7 +83,7 @@ std::vector<TypePtr> PostfixExpressionSequence::computeTypeState(const std::vect
   return state;
 }
 
-void PostfixExpressionSequence::apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element)
+void PostfixExpressionSequence::apply(std::vector<ExpressionPtr>& stack, const ObjectPtr& element)
 {
    if (element.isInstanceOf<Expression>()) // push action
     stack.push_back(element.staticCast<Expression>());
@@ -102,11 +102,11 @@ void PostfixExpressionSequence::apply(const ExpressionUniversePtr& universe, std
     jassert(false);
 }
 
-ExpressionPtr PostfixExpressionSequence::toNode(const ExpressionUniversePtr& universe) const
+ExpressionPtr PostfixExpressionSequence::toNode() const
 {
   std::vector<ExpressionPtr> stack;
   for (size_t i = 0; i < sequence.size(); ++i)
-    apply(universe, stack, sequence[i]);
+    apply(stack, sequence[i]);
   jassert(stack.size() == 1);
   return stack[0];
 }
@@ -328,7 +328,8 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
         inputTypes[i] = state->stack[state->getStackSize() - numInputs + i];
 
       std::vector<FunctionPtr> functions;
-      enumerateFunctionVariables(domain->getUniverse(), function, inputTypes, tmp, 0, functions);
+      // fixme: ExpressionUniverse
+      enumerateFunctionVariables(ExpressionUniversePtr(), function, inputTypes, tmp, 0, functions);
 
       for (size_t j = 0; j < functions.size(); ++j)
         applyFunctionAndBuildSuccessor(domain, state, functions[j], nodeTypes, maxDepth);

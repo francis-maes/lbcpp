@@ -25,7 +25,7 @@ public:
     if (subSequence)
     {
       for (size_t i = 0; i < subSequence->getLength(); ++i)
-        PostfixExpressionSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
+        PostfixExpressionSequence::apply(stack, subSequence->getElement(i));
     }
   }
   ExpressionBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
@@ -118,7 +118,7 @@ public:
     if (stateBackup)
       *stateBackup = Variable(new Backup(stack), objectClass);
     if (action)
-      PostfixExpressionSequence::apply(function->getUniverse(), stack, action);
+      PostfixExpressionSequence::apply(stack, action);
 
     reward = 0.0;
     ++numSteps;
