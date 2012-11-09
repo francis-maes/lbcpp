@@ -53,7 +53,7 @@ public:
   const ConstantExpressionPtr& getConstant(size_t index) const
     {jassert(index < constants.size()); return constants[index];}
 
-  void addConstant(const Variable& value)
+  void addConstant(const ObjectPtr& value)
     {constants.push_back(new ConstantExpression(value));}
 
   /*

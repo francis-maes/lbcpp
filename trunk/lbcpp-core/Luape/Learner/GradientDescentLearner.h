@@ -83,10 +83,10 @@ protected:
       {
         size_t index = parameters->getNumElements();
         parameters->append(constant->getValue());
-        constant->setValue(Variable(index, positiveIntegerType));
+        constant->setValue(new NewInteger(index)); // positiveIntegerType
       }
       else
-        constant->setValue(Variable::missingValue(positiveIntegerType));
+        constant->setValue(ObjectPtr()); // positiveIntegerType
     }
 
     TestExpressionPtr test = node.dynamicCast<TestExpression>();
@@ -105,9 +105,9 @@ protected:
     {
       const Variable& value = constant->getValue();
       if (value.exists())
-        constant->setValue(parameters->getElement((size_t)value.getInteger()));
+        constant->setValue(parameters->getElement((size_t)value.getInteger()).toObject());
       else
-        constant->setValue(Variable::missingValue(parametersType));
+        constant->setValue(ObjectPtr()); // parametersType
     }
 
     TestExpressionPtr test = node.dynamicCast<TestExpression>();

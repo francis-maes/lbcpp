@@ -85,9 +85,9 @@ Variable LuapeInference::computeFunction(ExecutionContext& context, const Variab
 
 Variable LuapeInference::computeNode(ExecutionContext& context, const ObjectPtr& inputObject) const
 {
-  LuapeInstanceCachePtr cache = new LuapeInstanceCache();
-  cache->setInputObject(inputs, inputObject);
-  return cache->compute(context, node);
+  // broken
+  jassertfalse;
+  return Variable();
 }
 
 /*void ExpressionDomain::setLearner(const LuapeLearnerPtr& learner, bool verbose)

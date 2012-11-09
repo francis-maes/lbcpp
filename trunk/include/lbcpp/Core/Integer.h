@@ -25,6 +25,9 @@ public:
 
   juce::int64 get() const
     {return value;}
+  
+  static juce::int64 get(ObjectPtr object)
+    {return object.staticCast<NewInteger>()->get();}
 
   virtual String toShortString() const
     {return String(value);}

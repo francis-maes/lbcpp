@@ -47,9 +47,9 @@ public:
       }
 
       ExpressionPtr testNode = new TestExpression(condition,
-            new ConstantExpression(Variable::create(sequenceNode->getType())),
-            new ConstantExpression(Variable::create(sequenceNode->getType())),
-            new ConstantExpression(Variable::create(sequenceNode->getType())));
+            new ConstantExpression(Object::create(sequenceNode->getType())),
+            new ConstantExpression(Object::create(sequenceNode->getType())),
+            new ConstantExpression(Object::create(sequenceNode->getType())));
       sequenceNode->pushNode(context, testNode);
     }
     context.informationCallback(T("Num features: ") + String((int)sequenceNode->getNumSubNodes()));

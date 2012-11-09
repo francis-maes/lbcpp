@@ -22,7 +22,10 @@ class ExpressionUniverse : public Object
 public:
   ExpressionUniverse();
 
-  ConstantExpressionPtr makeConstantNode(const Variable& constantValue);
+  ConstantExpressionPtr makeConstantNode(const ObjectPtr& constantValue);
+
+  ConstantExpressionPtr makeConstantNode(const Variable& constantValue) // compatibility
+    {return makeConstantNode(constantValue.toObject());}
 
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const std::vector<ExpressionPtr>& inputs);
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input);
@@ -63,7 +66,7 @@ protected:
   size_t maxFunctionDepth;
   size_t maxObservedFunctionDepth;
 
-  typedef std::map<Variable, ConstantExpressionPtr> ConstantNodesMap;
+  typedef std::map<ObjectPtr, ConstantExpressionPtr> ConstantNodesMap;
   ConstantNodesMap constantNodes;
 
   void cacheFunctionExpression(const FunctionExpressionKey& key, ExpressionPtr node);

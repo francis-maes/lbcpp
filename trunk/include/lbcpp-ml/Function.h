@@ -49,7 +49,7 @@ public:
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
     {jassert(getNumVariables() == 0); return ContainerPtr();}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const = 0;
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const;
 
   lbcpp_UseDebuggingNewOperator

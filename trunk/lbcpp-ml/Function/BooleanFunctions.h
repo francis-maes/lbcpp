@@ -31,8 +31,8 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "!" + inputs[0]->toShortString();}
   
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].isMissingValue() ? Variable::missingValue(booleanType) : Variable(!inputs[0].getBoolean(), booleanType);}
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
+    {return inputs[0] ? new NewBoolean(!NewBoolean::get(inputs[0])) : ObjectPtr();}
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
@@ -69,11 +69,11 @@ public:
   virtual Flags getFlags() const
     {return (Flags)(commutativeFlag | allSameArgIrrelevantFlag);}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    if (inputs[0].isMissingValue() || inputs[1].isMissingValue())
-      return Variable::missingValue(booleanType);
-    return computeBoolean(inputs[0].getBoolean(), inputs[1].getBoolean());
+    if (!inputs[0] || !inputs[1])
+      return ObjectPtr();
+    return new NewBoolean(computeBoolean(NewBoolean::get(inputs[0]), NewBoolean::get(inputs[1])));
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
@@ -166,11 +166,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " ? " + inputs[1]->toShortString() + " : " + inputs[2]->toShortString() + ")";}
   
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    if (inputs[0].isMissingValue())
-      return Variable::missingValue(booleanType);
-    return inputs[0].getBoolean() ? inputs[1] : inputs[2];
+    if (!inputs[0])
+      return ObjectPtr();
+    return NewBoolean::get(inputs[0]) ? inputs[1] : inputs[2];
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const

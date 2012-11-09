@@ -24,14 +24,13 @@ public:
 
   virtual double computeDouble(double value) const = 0;
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    double value = inputs[0].getDouble();
-    if (value == doubleMissingValue)
-      return doubleMissingValue;
-    double res = computeDouble(value);
+    if (!inputs[0])
+      return ObjectPtr();
+    double res = computeDouble(NewDouble::get(inputs[0]));
     jassert(res == doubleMissingValue || isNumberValid(res));
-    return res;
+    return res == doubleMissingValue ? ObjectPtr() : ObjectPtr(new NewDouble(res));
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& in, TypePtr outputType) const
@@ -152,15 +151,15 @@ public:
 
   virtual double computeDouble(double first, double second) const = 0;
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    double v1 = inputs[0].getDouble();
-    double v2 = inputs[1].getDouble();
-    if (v1 == doubleMissingValue || v2 == doubleMissingValue)
-      return doubleMissingValue;
-    double res = computeDouble(v1, v2);
-    jassert(res == doubleMissingValue || isNumberValid(res));
-    return res;
+    if (!inputs[0] || !inputs[1])
+      return ObjectPtr();
+    double res = computeDouble(NewDouble::get(inputs[0]), NewDouble::get(inputs[1]));
+    if (res == doubleMissingValue)
+      return ObjectPtr();
+    jassert(isNumberValid(res));
+    return new NewDouble(res);
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const

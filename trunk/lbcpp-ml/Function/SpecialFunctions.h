@@ -39,10 +39,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + " >= " + String(threshold);}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    double v = inputs[0].toDouble();
-    return v == doubleMissingValue ? Variable::missingValue(booleanType) : Variable(v >= threshold, booleanType);
+    if (!inputs[0])
+      return ObjectPtr();
+    return new NewBoolean(NewDouble::get(inputs[0]) >= threshold);
   }
 
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
@@ -127,11 +128,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
   
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    double v1 = inputs[0].getDouble();
-    double v2 = inputs[1].getDouble();
-    return v1 == doubleMissingValue || v2 == doubleMissingValue ? Variable::missingValue(booleanType) :  Variable(inputs[0].getDouble() > inputs[1].getDouble(), booleanType);
+    if (!inputs[0] || !inputs[1])
+      return ObjectPtr();
+    return new NewBoolean(NewDouble::get(inputs[0]) > NewDouble::get(inputs[1]));
   }
 
   virtual Flags getFlags() const
@@ -153,10 +154,11 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "normalize(" + inputs[0]->toShortString() + ")";}
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    double value = inputs[0].getDouble();
-    return Variable(value == doubleMissingValue ? value : computeDouble(value), probabilityType);
+    if (!inputs[0])
+      return ObjectPtr();
+    return new NewDouble(computeDouble(NewDouble::get(inputs[0]))); // probabilityType
   }
 
   virtual double computeDouble(double value) const

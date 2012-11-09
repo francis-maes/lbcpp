@@ -24,13 +24,13 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(integerType) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
 
-  virtual int computeInteger(int first, int second) const = 0;
+  virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const = 0;
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
-    int v1 = inputs[0].getInteger();
-    int v2 = inputs[1].getInteger();
-    return v1 == integerMissingValue || v2 == integerMissingValue ? integerMissingValue : computeInteger(v1, v2);
+    if (!inputs[0] || !inputs[1])
+      return ObjectPtr();
+    return new NewInteger(computeInteger(NewInteger::get(inputs[0]), NewInteger::get(inputs[1])));
   }
 };
 
@@ -43,7 +43,7 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " + " + inputs[1]->toShortString() + ")";}
 
-  virtual int computeInteger(int first, int second) const
+  virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
     {return first + second;}
 
   virtual Flags getFlags() const
@@ -59,7 +59,7 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " - " + inputs[1]->toShortString() + ")";}
 
-  virtual int computeInteger(int first, int second) const
+  virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
     {return first - second;}
 
   virtual Flags getFlags() const
@@ -75,7 +75,7 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " x " + inputs[1]->toShortString() + ")";}
 
-  virtual int computeInteger(int first, int second) const
+  virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
     {return first * second;}
 
   virtual Flags getFlags() const
@@ -91,7 +91,7 @@ public:
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
-  virtual int computeInteger(int first, int second) const
+  virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
     {return second ? first / second : integerMissingValue;}
 
   virtual Flags getFlags() const
