@@ -11,6 +11,11 @@
   <include file="lbcpp/Luape/LuapeLearner.h"/>
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
+  <class name="LuapeSamplesCache">
+        <!--<variable type="ObjectVector[VariableExpression]" name="inputNodes"/>-->
+    <variable type="ObjectVector[Vector[Variable]]" name="inputCaches"/>
+  </class>
+  
   <!-- Inference 
   <class name="LuapeInference" base="ExpressionDomain"/>
   <class name="LuapeBinaryClassifier" base="LuapeInference">
@@ -38,15 +43,15 @@
   </class>
 
   <!-- Learning objectives -->
-  <class name="LearningObjective" base="Object" abstract="yes"/>
-  <class name="SupervisedLearningObjective" base="LearningObjective" abstract="yes"/>
-  <class name="RegressionLearningObjective" base="SupervisedLearningObjective"/>
-  <class name="BinaryClassificationLearningObjective" base="SupervisedLearningObjective"/>
-  <class name="ClassificationLearningObjective" base="SupervisedLearningObjective" abstract="yes"/>
-  <class name="InformationGainBinaryLearningObjective" base="BinaryClassificationLearningObjective">
+  <class name="SplitObjective" base="Object" abstract="yes"/>
+  <class name="SupervisedSplitObjective" base="SplitObjective" abstract="yes"/>
+  <class name="RegressionSplitObjective" base="SupervisedSplitObjective"/>
+  <class name="BinaryClassificationSplitObjective" base="SupervisedSplitObjective"/>
+  <class name="ClassificationSplitObjective" base="SupervisedSplitObjective" abstract="yes"/>
+  <class name="InformationGainBinarySplitObjective" base="BinaryClassificationSplitObjective">
     <variable type="Boolean" name="normalize"/>
   </class>
-  <class name="InformationGainLearningObjective" base="ClassificationLearningObjective">
+  <class name="InformationGainSplitObjective" base="ClassificationSplitObjective">
     <variable type="Boolean" name="normalize"/>
   </class>
 

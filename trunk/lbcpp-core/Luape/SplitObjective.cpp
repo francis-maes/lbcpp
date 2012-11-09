@@ -1,12 +1,12 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LearningObjective.cpp          | Learning Objective              |
+| Filename: SplitObjective.cpp             | Splitting Objective             |
 | Author  : Francis Maes                   |   base classes                  |
 | Started : 22/12/2011 14:56               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Luape/LearningObjective.h>
+#include <lbcpp/Luape/SplitObjective.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include <lbcpp/Luape/LuapeInference.h>
 #include <lbcpp-ml/PostfixExpression.h>
@@ -14,9 +14,9 @@
 using namespace lbcpp;
 
 /*
-** LearningObjective
+** SplitObjective
 */
-void LearningObjective::ensureIsUpToDate()
+void SplitObjective::ensureIsUpToDate()
 {
   if (!upToDate)
   {
@@ -25,13 +25,13 @@ void LearningObjective::ensureIsUpToDate()
   }
 }
 
-double LearningObjective::compute(const LuapeSampleVectorPtr& predictions)
+double SplitObjective::compute(const LuapeSampleVectorPtr& predictions)
 {
   setPredictions(predictions);
   return computeObjective();
 }
 
-double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
+double SplitObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
 {
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
@@ -50,7 +50,7 @@ double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& co
   }
 }
 
-double LearningObjective::findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
+double SplitObjective::findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
   setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
   ensureIsUpToDate();
@@ -108,16 +108,16 @@ double LearningObjective::findBestThreshold(ExecutionContext& context, const Exp
 }
 
 /*
-** RegressionLearningObjective
+** RegressionSplitObjective
 */
-void RegressionLearningObjective::setSupervisions(const VectorPtr& supervisions)
+void RegressionSplitObjective::setSupervisions(const VectorPtr& supervisions)
 {
   jassert(supervisions->getElementsType() == doubleType);
   this->supervisions = supervisions.staticCast<DenseDoubleVector>();
   invalidate();
 }
 
-Variable RegressionLearningObjective::computeVote(const IndexSetPtr& indices)
+Variable RegressionSplitObjective::computeVote(const IndexSetPtr& indices)
 {
   ScalarVariableMean res;
   for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
@@ -125,7 +125,7 @@ Variable RegressionLearningObjective::computeVote(const IndexSetPtr& indices)
   return res.getMean();
 }
 
-void RegressionLearningObjective::update()
+void RegressionSplitObjective::update()
 {
   positives.clear();
   negatives.clear();
@@ -145,7 +145,7 @@ void RegressionLearningObjective::update()
   }
 }
 
-void RegressionLearningObjective::flipPrediction(size_t index)
+void RegressionSplitObjective::flipPrediction(size_t index)
 {
   jassert(upToDate);
 
@@ -155,7 +155,7 @@ void RegressionLearningObjective::flipPrediction(size_t index)
   positives.push(value, weight);
 }
 
-double RegressionLearningObjective::computeObjective()
+double RegressionSplitObjective::computeObjective()
 {
   double res = 0.0;
   if (positives.getCount())
@@ -171,21 +171,21 @@ double RegressionLearningObjective::computeObjective()
 }
 
 /*
-** BinaryClassificationLearningObjective
+** BinaryClassificationSplitObjective
 */
-BinaryClassificationLearningObjective::BinaryClassificationLearningObjective()
+BinaryClassificationSplitObjective::BinaryClassificationSplitObjective()
   : correctWeight(0.0), errorWeight(0.0), missingWeight(0.0)
 {
 }
 
-void BinaryClassificationLearningObjective::setSupervisions(const VectorPtr& supervisions)
+void BinaryClassificationSplitObjective::setSupervisions(const VectorPtr& supervisions)
 {
   jassert(supervisions->getElementsType() == probabilityType);
   this->supervisions = supervisions.staticCast<DenseDoubleVector>();
   invalidate();
 }
 
-Variable BinaryClassificationLearningObjective::computeVote(const IndexSetPtr& indices)
+Variable BinaryClassificationSplitObjective::computeVote(const IndexSetPtr& indices)
 {
   ScalarVariableMean res;
   for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
@@ -193,7 +193,7 @@ Variable BinaryClassificationLearningObjective::computeVote(const IndexSetPtr& i
   return Variable(res.getMean(), probabilityType);
 }
 
-void BinaryClassificationLearningObjective::update()
+void BinaryClassificationSplitObjective::update()
 {
   correctWeight = 0.0;
   errorWeight = 0.0;
@@ -214,7 +214,7 @@ void BinaryClassificationLearningObjective::update()
   }
 }
 
-void BinaryClassificationLearningObjective::flipPrediction(size_t index)
+void BinaryClassificationSplitObjective::flipPrediction(size_t index)
 {
   jassert(upToDate);
   bool sup = supervisions->getValue(index) > 0.5;
@@ -231,7 +231,7 @@ void BinaryClassificationLearningObjective::flipPrediction(size_t index)
   }
 }
 
-double BinaryClassificationLearningObjective::computeObjective()
+double BinaryClassificationSplitObjective::computeObjective()
 {
   ensureIsUpToDate();
   double totalWeight = (missingWeight + correctWeight + errorWeight);
@@ -240,33 +240,33 @@ double BinaryClassificationLearningObjective::computeObjective()
 }
 
 /*
-** ClassificationLearningObjective
+** ClassificationSplitObjective
 */
-void ClassificationLearningObjective::initialize(const LuapeInferencePtr& problem)
+void ClassificationSplitObjective::initialize(const LuapeInferencePtr& problem)
 {
   doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
   labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
   numLabels = labels->getNumElements();
-  LearningObjective::initialize(problem);
+  SplitObjective::initialize(problem);
 }
 
 /*
- ** InformationGainBinaryLearningObjective
+ ** InformationGainBinarySplitObjective
  */
-InformationGainBinaryLearningObjective::InformationGainBinaryLearningObjective(bool normalize)
+InformationGainBinarySplitObjective::InformationGainBinarySplitObjective(bool normalize)
   : normalize(normalize) {}
 
-void InformationGainBinaryLearningObjective::initialize(const LuapeInferencePtr& problem)
+void InformationGainBinarySplitObjective::initialize(const LuapeInferencePtr& problem)
 {
   static const TypePtr denseVectorClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-  BinaryClassificationLearningObjective::initialize(problem);
+  BinaryClassificationSplitObjective::initialize(problem);
   splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities
   labelWeights = new DenseDoubleVector(denseVectorClass); // label probabilities
   for (int i = 0; i < 3; ++i)
     labelConditionalProbabilities[i] = new DenseDoubleVector(denseVectorClass); // label probabilities given that the predicted value is negative, positive or missing
 }
 
-void InformationGainBinaryLearningObjective::setSupervisions(const VectorPtr& supervisions)
+void InformationGainBinarySplitObjective::setSupervisions(const VectorPtr& supervisions)
 {
   size_t n = supervisions->getNumElements();
   this->supervisions = new GenericVector(booleanType, n);
@@ -280,7 +280,7 @@ void InformationGainBinaryLearningObjective::setSupervisions(const VectorPtr& su
   invalidate();
 }
 
-void InformationGainBinaryLearningObjective::update()
+void InformationGainBinarySplitObjective::update()
 {
   splitWeights->multiplyByScalar(0.0);
   labelWeights->multiplyByScalar(0.0);
@@ -302,7 +302,7 @@ void InformationGainBinaryLearningObjective::update()
   }
 }
 
-void InformationGainBinaryLearningObjective::flipPrediction(size_t index)
+void InformationGainBinarySplitObjective::flipPrediction(size_t index)
 {
   jassert(upToDate);
   size_t supervision = (int)supervisions->getElement(index).getInteger();
@@ -313,7 +313,7 @@ void InformationGainBinaryLearningObjective::flipPrediction(size_t index)
   labelConditionalProbabilities[1]->incrementValue(supervision, weight);
 }
 
-double InformationGainBinaryLearningObjective::computeObjective()
+double InformationGainBinarySplitObjective::computeObjective()
 {
   ensureIsUpToDate();
   
@@ -329,7 +329,7 @@ double InformationGainBinaryLearningObjective::computeObjective()
     return informationGain;
 }
 
-Variable InformationGainBinaryLearningObjective::computeVote(const IndexSetPtr& indices)
+Variable InformationGainBinarySplitObjective::computeVote(const IndexSetPtr& indices)
 {
   double trueWeight = 0.0;
   double falseWeight = 0.0;
@@ -349,14 +349,14 @@ Variable InformationGainBinaryLearningObjective::computeVote(const IndexSetPtr& 
 }
 
 /*
-** InformationGainLearningObjective
+** InformationGainSplitObjective
 */
-InformationGainLearningObjective::InformationGainLearningObjective(bool normalize)
+InformationGainSplitObjective::InformationGainSplitObjective(bool normalize)
   : normalize(normalize) {}
 
-void InformationGainLearningObjective::initialize(const LuapeInferencePtr& problem)
+void InformationGainSplitObjective::initialize(const LuapeInferencePtr& problem)
 {
-  ClassificationLearningObjective::initialize(problem);
+  ClassificationSplitObjective::initialize(problem);
   splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities
   labelWeights = new DenseDoubleVector(doubleVectorClass); // label probabilities
   for (int i = 0; i < 3; ++i)
@@ -371,7 +371,7 @@ void InformationGainLearningObjective::initialize(const LuapeInferencePtr& probl
   singleVoteVectors[numLabels] = new DenseDoubleVector(doubleVectorClass);
 }
 
-void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervisions)
+void InformationGainSplitObjective::setSupervisions(const VectorPtr& supervisions)
 {
   size_t n = supervisions->getNumElements();
   this->supervisions = new GenericVector(labels, n);
@@ -385,7 +385,7 @@ void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervis
   invalidate();
 }
 
-void InformationGainLearningObjective::update()
+void InformationGainSplitObjective::update()
 {
   splitWeights->multiplyByScalar(0.0);
   labelWeights->multiplyByScalar(0.0);
@@ -407,7 +407,7 @@ void InformationGainLearningObjective::update()
   }
 }
 
-void InformationGainLearningObjective::flipPrediction(size_t index)
+void InformationGainSplitObjective::flipPrediction(size_t index)
 {
   jassert(upToDate);
   size_t supervision = (int)supervisions->getElement(index).getInteger();
@@ -418,7 +418,7 @@ void InformationGainLearningObjective::flipPrediction(size_t index)
   labelConditionalProbabilities[1]->incrementValue(supervision, weight);
 }
 
-double InformationGainLearningObjective::computeObjective()
+double InformationGainSplitObjective::computeObjective()
 {
   ensureIsUpToDate();
 
@@ -434,7 +434,7 @@ double InformationGainLearningObjective::computeObjective()
     return informationGain;
 }
 
-Variable InformationGainLearningObjective::computeVote(const IndexSetPtr& indices)
+Variable InformationGainSplitObjective::computeVote(const IndexSetPtr& indices)
 {
   if (indices->size() == 0)
     return singleVoteVectors[numLabels]; // (a vector of zeros)

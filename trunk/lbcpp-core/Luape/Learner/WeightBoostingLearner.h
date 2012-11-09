@@ -17,7 +17,7 @@ namespace lbcpp
 class WeightBoostingLearner : public BoostingLearner
 {
 public:
-  WeightBoostingLearner(LearningObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+  WeightBoostingLearner(SplitObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
    : BoostingLearner(objective, weakLearner, maxIterations, treeDepth) {}
   WeightBoostingLearner() {}
 
@@ -36,7 +36,7 @@ public:
   }
 
   virtual void contributionAdded(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& contribution)
-    {updateSampleWeights(context, problem, contribution, objective.staticCast<SupervisedLearningObjective>()->getWeights(), logLoss);}
+    {updateSampleWeights(context, problem, contribution, objective.staticCast<SupervisedSplitObjective>()->getWeights(), logLoss);}
 
   virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {

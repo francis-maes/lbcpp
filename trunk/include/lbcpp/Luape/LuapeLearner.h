@@ -12,7 +12,7 @@
 # include <lbcpp-ml/ExpressionDomain.h>
 # include "LuapeInference.h"
 # include "ExpressionBuilder.h"
-# include "LearningObjective.h"
+# include "SplitObjective.h"
 # include "../Learning/LossFunction.h"
 # include "../Data/IterationFunction.h"
 
@@ -22,7 +22,7 @@ namespace lbcpp
 class LuapeLearner : public Object
 {
 public:
-  LuapeLearner(const LearningObjectivePtr& objective = LearningObjectivePtr())
+  LuapeLearner(const SplitObjectivePtr& objective = SplitObjectivePtr())
     : objective(objective), verbose(false), bestObjectiveValue(-DBL_MAX) {}
 
   virtual ExpressionPtr createInitialNode(ExecutionContext& context, const ExpressionDomainPtr& problem)
@@ -32,10 +32,10 @@ public:
 
   ExpressionPtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples = IndexSetPtr());
 
-  void setObjective(const LearningObjectivePtr& objective)
+  void setObjective(const SplitObjectivePtr& objective)
     {this->objective = objective;}
 
-  const LearningObjectivePtr& getObjective() const
+  const SplitObjectivePtr& getObjective() const
     {return objective;}
 
   void setVerbose(bool v)
@@ -52,7 +52,7 @@ public:
 protected:
   friend class LuapeLearnerClass;
 
-  LearningObjectivePtr objective;
+  SplitObjectivePtr objective;
   bool verbose;
   double bestObjectiveValue;
 
@@ -66,7 +66,7 @@ typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 class IterativeLearner : public LuapeLearner
 {
 public:
-  IterativeLearner(const LearningObjectivePtr& objective = LearningObjectivePtr(), size_t maxIterations = 0);
+  IterativeLearner(const SplitObjectivePtr& objective = SplitObjectivePtr(), size_t maxIterations = 0);
   virtual ~IterativeLearner();
 
   void setPlotFile(ExecutionContext& context, const File& plotFile);
@@ -138,7 +138,7 @@ extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_
 extern LuapeLearnerPtr baggingLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
-extern LuapeLearnerPtr treeLearner(LearningObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth);
+extern LuapeLearnerPtr treeLearner(SplitObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth);
 
 extern DecoratorLearnerPtr addActiveVariablesLearner(LuapeLearnerPtr decorated, size_t numActiveVariables, bool deterministic);
 

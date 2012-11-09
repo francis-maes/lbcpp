@@ -20,7 +20,7 @@ namespace lbcpp
 class BoostingLearner : public IterativeLearner
 {
 public:
-  BoostingLearner(LearningObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+  BoostingLearner(SplitObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
     : IterativeLearner(objective, maxIterations), weakLearner(weakLearner), treeDepth(treeDepth) {}
   BoostingLearner() : treeDepth(0) {}
 

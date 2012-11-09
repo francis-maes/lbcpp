@@ -17,7 +17,7 @@ namespace lbcpp
 class TreeLearner : public LuapeLearner
 {
 public:
-  TreeLearner(LearningObjectivePtr objective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
+  TreeLearner(SplitObjectivePtr objective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
     : LuapeLearner(objective), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
   TreeLearner() {}
 

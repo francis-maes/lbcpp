@@ -35,6 +35,9 @@ typedef ReferenceCountedObjectPtr<DifferentiableObjective> DifferentiableObjecti
 class StochasticObjective;
 typedef ReferenceCountedObjectPtr<StochasticObjective> StochasticObjectivePtr;
 
+class SupervisedLearningObjective;
+typedef ReferenceCountedObjectPtr<SupervisedLearningObjective> SupervisedLearningObjectivePtr;
+
 class FitnessLimits;
 typedef ReferenceCountedObjectPtr<FitnessLimits> FitnessLimitsPtr;
 

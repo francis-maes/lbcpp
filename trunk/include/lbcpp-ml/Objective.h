@@ -10,6 +10,7 @@
 # define LBCPP_ML_OBJECTIVE_H_
 
 # include <lbcpp/Data/DoubleVector.h>
+# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {
@@ -55,6 +56,47 @@ public:
     return res / (double)numInstances;
   }
 };
+
+class LearningObjective : public StochasticObjective
+{
+public:
+  LearningObjective(LuapeSamplesCachePtr data = LuapeSamplesCachePtr())
+    : data(data) {}
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
+    {jassertfalse; return 0.0;}
+  
+  virtual size_t getNumInstances() const
+    {return data->getNumSamples();}
+
+  LuapeSampleVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const
+    {return data->getSamples(context, expression);}
+
+protected:
+  friend class LearningObjectiveClass;
+
+  LuapeSamplesCachePtr data;
+};
+
+class SupervisedLearningObjective : public LearningObjective
+{
+public:
+  SupervisedLearningObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision)
+    : LearningObjective(data), supervision(supervision) {}
+  SupervisedLearningObjective() {}
+
+  VectorPtr getSupervisions(ExecutionContext& context) const
+    {return data->getNodeCache(supervision);}
+
+protected:
+  friend class SupervisedLearningObjectiveClass;
+
+  VariableExpressionPtr supervision;
+};
+
+extern SupervisedLearningObjectivePtr mseRegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr rmseRegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
 
 // todo: StochasticDifferentiableObjective
 

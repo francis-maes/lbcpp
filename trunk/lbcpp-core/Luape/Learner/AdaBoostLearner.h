@@ -18,7 +18,7 @@ class AdaBoostLearner : public WeightBoostingLearner
 {
 public:
   AdaBoostLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : WeightBoostingLearner(new BinaryClassificationLearningObjective(), weakLearner, maxIterations, treeDepth) {}
+    : WeightBoostingLearner(new BinaryClassificationSplitObjective(), weakLearner, maxIterations, treeDepth) {}
   AdaBoostLearner() {}
 
   virtual ExpressionPtr createInitialNode(ExecutionContext& context, const ExpressionDomainPtr& problem)
@@ -29,7 +29,7 @@ public:
 
   virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
-    BinaryClassificationLearningObjectivePtr objective = this->objective.staticCast<BinaryClassificationLearningObjective>();
+    BinaryClassificationSplitObjectivePtr objective = this->objective.staticCast<BinaryClassificationSplitObjective>();
     objective->setPredictions(weakPredictions);
     objective->ensureIsUpToDate();
     

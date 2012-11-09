@@ -68,14 +68,14 @@ void LuapeLearner::clone(ExecutionContext& context, const ObjectPtr& t) const
   Object::clone(context, t);
   const LuapeLearnerPtr& target = t.staticCast<LuapeLearner>();
   if (objective)
-    target->objective = objective->cloneAndCast<LearningObjective>(context);
+    target->objective = objective->cloneAndCast<SplitObjective>(context);
   target->bestObjectiveValue = bestObjectiveValue;
 }
 
 /*
 ** IterativeLearner
 */
-IterativeLearner::IterativeLearner(const LearningObjectivePtr& objective, size_t maxIterations)
+IterativeLearner::IterativeLearner(const SplitObjectivePtr& objective, size_t maxIterations)
   : LuapeLearner(objective), maxIterations(maxIterations), plotOutputStream(NULL)
 {
 }

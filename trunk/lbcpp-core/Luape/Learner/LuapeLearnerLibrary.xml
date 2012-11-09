@@ -22,8 +22,8 @@
 
   <!-- Tree Learner -->
   <class name="TreeLearner" base="LuapeLearner">
-    <constructor arguments="LearningObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
-    <variable type="LearningObjective" name="objective"/>
+    <constructor arguments="SplitObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
+    <variable type="SplitObjective" name="objective"/>
     <variable type="LuapeLearner" name="conditionLearner"/>
     <variable type="PositiveInteger" name="minExamplesToSplit"/>
     <variable type="PositiveInteger" name="maxDepth"/>
@@ -40,12 +40,12 @@
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
     <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
-  <class name="AdaBoostMHLearningObjective" base="ClassificationLearningObjective" abstract="yes"/>
-  <class name="DiscreteAdaBoostMHLearningObjective" base="AdaBoostMHLearningObjective">
-    <constructor returnType="ClassificationLearningObjective"/>
+  <class name="AdaBoostMHSplitObjective" base="ClassificationSplitObjective" abstract="yes"/>
+  <class name="DiscreteAdaBoostMHSplitObjective" base="AdaBoostMHSplitObjective">
+    <constructor returnType="ClassificationSplitObjective"/>
   </class>
-  <class name="RealAdaBoostMHLearningObjective" base="AdaBoostMHLearningObjective">
-    <constructor returnType="ClassificationLearningObjective"/>
+  <class name="RealAdaBoostMHSplitObjective" base="AdaBoostMHSplitObjective">
+    <constructor returnType="ClassificationSplitObjective"/>
   </class>
 
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
