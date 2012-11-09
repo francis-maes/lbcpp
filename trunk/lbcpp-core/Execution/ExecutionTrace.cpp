@@ -250,11 +250,11 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       res &= progression->loadFromXml(importer);
     }
     else if (tagName == T("return"))
-      returnValue = importer.loadVariable(variableType);
+      returnValue = importer.loadVariable(variableType).toObject();
     else if (tagName == T("result"))
     {
       String name = importer.getStringAttribute(T("resultName"));
-      Variable value = importer.loadVariable(variableType);
+      ObjectPtr value = importer.loadVariable(variableType).toObject();
       if (value.exists())
         results.push_back(std::make_pair(name, value));
     }
@@ -273,7 +273,7 @@ bool ExecutionTraceNode::loadFromXml(XmlImporter& importer)
   return loadSubItemsFromXml(importer);
 }
 
-void ExecutionTraceNode::setResult(const String& name, const Variable& value)
+void ExecutionTraceNode::setResult(const String& name, const ObjectPtr& value)
 {
   ScopedLock _(resultsLock);
   for (size_t i = 0; i < results.size(); ++i)
@@ -285,9 +285,9 @@ void ExecutionTraceNode::setResult(const String& name, const Variable& value)
   results.push_back(std::make_pair(name, value));
 }
 
-std::vector< std::pair<String, Variable> > ExecutionTraceNode::getResults() const
+std::vector< std::pair<String, ObjectPtr> > ExecutionTraceNode::getResults() const
 {
-  std::vector< std::pair<String, Variable> > res;
+  std::vector< std::pair<String, ObjectPtr> > res;
   {
     ScopedLock _(resultsLock);
     res = results;
@@ -299,13 +299,13 @@ std::vector< std::pair<String, Variable> > ExecutionTraceNode::getResults() cons
 
 ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
 {
-  std::vector< std::pair<String, Variable> > results = getResults();
+  std::vector< std::pair<String, ObjectPtr> > results = getResults();
   if (results.empty())
     return ObjectPtr();
 
   DynamicClassPtr resultsClass = new DynamicClass(description + T(" results"));
   for (size_t i = 0; i < results.size(); ++i)
-    resultsClass->addMemberVariable(context, results[i].second.getType(), results[i].first);
+    resultsClass->addMemberVariable(context, results[i].second->getClass(), results[i].first);
   resultsClass->initialize(context);
 
   ObjectPtr res = resultsClass->createDenseObject();
@@ -317,7 +317,6 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
   }
   return res;
 }
-
 
 VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) const
 {
@@ -339,10 +338,10 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
     if (!childNode)
       continue;
     ++numChildNodes;
-    std::vector< std::pair<String, Variable> > childResults = childNode->getResults();
+    std::vector< std::pair<String, ObjectPtr> > childResults = childNode->getResults();
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      TypePtr type = childResults[j].second.getType();
+      TypePtr type = childResults[j].second->getClass();
       //if (type->inheritsFrom(objectClass))
       //  type = objectClass; // we distinguish only between atomic types
       std::pair<String, TypePtr> key(childResults[j].first, type);
@@ -374,10 +373,10 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
       continue;
 
     ObjectPtr row = resultsClass->createDenseObject();
-    std::vector< std::pair<String, Variable> > childResults = childNode->getResults();
+    std::vector< std::pair<String, ObjectPtr> > childResults = childNode->getResults();
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      TypePtr type = childResults[j].second.getType();
+      TypePtr type = childResults[j].second->getClass();
       //if (type->inheritsFrom(objectClass))
       //  type = objectClass; // we distinguish only between atomic types
       std::pair<String, TypePtr> key(childResults[j].first, type);

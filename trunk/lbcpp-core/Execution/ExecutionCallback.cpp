@@ -81,7 +81,7 @@ int ExecutionCallback::result(LuaState& state)
 {
   ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
   const char* name = state.checkString(2);
-  Variable value = state.checkVariable(3);
+  ObjectPtr value = state.checkObject(3);
   pthis->resultCallback(name, value);
   return 0;
 }
@@ -108,13 +108,13 @@ void CompositeExecutionCallback::errorCallback(const String& where, const String
 void CompositeExecutionCallback::progressCallback(const ProgressionStatePtr& progression)
   {notificationCallback(new ExecutionProgressNotification(progression));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, const Variable& value)
+void CompositeExecutionCallback::resultCallback(const String& name, const ObjectPtr& value)
   {notificationCallback(new ExecutionResultNotification(name, value));}
 
 void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {notificationCallback(new PreExecutionNotification(stack, description, workUnit));}
 
-void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {notificationCallback(new PostExecutionNotification(stack, description, workUnit, result));}
 
 void CompositeExecutionCallback::threadBeginCallback(const ExecutionStackPtr& stack)

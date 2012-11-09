@@ -123,7 +123,7 @@ ClassPtr Object::getClass() const
 }
 
 ObjectPtr Object::create(ClassPtr objectClass)
-  {return objectClass->create(defaultExecutionContext()).getObject();}
+  {return objectClass->create(defaultExecutionContext());}
 
 size_t Object::getNumVariables() const
   {return getClass()->getNumMemberVariables();}
@@ -406,7 +406,7 @@ bool Object::loadFromXml(XmlImporter& importer)
       
     if (value.exists())
     {
-      if (!importer.getContext().checkInheritance(value, expectedType))
+      if (!importer.getContext().checkInheritance(value.getType(), expectedType))
       {
         ok = false;
         continue;

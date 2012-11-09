@@ -48,7 +48,7 @@ public:
     node->setEndTime(currentNotificationTime);
   }
 
-  virtual void resultCallback(const String& name, const Variable& value)
+  virtual void resultCallback(const String& name, const ObjectPtr& value)
     {getCurrentNode()->setResult(name, value);}
 
   virtual void preExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit)
@@ -59,7 +59,7 @@ public:
     stack.push_back(newNode);
   }
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     ExecutionTraceNodePtr finishedNode = getCurrentNode();
     finishedNode->setEndTime(currentNotificationTime);

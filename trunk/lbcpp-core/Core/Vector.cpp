@@ -414,7 +414,7 @@ Variable IntegerVector::getElement(size_t index) const
   {
     ClassPtr elementsType = getElementsType();
     if (elementsType.isInstanceOf<Enumeration>())
-      return new NewEnumValue(elementsType, v[index]);
+      return new NewEnumValue(elementsType, (size_t)v[index]);
     else
       return new NewInteger(elementsType, v[index]);
   }

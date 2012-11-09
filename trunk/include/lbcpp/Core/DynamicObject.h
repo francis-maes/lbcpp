@@ -43,7 +43,7 @@ public:
   ** Class
   */
   virtual bool initialize(ExecutionContext& context);
-  virtual Variable create(ExecutionContext& context) const
+  virtual ObjectPtr create(ExecutionContext& context) const
     {return createDenseObject();}
   virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
   virtual void setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const;

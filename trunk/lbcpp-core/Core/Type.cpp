@@ -10,6 +10,7 @@
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Vector.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 #include <map>
 using namespace lbcpp;
 
@@ -167,7 +168,7 @@ bool Type::isMissingValue(const VariableValue& value) const
   return value.getInteger() == missing.getInteger();
 }
 
-Variable Type::create(ExecutionContext& context) const
+ObjectPtr Type::create(ExecutionContext& context) const
   {jassert(baseType); return baseType->create(context);}
 
 Variable Type::createFromString(ExecutionContext& context, const String& value) const

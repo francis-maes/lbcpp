@@ -327,17 +327,17 @@ protected:
     // create() function
     if (classBaseClass == T("DefaultClass"))
     {
-      openScope(T("virtual lbcpp::Variable create(ExecutionContext& context) const"));
+      openScope(T("virtual lbcpp::ObjectPtr create(ExecutionContext& context) const"));
       if (isAbstract)
       {
         writeLine(T("context.errorCallback(\"Cannot instantiate abstract class ") + className + T("\");"));
-        writeLine(T("return lbcpp::Variable();"));
+        writeLine(T("return lbcpp::ObjectPtr();"));
       }
       else
       {
         writeLine(className + T("* res = new ") + className + T("();"));
         writeLine(T("res->setThisClass(refCountedPointerFromThis(this));"));
-        writeLine(T("return res;"));
+        writeLine(T("return lbcpp::ObjectPtr(res);"));
       }
       closeScope();
       newLine();

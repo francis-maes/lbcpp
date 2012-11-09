@@ -265,7 +265,7 @@ public:
     this->stack.push_back(newNode);
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     jassert(this->stack.size());
     this->stack.pop_back();

@@ -51,8 +51,8 @@ public:
     }
   }
 
-  virtual Variable create(ExecutionContext& context) const
-    {return Variable(false, refCountedPointerFromThis(this));}
+  virtual ObjectPtr create(ExecutionContext& context) const
+    {jassertfalse; return ObjectPtr();} // broken
 
   virtual void destroy(VariableValue& value) const
     {value.clearBuiltin();}
