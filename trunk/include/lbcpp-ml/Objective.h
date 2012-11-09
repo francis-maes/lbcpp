@@ -94,6 +94,8 @@ protected:
   VariableExpressionPtr supervision;
 };
 
+extern SupervisedLearningObjectivePtr binaryAccuracyObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
+
 extern SupervisedLearningObjectivePtr mseRegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr rmseRegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(LuapeSamplesCachePtr data, VariableExpressionPtr supervision);

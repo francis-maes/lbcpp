@@ -126,6 +126,11 @@
   </class>
 
   <!-- Objectives -->
+  <class name="AccuracyObjective" base="SupervisedLearningObjective" abstract="yes"/>
+  <class name="BinaryAccuracyObjective" base="AccuracyObjective">
+    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+  </class>
+  
   <class name="MSERegressionObjective" base="SupervisedLearningObjective">
     <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision"/>
   </class>
