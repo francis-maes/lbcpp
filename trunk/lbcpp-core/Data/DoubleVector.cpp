@@ -1062,10 +1062,21 @@ size_t DenseDoubleVector::getNumElements() const
   {return values ? values->size() : 0;}
 
 Variable DenseDoubleVector::getElement(size_t index) const
-  {return Variable(values && index < values->size() ? (*values)[index] : 0.0/*);}//*/, getElementsType());}
+  {return new NewDouble(values && index < values->size() ? (*values)[index] : 0.0);}
 
 void DenseDoubleVector::setElement(size_t index, const Variable& value)
-  {jassert(index < values->size() && value.isDouble()); (*values)[index] = value.getDouble();}
+{
+  if (value.isObject())
+  {
+    NewDoublePtr d = value.getObjectAndCast<NewDouble>();
+    (*values)[index] = d->get();
+  }
+  else
+  {
+    jassert(index < values->size() && value.isDouble());
+    (*values)[index] = value.getDouble();
+  }
+}
 
 // Object
 void DenseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) const

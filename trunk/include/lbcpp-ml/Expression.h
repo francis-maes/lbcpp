@@ -11,6 +11,7 @@
 
 # include "Function.h"
 # include <lbcpp/Data/IndexSet.h>
+# include "DataTable.h"
 
 namespace lbcpp
 {
@@ -35,8 +36,8 @@ public:
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
   Variable compute(ExecutionContext& context) const;
 
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const = 0;
-  
+  LuapeSampleVectorPtr compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
+
   virtual size_t getNumSubNodes() const
     {return 0;}
     
@@ -75,6 +76,8 @@ protected:
   TypePtr type;
   size_t allocationIndex;
   double importance;
+
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const = 0;
 };
 
 extern ClassPtr expressionClass;
@@ -91,7 +94,7 @@ public:
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -114,7 +117,7 @@ public:
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   const Variable& getValue() const
     {return value;}
@@ -145,7 +148,6 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const
     {return arguments.size();}
@@ -175,6 +177,8 @@ protected:
   FunctionPtr function;
   std::vector<ExpressionPtr> arguments;
 
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+
   void initialize();
 };
 
@@ -193,7 +197,6 @@ public:
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const;
   virtual const ExpressionPtr& getSubNode(size_t index) const;
@@ -231,7 +234,9 @@ protected:
   ExpressionPtr successNode;
   ExpressionPtr missingNode;
 
-  LuapeSampleVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const;
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
+
+  LuapeSampleVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const;
 };
 
 /*
@@ -245,7 +250,6 @@ public:
   SequenceExpression() {}
 
   virtual String toShortString() const;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const
     {return nodes.size();}
@@ -277,6 +281,7 @@ protected:
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
   virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 };
 
 typedef ReferenceCountedObjectPtr<SequenceExpression> SequenceExpressionPtr;
@@ -311,7 +316,6 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
 protected:
   friend class VectorSumExpressionClass;
@@ -320,6 +324,7 @@ protected:
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
   virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
+  virtual LuapeSampleVectorPtr computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const;
 
   DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
 };

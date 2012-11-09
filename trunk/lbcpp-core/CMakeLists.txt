@@ -41,6 +41,9 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/predeclarations.h
   ../include/lbcpp/Core/Object.h
   Core/Object.cpp
+  ../include/lbcpp/Core/Boolean.h
+  ../include/lbcpp/Core/Integer.h
+  ../include/lbcpp/Core/Double.h
   ../include/lbcpp/Core/TypeManager.h
   Core/TypeManager.cpp
   ../include/lbcpp/Core/Signature.h

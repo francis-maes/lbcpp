@@ -28,6 +28,9 @@
 # define LBCPP_CORE_VARIABLE_H_
 
 # include "Object.h"
+# include "Boolean.h"
+# include "Integer.h"
+# include "Double.h"
 # include "../Execution/ExecutionContext.h"
 # include "Type.h"
 # include "Enumeration.h"
@@ -165,6 +168,7 @@ public:
 
   bool isObject() const;
   const ObjectPtr& getObject() const;
+  ObjectPtr toObject() const;
   
   template<class O>
   const ReferenceCountedObjectPtr<O>& getObjectAndCast() const;

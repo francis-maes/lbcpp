@@ -40,20 +40,22 @@ public:
     domain->addTargetType(booleanType);
     setDomain(domain);
 
-    VariableExpressionPtr output = domain->createSupervision(booleanType, "y");
-    
     // data
     size_t numCases = (1 << numBits);
-    LuapeSamplesCachePtr cache = domain->createCache(numCases);
-    BooleanVectorPtr supervisionValues = new BooleanVector(numCases);
+
+    DataTablePtr data = new DataTable(numCases);
+    for (size_t i = 0; i < domain->getNumInputs(); ++i)
+      data->addColumn(domain->getInput(i));
+    VariableExpressionPtr supervision = domain->createSupervision(booleanType, "y");
+    data->addColumn(supervision);
+
 		for (size_t i = 0; i < numCases; ++i)
 		{
-      BooleanVectorPtr input = new BooleanVector(numBits);
       size_t address = 0;
       for (size_t j = 0; j < numBits; ++j)
       {
         bool isBitActive = (i & (1 << j)) != 0;
-        input->set(j, isBitActive);
+        data->setSample(i, j, new NewBoolean(isBitActive));
         if (j < numAddressBits)
         {
           address <<= 1;
@@ -61,15 +63,11 @@ public:
             address |= 1;
         }
       }
-      cache->setInputObject(domain->getInputs(), i, input);
-			supervisionValues->set(i, input->get(numAddressBits + address));
+      data->setSample(i, numBits, data->getSample(i, numAddressBits + address));
 		}
-    cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
-    cache->recomputeCacheSize();
-    cache->disableCaching();
 
     // objective
-    addObjective(binaryAccuracyObjective(cache, output));
+    addObjective(binaryAccuracyObjective(data, supervision));
   }
 
 protected:

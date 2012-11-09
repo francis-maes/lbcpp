@@ -12,7 +12,6 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/Core/DynamicObject.h>
-# include <lbcpp/Luape/LuapeCache.h>
 # include <lbcpp-ml/Expression.h>
 
 namespace lbcpp
@@ -214,12 +213,13 @@ public:
   
   virtual Variable run(ExecutionContext& context)
   {
+    std::vector<VariableExpressionPtr> inputs;
     VariableExpressionPtr supervision;
-    LuapeSamplesCachePtr dataset = loadDataFile(context, dataFile, supervision);
+    DataTablePtr dataset = loadDataFile(context, dataFile, inputs, supervision);
     if (!dataset || !supervision)
       return false;
 
-    size_t numVariables = dataset->getNumberOfCachedNodes() - 1;
+    size_t numVariables = inputs.size();
     size_t numExamples = dataset->getNumSamples();
     size_t numLabels = supervision->getType().staticCast<Enumeration>()->getNumElements();
 
@@ -264,9 +264,9 @@ private:
   size_t maxExamples;
   size_t verbosity;
 
-  LuapeSamplesCachePtr loadDataFile(ExecutionContext& context, const File& file, VariableExpressionPtr& supervision)
+  DataTablePtr loadDataFile(ExecutionContext& context, const File& file, std::vector<VariableExpressionPtr>& inputs, VariableExpressionPtr& supervision)
   {
-    LuapeSamplesCachePtr res;
+    DataTablePtr res;
 
     context.enterScope(T("Loading ") + file.getFileName());
     static const bool sparseData = true;
@@ -287,20 +287,25 @@ private:
       TypePtr inputType = p->getFirst().getType();
       TypePtr outputType = p->getSecond().getType();
 
-      std::vector<VariableExpressionPtr> inputs(inputType->getNumMemberVariables());
-      for (size_t i = 0; i < inputs.size(); ++i)
-        inputs[i] = new VariableExpression(inputType->getMemberVariableType(i), inputType->getMemberVariableName(i), i);
-      supervision = new VariableExpression(outputType, "supervision", inputs.size());
+      res = new DataTable(container->getNumElements());
 
-      res = new LuapeSamplesCache(ExpressionUniversePtr(), inputs, container->getNumElements());
-      VectorPtr supervisionValues = vector(outputType, container->getNumElements());
+      inputs.resize(inputType->getNumMemberVariables());
+      for (size_t i = 0; i < inputs.size(); ++i)
+      {
+        inputs[i] = new VariableExpression(inputType->getMemberVariableType(i), inputType->getMemberVariableName(i), i);
+        res->addColumn(inputs[i]);
+      }
+      supervision = new VariableExpression(outputType, "supervision", inputs.size());
+      res->addColumn(supervision);
+      
       for (size_t i = 0; i < container->getNumElements(); ++i)
       {
         PairPtr p = container->getElement(i).getObjectAndCast<Pair>();
-        res->setInputObject(inputs, i, p->getFirst().getObject());
-        supervisionValues->setElement(i, p->getSecond());
+        ObjectPtr inputObject = p->getFirst().getObject();
+        for (size_t j = 0; j < inputs.size(); ++j)
+          res->setSample(i, j, inputObject->getVariable(j).toObject());
+        res->setSample(i, inputs.size(), new NewInteger(p->getSecond().getInteger()));
       }
-      res->cacheNode(context, supervision, supervisionValues, "Supervision", false);
     }
 
     context.leaveScope(res ? res->getNumSamples() : 0);

@@ -48,6 +48,15 @@ class XmlImporter;
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 
+class NewBoolean;
+typedef ReferenceCountedObjectPtr<NewBoolean> NewBooleanPtr;
+
+class NewInteger;
+typedef ReferenceCountedObjectPtr<NewInteger> NewIntegerPtr;
+
+class NewDouble;
+typedef ReferenceCountedObjectPtr<NewDouble> NewDoublePtr;
+
 class VariableSignature;
 typedef ReferenceCountedObjectPtr<VariableSignature> VariableSignaturePtr;
 

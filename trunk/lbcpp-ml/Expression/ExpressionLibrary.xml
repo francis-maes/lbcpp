@@ -128,19 +128,22 @@
   <!-- Objectives -->
   <class name="AccuracyObjective" base="SupervisedLearningObjective" abstract="yes"/>
   <class name="BinaryAccuracyObjective" base="AccuracyObjective">
-    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+    <constructor arguments="DataTablePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+  </class>
+  <class name="MultiClassAccuracyObjective" base="AccuracyObjective">
+    <constructor arguments="DataTablePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
   </class>
   
   <class name="MSERegressionObjective" base="SupervisedLearningObjective">
-    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision"/>
+    <constructor arguments="DataTablePtr data, VariableExpressionPtr supervision"/>
   </class>
   
   <class name="RMSERegressionObjective" base="MSERegressionObjective">
-    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+    <constructor arguments="DataTablePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
   </class>
   
   <class name="NormalizedRMSERegressionObjective" base="RMSERegressionObjective">
-    <constructor arguments="LuapeSamplesCachePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
+    <constructor arguments="DataTablePtr data, VariableExpressionPtr supervision" returnType="SupervisedLearningObjective"/>
   </class>
 
 </library>

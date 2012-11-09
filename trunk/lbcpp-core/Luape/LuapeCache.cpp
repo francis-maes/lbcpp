@@ -169,7 +169,8 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const ExpressionPtr
   NodeCache& nodeCache = getOrCreateNodeCache(node);
   actualCacheSize -= nodeCache.getSizeInBytes(true);
   jassert(!nodeCache.samples);
-  nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
+  jassertfalse; // broken
+  //nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
   if (!isRemoveable)
     nodeCache.numRequests = -1;
   jassert(nodeCache.samples || node.isInstanceOf<ConstantExpression>());
@@ -190,7 +191,8 @@ void LuapeSamplesCache::recacheNode(ExecutionContext& context, const ExpressionP
   actualCacheSize -= nodeCache.getSizeInBytes(true);
   nodeCache.samples = VectorPtr();
   nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
-  nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
+  jassertfalse; // broken
+  //nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
   actualCacheSize += nodeCache.getSizeInBytes(true);
 
   ensureActualSizeIsCorrect();
@@ -356,7 +358,8 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   }
 
   // compute
-  LuapeSampleVectorPtr res = node->compute(context, refCountedPointerFromThis(this), indices);
+  jassertfalse; // broken
+  LuapeSampleVectorPtr res;// = node->compute(context, refCountedPointerFromThis(this), indices);
 
   // see if we should cache by opportunism
   if (nodeCache && indices == allIndices && res->getVector() &&
