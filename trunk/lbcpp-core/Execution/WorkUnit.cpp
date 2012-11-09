@@ -191,7 +191,7 @@ String WorkUnit::getUsageString() const
 /*
 ** CompositeWorkUnit
 */
-Variable CompositeWorkUnit::run(ExecutionContext& context)
+ObjectPtr CompositeWorkUnit::run(ExecutionContext& context)
 {
   const size_t n = getNumWorkUnits();
   VariableVectorPtr results = variableVector(n);

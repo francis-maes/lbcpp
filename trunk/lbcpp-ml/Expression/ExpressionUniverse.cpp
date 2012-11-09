@@ -31,7 +31,7 @@ ConstantExpressionPtr ExpressionUniverse::makeConstantNode(const ObjectPtr& cons
     return it->second;
 }
 
-FunctionPtr ExpressionUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
+FunctionPtr ExpressionUniverse::makeFunction(ClassPtr functionClass, const std::vector<ObjectPtr>& arguments)
 {
   FunctionKey key(functionClass, arguments);
   FunctionsMap::const_iterator it = functions.find(key);

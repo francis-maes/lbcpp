@@ -24,8 +24,8 @@ class SearchState : public Object
 public:
   virtual DomainPtr getActionDomain() const = 0;
 
-  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL) = 0;
-  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
+  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, ObjectPtr* stateBackup = NULL) = 0;
+  virtual void undoTransition(ExecutionContext& context, const ObjectPtr& stateBackup)
     {jassertfalse;}
 
   virtual bool isFinalState() const = 0;

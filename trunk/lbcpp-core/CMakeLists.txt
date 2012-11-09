@@ -44,6 +44,7 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/Boolean.h
   ../include/lbcpp/Core/Integer.h
   ../include/lbcpp/Core/Double.h
+  ../include/lbcpp/Core/String.h
   ../include/lbcpp/Core/TypeManager.h
   Core/TypeManager.cpp
   ../include/lbcpp/Core/Signature.h

@@ -45,7 +45,7 @@ protected:
       if (callback->shouldStop())
         break;
       ObjectPtr action = selectedActions[i];
-      Variable stateBackup;
+      ObjectPtr stateBackup;
       state->performTransition(context, action, &stateBackup);
       trajectory->append(action);
 

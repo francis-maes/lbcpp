@@ -10,6 +10,7 @@
 # define LBCPP_CORE_INTEGER_H_
 
 # include "Object.h"
+# include "Enumeration.h"
 
 namespace lbcpp
 {
@@ -17,6 +18,8 @@ namespace lbcpp
 class NewInteger : public Object
 {
 public:
+  NewInteger(ClassPtr thisClass, juce::int64 value = 0)
+    : Object(thisClass), value(value) {}
   NewInteger(juce::int64 value = 0)
     : value(value) {}
 
@@ -47,11 +50,34 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<NewInteger>()->value = value;}
 
-private:
+protected:
   juce::int64 value;
 };
 
 extern ClassPtr newIntegerClass;
+
+class NewEnumValue : public NewInteger
+{
+public:
+  NewEnumValue(EnumerationPtr enumeration, juce::int64 value = 0)
+   : NewInteger(enumeration, value) {}
+  NewEnumValue() {}
+
+  EnumerationPtr getEnumeration() const
+    {return getClass().staticCast<Enumeration>();}
+
+  EnumerationElementPtr getEnumerationElement() const
+    {return getEnumeration()->getElement((int)value);}
+
+  virtual String toShortString() const
+  {
+    EnumerationElementPtr element = getEnumerationElement();
+    return element->getShortName().isNotEmpty() ? element->getShortName() : element->getName();
+  }
+
+  virtual String toString() const
+    {return getEnumerationElement()->getName();}
+};
 
 }; /* namespace lbcpp */
 

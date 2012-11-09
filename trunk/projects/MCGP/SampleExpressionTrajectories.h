@@ -241,12 +241,12 @@ class SampleExpressionTrajectories : public WorkUnit
 public:
   SampleExpressionTrajectories() : numExpressions(1000), maxExpressionSize(10) {}
 
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     if (!problem)
     {
       context.errorCallback("No problem defined");
-      return false;
+      return new NewBoolean(false);
     }
     ExpressionDomainPtr domain = problem->getDomain();
 
@@ -264,7 +264,7 @@ public:
     //sampleTrajectories(context, "typed-postfix", typedPostfixExpressionState(domain, maxExpressionSize));
 
 
-    return true;
+    return new NewBoolean(true);
   }
 
 protected:

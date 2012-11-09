@@ -48,10 +48,10 @@ public:
     std::vector<ExpressionPtr> stack;
   };
   
-  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
+  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, ObjectPtr* stateBackup = NULL)
   {
     if (stateBackup)
-      *stateBackup = Variable(new Backup(stack), objectClass);
+      *stateBackup = ObjectPtr(new Backup(stack));
     if (action)
       PostfixExpressionSequence::apply(domain->getUniverse(), stack, action);
     else
@@ -59,11 +59,11 @@ public:
     trajectory.push_back(action);
   }
 
-  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
+  virtual void undoTransition(ExecutionContext& context, const ObjectPtr& stateBackup)
   {
     isYielded = false;
     trajectory.pop_back();
-    stack = stateBackup.getObjectAndCast<Backup>()->stack;
+    stack = stateBackup.staticCast<Backup>()->stack;
   }
 
   virtual bool isFinalState() const

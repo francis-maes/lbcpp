@@ -34,7 +34,7 @@ String EnumerationElement::toShortString() const
 ** Enumeration
 */
 Enumeration::Enumeration(const String& name, const String& baseTypeName)
-  : Type(name, lbcpp::getType(baseTypeName))
+  : Class(name, lbcpp::getType(baseTypeName))
 {
 }
 

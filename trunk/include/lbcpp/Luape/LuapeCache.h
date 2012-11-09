@@ -35,7 +35,7 @@ public:
   LuapeSampleVector(const IndexSetPtr& indices, const VectorPtr& ownedVector);
   LuapeSampleVector();
 
-  static LuapeSampleVectorPtr createConstant(IndexSetPtr indices, const Variable& constantValue);
+  static LuapeSampleVectorPtr createConstant(IndexSetPtr indices, const ObjectPtr& constantValue);
   static LuapeSampleVectorPtr createCached(IndexSetPtr indices, const VectorPtr& cachedVector);
   
   const TypePtr& getElementsType() const
@@ -65,7 +65,7 @@ public:
     {
       switch (owner->implementation)
       {
-      case constantValueImpl: return owner->getConstantValue();
+      case constantValueImpl: return owner->constantRawObject;
       case ownedVectorImpl: return owner->vector->getElement(position);
       case cachedVectorImpl: return owner->vector->getElement(*it);
       default: jassert(false); return Variable();
@@ -96,7 +96,7 @@ public:
     {
       switch (owner->implementation)
       {
-      case constantValueImpl: return owner->constantValue.getInteger();
+      case constantValueImpl: return (int)NewInteger::get(owner->constantRawObject);
       case ownedVectorImpl: return owner->vector->getElement(position).getInteger();
       case cachedVectorImpl: return owner->vector->getElement(*it).getInteger();
       default: jassert(false); return 0;
@@ -157,9 +157,6 @@ public:
   Implementation getImplementation() const
     {return implementation;}
 
-  const Variable& getConstantValue() const
-    {return constantValue;}
-
   const VectorPtr& getVector() const
     {return vector;}
 
@@ -170,7 +167,6 @@ protected:
   IndexSetPtr indices;
   TypePtr elementsType;
 
-  Variable constantValue; // constantValueImpl only
   unsigned char constantRawBoolean;
   double constantRawDouble;
   ObjectPtr constantRawObject;

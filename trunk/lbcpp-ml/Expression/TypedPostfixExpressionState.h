@@ -71,7 +71,7 @@ public:
     return res;
   }
   
-  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
+  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, ObjectPtr* stateBackup = NULL)
   {
     PostfixExpressionStateBase::performTransition(context, action, stateBackup);
     availableActions = DiscreteDomainPtr();
@@ -81,7 +81,7 @@ public:
       updateTypeState();
   }
 
-  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
+  virtual void undoTransition(ExecutionContext& context, const ObjectPtr& stateBackup)
   {
     PostfixExpressionStateBase::undoTransition(context, stateBackup);
     availableActions = DiscreteDomainPtr();

@@ -31,6 +31,7 @@
 # include "Boolean.h"
 # include "Integer.h"
 # include "Double.h"
+# include "String.h"
 # include "../Execution/ExecutionContext.h"
 # include "Type.h"
 # include "Enumeration.h"

@@ -40,14 +40,14 @@ public:
     return maxArity < actionsByMaxArity.size() ? actionsByMaxArity[maxArity] : actionsByMaxArity.back();
   }
 
-  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL)
+  virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, ObjectPtr* stateBackup = NULL)
   {
     trajectory.push_back(action);
     FunctionPtr function = action.dynamicCast<Function>();
     numLeafs += (function ? function->getNumInputs() : 0) - 1;
   }
 
-  virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
+  virtual void undoTransition(ExecutionContext& context, const ObjectPtr& stateBackup)
   {
     jassert(trajectory.size());
     FunctionPtr function = trajectory.back().dynamicCast<Function>();

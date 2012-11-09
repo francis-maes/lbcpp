@@ -369,45 +369,29 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
 
   if (successNode.isInstanceOf<ConstantExpression>() && failureNode.isInstanceOf<ConstantExpression>() && missingNode.isInstanceOf<ConstantExpression>())
   {
-    Variable v[3];
+    ObjectPtr v[3];
     v[0] = failureNode.staticCast<ConstantExpression>()->getValue();
     v[1] = successNode.staticCast<ConstantExpression>()->getValue();
     v[2] = missingNode.staticCast<ConstantExpression>()->getValue();
     
-    if (v[0].isDouble() && v[1].isDouble() && v[2].isDouble())
+    if (v[0].dynamicCast<NewDouble>() && v[1].dynamicCast<NewDouble>() && v[2].dynamicCast<NewDouble>())
     {
       double dv[3];
-      dv[0] = v[0].getDouble();
-      dv[1] = v[1].getDouble();
-      dv[2] = v[2].getDouble();
+      dv[0] = NewDouble::get(v[0]);
+      dv[1] = NewDouble::get(v[1]);
+      dv[2] = NewDouble::get(v[2]);
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
         *ptr++ = dv[it.getRawBoolean()];
       resultVector = res;
     }
-    else if (v[0].isObject() && v[1].isObject() && v[2].isObject())
+    else
     {
-      ObjectPtr ov[3];
-      ov[0] = v[0].getObject();
-      ov[1] = v[1].getObject();
-      ov[2] = v[2].getObject();      
       ObjectVectorPtr res = new ObjectVector(type, n);
       size_t i = 0;
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
-        res->set(i, ov[it.getRawBoolean()]);
-      resultVector = res;
-    }
-    else
-    {
-      VectorPtr res = vector(type, n);
-      size_t i = 0;
-      for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
-      {
-        unsigned char b = it.getRawBoolean();
-        jassert(b < 3);
-        res->setElement(i, v[b]);
-      }
+        res->set(i, v[it.getRawBoolean()]);
       resultVector = res;
     }
   }
@@ -471,7 +455,7 @@ LuapeSampleVectorPtr TestExpression::computeSamples(ExecutionContext& context, c
 }
 
 LuapeSampleVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const
-  {return subNode ? subNode->compute(context, data, subIndices) : LuapeSampleVector::createConstant(subIndices, Variable::missingValue(type));}
+  {return subNode ? subNode->compute(context, data, subIndices) : LuapeSampleVector::createConstant(subIndices, ObjectPtr());}
 
 /*
 ** SequenceExpression

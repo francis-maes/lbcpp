@@ -25,20 +25,19 @@ LuapeSampleVector::LuapeSampleVector() : implementation(noImpl), constantRawBool
 {
 }
 
-LuapeSampleVectorPtr LuapeSampleVector::createConstant(IndexSetPtr indices, const Variable& constantValue)
+LuapeSampleVectorPtr LuapeSampleVector::createConstant(IndexSetPtr indices, const ObjectPtr& constantValue)
 {
-  LuapeSampleVectorPtr res(new LuapeSampleVector(constantValueImpl, indices, constantValue.getType()));
-  res->constantValue = constantValue;
-  res->constantRawBoolean = (constantValue.exists() && constantValue.isBoolean() ? (constantValue.getBoolean() ? 1 : 0) : 2);
-  res->constantRawDouble = constantValue.isConvertibleToDouble() ? constantValue.toDouble() : 0.0;
-  res->constantRawObject = constantValue.isObject() ? constantValue.getObject() : ObjectPtr();
+  LuapeSampleVectorPtr res(new LuapeSampleVector(constantValueImpl, indices, constantValue->getClass()));
+  res->constantRawBoolean = constantValue.dynamicCast<NewBoolean>() ? NewBoolean::get(constantValue) : 2;
+  res->constantRawDouble = constantValue.dynamicCast<NewDouble>() ? NewDouble::get(constantValue) : 0.0;
+  res->constantRawObject = constantValue;
   return res;
 }
 
 Variable LuapeSampleVector::sampleElement(RandomGeneratorPtr random) const
 {
   if (implementation == constantValueImpl)
-    return constantValue;
+    return constantRawObject;
   else
     return vector->getElement(random->sampleSize(vector->getNumElements()));
 }
@@ -277,7 +276,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   
   // no indices => return empty array
   if (indices->empty())
-    return LuapeSampleVector::createConstant(indices, Variable::missingValue(node->getType()));
+    return LuapeSampleVector::createConstant(indices, ObjectPtr());
 
   // retrieve node information
   NodeCacheMap::iterator it = m.find(node);

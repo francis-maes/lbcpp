@@ -13,13 +13,8 @@
     <variable type="Double" name="myDouble"/>
     <variable type="String" name="myString"/>
     <variable type="Object" name="myObject"/>
-    <variable type="Variable" name="myVariable"/>
   </class>
   <class name="SimpleIntrospectionExample" base="WorkUnit"/>
-
-  <!-- Missing Values Example -->
-  <class name="VerySimpleClass" base="Object"/>
-  <class name="MissingValuesExample" base="WorkUnit"/>
 
   <!-- Random Generator Example -->
   <class name="RandomGeneratorExample" base="WorkUnit"/>

@@ -321,7 +321,7 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
     if (acceptInputTypes(function, state->getStack()))
     {
       size_t numInputs = function->getNumInputs();
-      std::vector<Variable> tmp(function->getNumVariables());
+      std::vector<ObjectPtr> tmp(function->getNumVariables());
 
       std::vector<TypePtr> inputTypes(numInputs);
       for (size_t i = 0; i < numInputs; ++i)
@@ -336,7 +336,7 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
   }
 }
 
-void PostfixExpressionTypeSpace::enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
+void PostfixExpressionTypeSpace::enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
 {
   if (variableIndex == variables.size())
     res.push_back(universe->makeFunction(function->getClass(), variables));
@@ -348,7 +348,7 @@ void PostfixExpressionTypeSpace::enumerateFunctionVariables(const ExpressionUniv
       size_t n = values->getNumElements();
       for (size_t i = 0; i < n; ++i)
       {
-        variables[variableIndex] = values->getElement(i);
+        variables[variableIndex] = values->getElement(i).getObject();
         enumerateFunctionVariables(universe, function, inputTypes, variables, variableIndex + 1, res);
       }
     }

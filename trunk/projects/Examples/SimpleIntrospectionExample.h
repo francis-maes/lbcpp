@@ -18,7 +18,7 @@ class SimpleClass : public Object
 {
 public:
   SimpleClass(bool b)
-    : myBool(true), myInt(1664), myDouble(8.6), myString(T("yo")), myVariable(Variable::pair(51, 33)) {}
+    : myBool(true), myInt(1664), myDouble(8.6), myString(T("yo")) {}
   SimpleClass() {}
 
 private:
@@ -29,7 +29,6 @@ private:
   double myDouble;
   String myString;
   ObjectPtr myObject;
-  Variable myVariable;
 };
 
 typedef ReferenceCountedObjectPtr<SimpleClass> SimpleClassPtr;
@@ -37,7 +36,7 @@ typedef ReferenceCountedObjectPtr<SimpleClass> SimpleClassPtr;
 class SimpleIntrospectionExample : public WorkUnit
 {
 public:
-  virtual Variable run(ExecutionContext& context)
+  virtual ObjectPtr run(ExecutionContext& context)
   {
     SimpleClassPtr defaultObject = new SimpleClass();
     SimpleClassPtr someObject = new SimpleClass(true);
@@ -46,13 +45,13 @@ public:
     context.resultCallback(T("Some Object"), someObject);
     
     File file = File::createTempFile(T("object"));
-    Variable(someObject).saveToFile(context, file);
+    //Variable(someObject).saveToFile(context, file); // FIXME
 
-    SimpleClassPtr loadedObject = Variable::createFromFile(context, file).getObjectAndCast<SimpleClass>(context);
-    context.resultCallback(T("Loaded Object"), loadedObject);
+    //SimpleClassPtr loadedObject = Variable::createFromFile(context, file).getObjectAndCast<SimpleClass>(context);
+    //context.resultCallback(T("Loaded Object"), loadedObject); // FIXME
     file.deleteFile();
 
-    return Variable();
+    return ObjectPtr();
   }
 };
 

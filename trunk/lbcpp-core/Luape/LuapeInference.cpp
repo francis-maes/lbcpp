@@ -18,7 +18,8 @@ using namespace lbcpp;
 LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
 {
   size_t n = data.size();
-  LuapeSamplesCachePtr res = createCache(n, 512); // default: 512 Mb cache
+  jassertfalse; // broken
+  LuapeSamplesCachePtr res;// = createCache(n, 512); // default: 512 Mb cache
   VectorPtr supervisionValues = vector(data[0]->getVariableType(1), n);
   for (size_t i = 0; i < n; ++i)
   {

@@ -121,8 +121,8 @@ bool checkIsAWorkUnit(ExecutionContext& context, const ObjectPtr& object)
 
 bool runWorkUnit(ExecutionContext& context, WorkUnitPtr workUnit)
 {
-  Variable result = context.run(workUnit);
-  return !result.isBoolean() || result.getBoolean();
+  NewBooleanPtr result = context.run(workUnit).dynamicCast<NewBoolean>();
+  return !result || result->get();
 }
 
 bool runWorkUnitFromFile(ExecutionContext& context, const File& file)

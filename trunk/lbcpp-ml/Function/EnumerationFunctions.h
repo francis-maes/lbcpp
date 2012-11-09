@@ -22,7 +22,7 @@ public:
     : enumeration(enumeration), value(value) {}
 
   virtual String toShortString() const
-    {return "= " + Variable(value, enumeration).toShortString();}
+    {return "= " + ObjectPtr(new NewInteger(enumeration, value))->toShortString();}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -34,7 +34,7 @@ public:
     {return booleanType;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + T(" == ") + Variable(value, enumeration).toShortString();}
+    {return inputs[0]->toShortString() + T(" == ") + ObjectPtr(new NewInteger(enumeration, value))->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
@@ -57,7 +57,7 @@ public:
       size_t n = enumeration->getNumElements();
       VectorPtr res = vector(enumeration, n);
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, Variable(i, enumeration));
+        res->setElement(i, new NewInteger(enumeration, i));
       return res;
     }
   }
