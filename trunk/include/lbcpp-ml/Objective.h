@@ -87,7 +87,7 @@ public:
   SupervisedLearningObjective() {}
 
   VectorPtr getSupervisions() const
-    {return data->getSamples(supervision);}
+    {return data->getSamplesByExpression(supervision);}
 
 protected:
   friend class SupervisedLearningObjectiveClass;
