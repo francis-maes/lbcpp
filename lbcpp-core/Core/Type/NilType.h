@@ -39,8 +39,8 @@ public:
     : Type(name, baseType) {}
   virtual ~NilType() {}
 
-  virtual Variable create(ExecutionContext& context) const
-    {return Variable();}
+  virtual ObjectPtr create(ExecutionContext& context) const
+    {return ObjectPtr();}
 
   virtual Variable createFromXml(XmlImporter& importer) const
     {return Variable();}

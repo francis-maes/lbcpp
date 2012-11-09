@@ -11,6 +11,10 @@
 
 # include "predeclarations.h"
 # include "../Core/Object.h"
+# include "../Core/Boolean.h"
+# include "../Core/Double.h"
+# include "../Core/Integer.h"
+# include "../Core/String.h"
 
 namespace lbcpp
 {
@@ -57,7 +61,7 @@ public:
   ** Execution
   */
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit) {}
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result) {}
 
   virtual void threadBeginCallback(const ExecutionStackPtr& stack) {}
   virtual void threadEndCallback(const ExecutionStackPtr& stack) {}
@@ -65,8 +69,8 @@ public:
   /*
   ** Results
   */
-  virtual void resultCallback(const String& name, const Variable& value) {}
-
+  virtual void resultCallback(const String& name, const ObjectPtr& value) {}
+  
   /*
   ** Context
   */
@@ -121,11 +125,25 @@ public:
   virtual void progressCallback(const ProgressionStatePtr& progression);
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result);
   virtual void threadBeginCallback(const ExecutionStackPtr& stack);
   virtual void threadEndCallback(const ExecutionStackPtr& stack);
 
-  virtual void resultCallback(const String& name, const Variable& value);
+  virtual void resultCallback(const String& name, const ObjectPtr& value);
+
+  void resultCallback(const String& name, bool value)
+    {resultCallback(name, ObjectPtr(new NewBoolean(value)));}
+  void resultCallback(const String& name, juce::int64 value)
+    {resultCallback(name, ObjectPtr(new NewInteger(value)));}
+  void resultCallback(const String& name, size_t value)
+    {resultCallback(name, ObjectPtr(new NewPositiveInteger(value)));}
+  void resultCallback(const String& name, double value)
+    {resultCallback(name, ObjectPtr(new NewDouble(value)));}
+  void resultCallback(const String& name, const String& value)
+    {resultCallback(name, ObjectPtr(new NewString(value)));}
+  template<class T>
+  void resultCallback(const String& name, const ReferenceCountedObjectPtr<T>& value)
+    {resultCallback(name, ObjectPtr(value));}
 
 
   void appendCallback(const ExecutionCallbackPtr& callback);

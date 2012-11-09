@@ -38,8 +38,8 @@ public:
   TopLevelType(const String& name)
     : Type(name, TypePtr()) {}
 
-  virtual Variable create(ExecutionContext& context) const
-    {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return Variable();}
+  virtual ObjectPtr create(ExecutionContext& context) const
+    {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return ObjectPtr();}
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
     {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return Variable();}

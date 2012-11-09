@@ -93,7 +93,7 @@ Variable Class::createFromString(ExecutionContext& context, const String& value)
     object = createObjectFromStringWithAbstractClass(context, refCountedPointerFromThis(this), value);
   else
   {
-    object = create(context).getObject();
+    object = create(context);
     if (!object)
       context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
     else if (!object->loadFromString(context, value))
@@ -104,7 +104,7 @@ Variable Class::createFromString(ExecutionContext& context, const String& value)
 
 Variable Class::createFromXml(XmlImporter& importer) const
 {
-  ObjectPtr object = create(importer.getContext()).getObject();
+  ObjectPtr object = create(importer.getContext());
   if (!object)
     importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
   else if (!object->loadFromXml(importer))

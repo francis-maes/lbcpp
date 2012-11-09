@@ -13,7 +13,8 @@
   <!-- Builtin Types -->
   <class name="NewBoolean"/>
   <class name="NewInteger"/>
-  <class name="NewEnumValue" base="NewInteger"/>
+  <class name="NewPositiveInteger" base="NewInteger"/>
+  <class name="NewEnumValue" base="NewPositiveInteger"/>
   <class name="NewDouble"/>
   <class name="NewString"/>
   

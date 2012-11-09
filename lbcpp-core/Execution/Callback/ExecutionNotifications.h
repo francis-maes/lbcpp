@@ -52,7 +52,7 @@ protected:
 class ExecutionResultNotification : public ExecutionNotification
 {
 public:
-  ExecutionResultNotification(const String& name, const Variable& value)
+  ExecutionResultNotification(const String& name, const ObjectPtr& value)
     : name(name), value(value) {}
   ExecutionResultNotification() {}
 
@@ -65,7 +65,7 @@ protected:
   friend class ExecutionResultNotificationClass;
 
   String name;
-  Variable value;
+  ObjectPtr value;
 };
 
 class ExecutionMessageNotification : public ExecutionNotification
@@ -119,7 +119,7 @@ protected:
 class PostExecutionNotification : public ExecutionNotification
 {
 public:
-  PostExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
+  PostExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
     : stack(stack->cloneAndCast<ExecutionStack>()), description(description), workUnit(workUnit), result(result) {}
   PostExecutionNotification() {}
 
@@ -134,7 +134,7 @@ protected:
   ExecutionStackPtr stack;
   String description;
   WorkUnitPtr workUnit;
-  Variable result;
+  ObjectPtr result;
 };
 
 class ThreadExecutionNotification : public ExecutionNotification

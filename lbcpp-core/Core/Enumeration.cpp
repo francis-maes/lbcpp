@@ -41,8 +41,8 @@ Enumeration::Enumeration(const String& name, const String& baseTypeName)
 ClassPtr Enumeration::getClass() const
   {return enumerationClass;}
 
-Variable Enumeration::create(ExecutionContext& context) const
-  {return Variable(getNumElements(), refCountedPointerFromThis(this));}
+ObjectPtr Enumeration::create(ExecutionContext& context) const
+  {return new NewEnumValue(refCountedPointerFromThis(this), 0);}
 
 VariableValue Enumeration::getMissingValue() const
   {return VariableValue((juce::int64)getNumElements());}

@@ -74,7 +74,7 @@ public:
 
   virtual ClassPtr getClass() const;
 
-  virtual Variable create(ExecutionContext& context) const;
+  virtual ObjectPtr create(ExecutionContext& context) const;
   virtual Variable createFromString(ExecutionContext& context, const String& value) const;
   virtual Variable createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;

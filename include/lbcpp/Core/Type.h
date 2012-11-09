@@ -28,7 +28,6 @@
 # define LBCPP_CORE_TYPE_H_
 
 # include "Signature.h"
-# include "../Execution/ExecutionContext.h"
 # include "impl/VariableValue.hpp"
 
 namespace lbcpp
@@ -97,7 +96,7 @@ public:
   virtual VariableValue getMissingValue() const;
   virtual bool isMissingValue(const VariableValue& value) const;
 
-  virtual Variable create(ExecutionContext& context) const;
+  virtual ObjectPtr create(ExecutionContext& context) const;
   virtual Variable createFromString(ExecutionContext& context, const String& value) const;
   virtual Variable createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;

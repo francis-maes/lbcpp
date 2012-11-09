@@ -93,14 +93,14 @@ public:
   /*
   ** Results
   */
-  const Variable& getReturnValue() const
+  const ObjectPtr& getReturnValue() const
     {return returnValue;}
 
-  void setReturnValue(const Variable& value)
+  void setReturnValue(const ObjectPtr& value)
     {returnValue = value;}
 
-  void setResult(const String& name, const Variable& value);
-  std::vector< std::pair<String, Variable> > getResults() const;
+  void setResult(const String& name, const ObjectPtr& value);
+  std::vector< std::pair<String, ObjectPtr> > getResults() const;
 
   ObjectPtr getResultsObject(ExecutionContext& context) const;
   VectorPtr getChildrenResultsTable(ExecutionContext& context) const;
@@ -151,9 +151,9 @@ protected:
   CriticalSection subItemsLock;
   std::vector<ExecutionTraceItemPtr> subItems;
 
-  Variable returnValue;
+  ObjectPtr returnValue;
   CriticalSection resultsLock;
-  std::vector< std::pair<String, Variable> > results;
+  std::vector< std::pair<String, ObjectPtr> > results;
 
   ProgressionStatePtr progression;
   double timeLength;

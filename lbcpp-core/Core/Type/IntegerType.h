@@ -39,8 +39,8 @@ public:
     : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
-  virtual Variable create(ExecutionContext& context) const
-    {return Variable(0, refCountedPointerFromThis(this));}
+  virtual ObjectPtr create(ExecutionContext& context) const
+    {jassertfalse; return ObjectPtr();} // broken
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {

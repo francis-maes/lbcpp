@@ -44,9 +44,6 @@ public:
     return (int)(value - other->get());
   }
 
-  virtual ObjectPtr clone(ExecutionContext& context) const
-    {return new NewInteger(value);}
-
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<NewInteger>()->value = value;}
 
@@ -56,11 +53,26 @@ protected:
 
 extern ClassPtr newIntegerClass;
 
-class NewEnumValue : public NewInteger
+class NewPositiveInteger : public NewInteger
 {
 public:
-  NewEnumValue(EnumerationPtr enumeration, juce::int64 value = 0)
-   : NewInteger(enumeration, value) {}
+  NewPositiveInteger(ClassPtr thisClass, size_t value = 0)
+    : NewInteger(thisClass, value) {}
+  NewPositiveInteger(size_t value = 0)
+    : NewInteger(value) {}
+
+  void set(size_t value)
+    {this->value = (juce::int64)value;}
+
+  size_t get() const
+    {return (size_t)value;}
+};
+
+class NewEnumValue : public NewPositiveInteger
+{
+public:
+  NewEnumValue(EnumerationPtr enumeration, size_t value = 0)
+   : NewPositiveInteger(enumeration, value) {}
   NewEnumValue() {}
 
   EnumerationPtr getEnumeration() const

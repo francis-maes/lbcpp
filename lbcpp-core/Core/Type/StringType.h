@@ -42,8 +42,8 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual Variable create(ExecutionContext& context) const
-    {return Variable(String::empty, refCountedPointerFromThis(this));}
+  virtual ObjectPtr create(ExecutionContext& context) const
+    {jassertfalse; return ObjectPtr();} // broken
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {

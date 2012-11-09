@@ -35,16 +35,10 @@ void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& 
 void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
   {enterScope(workUnit->toShortString(), workUnit);}
 
-void ExecutionContext::leaveScope(const Variable& result)
+void ExecutionContext::leaveScope(const ObjectPtr& result)
 {
   std::pair<String, WorkUnitPtr> entry = stack->pop();
   postExecutionCallback(stack, entry.first, entry.second, result);
-}
-
-void ExecutionContext::leaveScope()
-{
-  Variable res(true);
-  leaveScope(res);
 }
 
 ObjectPtr ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
@@ -68,10 +62,10 @@ bool ExecutionContext::checkInheritance(TypePtr type, TypePtr baseType)
   return true;
 }
 
-bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseType)
+bool ExecutionContext::checkInheritance(const ObjectPtr& object, TypePtr baseType)
 {
   jassert(baseType);
-  return variable.isNil() || checkInheritance(variable.getType(), baseType);
+  return !object || checkInheritance((TypePtr)object->getClass(), baseType);
 }
 
 static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const ObjectPtr& object, std::vector<ObjectPtr>& currentStack)
@@ -143,9 +137,9 @@ int ExecutionContext::enter(LuaState& state)
 int ExecutionContext::leave(LuaState& state)
 {
   ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
-  Variable res(true);
+  ObjectPtr res = new NewBoolean(true);
   if (state.getTop() >= 2)
-    res = state.checkVariable(2);
+    res = state.checkObject(2);
   pthis->leaveScope(res);
   return 0;
 }
@@ -281,7 +275,7 @@ TimedScope::TimedScope(ExecutionContext& context, const String& name, bool enabl
 TimedScope::~TimedScope()
 {
   if (name.isNotEmpty())
-    context.resultCallback(name + T(" time"), Variable((juce::Time::getMillisecondCounterHiRes() - startTime) / 1000.0));
+    context.resultCallback(name + T(" time"), (juce::Time::getMillisecondCounterHiRes() - startTime) / 1000.0);
 }
 
 /*

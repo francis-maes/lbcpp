@@ -99,8 +99,8 @@
   <class name="ExecutionTraceNode" base="ExecutionTraceItem">
     <variable type="String" name="description"/>
     <variable type="ObjectVector[ExecutionTraceItem]" name="subItems"/>
-    <variable type="Variable" name="returnValue"/>
-    <variable type="ObjectVector[Pair[String,Variable]]" name="results"/>
+    <variable type="Object" name="returnValue"/>
+    <variable type="ObjectVector[Pair[String,Object]]" name="results"/>
     <variable type="ProgressionState" name="progression"/>
     <variable type="Time" name="timeLength"/>
   </class>

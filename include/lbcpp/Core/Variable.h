@@ -112,7 +112,7 @@ public:
   ** @return an instance of @a type Variable.
   ** @see Type::declare
   */
-  static Variable create(TypePtr type);
+  //static Variable create(TypePtr type);
   static Variable createFromXml(TypePtr type, XmlImporter& importer);
   static Variable createFromString(ExecutionContext& context, TypePtr type, const String& value);
 

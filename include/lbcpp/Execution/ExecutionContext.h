@@ -31,7 +31,7 @@ public:
   ** Checks
   */
   bool checkInheritance(TypePtr type, TypePtr baseType);
-  bool checkInheritance(const Variable& variable, TypePtr baseType);
+  bool checkInheritance(const ObjectPtr& object, TypePtr baseType);
   bool checkSharedPointerCycles(const ObjectPtr& object);
 
   /*
@@ -48,8 +48,19 @@ public:
 
   void enterScope(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr());
   void enterScope(const WorkUnitPtr& workUnit);
-  void leaveScope(const Variable& result);
-  void leaveScope();
+  void leaveScope(const ObjectPtr& result);
+  
+  void leaveScope(bool result = true)
+    {leaveScope(ObjectPtr(new NewBoolean(result)));}
+  void leaveScope(size_t result)
+    {leaveScope(ObjectPtr(new NewPositiveInteger(result)));}
+  void leaveScope(double result)
+    {leaveScope(ObjectPtr(new NewDouble(result)));}
+  void leaveScope(const String& result)
+    {leaveScope(ObjectPtr(new NewString(result)));}
+  template<class T>
+  void leaveScope(const ReferenceCountedObjectPtr<T>& value)
+    {leaveScope(ObjectPtr(value));}
 
   /*
   ** Work Units

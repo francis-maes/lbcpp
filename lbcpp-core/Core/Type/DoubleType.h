@@ -39,8 +39,8 @@ public:
   DoubleType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual Variable create(ExecutionContext& context) const
-    {return Variable(0.0, refCountedPointerFromThis(this));}
+  virtual ObjectPtr create(ExecutionContext& context) const
+    {jassertfalse; return ObjectPtr();} // broken
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
