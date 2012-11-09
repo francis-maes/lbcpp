@@ -215,12 +215,12 @@ public:
   {
     std::vector<VariableExpressionPtr> inputs;
     VariableExpressionPtr supervision;
-    DataTablePtr dataset = loadDataFile(context, dataFile, inputs, supervision);
+    TablePtr dataset = loadDataFile(context, dataFile, inputs, supervision);
     if (!dataset || !supervision)
       return new NewBoolean(false);
 
     size_t numVariables = inputs.size();
-    size_t numExamples = dataset->getNumSamples();
+    size_t numExamples = dataset->getNumRows();
     size_t numLabels = supervision->getType().staticCast<Enumeration>()->getNumElements();
 
     context.informationCallback(String((int)numExamples) + T(" examples, ") +
@@ -264,9 +264,9 @@ private:
   size_t maxExamples;
   size_t verbosity;
 
-  DataTablePtr loadDataFile(ExecutionContext& context, const File& file, std::vector<VariableExpressionPtr>& inputs, VariableExpressionPtr& supervision)
+  TablePtr loadDataFile(ExecutionContext& context, const File& file, std::vector<VariableExpressionPtr>& inputs, VariableExpressionPtr& supervision)
   {
-    DataTablePtr res;
+    TablePtr res;
 
     context.enterScope(T("Loading ") + file.getFileName());
     static const bool sparseData = true;
@@ -287,28 +287,28 @@ private:
       TypePtr inputType = p->getFirst().getType();
       TypePtr outputType = p->getSecond().getType();
 
-      res = new DataTable(container->getNumElements());
+      res = new Table(container->getNumElements());
 
       inputs.resize(inputType->getNumMemberVariables());
       for (size_t i = 0; i < inputs.size(); ++i)
       {
         inputs[i] = new VariableExpression(inputType->getMemberVariableType(i), inputType->getMemberVariableName(i), i);
-        res->addColumn(inputs[i]);
+        res->addColumn(inputs[i], inputs[i]->getType());
       }
       supervision = new VariableExpression(outputType, "supervision", inputs.size());
-      res->addColumn(supervision);
+      res->addColumn(supervision, supervision->getType());
       
       for (size_t i = 0; i < container->getNumElements(); ++i)
       {
         PairPtr p = container->getElement(i).getObjectAndCast<Pair>();
         ObjectPtr inputObject = p->getFirst().getObject();
         for (size_t j = 0; j < inputs.size(); ++j)
-          res->setSample(i, j, inputObject->getVariable(j).toObject());
-        res->setSample(i, inputs.size(), p->getSecond().getObject());
+          res->setElement(i, j, inputObject->getVariable(j).toObject());
+        res->setElement(i, inputs.size(), p->getSecond().getObject());
       }
     }
 
-    context.leaveScope(res ? res->getNumSamples() : 0);
+    context.leaveScope(res ? res->getNumRows() : 0);
     return res;
   }
 

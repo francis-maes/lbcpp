@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DataTableComponent.cpp         | Data Table Component            |
+| Filename: TableComponent.cpp             | Table Component                 |
 | Author  : Francis Maes                   |                                 |
 | Started : 09/11/2012 16:02               |                                 |
 `------------------------------------------/                                 |
@@ -7,8 +7,7 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include "DataTableComponent.h"
-#include <lbcpp-ml/Expression.h>
+#include "TableComponent.h"
 using namespace lbcpp;
 
 using juce::TableListBox;
@@ -21,14 +20,14 @@ using juce::MouseEvent;
 using juce::Colour;
 using juce::Colours;
 
-class DataTableListBoxModel : public TableListBoxModel
+class TableComponentListBoxModel : public TableListBoxModel
 {
 public:
-  DataTableListBoxModel(const DataTablePtr& data) : data(data)
+  TableComponentListBoxModel(const TablePtr& table) : table(table)
     {computeAutoColumnWidths();}
      
   virtual int getNumRows()
-    {return data->getNumSamples();}
+    {return table->getNumRows();}
 
   virtual void paintRowBackground(Graphics& g, int row, int width, int height, bool selected)
   {
@@ -40,7 +39,7 @@ public:
   {
     if (order.size())
       row = (int)order[row];
-    if (row < (int)data->getNumSamples())
+    if (row < (int)table->getNumRows())
     {
       g.setFont(10);
       g.setColour(Colours::black);
@@ -64,13 +63,13 @@ public:
   virtual void sortOrderChanged(int columnId, const bool isForwards)
   {
     columnId -= 100;
-    data->makeOrder((size_t)columnId, isForwards, order);
+    table->makeOrder((size_t)columnId, isForwards, order);
   }
 
   juce_UseDebuggingNewOperator
 
 protected:
-  DataTablePtr data;
+  TablePtr table;
 
   std::vector<int> autoSizeWidths;
   std::vector<size_t> order;
@@ -81,12 +80,12 @@ protected:
 
     autoSizeWidths.clear();
 
-    size_t numRows = data->getNumSamples();
-    size_t numColumns = data->getNumColumns();
+    size_t numRows = table->getNumRows();
+    size_t numColumns = table->getNumColumns();
 
     for (size_t j = 0; j < numColumns; ++j)
     {
-      String value = data->getColumnName(j);
+      String value = table->getDescription(j);
       autoSizeWidths.push_back(font.getStringWidth(value));
     }
 
@@ -103,28 +102,28 @@ protected:
 
   String elementValueToString(size_t rowIndex, size_t columnIndex) const
   {
-    ObjectPtr value = data->getSample(rowIndex, columnIndex);
+    ObjectPtr value = table->getElement(rowIndex, columnIndex);
     return value ? value->toShortString() : String::empty;
   }
 };
 
 /*
-** DataTableComponent
+** TableComponent
 */
-DataTableComponent::DataTableComponent(const DataTablePtr& data, const String& name)
+TableComponent::TableComponent(const TablePtr& table, const String& name)
   : TableListBox(name, NULL)
 {
   TableHeaderComponent* hdr = getHeader();
-  for (size_t i = 0; i < data->getNumColumns(); ++i)
-    hdr->addColumn(data->getColumnName(i), i + 100, 100);
+  for (size_t i = 0; i < table->getNumColumns(); ++i)
+    hdr->addColumn(table->getDescription(i), i + 100, 100);
 
-  setModel(new DataTableListBoxModel(data));
+  setModel(new TableComponentListBoxModel(table));
   autoSizeAllColumns();
   setAutoSizeMenuOptionShown(true);
 }
 
-DataTableComponent::~DataTableComponent()
+TableComponent::~TableComponent()
   {delete getModel();}
 
-int DataTableComponent::getPreferedWidth(int availableWidth, int availableHeight) const
+int TableComponent::getPreferedWidth(int availableWidth, int availableHeight) const
   {return getViewport()->getViewedComponent()->getWidth();}

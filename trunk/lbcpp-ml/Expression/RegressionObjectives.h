@@ -17,7 +17,7 @@ namespace lbcpp
 class MSERegressionObjective : public SupervisedLearningObjective
 {
 public:
-  MSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  MSERegressionObjective(TablePtr data, VariableExpressionPtr supervision)
     : SupervisedLearningObjective(data, supervision) {}
   MSERegressionObjective() {}
 
@@ -49,7 +49,7 @@ public:
 class RMSERegressionObjective : public MSERegressionObjective
 {
 public:
-  RMSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  RMSERegressionObjective(TablePtr data, VariableExpressionPtr supervision)
     : MSERegressionObjective(data, supervision) {}
   RMSERegressionObjective() {}
 
@@ -60,7 +60,7 @@ public:
 class NormalizedRMSERegressionObjective : public RMSERegressionObjective
 {
 public:
-  NormalizedRMSERegressionObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  NormalizedRMSERegressionObjective(TablePtr data, VariableExpressionPtr supervision)
     : RMSERegressionObjective(data, supervision) {}
   NormalizedRMSERegressionObjective() {}
 

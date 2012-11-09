@@ -8,9 +8,46 @@
 
 #include "precompiled.h"
 #include <lbcpp-ml/Expression.h>
-#include <lbcpp-ml/DataTable.h>
+#include <lbcpp/Data/Table.h>
 #include <algorithm>
 using namespace lbcpp;
+
+/*
+** DataVector
+*/
+DataVector::DataVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType)
+  : implementation(implementation), indices(indices), elementsType(elementsType), constantRawBoolean(2) {}
+
+DataVector::DataVector(const IndexSetPtr& indices, const VectorPtr& ownedVector)
+  : implementation(ownedVectorImpl), indices(indices), elementsType(ownedVector->getElementsType()), constantRawBoolean(2), vector(ownedVector) {}
+
+DataVector::DataVector() : implementation(noImpl), constantRawBoolean(2)
+{
+}
+
+DataVectorPtr DataVector::createConstant(IndexSetPtr indices, const ObjectPtr& constantValue)
+{
+  DataVectorPtr res(new DataVector(constantValueImpl, indices, constantValue->getClass()));
+  res->constantRawBoolean = constantValue.dynamicCast<NewBoolean>() ? NewBoolean::get(constantValue) : 2;
+  res->constantRawDouble = constantValue.dynamicCast<NewDouble>() ? NewDouble::get(constantValue) : 0.0;
+  res->constantRawObject = constantValue;
+  return res;
+}
+
+Variable DataVector::sampleElement(RandomGeneratorPtr random) const
+{
+  if (implementation == constantValueImpl)
+    return constantRawObject;
+  else
+    return vector->getElement(random->sampleSize(vector->getNumElements()));
+}
+
+DataVectorPtr DataVector::createCached(IndexSetPtr indices, const VectorPtr& cachedVector)
+{
+  DataVectorPtr res(new DataVector(cachedVectorImpl, indices, cachedVector->getElementsType()));
+  res->vector = cachedVector;
+  return res;
+}
 
 /*
 ** Expression
@@ -162,10 +199,10 @@ ExpressionPtr Expression::sampleSubNode(RandomGeneratorPtr random) const
   return getSubNode(random->sampleSize(n));
 }
 
-DataVectorPtr Expression::compute(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr Expression::compute(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   IndexSetPtr idx = indices ? indices : data->getAllIndices();
-  VectorPtr samples = data->getSamplesByExpression(refCountedPointerFromThis(this));
+  VectorPtr samples = data->getDataByKey(refCountedPointerFromThis(this));
   if (samples)
     return DataVector::createCached(idx, samples);
   else
@@ -190,7 +227,7 @@ String VariableExpression::toShortString() const
 ObjectPtr VariableExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {return inputs[inputIndex];}
 
-DataVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   jassertfalse; // if we reach this point, then the data for this variable is missing in the data table
   return DataVectorPtr();
@@ -210,7 +247,7 @@ String ConstantExpression::toShortString() const
 ObjectPtr ConstantExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {return value;}
 
-DataVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
   {return DataVector::createConstant(indices, value);}
 
 /*
@@ -281,7 +318,7 @@ ObjectPtr FunctionExpression::compute(ExecutionContext& context, const ObjectPtr
   }
 }
 
-DataVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   std::vector<DataVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
@@ -359,7 +396,7 @@ void TestExpression::dispatchIndices(const DataVectorPtr& conditionValues, Index
   }
 }
 
-DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   jassert(indices->size());
   DataVectorPtr conditions = conditionNode->compute(context, data, indices);
@@ -454,7 +491,7 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Da
   return new DataVector(indices, resultVector);
 }
 
-DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const DataTablePtr& data, const IndexSetPtr& subIndices) const
+DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const
   {return subNode ? subNode->compute(context, data, subIndices) : DataVector::createConstant(subIndices, ObjectPtr());}
 
 /*
@@ -473,7 +510,7 @@ String SequenceExpression::toShortString() const
   return res;
 }
 
-DataVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   std::vector<DataVectorPtr> nodeValues(nodes.size());
   for (size_t i = 0; i < nodeValues.size(); ++i)
@@ -486,7 +523,7 @@ DataVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, cons
   return new DataVector(indices, outputs);
 }
 
-void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<DataTablePtr>& cachesToUpdate)
+void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<TablePtr>& cachesToUpdate)
 {
   size_t index = nodes.size();
   jassert(node);
@@ -497,7 +534,7 @@ void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr
   // update caches
   for (size_t i = 0; i < cachesToUpdate.size(); ++i)
   {
-    DataTablePtr cache = cachesToUpdate[i];
+    TablePtr cache = cachesToUpdate[i];
     //size_t n = cache->getNumSamples();
     VectorPtr outputs = cache->getNodeCache(this);
     jassert(outputs);
@@ -574,7 +611,7 @@ ObjectPtr VectorSumExpression::compute(ExecutionContext& context, const ObjectPt
   return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
 }
 
-DataVectorPtr VectorSumExpression::computeSamples(ExecutionContext& context, const DataTablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr VectorSumExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   DataVectorPtr res = SequenceExpression::computeSamples(context, data, indices);
   if (convertToProbabilities)

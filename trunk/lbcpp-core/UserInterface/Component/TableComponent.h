@@ -1,27 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DataTableComponent.h           | Data Table Component            |
+| Filename: TableComponent.h               | Table Component                 |
 | Author  : Francis Maes                   |                                 |
 | Started : 09/11/2012 16:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_DATA_TABLE_COMPONENT_H_
-# define LBCPP_ML_DATA_TABLE_COMPONENT_H_
+#ifndef LBCPP_USER_INTERFACE_COMPONENT_DATA_TABLE_H_
+# define LBCPP_USER_INTERFACE_COMPONENT_DATA_TABLE_H_
 
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
-# include <lbcpp-ml/DataTable.h>
+# include <lbcpp/Data/Table.h>
 
 namespace lbcpp
 {
 
-class DataTableComponent : public juce::TableListBox, public ComponentWithPreferedSize
+class TableComponent : public juce::TableListBox, public ComponentWithPreferedSize
 {
 public:
-  DataTableComponent(const DataTablePtr& data, const String& name);
-  ~DataTableComponent();
+  TableComponent(const TablePtr& table, const String& name);
+  ~TableComponent();
   
   virtual int getDefaultWidth() const
     {return 600;}
@@ -33,4 +33,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_DATA_TABLE_COMPONENT_H_
+#endif // !LBCPP_USER_INTERFACE_COMPONENT_DATA_TABLE_H_

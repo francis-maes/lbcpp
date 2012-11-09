@@ -94,9 +94,4 @@
     <variable type="GenericVector[elementsType]" name="values"/>
   </class>
 
- <!-- Consumer -->
-  <class name="SaveToFileConsumer" base="Consumer">
-    <constructor arguments="const File&amp; outputDirectory"/>
-  </class>
-
 </library>

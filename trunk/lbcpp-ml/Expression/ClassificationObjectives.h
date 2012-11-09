@@ -17,7 +17,7 @@ namespace lbcpp
 class AccuracyObjective : public SupervisedLearningObjective
 {
 public:
-  AccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  AccuracyObjective(TablePtr data, VariableExpressionPtr supervision)
     : SupervisedLearningObjective(data, supervision) {}
   AccuracyObjective() {}
 
@@ -28,7 +28,7 @@ public:
 class BinaryAccuracyObjective : public AccuracyObjective
 {
 public:
-  BinaryAccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  BinaryAccuracyObjective(TablePtr data, VariableExpressionPtr supervision)
     : AccuracyObjective(data, supervision) {}
   BinaryAccuracyObjective() {}
 
@@ -56,7 +56,7 @@ public:
 class MultiClassAccuracyObjective : public AccuracyObjective
 {
 public:
-  MultiClassAccuracyObjective(DataTablePtr data, VariableExpressionPtr supervision)
+  MultiClassAccuracyObjective(TablePtr data, VariableExpressionPtr supervision)
     : AccuracyObjective(data, supervision) {}
   MultiClassAccuracyObjective() {}
 

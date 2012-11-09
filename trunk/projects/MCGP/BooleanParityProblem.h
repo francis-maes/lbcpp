@@ -25,23 +25,23 @@ public:
   {
     ExpressionDomainPtr domain = new ExpressionDomain();
     for (size_t i = 0; i < numBits; ++i)
-		  domain->addInput(booleanType, "b" + String((int)i));
+		  domain->addInput(newBooleanClass, "b" + String((int)i));
 
 		domain->addFunction(andBooleanFunction());
     domain->addFunction(orBooleanFunction());
     domain->addFunction(nandBooleanFunction());
     domain->addFunction(norBooleanFunction());
 
-    domain->addTargetType(booleanType);
+    domain->addTargetType(newBooleanClass);
     setDomain(domain);
 
     // data
     size_t numCases = (1 << numBits);
-    DataTablePtr data = new DataTable(numCases);
+    TablePtr data = new Table(numCases);
     for (size_t i = 0; i < domain->getNumInputs(); ++i)
-      data->addColumn(domain->getInput(i));
-    VariableExpressionPtr supervision = domain->createSupervision(booleanType, "y");
-    data->addColumn(supervision);
+      data->addColumn(domain->getInput(i), newBooleanClass);
+    VariableExpressionPtr supervision = domain->createSupervision(newBooleanClass, "y");
+    data->addColumn(supervision, newBooleanClass);
 
 		for (size_t i = 0; i < numCases; ++i)
 		{
@@ -49,11 +49,11 @@ public:
       for (size_t j = 0; j < numBits; ++j)
       {
         bool isBitActive = (i & (1 << j)) != 0;
-        data->setSample(i, j, new NewBoolean(isBitActive));
+        data->setElement(i, j, new NewBoolean(isBitActive));
         if (isBitActive)
           ++numActiveBits;
       }
-      data->setSample(i, numBits, new NewBoolean(numActiveBits % 2 == 1));
+      data->setElement(i, numBits, new NewBoolean(numActiveBits % 2 == 1));
 		}
 
     // objective

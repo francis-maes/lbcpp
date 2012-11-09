@@ -5,6 +5,8 @@
   <include file="lbcpp/UserInterface/PieChartComponent.h"/>
   <include file="lbcpp/UserInterface/HistogramComponent.h"/>
 
+  <uicomponent name="TableComponent" type="Table"/>
+
   <class name="PlotAxis">
     <variable type="Double" name="rangeMin"/>
     <variable type="Double" name="rangeMax"/>

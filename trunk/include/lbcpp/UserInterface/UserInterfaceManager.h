@@ -11,7 +11,6 @@
 
 # include "../Execution/ExecutionContext.h"
 # include "../Execution/Notification.h"
-# include "../Data/Consumer.h"
 
 namespace lbcpp
 {

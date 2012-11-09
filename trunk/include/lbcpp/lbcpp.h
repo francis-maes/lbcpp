@@ -41,11 +41,9 @@
 # include "Core/Vector.h"
 
 # include "Data/Stream.h"
-# include "Data/Consumer.h"
 # include "Data/SymmetricMatrix.h"
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
-# include "Data/Cache.h"
 # include "Data/DoubleVector.h"
 # include "Data/Matrix.h"
 # include "Data/BinaryKey.h"
