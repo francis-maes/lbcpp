@@ -29,26 +29,6 @@
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features" returnType="Stream"/>
   </class>
 
-
-  <!-- ARFF Data Parsers -->
-  <class name="ARFFDataParser" base="TextParser" abstract="yes"/>
-  
-  <class name="RegressionARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features"/>
-  </class>
-  
-  <class name="BinaryClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features"/>
-  </class>
-  
-  <class name="ClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features, DefaultEnumerationPtr labels, bool sparseData"/>
-  </class>
-  
-  <class name="MultiLabelClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features, DefaultEnumerationPtr labels"/>
-  </class>
-
   <!-- Directory iterators -->
   <class name="DirectoryFileStream" base="Stream">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>

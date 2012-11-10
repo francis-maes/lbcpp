@@ -11,7 +11,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/Stream.h>
-# include <lbcpp/Core/DynamicObject.h>
 # include <lbcpp-ml/Expression.h>
 
 namespace lbcpp

@@ -78,7 +78,7 @@ Variable Enumeration::createFromString(ExecutionContext& context, const String& 
 
   if (res == n)
     context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
-  return Variable(res, refCountedPointerFromThis(this));
+  return new NewEnumValue(refCountedPointerFromThis(this), res);
 }
 
 void Enumeration::saveToXml(XmlExporter& exporter, const VariableValue& value) const

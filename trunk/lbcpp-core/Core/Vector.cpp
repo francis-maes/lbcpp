@@ -439,7 +439,7 @@ void IntegerVector::prepend(const Variable& value)
   {v.insert(v.begin(), value.getObject().staticCast<NewInteger>()->get());}
 
 void IntegerVector::append(const Variable& value)
-  {v.push_back(value.getObject().staticCast<NewInteger>()->get());}
+  {v.push_back(value.getObject() ? value.getObject().staticCast<NewInteger>()->get() : missingValue);}
 
 void IntegerVector::remove(size_t index)
   {v.erase(v.begin() + index);}

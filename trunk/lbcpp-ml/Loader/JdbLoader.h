@@ -88,7 +88,7 @@ protected:
         context.errorCallback(T("Could not recognize attribute type ") + String(kind).quoted());
         return TablePtr();
       }
-      res->addColumn(new NewString(name), attributeClass);
+      res->addColumn(name, attributeClass);
     }
     return res;
   }

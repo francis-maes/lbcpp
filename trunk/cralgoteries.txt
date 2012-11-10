@@ -4,11 +4,11 @@ ok Icones pour les file loaders
 ok XmlLoader
 ok Remove FileType
 ok DirectoryLoader
+ok ArffLoader
+ok Finish to remove Dynamic Objects
 
 ML FileLoaders:
- * ARFF Loader
  * LibSVM Loader
- => Finir d'enlever les Dynamic Object
 
 Explorer:
  * TextEditor

@@ -3,5 +3,6 @@
 <library name="Loader" directory="Loader">
 
   <class name="JdbLoader" base="TextLoader"/>
+  <class name="ArffLoader" base="TextLoader"/>
 
 </library>

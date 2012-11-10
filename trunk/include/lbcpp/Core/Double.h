@@ -10,6 +10,7 @@
 # define LBCPP_CORE_DOUBLE_H_
 
 # include "Object.h"
+# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -52,6 +53,18 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<NewDouble>()->value = value;}
+  
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    String v = str.trim().toLowerCase();
+    if (!v.containsOnly(T("0123456789e.-")))
+    {
+      context.errorCallback(T("Double::createFromString"), T("Could not read double value ") + str.quoted());
+      return false;
+    }
+    value = v.getDoubleValue();
+    return true;
+  }
 
 private:
   double value;

@@ -98,9 +98,6 @@ typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 
 extern ExecutionContext& defaultExecutionContext();
 
-class DynamicClass;
-typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
-
 class LuaState;
 typedef ReferenceCountedObjectPtr<LuaState> LuaStatePtr;
 
