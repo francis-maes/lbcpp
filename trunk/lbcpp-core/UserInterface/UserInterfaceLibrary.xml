@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="UserInterface" directory="UserInterface">
+
+  <import name="UserInterfaceComponent"/>
+  <import name="UserInterfacePlot"/>
+
+  <include file="lbcpp/UserInterface/Plot.h"/>
+  <include file="lbcpp/UserInterface/Histogram.h"/>
+  <include file="lbcpp/UserInterface/PieChart.h"/>
+
+  <!-- Objects -->
+  <class name="PlotVariable">
+    <variable type="Object" name="key"/>
+    <variable type="Boolean" name="selected"/>
+    <!--<variable type="Colour" name="colour"/> -->
+  </class>
+
+  <class name="PlotAxis">
+    <variable type="Double" name="rangeMin"/>
+    <variable type="Double" name="rangeMax"/>
+    <variable type="Boolean" name="autoRange"/>
+    <variable type="Boolean" name="logScale"/>
+    <variable type="String" name="unit"/>
+    <variable type="String" name="label"/>
+  </class>
+
+  <class name="Plot">
+    <variable type="PlotAxis" name="xAxis"/>
+    <variable type="PlotAxis" name="yAxis"/>
+    <variable type="ObjectVector[PlotVariable]" name="variables"/>
+    <variable type="PositiveInteger" name="keyVariableIndex"/>
+  </class>
+  
+  <class name="PieChart" base="Object">
+    <variable type="ObjectVector[Pair[String, Double]]" name="values"/>
+  </class>
+
+  <class name="Histogram" base="NameableObject">
+    <variable type="Double" name="stepSize"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Boolean" name="includeOutOfBound"/>
+    <variable type="GenericVector[Double]" name="values"/>
+  </class>
+
+</library>

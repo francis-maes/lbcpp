@@ -41,6 +41,7 @@ public:
   VectorPtr getData(size_t index) const
     {jassert(index < columns.size()); return columns[index].data;}
 
+  int findColumnByKey(const ObjectPtr& key) const;
   VectorPtr getDataByKey(const ObjectPtr& key) const;
 
   ObjectPtr getElement(size_t rowIndex, size_t columnIndex) const;

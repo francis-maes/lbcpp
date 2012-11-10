@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="UserInterfacePlot" directory="UserInterface/Plot">
+
+  <uicomponent name="PlotComponent" type="Plot"/>
+
+</library>

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SolutionVectorComponent.h         | User Interface for Solution sets|
+| Filename: SolutionContainerComponent.h   | User Interface for Solution sets|
 | Author  : Francis Maes                   |                                 |
 | Started : 11/09/2012 19:04               |                                 |
 `------------------------------------------/                                 |
@@ -11,8 +11,7 @@
 
 # include <lbcpp-ml/SolutionComparator.h>
 # include <lbcpp-ml/SolutionContainer.h>
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
-# include <lbcpp/UserInterface/VariableSelector.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
 # include "../lbcpp-core/UserInterface/Plot/TwoDimensionalPlotDrawable.h"
 
 namespace lbcpp

@@ -11,7 +11,7 @@
 
 # include <lbcpp-ml/Search.h>
 # include <lbcpp-ml/Problem.h>
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
 # include "MorpionBoard.h"
 
 namespace lbcpp

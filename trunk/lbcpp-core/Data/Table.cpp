@@ -53,6 +53,12 @@ ObjectPtr Table::getElement(size_t rowIndex, size_t columnIndex) const
   return columns[columnIndex].data->getElement(rowIndex).getObject();
 }
 
+int Table::findColumnByKey(const ObjectPtr& key) const
+{
+  ColumnMap::const_iterator it = columnMap.find(key);
+  return it == columnMap.end() ? -1 : (int)it->second;
+}
+
 VectorPtr Table::getDataByKey(const ObjectPtr& key) const
 {
   ColumnMap::const_iterator it = columnMap.find(key);
@@ -61,25 +67,35 @@ VectorPtr Table::getDataByKey(const ObjectPtr& key) const
 
 struct OrderContainerFunction
 {
-  OrderContainerFunction(const TablePtr& data, size_t columnIndex, bool increasingOrder)
-    : data(data), columnIndex(columnIndex), increasingOrder(increasingOrder) {}
+  OrderContainerFunction(const TablePtr& data, size_t columnIndex, bool increasingOrder, bool convertToDoubles)
+    : data(data), columnIndex(columnIndex), increasingOrder(increasingOrder), convertToDoubles(convertToDoubles) {}
 
   TablePtr data;
   size_t columnIndex;
   bool increasingOrder;
+  bool convertToDoubles;
   
   bool operator ()(size_t first, size_t second) const
   {
     ObjectPtr a = data->getElement(first, columnIndex);
     ObjectPtr b = data->getElement(second, columnIndex);
-    int c = a->compare(b);
-    return increasingOrder ? (c > 0) : (c < 0);
+    if (convertToDoubles)
+    {
+      double da = Variable(a).toDouble();
+      double db = Variable(b).toDouble();
+      return increasingOrder ? (da > db) : (da < db);
+    }
+    else
+    {
+      int c = a->compare(b);
+      return increasingOrder ? (c > 0) : (c < 0);
+    }
   }
 };
 
 void Table::makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size_t>& res) const
 {
   res = allIndices->getIndices();
-  OrderContainerFunction order(refCountedPointerFromThis(this), columnIndex, increasingOrder);
+  OrderContainerFunction order(refCountedPointerFromThis(this), columnIndex, increasingOrder, getType(columnIndex)->isConvertibleToDouble());
   std::sort(res.begin(), res.end(), order);
 }

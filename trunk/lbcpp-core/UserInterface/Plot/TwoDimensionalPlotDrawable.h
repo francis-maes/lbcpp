@@ -9,7 +9,7 @@
 #ifndef LBCPP_USER_INTERFACE_PLOT_TWO_DIMENSIONAL_DRAWABLE_H_
 # define LBCPP_USER_INTERFACE_PLOT_TWO_DIMENSIONAL_DRAWABLE_H_
 
-# include <lbcpp/UserInterface/PlotAxis.h>
+# include <lbcpp/UserInterface/Plot.h>
 # include <lbcpp/Core/Variable.h>
 
 namespace lbcpp

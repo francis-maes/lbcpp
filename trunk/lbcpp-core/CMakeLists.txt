@@ -19,7 +19,9 @@ GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml Exec
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
+  GENERATE_INTROSPECTION_CODE(UserInterface/UserInterfaceLibrary.xml UserInterfaceLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(UserInterface/Plot/UserInterfacePlotLibrary.xml UserInterfacePlotLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
 
 GENERATE_INTROSPECTION_CODE(Lua/LuaLibrary.xml LuaLibrary.cpp)
@@ -218,7 +220,7 @@ IF(LBCPP_USER_INTERFACE)
   #IDE_ONLY_SOURCES(LBCPP_USER_INTEFACE_GENERATED_FILES ${LBCPP_USER_INTEFACE_GENERATED_FILES})
 
   SET(LBCPP_USER_INTERFACE_SOURCES
-    ../include/lbcpp/UserInterface/PlotAxis.h
+	../include/lbcpp/UserInterface/Plot.h
     ../include/lbcpp/UserInterface/PieChart.h
     ../include/lbcpp/UserInterface/Histogram.h
     ../include/lbcpp/UserInterface/ObjectComponent.h
@@ -226,6 +228,8 @@ IF(LBCPP_USER_INTERFACE)
     ../include/lbcpp/UserInterface/UserInterfaceManager.h
     UserInterface/UserInterfaceManager.cpp
     ${LBCPP_USER_INTEFACE_GENERATED_FILES}
+	UserInterface/UserInterfaceLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceLibrary.cpp
   )
 
   SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
@@ -233,8 +237,6 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/VariableTreeView.cpp
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
-    UserInterface/Component/ContainerCurveEditor.h
-    UserInterface/Component/ContainerCurveEditor.cpp
     UserInterface/Component/SimpleTreeViewItem.h
     UserInterface/Component/ExecutionTraceTreeViewItem.h
     UserInterface/Component/ExecutionTraceTreeViewItem.cpp
@@ -250,8 +252,15 @@ IF(LBCPP_USER_INTERFACE)
   )
   
   SET(LBCPP_USER_INTERFACE_PLOT_SOURCES
+	UserInterface/Plot/Plot.cpp
     UserInterface/Plot/TwoDimensionalPlotDrawable.h
     UserInterface/Plot/TwoDimensionalPlotDrawable.cpp
+	UserInterface/Plot/PlotConfigurationComponent.h
+	UserInterface/Plot/PlotContentComponent.h
+    UserInterface/Plot/PlotComponent.h
+    UserInterface/Plot/PlotComponent.cpp
+	UserInterface/Plot/UserInterfacePlotLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/UserInterfacePlotLibrary.cpp
   )
 
 ENDIF(LBCPP_USER_INTERFACE)
