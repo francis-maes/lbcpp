@@ -9,7 +9,7 @@
 #ifndef LBCPP_USER_INTERFACE_COMPONENTS_CONTAINER_CURVE_EDITOR_H_
 # define LBCPP_USER_INTERFACE_COMPONENTS_CONTAINER_CURVE_EDITOR_H_
 
-# include <lbcpp/UserInterface/ObjectEditor.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
 # include <lbcpp/UserInterface/PlotAxis.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
 

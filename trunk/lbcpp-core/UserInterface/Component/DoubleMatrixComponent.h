@@ -9,7 +9,7 @@
 #ifndef LBCPP_USER_INTERFACE_COMPONENT_DOUBLE_MATRIX_H_
 # define LBCPP_USER_INTERFACE_COMPONENT_DOUBLE_MATRIX_H_
 
-# include <lbcpp/UserInterface/MatrixComponent.h>
+# include "MatrixComponent.h"
 # include <lbcpp/Data/SymmetricMatrix.h>
 
 namespace lbcpp

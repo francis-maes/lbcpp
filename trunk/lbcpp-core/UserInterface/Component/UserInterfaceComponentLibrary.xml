@@ -2,11 +2,7 @@
 
 <library name="UserInterfaceComponent" directory="UserInterface/Component">
 
-  <include file="lbcpp/UserInterface/PieChartComponent.h"/>
-  <include file="lbcpp/UserInterface/HistogramComponent.h"/>
-
-  <uicomponent name="TableComponent" type="Table"/>
-
+  <!-- Objects -->
   <class name="PlotAxis">
     <variable type="Double" name="rangeMin"/>
     <variable type="Double" name="rangeMax"/>
@@ -15,6 +11,19 @@
     <variable type="String" name="unit"/>
     <variable type="String" name="label"/>
   </class>
+  
+  <class name="PieChart" base="Object">
+    <variable type="ObjectVector[Pair[String, Double]]" name="values"/>
+  </class>
+
+  <class name="Histogram" base="NameableObject">
+    <variable type="Double" name="stepSize"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Boolean" name="includeOutOfBound"/>
+    <variable type="GenericVector[Double]" name="values"/>
+  </class>
+
 
   <class name="CurveVariableConfiguration">
     <variable type="Boolean" name="selected"/>
@@ -29,25 +38,12 @@
     <variable type="PositiveInteger" name="keyVariableIndex"/>
   </class>
 
+  <!-- User Interface Components -->
+  <uicomponent name="TableComponent" type="Table"/>
   <uicomponent name="ConfusionMatrixComponent" type="BinaryConfusionMatrix"/>
-
   <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
   <uicomponent name="DoubleSymmetricMatrixComponent" type="DoubleSymmetricMatrix[Double]"/>
-
-  <class name="PieChartConfiguration" base="Object">
-    <variable type="String" name="description"/>
-    <variable type="GenericVector[Pair[String, Double]]" name="values"/>
-  </class>
-
-  <uicomponent name="PieChartComponent" type="PieChartConfiguration"/>
-
-  <class name="HistogramConfiguration" base="NameableObject">
-    <variable type="Double" name="stepSize"/>
-    <variable type="Double" name="minValue"/>
-    <variable type="Double" name="maxValue"/>
-    <variable type="Boolean" name="includeOutOfBound"/>
-    <variable type="GenericVector[Double]" name="values"/>
-  </class>
+  <uicomponent name="PieChartComponent" type="PieChart"/>
+  <uicomponent name="HistogramComponent" type="Histogram"/>
   
-  <uicomponent name="HistogramComponent" type="HistogramConfiguration"/>
 </library>

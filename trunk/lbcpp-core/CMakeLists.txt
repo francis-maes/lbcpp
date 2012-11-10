@@ -218,33 +218,33 @@ IF(LBCPP_USER_INTERFACE)
   #IDE_ONLY_SOURCES(LBCPP_USER_INTEFACE_GENERATED_FILES ${LBCPP_USER_INTEFACE_GENERATED_FILES})
 
   SET(LBCPP_USER_INTERFACE_SOURCES
-    ../include/lbcpp/UserInterface/SimpleTreeViewItem.h
-    ../include/lbcpp/UserInterface/VariableSelector.h
-    ../include/lbcpp/UserInterface/ComponentWithPreferedSize.h
-    ../include/lbcpp/UserInterface/UserInterfaceManager.h
-    ../include/lbcpp/UserInterface/ObjectEditor.h
-    ../include/lbcpp/UserInterface/MatrixComponent.h
-    ../include/lbcpp/UserInterface/PieChartComponent.h
-    ../include/lbcpp/UserInterface/HistogramComponent.h
     ../include/lbcpp/UserInterface/PlotAxis.h
+    ../include/lbcpp/UserInterface/PieChart.h
+    ../include/lbcpp/UserInterface/Histogram.h
+    ../include/lbcpp/UserInterface/ObjectComponent.h
+    UserInterface/ObjectComponent.cpp
+    ../include/lbcpp/UserInterface/UserInterfaceManager.h
     UserInterface/UserInterfaceManager.cpp
     ${LBCPP_USER_INTEFACE_GENERATED_FILES}
   )
 
   SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
-    UserInterface/Component/ObjectEditor.cpp
     UserInterface/Component/VariableTreeView.h
     UserInterface/Component/VariableTreeView.cpp
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
     UserInterface/Component/ContainerCurveEditor.h
     UserInterface/Component/ContainerCurveEditor.cpp
+    UserInterface/Component/SimpleTreeViewItem.h
     UserInterface/Component/ExecutionTraceTreeViewItem.h
     UserInterface/Component/ExecutionTraceTreeViewItem.cpp
     UserInterface/Component/ExecutionTraceTreeView.h
     UserInterface/Component/ExecutionTraceTreeView.cpp
     UserInterface/Component/ConfusionMatrixComponent.h
+	UserInterface/Component/MatrixComponent.h
     UserInterface/Component/DoubleMatrixComponent.h
+    UserInterface/Component/PieChartComponent.h
+    UserInterface/Component/HistogramComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
   )

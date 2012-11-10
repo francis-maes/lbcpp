@@ -9,7 +9,7 @@
 #ifndef LBCPP_USER_INTERFACE_COMPONENT_CONFUSION_MATRIX_H_
 # define LBCPP_USER_INTERFACE_COMPONENT_CONFUSION_MATRIX_H_
 
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
 # include <lbcpp/Data/BinaryConfusionMatrix.h>
 
 namespace lbcpp
