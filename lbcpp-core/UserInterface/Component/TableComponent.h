@@ -9,8 +9,7 @@
 #ifndef LBCPP_USER_INTERFACE_COMPONENT_DATA_TABLE_H_
 # define LBCPP_USER_INTERFACE_COMPONENT_DATA_TABLE_H_
 
-# include <lbcpp/UserInterface/VariableSelector.h>
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
 # include <lbcpp/Data/Table.h>
 

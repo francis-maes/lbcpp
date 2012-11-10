@@ -9,9 +9,8 @@
 #ifndef EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 # define EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 
-# include <lbcpp/UserInterface/VariableSelector.h>
-# include <lbcpp/UserInterface/SimpleTreeViewItem.h>
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
+# include "SimpleTreeViewItem.h"
 
 class VariableTreeViewItem;
 

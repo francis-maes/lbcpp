@@ -9,10 +9,9 @@
 #ifndef LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_ITEM_H_
 # define LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_ITEM_H_
 
-# include <lbcpp/UserInterface/SimpleTreeViewItem.h>
-# include <lbcpp/UserInterface/VariableSelector.h>
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/ObjectComponent.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
+# include "SimpleTreeViewItem.h"
 
 using juce::Component;
 using juce::DocumentWindow;
