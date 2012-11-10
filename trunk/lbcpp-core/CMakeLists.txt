@@ -91,6 +91,7 @@ SET(LBCPP_CORE_TYPE_SOURCES
 SET(LBCPP_CORE_LOADER_SOURCES
   Core/Loader/LbcppLoader.h
   Core/Loader/RawTextLoader.h
+  Core/Loader/XmlLoader.h
   Core/Loader/CoreLoaderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLoaderLibrary.cpp
 )

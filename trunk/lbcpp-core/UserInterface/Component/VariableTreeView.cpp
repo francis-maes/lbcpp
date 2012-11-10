@@ -20,7 +20,16 @@ using juce::Component;
 using juce::Colours;
 
 static String getIconForType(const TypePtr& type)
-  {return type->getName() + "-32.png";}
+{
+  String res = type->getName() + "-32.png";
+  if (UserInterfaceManager().hasImage(res))
+    return res;
+  
+  if (type->inheritsFrom(vectorClass()))
+    return "Vector-32.png";
+
+  return "Object-32.png";
+}
 
 static String getIconForVariable(const Variable& variable)
 {

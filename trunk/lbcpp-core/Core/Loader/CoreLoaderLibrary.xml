@@ -5,5 +5,6 @@
   <class name="LbcppLoader" base="Loader"/>
   <class name="TraceLoader" base="LbcppLoader"/>
   <class name="RawTextLoader" base="Loader"/>
-
+  <class name="XmlLoader" base="Loader"/>
+  
 </library>

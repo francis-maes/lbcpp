@@ -1,12 +1,11 @@
 ok Bouger les loaders dans lbcpp-core
 ok Loader de JDB
-
-* Icones pour les file loaders
+ok Icones pour les file loaders
+ok XmlLoader
 
 Core FileLoaders:
  * DirectoryLoader (todo: Enlever les fileType au profit de newFileClass)
- * XmlLoader
-
+ 
 ML FileLoaders:
  * ARFF Loader
  * LibSVM Loader

@@ -18,14 +18,17 @@ using juce::ImageCache;
 
 namespace UserInterfaceData {extern const char* get(const String& fileName, int& size);};
 
-Image* UserInterfaceManager::getImage(const String& fileName)
+bool UserInterfaceManager::hasImage(const String& fileName) const
+  {int size; return UserInterfaceData::get(fileName, size) != NULL;}
+
+Image* UserInterfaceManager::getImage(const String& fileName) const
 {
   int size;
   const char* data = UserInterfaceData::get(fileName, size);
   return data ? ImageCache::getFromMemory(data, size) : NULL;
 }
 
-Image* UserInterfaceManager::getImage(const String& fileName, int width, int height)
+Image* UserInterfaceManager::getImage(const String& fileName, int width, int height) const
 {
   juce::int64 hashCode = (fileName.hashCode64() * 101 + (juce::int64)width) * 101 + (juce::int64)height;
   Image* res = ImageCache::getFromHashCode(hashCode);

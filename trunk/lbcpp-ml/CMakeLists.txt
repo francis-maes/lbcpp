@@ -133,7 +133,7 @@ SET(LBCPP_ML_SEARCH_SOURCES
 )
 
 SET(LBCPP_ML_LOADER_SOURCES
-  Loader/JDBLoader.h
+  Loader/JdbLoader.h
   Loader/LoaderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LoaderLibrary.cpp
 )
