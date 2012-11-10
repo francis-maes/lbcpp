@@ -142,8 +142,8 @@ public:
   size_t getNumVariables() const;
   TypePtr getVariableType(size_t index) const;
   String getVariableName(size_t index) const;
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
+  Variable getVariable(size_t index) const;
+  void setVariable(size_t index, const Variable& value);
 
   void getChildObjects(std::vector<ObjectPtr>& res) const;
   void getAllChildObjects(std::set<ObjectPtr>& res) const;
