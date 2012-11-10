@@ -51,6 +51,7 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/TemplateType.h
   Core/TemplateType.cpp
   ../include/lbcpp/Core/Library.h
+  Core/Library.cpp
   ../include/lbcpp/Core/Variable.h
   Core/Variable.cpp
   ../include/lbcpp/Core/Pair.h
@@ -60,6 +61,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
+  ../include/lbcpp/Core/FileLoader.h
+  Core/FileLoader.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml

@@ -59,12 +59,27 @@ public:
   
   void luaRegister(LuaState& state) const;
 
+  FileLoaderPtr findLoaderForFile(ExecutionContext& context, const File& file) const;
+  FileLoaderPtr findLoaderForStream(ExecutionContext& context, juce::InputStream& istr) const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
+  friend class LibraryClass;
+  friend class TopLevelLibrary;
   friend bool importLibrary(ExecutionContext& context, LibraryPtr library, void* handle);
   friend void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);
-  friend class LibraryManager;
+
+  std::vector<TypePtr> types;
+  std::vector<TemplateTypePtr> templateTypes;
+  std::vector<LibraryPtr> subLibraries;
+  std::vector<FileLoaderPtr> fileLoaders;
+  
+#ifdef LBCPP_USER_INTERFACE
+  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
+  std::vector< std::pair<TypePtr, UIComponentConstructor> > uiComponents;
+  bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
+#endif
 
   virtual bool initialize(ExecutionContext& context) = 0;
   virtual void cacheTypes(ExecutionContext& context) = 0;
@@ -75,22 +90,6 @@ protected:
   bool declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary);
 
   void getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const;
-  
-#ifdef LBCPP_USER_INTERFACE
-  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
-  bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
-#endif
-
-private:
-  friend class LibraryClass;
-
-  std::vector<TypePtr> types;
-  std::vector<TemplateTypePtr> templateTypes;
-  std::vector<LibraryPtr> subLibraries;
-  
-#ifdef LBCPP_USER_INTERFACE
-  std::vector< std::pair<TypePtr, UIComponentConstructor> > uiComponents;
-#endif
 };
 
 typedef ReferenceCountedObjectPtr<Library> LibraryPtr;

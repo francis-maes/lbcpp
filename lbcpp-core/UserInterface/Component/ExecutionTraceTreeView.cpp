@@ -19,7 +19,7 @@ using juce::Colour;
 /*
 ** ExecutionTraceTreeView
 */
-ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, ExecutionContextPtr context)
+ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const String& name, ExecutionContextPtr context)
   : trace(trace), isSelectionUpToDate(false), isTreeUpToDate(true)
 {
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
@@ -109,7 +109,7 @@ public:
       if (results)
       {
         for (size_t i = 0; i < results->getNumVariables(); ++i)
-          if (hasUIComponent(results->getVariableType(i)))
+          if (lbcpp::getTopLevelLibrary()->hasUIComponent(results->getVariableType(i)))
             addTab(results->getVariableName(i), Colours::lightgrey);
         addTab(T("Results"), Colours::white);
       }
@@ -136,25 +136,16 @@ public:
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
   {
     if (tabName == T("Table"))
-      return userInterfaceManager().createComponentIfExists(context, table, "Table");
+      return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, table, "Table");
     else if (tabName == T("Results"))
       return userInterfaceManager().createVariableTreeView(context, variable, tabName, true, true, false, false);
     else
-      return userInterfaceManager().createComponentIfExists(context, getSubVariable(variable, tabName).getObject(), tabName);
+      return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getSubVariable(variable, tabName).getObject(), tabName);
   }
 
 protected:
   TablePtr table;
   ObjectPtr results;
-
-  static bool hasUIComponent(TypePtr type)
-  {
-    size_t n = lbcpp::getNumLibraries();
-    for (size_t i = 0; i < n; ++i)
-      if (lbcpp::getLibrary(i)->hasUIComponent(type))
-        return true;
-    return false;
-  }
 };
 
 juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
@@ -313,6 +304,3 @@ protected:
 
 ExecutionCallbackPtr ExecutionTraceTreeView::createTreeBuilderCallback()
   {return new ExecutionTraceTreeViewBuilderExecutionCallback(this);}
-
-juce::Component* ExecutionTrace::createComponent() const
-  {return new ExecutionTraceTreeView(refCountedPointerFromThis(this));}

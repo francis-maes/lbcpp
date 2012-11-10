@@ -36,7 +36,7 @@ protected:
 class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback, public VariableSelector, public ComponentWithPreferedSize
 {
 public:
-  ExecutionTraceTreeView(ExecutionTracePtr trace, ExecutionContextPtr context = ExecutionContextPtr());
+  ExecutionTraceTreeView(ExecutionTracePtr trace, const String& name, ExecutionContextPtr context = ExecutionContextPtr());
   virtual ~ExecutionTraceTreeView();
 
   ExecutionTraceTreeViewNode* getNodeFromStack(const ExecutionStackPtr& stack) const;

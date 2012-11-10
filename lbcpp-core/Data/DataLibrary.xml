@@ -14,7 +14,7 @@
   <include file="lbcpp/Data/BinaryKey.h"/>
   <include file="lbcpp/Data/BinaryConfusionMatrix.h"/>
   <include file="lbcpp/Data/Table.h"/>
-  
+
   <!-- Random Generator -->
   <class name="RandomGenerator">
     <function lang="lua" name="create" static="yes"/>

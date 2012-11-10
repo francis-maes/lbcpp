@@ -41,18 +41,6 @@ Image* UserInterfaceManager::getImage(const String& fileName, int width, int hei
   return res;
 }
 
-juce::Component* UserInterfaceManager::createComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name) const
-{
-  size_t n = lbcpp::getNumLibraries();
-  for (size_t i = 0; i < n; ++i)
-  {
-    juce::Component* res = lbcpp::getLibrary(i)->createUIComponentIfExists(context, object, name);
-    if (res)
-      return res;
-  }
-  return NULL;
-}
-
 #include "Component/VariableTreeView.h"
 #include "Component/ExecutionTraceTreeView.h"
 
@@ -64,5 +52,5 @@ juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& c
 
 juce::TreeView* UserInterfaceManager::createExecutionTraceInteractiveTreeView(ExecutionContext& context, ExecutionTracePtr trace, ExecutionContextPtr traceContext) const
 {
-  return new ExecutionTraceTreeView(trace, traceContext);
+  return new ExecutionTraceTreeView(trace, "Trace", traceContext);
 }

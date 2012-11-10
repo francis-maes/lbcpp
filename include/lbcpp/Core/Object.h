@@ -167,14 +167,6 @@ public:
   virtual size_t getSizeInBytes(bool recursively) const;
 
   /*
-  ** User Interface
-  */
-#ifdef LBCPP_USER_INTERFACE
-  virtual juce::Component* createComponent() const
-    {return NULL;}
-#endif
-
-  /*
   ** Lua
   */
   static int create(LuaState& state);

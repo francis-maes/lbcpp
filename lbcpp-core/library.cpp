@@ -50,19 +50,20 @@ extern void coreLibraryUnCacheTypes();
 extern void lbCppLibraryCacheTypes(ExecutionContext& context);
 extern void lbCppLibraryUnCacheTypes();
 
-class LibraryManager
+class TopLevelLibrary : public Library
 {
 public:
-  ~LibraryManager()
+  TopLevelLibrary() : Library("TopLevel") {}
+  ~TopLevelLibrary()
     {shutdown();}
 
   void preShutdown()
   {
-    for (size_t i = 0; i < libraries.size(); ++i)
+    for (size_t i = 0; i < subLibraries.size(); ++i)
     {
-      libraries[i].first->uncacheTypes();
-      libraries[i].first = LibraryPtr();
-      void* handle = libraries[i].second;
+      subLibraries[i]->uncacheTypes();
+      subLibraries[i] = LibraryPtr();
+      void* handle = handles[i];
       if (handle)
       {
         typedef void (*DeinitializeLibraryFunction)();
@@ -79,7 +80,7 @@ public:
     /*for (size_t i = 0; i < libraries.size(); ++i)
       if (libraries[i].second)
         juce::PlatformUtilities::freeDynamicLibrary(libraries[i].second);*/
-    libraries.clear();
+    subLibraries.clear();
   }
 
   bool addLibrary(ExecutionContext& context, const LibraryPtr& library, void* handle)
@@ -90,37 +91,27 @@ public:
       return false;
     }
 
-    for (size_t i = 0; i < libraries.size(); ++i)
-      if (libraries[i].first->getName() == library->getName())
+    for (size_t i = 0; i < subLibraries.size(); ++i)
+      if (subLibraries[i]->getName() == library->getName())
       {
         context.errorCallback(T("The library called ") + library->getName() + T(" already exists"));
         return false;
       }
 
-    libraries.push_back(std::make_pair(library, handle));
+    subLibraries.push_back(library);
+    handles.push_back(handle);
     return true;
   }
 
-  const LibraryPtr& getLibrary(ExecutionContext& context, const String& name) const
-  {
-    for (size_t i = 0; i < libraries.size(); ++i)
-      if (libraries[i].first->getName() == name)
-        return libraries[i].first;
+protected:
+  virtual bool initialize(ExecutionContext& context) {return true;}
+  virtual void cacheTypes(ExecutionContext& context) {}
+  virtual void uncacheTypes() {}
 
-    static LibraryPtr empty;
-    context.errorCallback(T("Could not find library ") + name.quoted());
-    return empty;
-  }
-
-  size_t getNumLibraries() const
-    {return libraries.size();}
-
-  LibraryPtr getLibrary(size_t index) const
-    {jassert(index < libraries.size()); return libraries[index].first;}
-
-private:
-  std::vector< std::pair<LibraryPtr, void* > > libraries;
+  std::vector<void* > handles;
 };
+
+typedef ReferenceCountedObjectPtr<TopLevelLibrary> TopLevelLibraryPtr;
 
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
 
@@ -293,7 +284,7 @@ struct ApplicationContext
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
   MemoryLeakDetector* memoryLeakDetector;
 #endif
-  LibraryManager libraryManager;
+  TopLevelLibraryPtr topLevelLibrary;
   TypeManager typeManager;
   ExecutionContextPtr defaultExecutionContext;
 #ifdef LBCPP_USER_INTERFACE
@@ -321,6 +312,7 @@ void lbcpp::initialize(const char* executableName)
   jassert(!applicationContext);
   applicationContext = new ApplicationContext();
   applicationContext->defaultExecutionContext = defaultConsoleExecutionContext(true);
+  applicationContext->topLevelLibrary = new TopLevelLibrary();
   RandomGenerator::initializeRandomGenerator();
   
   // types
@@ -344,7 +336,7 @@ void lbcpp::deinitialize()
 #endif
 
     // pre shutdown types
-    applicationContext->libraryManager.preShutdown();
+    applicationContext->topLevelLibrary->preShutdown();
     coreLibraryUnCacheTypes();
     lbCppLibraryUnCacheTypes();
     topLevelType = anyType = TypePtr();
@@ -354,7 +346,7 @@ void lbcpp::deinitialize()
     // shutdown types
     applicationContext->typeManager.shutdown();
 
-    applicationContext->libraryManager.shutdown();
+    applicationContext->topLevelLibrary->shutdown();
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
   }
@@ -374,11 +366,14 @@ ExecutionContext& lbcpp::defaultExecutionContext()
 void lbcpp::setDefaultExecutionContext(ExecutionContextPtr defaultContext)
   {jassert(applicationContext); applicationContext->defaultExecutionContext = defaultContext;}
 
+LibraryPtr lbcpp::getTopLevelLibrary()
+  {jassert(applicationContext); return applicationContext->topLevelLibrary;}
+
 size_t lbcpp::getNumLibraries()
-  {jassert(applicationContext); return applicationContext->libraryManager.getNumLibraries();}
+  {jassert(applicationContext); return applicationContext->topLevelLibrary->getSubLibraries().size();}
   
 LibraryPtr lbcpp::getLibrary(size_t index)
-  {jassert(applicationContext); return applicationContext->libraryManager.getLibrary(index);}
+  {jassert(applicationContext); return applicationContext->topLevelLibrary->getSubLibraries()[index];}
 
 bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory)
 {
@@ -444,7 +439,7 @@ bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library, void* d
 {
   if (!library->initialize(context))
     return false;
-  if (!applicationContext->libraryManager.addLibrary(context, library, dynamicLibraryHandle))
+  if (!applicationContext->topLevelLibrary->addLibrary(context, library, dynamicLibraryHandle))
     return false;
   library->cacheTypes(context);
   typeManager().finishDeclarations(context);

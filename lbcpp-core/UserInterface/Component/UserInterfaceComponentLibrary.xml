@@ -8,5 +8,6 @@
   <uicomponent name="DoubleSymmetricMatrixComponent" type="DoubleSymmetricMatrix[Double]"/>
   <uicomponent name="PieChartComponent" type="PieChart"/>
   <uicomponent name="HistogramComponent" type="Histogram"/>
-  
+  <uicomponent name="ExecutionTraceTreeView" type="ExecutionTrace"/>
+               
 </library>
