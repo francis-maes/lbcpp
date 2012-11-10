@@ -27,8 +27,8 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
   if (!object)
     return NULL;
 
-  if (object->getClass()->inheritsFrom(xmlElementClass))
-    object = object.staticCast<XmlElement>()->createObject(context);
+//  if (object->getClass()->inheritsFrom(xmlElementClass))
+//    object = object.staticCast<XmlElement>()->createObject(context);
 
   Component* res = lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, object, explicitName);
   if (res)

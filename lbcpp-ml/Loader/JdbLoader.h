@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: JDBLoader.h                    | JDB Loader                      |
+| Filename: JdbLoader.h                    | JDB Loader                      |
 | Author  : Francis Maes                   |                                 |
 | Started : 10/11/2012 16:36               |                                 |
 `------------------------------------------/                                 |
@@ -19,7 +19,7 @@ namespace lbcpp
 #  pragma warning(disable:4996) // microsoft visual does not like fopen()/fclose()
 # endif // JUCE_WIN32
 
-class JDBLoader : public TextLoader
+class JdbLoader : public TextLoader
 {
 public:
   virtual String getFileExtensions() const
