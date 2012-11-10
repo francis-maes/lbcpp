@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "ExecutionTraceTreeView.h"
-#include "ContainerCurveEditor.h"
 #include <lbcpp/Execution/ExecutionStack.h>
+#include <lbcpp/UserInterface/Plot.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Data/Table.h>
 #include <lbcpp/library.h>
@@ -99,7 +99,7 @@ public:
     table = pair->getSecond().getObjectAndCast<Table>();
     if (table)
     {
-      //addTab(T("Curves"), Colours::white); // FIXME
+      addTab(T("Curves"), Colours::white);
       addTab(T("Table"), Colours::white);
     }
 
@@ -120,7 +120,9 @@ public:
   {
     if (tabName == T("Results"))
       return results;
-    else if (tabName == T("Curves") || tabName == T("Table"))
+    else if (tabName == T("Curves"))
+      return ObjectPtr(new Plot(table));
+    else if (tabName == T("Table"))
       return table;
     else
     {
@@ -133,10 +135,7 @@ public:
 
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
   {
-    // FIXME: Curves broken
-    //if (tabName == T("Curves"))
-    //  return new ContainerCurveEditor(context, table, new ContainerCurveEditorConfiguration(table->getElementsType()));
-    /*else*/ if (tabName == T("Table"))
+    if (tabName == T("Table"))
       return userInterfaceManager().createComponentIfExists(context, table, "Table");
     else if (tabName == T("Results"))
       return userInterfaceManager().createVariableTreeView(context, variable, tabName, true, true, false, false);
