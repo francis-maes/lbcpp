@@ -8,6 +8,7 @@
 * Loader de ARFF, LibSVM, JDB
 
 * Enlever les fileType au profit de newFileClass
+* DirectoryLoader
 
 * Finir d'enlever les Dynamic Object
  

@@ -101,8 +101,8 @@ typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 class LuaState;
 typedef ReferenceCountedObjectPtr<LuaState> LuaStatePtr;
 
-class FileLoader;
-typedef ReferenceCountedObjectPtr<FileLoader> FileLoaderPtr;
+class Loader;
+typedef ReferenceCountedObjectPtr<Loader> LoaderPtr;
 
 }; /* namespace lbcpp */
 

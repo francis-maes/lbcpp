@@ -8,7 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
-#include <lbcpp/Core/FileLoader.h>
+#include <lbcpp/Core/Loader.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
@@ -21,8 +21,9 @@ bool Library::declareType(ExecutionContext& context, TypePtr type)
   if (!typeManager().declare(context, type))
     return false;
   types.push_back(type);
-  if (fileLoaderClass && type->inheritsFrom(fileLoaderClass))
-    fileLoaders.push_back(Object::create((ClassPtr)type).staticCast<FileLoader>());
+  ClassPtr loaderClass = typeManager().findType("Loader");
+  if (loaderClass && type->inheritsFrom(loaderClass) && !type.staticCast<Class>()->isAbstract())
+    fileLoaders.push_back(Object::create((ClassPtr)type).staticCast<Loader>());
   return true;
 }
 
@@ -109,7 +110,7 @@ void Library::luaRegister(LuaState& state) const
     subLibraries[i]->luaRegister(state);
 }
 
-FileLoaderPtr Library::findLoaderForFile(ExecutionContext& context, const File& file) const
+LoaderPtr Library::findLoaderForFile(ExecutionContext& context, const File& file) const
 {
   String ext = file.getFileExtension();
   if (ext.startsWithChar('.'))
@@ -117,32 +118,32 @@ FileLoaderPtr Library::findLoaderForFile(ExecutionContext& context, const File& 
 
   for (size_t i = 0; i < fileLoaders.size(); ++i)
   {
-    FileLoaderPtr loader = fileLoaders[i];
+    LoaderPtr loader = fileLoaders[i];
     if (loader->getFileExtensions().indexOf(ext) >= 0 && loader->canUnderstand(context, file))
       return loader;
   }
   for (size_t i = 0; i < subLibraries.size(); ++i)
   {
-    FileLoaderPtr loader = subLibraries[i]->findLoaderForFile(context, file);
+    LoaderPtr loader = subLibraries[i]->findLoaderForFile(context, file);
     if (loader)
       return loader;
   }
-  return FileLoaderPtr();
+  return LoaderPtr();
 }
 
-FileLoaderPtr Library::findLoaderForStream(ExecutionContext& context, juce::InputStream& istr) const
+LoaderPtr Library::findLoaderForStream(ExecutionContext& context, juce::InputStream& istr) const
 {
   for (size_t i = 0; i < fileLoaders.size(); ++i)
   {
-    FileLoaderPtr loader = fileLoaders[i];
+    LoaderPtr loader = fileLoaders[i];
     if (loader->canUnderstand(context, istr))
       return loader;
   }
   for (size_t i = 0; i < subLibraries.size(); ++i)
   {
-    FileLoaderPtr loader = subLibraries[i]->findLoaderForStream(context, istr);
+    LoaderPtr loader = subLibraries[i]->findLoaderForStream(context, istr);
     if (loader)
       return loader;
   }
-  return FileLoaderPtr();
+  return LoaderPtr();
 }

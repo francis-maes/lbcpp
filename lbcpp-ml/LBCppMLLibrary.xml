@@ -9,6 +9,7 @@
   <import name="Search"/>
   <import name="Function"/>
   <import name="Expression"/>
+  <import name="Loader"/>
 
   <include file="lbcpp-ml/Problem.h"/>
   <include file="lbcpp-ml/Perturbator.h"/>

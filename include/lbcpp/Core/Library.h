@@ -59,8 +59,8 @@ public:
   
   void luaRegister(LuaState& state) const;
 
-  FileLoaderPtr findLoaderForFile(ExecutionContext& context, const File& file) const;
-  FileLoaderPtr findLoaderForStream(ExecutionContext& context, juce::InputStream& istr) const;
+  LoaderPtr findLoaderForFile(ExecutionContext& context, const File& file) const;
+  LoaderPtr findLoaderForStream(ExecutionContext& context, juce::InputStream& istr) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -73,7 +73,7 @@ protected:
   std::vector<TypePtr> types;
   std::vector<TemplateTypePtr> templateTypes;
   std::vector<LibraryPtr> subLibraries;
-  std::vector<FileLoaderPtr> fileLoaders;
+  std::vector<LoaderPtr> fileLoaders;
   
 #ifdef LBCPP_USER_INTERFACE
   typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);

@@ -15,7 +15,7 @@
 #include "LuaCodeEditorComponent.h"
 #include <lbcpp/library.h>
 #include <lbcpp/Core/Library.h>
-#include <lbcpp/Core/FileLoader.h>
+#include <lbcpp/Core/Loader.h>
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
@@ -79,7 +79,7 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
     File file = variable.getFile();
 
     // new
-    FileLoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
+    LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
     if (loader)
     {
       ObjectPtr object = loader->loadFromFile(context, file);
