@@ -313,7 +313,6 @@ private:
 typedef ReferenceCountedObjectPtr<SegmentedMatrix> SegmentedMatrixPtr;
 
 extern ClassPtr segmentedMatrixClass(TypePtr elementsType);
-extern FunctionPtr segmentMatrixFunction(bool use8Connexity);
 
 }; /* namespace lbcpp */
 

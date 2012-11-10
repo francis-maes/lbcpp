@@ -98,17 +98,11 @@ extern ExecutionContext& defaultExecutionContext();
 class DynamicClass;
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
-class Function;
-typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
-
-class CompositeFunction;
-typedef ReferenceCountedObjectPtr<CompositeFunction> CompositeFunctionPtr;
-
-class Sampler;
-typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
-
 class LuaState;
 typedef ReferenceCountedObjectPtr<LuaState> LuaStatePtr;
+
+class FileLoader;
+typedef ReferenceCountedObjectPtr<FileLoader> FileLoaderPtr;
 
 }; /* namespace lbcpp */
 

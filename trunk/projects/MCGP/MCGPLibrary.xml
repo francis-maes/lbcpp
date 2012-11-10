@@ -185,7 +185,10 @@
   </class>
   
   <!-- Classification Sand Box -->
-
+  <class name="LbcppFileLoader" base="FileLoader"/>
+  <class name="TraceFileLoader" base="LbcppFileLoader"/>
+  <class name="RawTextFileLoader" base="FileLoader"/>
+         
   <class name="ClassificationSandBox" base="WorkUnit">
     <variable type="File" name="dataFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>

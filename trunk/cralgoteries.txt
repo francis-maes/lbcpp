@@ -1,5 +1,13 @@
 
-* Concept de "FileType/FileLoader"
+* Icones pour les file loaders
+
+* Bouger les loaders dans lbcpp-core
+* Bouger StringComponent dans lbcpp-core
+* Eventuellement: class Text et TextComponent
+* Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
 * Loader de ARFF, LibSVM, JDB
+
+* Enlever les fileType au profit de newFileClass
+
 * Finir d'enlever les Dynamic Object
  

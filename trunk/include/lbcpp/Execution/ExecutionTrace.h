@@ -171,10 +171,6 @@ public:
   ExecutionTrace(const String& contextDescription);
   ExecutionTrace() {}
 
-#ifdef LBCPP_USER_INTERFACE
-  virtual juce::Component* createComponent() const;
-#endif // LBCPP_USER_INTERFACE
-
   virtual String toString() const
     {ScopedLock _(lock); return context + T(" Execution Trace");}
 

@@ -52,6 +52,7 @@ namespace lbcpp
   inline bool importLibrary(LibraryPtr library, void* dynamicLibraryHandle = NULL)
     {return importLibrary(defaultExecutionContext(), library, dynamicLibraryHandle);}
 
+  extern LibraryPtr getTopLevelLibrary();
   extern size_t getNumLibraries();
   extern LibraryPtr getLibrary(size_t index);
 

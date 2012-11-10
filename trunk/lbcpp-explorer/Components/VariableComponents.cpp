@@ -13,6 +13,9 @@
 #include "HexadecimalFileComponent.h"
 #include "../Utilities/FileType.h"
 #include "LuaCodeEditorComponent.h"
+#include <lbcpp/library.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/Core/FileLoader.h>
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
@@ -27,13 +30,7 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
   if (object->getClass()->inheritsFrom(xmlElementClass))
     object = object.staticCast<XmlElement>()->createObject(context);
 
-  // old
-  Component* res = object->createComponent();
-  if (res)
-    return res;
-
-  // new
-  res = userInterfaceManager().createComponentIfExists(context, object, explicitName);
+  Component* res = lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, object, explicitName);
   if (res)
     return res;
 
@@ -80,6 +77,16 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
   if (variable.isFile())
   {
     File file = variable.getFile();
+
+    // new
+    FileLoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
+    if (loader)
+    {
+      ObjectPtr object = loader->loadFromFile(context, file);
+      return object ? createComponentForVariableImpl(context, object, file.getFileName()) : NULL;
+    }
+
+    // old
     String extension = file.getFileExtension();
     if (extension == T(".lua"))
       return new LuaCodeEditor(file);

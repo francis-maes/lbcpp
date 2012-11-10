@@ -6,8 +6,10 @@
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
+  <include file="lbcpp/Core/FileLoader.h"/>
   <include file="lbcpp/Core/XmlSerialisation.h"/>
 
+  <class name="FileLoader" base="Object" abstract="yes"/>
   <class name="Library" base="Object" abstract="yes"/>
 
   <!-- Builtin Types -->

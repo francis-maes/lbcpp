@@ -12,11 +12,64 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/Core/DynamicObject.h>
+# include <lbcpp/Core/FileLoader.h>
 # include <lbcpp-ml/Expression.h>
 
 namespace lbcpp
 {
+ 
+///////////////////////////////////////////
+// TODO: move
+
+class LbcppFileLoader : public FileLoader
+{
+public:
+  virtual String getFileExtensions() const
+    {return "xml";}
+
+  virtual ClassPtr getTargetClass() const
+    {return objectClass;}
+
+  virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const
+  {
+    String firstLine = readFirstLine(istr);
+    static const char* xmlBegin = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    return firstLine.startsWith(String(xmlBegin));
+  }
+
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
+    {return Object::createFromFile(context, file);}
+};
+
+class TraceFileLoader : public LbcppFileLoader
+{
+public:
+  virtual String getFileExtensions() const
+    {return "trace";}
+
+  virtual ClassPtr getTargetClass() const
+    {return executionTraceClass;}
+};
+
+class RawTextFileLoader : public FileLoader
+{
+public:
+  virtual String getFileExtensions() const
+    {return "txt";}
+
+  virtual ClassPtr getTargetClass() const
+    {return newStringClass;}
   
+  virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const
+    {return guessIfIsText(istr);}
+
+  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const
+    {return new NewString(istr.readEntireStreamAsString());}
+};
+
+
+///////////////////////////////////////////
+
 #ifdef JUCE_WIN32
 # pragma warning(disable:4996)
 #endif // JUCE_WIN32

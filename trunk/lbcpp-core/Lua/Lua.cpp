@@ -80,8 +80,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
     };
     luaL_openlib(L, NULL, methods, 0);
 
-    for (size_t i = 0; i < lbcpp::getNumLibraries(); ++i)
-      lbcpp::getLibrary(i)->luaRegister(*this);
+    lbcpp::getTopLevelLibrary()->luaRegister(*this);
     
     pop(1);
 
