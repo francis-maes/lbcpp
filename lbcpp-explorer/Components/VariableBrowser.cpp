@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include "VariableBrowser.h"
 #include "../ExplorerProject.h"
+#include <lbcpp/Data/Table.h>
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
 using namespace lbcpp;
 
@@ -61,7 +62,7 @@ struct VariableRelatedCommand
     std::vector<VariableRelatedCommand> res;
     if (variable.isObject())
       res.push_back(VariableRelatedCommand(T("Save"), T("Save-32.png")));
-    if (variable.inheritsFrom(containerClass(objectClass)))
+    if (variable.inheritsFrom(tableClass))
       res.push_back(VariableRelatedCommand(T("Save as gnuplot"), T("Save-32.png")));
     return res;
   }

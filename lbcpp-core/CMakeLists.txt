@@ -258,7 +258,6 @@ IF(LBCPP_USER_INTERFACE)
 	UserInterface/Plot/PlotConfigurationComponent.h
 	UserInterface/Plot/PlotContentComponent.h
     UserInterface/Plot/PlotComponent.h
-    UserInterface/Plot/PlotComponent.cpp
 	UserInterface/Plot/UserInterfacePlotLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/UserInterfacePlotLibrary.cpp
   )
