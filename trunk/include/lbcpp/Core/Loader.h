@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: FileLoader.h                   | File Loader Base Class          |
+| Filename: Loader.h                   | File Loader Base Class          |
 | Author  : Francis Maes                   |                                 |
 | Started : 10/11/2012 13:16               |                                 |
 `------------------------------------------/                                 |
@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class FileLoader : public Object
+class Loader : public Object
 {
 public:
   virtual String getFileExtensions() const = 0; // separated by semi colons, e.g. "jpg;tga;bmp"
@@ -32,7 +32,23 @@ public:
   static bool guessIfIsText(juce::InputStream& istr);
 };
 
-extern ClassPtr fileLoaderClass;
+extern ClassPtr loaderClass;
+
+class TextLoader : public Loader
+{
+public:
+  virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const;
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const;
+  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const;
+
+protected:
+  virtual void parseBegin(ExecutionContext& context) {}
+  virtual bool parseLine(ExecutionContext& context, const String& line) = 0;
+  virtual ObjectPtr parseEnd(ExecutionContext& context) = 0;
+
+private:
+  static bool readNextLine(FILE* f, char* line, size_t& maxLineLength);
+};
 
 }; /* namespace lbcpp */
 

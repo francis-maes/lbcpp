@@ -8,6 +8,7 @@ GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Core/Type/CoreTypeLibrary.xml CoreTypeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Core/Loader/CoreLoaderLibrary.xml CoreLoaderLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary.cpp)
@@ -61,8 +62,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
-  ../include/lbcpp/Core/FileLoader.h
-  Core/FileLoader.cpp
+  ../include/lbcpp/Core/Loader.h
+  Core/Loader.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml
@@ -85,6 +86,13 @@ SET(LBCPP_CORE_TYPE_SOURCES
   Core/Type/FileType.h
   Core/Type/CoreTypeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreTypeLibrary.cpp
+)
+
+SET(LBCPP_CORE_LOADER_SOURCES
+  Core/Loader/LbcppLoader.h
+  Core/Loader/RawTextLoader.h
+  Core/Loader/CoreLoaderLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/CoreLoaderLibrary.cpp
 )
 
 #### Data ####
@@ -290,6 +298,7 @@ SET(LBCPP_SOURCES
   ${LBCPP_CORE_SOURCES}
     ${LBCPP_CORE_IMPL_HEADERS}
     ${LBCPP_CORE_TYPE_SOURCES}
+	${LBCPP_CORE_LOADER_SOURCES}
 
   # Data
   ${LBCPP_DATA_SOURCES}
@@ -328,6 +337,7 @@ SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
 SOURCE_SUB_GROUP(Core impl FILES ${LBCPP_CORE_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
+SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})

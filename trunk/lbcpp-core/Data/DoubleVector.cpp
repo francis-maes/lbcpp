@@ -1192,7 +1192,7 @@ void DenseDoubleVector::prepend(const Variable& value)
 }
 
 void DenseDoubleVector::append(const Variable& value)
-  {values->push_back(value.getDouble());}
+  {values->push_back(NewDouble::get(value.getObject()));}
 
 void DenseDoubleVector::remove(size_t index)
 {

@@ -26,6 +26,20 @@ void Table::addColumn(const ObjectPtr& key, const TypePtr& type)
   columns.push_back(c);
 }
 
+void Table::addRow(const std::vector<ObjectPtr>& elements)
+{
+  if (allIndices)
+    allIndices->append(elements.size());
+  else
+    allIndices = new IndexSet(0, 1);
+  jassert(elements.size() == columns.size());
+  for (size_t i = 0; i < elements.size(); ++i)
+  {
+    jassert(elements[i]->getClass()->inheritsFrom(columns[i].type));
+    columns[i].data->append(elements[i]);
+  }
+}
+
 void Table::resize(size_t numRows)
 {
   for (size_t i = 0; i < columns.size(); ++i)

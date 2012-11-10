@@ -22,6 +22,7 @@ public:
   Table() {}
 
   void addColumn(const ObjectPtr& key, const TypePtr& type);
+  void addRow(const std::vector<ObjectPtr>& elements);
   void resize(size_t numRows);
 
   size_t getNumColumns() const
