@@ -1,14 +1,18 @@
+ok Bouger les loaders dans lbcpp-core
+ok Loader de JDB
 
 * Icones pour les file loaders
 
-* Bouger les loaders dans lbcpp-core
-* Bouger StringComponent dans lbcpp-core
-* Eventuellement: class Text et TextComponent
-* Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
-* Loader de ARFF, LibSVM, JDB
+Core FileLoaders:
+ * DirectoryLoader (todo: Enlever les fileType au profit de newFileClass)
+ * XmlLoader
 
-* Enlever les fileType au profit de newFileClass
-* DirectoryLoader
+ML FileLoaders:
+ * ARFF Loader
+ * LibSVM Loader
+ => Finir d'enlever les Dynamic Object
 
-* Finir d'enlever les Dynamic Object
- 
+Recyclage des components de l'explorer:
+ * Bouger StringComponent dans lbcpp-core
+ * class Text et TextComponent
+ * Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent

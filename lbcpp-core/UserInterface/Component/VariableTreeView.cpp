@@ -8,7 +8,10 @@
 #include "precompiled.h"
 #include "VariableTreeView.h"
 #include <lbcpp/Core/Container.h>
+#include <lbcpp/Core/Loader.h>
 #include <lbcpp/Data/DoubleVector.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/library.h>
 using namespace lbcpp;
 using juce::Font;
 using juce::Justification;
@@ -16,11 +19,26 @@ using juce::Graphics;
 using juce::Component;
 using juce::Colours;
 
+static String getIconForType(const TypePtr& type)
+  {return type->getName() + "-32.png";}
+
+static String getIconForVariable(const Variable& variable)
+{
+  if (variable.isFile())
+  {
+    File file = variable.getFile();
+    LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(defaultExecutionContext(), file);
+    if (loader)
+      return getIconForType(loader->getTargetClass());
+  }
+  return getIconForType(variable.getType());
+}
+
 class VariableTreeViewItem : public SimpleTreeViewItem
 {
 public:
   VariableTreeViewItem(const String& name, const Variable& variable, const VariableTreeOptions& options)
-    : SimpleTreeViewItem(name, NULL, true), 
+    : SimpleTreeViewItem(name, getIconForVariable(variable), true), 
       variable(variable), options(options), typeName(variable.getTypeName()), component(NULL), numUndisplayedChildElements(0)
   {
     mightContainSubItemsFlag = false;
