@@ -10,6 +10,7 @@
 # define LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
 
 # include "ExecutionTraceTreeViewItem.h"
+# include <lbcpp/Execution/Notification.h>
 
 namespace lbcpp
 {

@@ -355,9 +355,6 @@ void lbcpp::deinitialize()
     applicationContext->typeManager.shutdown();
 
     applicationContext->libraryManager.shutdown();
-#ifdef LBCPP_USER_INTERFACE
-    applicationContext->userInterfaceManager->shutdown();
-#endif
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
   }
