@@ -69,6 +69,7 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<Table> TablePtr;
+extern ClassPtr tableClass;
 
 }; /* namespace lbcpp */
 
