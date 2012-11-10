@@ -1,14 +1,4 @@
-ok Bouger les loaders dans lbcpp-core
-ok Loader de JDB
-ok Icones pour les file loaders
-ok XmlLoader
-ok Remove FileType
-ok DirectoryLoader
-ok ArffLoader
-ok Finish to remove Dynamic Objects
-
-ML FileLoaders:
- * LibSVM Loader
+Next step: En finir avec les Variables
 
 Explorer:
  * TextEditor
