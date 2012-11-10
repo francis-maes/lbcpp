@@ -1,4 +1,5 @@
 
- * Enlever les Dynamic Object
- * Reparer et refactorer les Curves
- * Concept de "FileType/FileLoader"
+* Concept de "FileType/FileLoader"
+* Loader de ARFF, LibSVM, JDB
+* Finir d'enlever les Dynamic Object
+ 

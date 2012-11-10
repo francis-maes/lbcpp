@@ -169,10 +169,6 @@ SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ExecutionCallbackLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackLibrary.cpp
 )
-IF(LBCPP_USER_INTERFACE)
-  SET(LBCPP_EXECUTION_CALLBACK_SOURCES ${LBCPP_EXECUTION_CALLBACK_SOURCES} Execution/Callback/UserInterfaceExecutionCallback.h)
-ENDIF(LBCPP_USER_INTERFACE)
-
 
 SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/SingleThreadedExecutionContext.h

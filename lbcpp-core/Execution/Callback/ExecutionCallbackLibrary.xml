@@ -7,12 +7,6 @@
     <constructor returnType="ExecutionCallback"/>
   </class>
 
-  <!--
-    <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
-      <constructor/>
-    </class>
-  -->
-
   <class name="MakeTraceThreadExecutionCallback" base="ExecutionCallback"/>
   <class name="MakeTraceExecutionCallback" base="DispatchByThreadExecutionCallback">
     <constructor arguments="ExecutionTracePtr trace" returnType="ExecutionCallback"/>
@@ -34,7 +28,7 @@
 
   <class name="ExecutionResultNotification" base="ExecutionNotification">
     <variable type="String" name="name"/>
-    <variable type="Variable" name="value"/>
+    <variable type="Object" name="value"/>
   </class>
 
   <class name="ExecutionMessageNotification" base="ExecutionNotification">
@@ -52,7 +46,7 @@
   <class name="PostExecutionNotification" base="ExecutionNotification">
     <variable type="ExecutionStack" name="stack"/>
     <variable type="WorkUnit" name="workUnit"/>
-    <variable type="Boolean" name="result"/>
+    <variable type="Object" name="result"/>
   </class>
   
   <class name="ThreadExecutionNotification" base="ExecutionNotification">

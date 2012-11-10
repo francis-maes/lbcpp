@@ -10,31 +10,13 @@
 # define LBCPP_USER_INTERFACE_MANAGER_H_
 
 # include "../Execution/ExecutionContext.h"
-# include "../Execution/Notification.h"
 
 namespace lbcpp
 {
 
-class UserInterfaceThread;
 class UserInterfaceManager
 {
 public:
-  UserInterfaceManager();
-  ~UserInterfaceManager();
-
-  void ensureIsInitialized(ExecutionContext& context);
-  bool isRunning() const;
-  void shutdown();
-
-  bool hasAtLeastOneVisibleWindowOnDesktop() const;
-  void waitUntilAllWindowsAreClosed();
-
-  typedef void* (MessageCallbackFunction) (void* userData);
-  void* callFunctionOnMessageThread(MessageCallbackFunction* callback, void* userData);
-
-  const NotificationQueuePtr& getNotificationQueue() const
-    {return notifications;}
-
   juce::Image* getImage(const String& fileName);
   juce::Image* getImage(const String& fileName, int width, int height);
 
@@ -42,10 +24,6 @@ public:
   juce::TreeView* createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name = String::empty,
                                           bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true) const;
   juce::TreeView* createExecutionTraceInteractiveTreeView(ExecutionContext& context, ExecutionTracePtr trace, ExecutionContextPtr traceContext) const;
-
-private:
-  UserInterfaceThread* userInterfaceThread;
-  NotificationQueuePtr notifications;
 };
 
 extern UserInterfaceManager& userInterfaceManager();
