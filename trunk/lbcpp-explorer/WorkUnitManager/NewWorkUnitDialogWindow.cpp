@@ -425,7 +425,7 @@ public:
 
       if (typeValue == booleanType)
         continue;
-      else if (typeValue == fileType)
+      else if (typeValue == newFileClass)
         res += T(" ") + context.getFilePath(File(value.getString()));
       else
       {

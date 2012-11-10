@@ -188,8 +188,6 @@ extern TypePtr doubleType;
   extern TypePtr timeType;  
 
 extern TypePtr stringType;
-  extern TypePtr fileType;
-    extern TypePtr localFileType;
 
 extern TypePtr sumType(TypePtr type1, TypePtr type2);
 extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3);

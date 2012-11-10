@@ -2,16 +2,25 @@ ok Bouger les loaders dans lbcpp-core
 ok Loader de JDB
 ok Icones pour les file loaders
 ok XmlLoader
+ok Remove FileType
+ok DirectoryLoader
 
-Core FileLoaders:
- * DirectoryLoader (todo: Enlever les fileType au profit de newFileClass)
- 
 ML FileLoaders:
  * ARFF Loader
  * LibSVM Loader
  => Finir d'enlever les Dynamic Object
 
-Recyclage des components de l'explorer:
- * Bouger StringComponent dans lbcpp-core
- * class Text et TextComponent
- * Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
+Explorer:
+ * TextEditor
+   * class Text et TextComponent
+   * Cas particulier pour Lua
+
+ * Classe de base pour faire des arbres
+    => FileTree
+	=> ObjectTree
+	=> XmlTree
+
+ * Cleaner
+   * Bouger StringComponent dans lbcpp-core
+   * Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
+   * Enlever le repertoire "Components"

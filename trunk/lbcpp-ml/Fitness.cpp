@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
+#include <lbcpp/Core/Double.h>
 #include <lbcpp-ml/Fitness.h>
 using namespace lbcpp;
 

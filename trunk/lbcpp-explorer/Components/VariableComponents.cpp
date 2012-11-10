@@ -38,7 +38,7 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
   if (container)
   {
     TypePtr elementsType = container->computeElementsCommonBaseType();
-    if (elementsType->inheritsFrom(fileType))
+    if (elementsType->inheritsFrom(newFileClass))
     {
       /*ContainerPtr loadedContainer = container->apply(context, loadFromFileFunction(objectClass), Container::parallelApply);
       TypePtr loadedElementsType = loadedContainer->computeElementsCommonBaseType();
@@ -74,17 +74,16 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
 
   Component* res = NULL;
 
-  if (variable.isFile())
+  if (variable.isObject() && variable.getObject().isInstanceOf<NewFile>())
   {
-    File file = variable.getFile();
+    File file = NewFile::get(variable.getObject());
+    if (file.isDirectory())
+      return userInterfaceManager().createVariableTreeView(context, variable, explicitName, false, false);
 
-    // new
-    LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
-    if (loader)
-    {
-      ObjectPtr object = loader->loadFromFile(context, file);
-      return object ? createComponentForVariableImpl(context, object, file.getFileName()) : NULL;
-    }
+    // new 
+    ObjectPtr object = Object::createFromFile(context, file);
+    if (object)
+      return createComponentForVariableImpl(context, object, file.getFileName());
 
     // old
     String extension = file.getFileExtension();

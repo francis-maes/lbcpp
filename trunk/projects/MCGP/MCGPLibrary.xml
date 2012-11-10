@@ -163,7 +163,7 @@
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="PositiveInteger" name="maxExpressionSize"/>
-    <variable type="File" name="outputDirectory"/>
+    <variable type="NewFile" name="outputDirectory"/>
     <variable type="Boolean" name="verbose"/>
   </class>
 
@@ -186,7 +186,7 @@
   
   <!-- Classification Sand Box -->
   <class name="ClassificationSandBox" base="WorkUnit">
-    <variable type="File" name="dataFile"/>
+    <variable type="NewFile" name="dataFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="verbosity"/>
   </class>

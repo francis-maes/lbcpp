@@ -32,7 +32,7 @@ public:
   }
 
   virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
-    {return Object::createFromFile(context, file);}
+    {return Variable::createFromFile(context, file).getObject();}
 };
 
 class TraceLoader : public LbcppLoader

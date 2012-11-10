@@ -6,8 +6,8 @@
 
   <!-- Explorer Configuration -->
   <class name="RecentFileVector">
-    <variable type="LocalFile" name="recentDirectory"/>
-    <variable type="GenericVector[LocalFile]" name="recentFiles"/>
+    <variable type="NewFile" name="recentDirectory"/>
+    <variable type="ObjectVector[NewFile]" name="recentFiles"/>
   </class>
 
   <class name="ExplorerConfiguration" base="Object">
@@ -25,8 +25,8 @@
   </class>
   
   <class name="ExplorerProject">
-    <variable type="LocalFile" name="rootDirectory"/>
-    <variable type="LocalFile" name="recentDirectory"/>
+    <variable type="NewFile" name="rootDirectory"/>
+    <variable type="NewFile" name="recentDirectory"/>
     <variable type="RecentWorkUnitsConfiguration" name="recentWorkUnits"/>
   </class>
 

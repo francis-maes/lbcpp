@@ -18,7 +18,7 @@ typedef ReferenceCountedObjectPtr<RecentFileVector> RecentFileVectorPtr;
 class RecentFileVector : public Object
 {
 public:
-  RecentFileVector() : recentFiles(vector(localFileType)) {}
+  RecentFileVector() : recentFiles(vector(newFileClass)) {}
 
   virtual String toShortString() const
     {return T("RecentFileVector");}
@@ -33,7 +33,7 @@ public:
     {return recentFiles->getNumElements();}
 
   File getRecentFile(size_t index) const
-    {jassert(index < recentFiles->getNumElements()); return recentFiles->getElement(index).getFile();}
+    {jassert(index < recentFiles->getNumElements()); return NewFile::get(recentFiles->getElement(index).getObject());}
 
   void addRecentFile(const File& file);
   

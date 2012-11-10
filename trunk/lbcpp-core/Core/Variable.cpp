@@ -10,6 +10,10 @@
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Container.h>
+#include <lbcpp/Core/Boolean.h>
+#include <lbcpp/Core/Integer.h>
+#include <lbcpp/Core/Double.h>
+#include <lbcpp/Core/String.h>
 #include <lbcpp/Data/RandomVariable.h>
 #include <lbcpp/Data/DoubleVector.h>
 using namespace lbcpp;

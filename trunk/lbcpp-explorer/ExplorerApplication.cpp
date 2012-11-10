@@ -385,16 +385,17 @@ public:
     //RecentFileVector::getInstance(context)->addRecentFile(file);
     // FIXME: save project ?
     ExplorerConfiguration::save(context);
-    Variable variable = createVariableFromFile(file);
-    if (variable.exists())
-      contentTabs->addVariable(context, variable, file.getFileNameWithoutExtension());
-  }
+    ObjectPtr object;
+    if (file.isDirectory())
+      object = NewFile::create(file);
+    else
+    {
+      object = Object::createFromFile(context, file);
+      flushErrorAndWarningMessages(T("Load ") + file.getFileName());
+    }
 
-  Variable createVariableFromFile(const File& file)
-  {
-    Variable res = getFileType(file) == lbcppXmlFile ? Variable::createFromFile(context, file) : Variable(file);
-    flushErrorAndWarningMessages(T("Load ") + file.getFileName());
-    return res;
+    if (object)
+      contentTabs->addVariable(context, object, file.getFileNameWithoutExtension());
   }
 
   juce_UseDebuggingNewOperator

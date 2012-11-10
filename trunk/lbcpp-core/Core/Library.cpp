@@ -9,6 +9,7 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Core/Loader.h>
+#include <lbcpp/Core/Class.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 

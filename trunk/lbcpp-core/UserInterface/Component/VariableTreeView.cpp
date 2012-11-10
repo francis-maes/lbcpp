@@ -9,6 +9,7 @@
 #include "VariableTreeView.h"
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Core/Loader.h>
+#include <lbcpp/Core/Double.h>
 #include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/library.h>
@@ -33,9 +34,9 @@ static String getIconForType(const TypePtr& type)
 
 static String getIconForVariable(const Variable& variable)
 {
-  if (variable.isFile())
+  if (variable.isObject() && variable.getObject().isInstanceOf<NewFile>())
   {
-    File file = variable.getFile();
+    File file = NewFile::get(variable.getObject());
     LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(defaultExecutionContext(), file);
     if (loader)
       return getIconForType(loader->getTargetClass());
@@ -157,9 +158,9 @@ public:
       return;
     }
 
-    if (variable.isFile())
+    if (variable.isObject() && variable.getObject().dynamicCast<NewFile>())
     {
-      File file = variable.getFile();
+      File file = NewFile::get(variable.getObject());
       if (file.isDirectory())
       {
         juce::OwnedArray<File> files;
@@ -167,7 +168,7 @@ public:
         subVariables.reserve(subVariables.size() + files.size());
    
         for (int i = 0; i < files.size(); ++i)
-          addSubVariable(files[i]->getFileName(), Variable(files[i]->getFullPathName(), fileType));
+          addSubVariable(files[i]->getFileName(), NewFile::create(*files[i]));
         mightContainSubItemsFlag = true;
       }
       else

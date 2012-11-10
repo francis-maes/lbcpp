@@ -50,14 +50,11 @@ public:
   void enterScope(const WorkUnitPtr& workUnit);
   void leaveScope(const ObjectPtr& result);
   
-  void leaveScope(bool result = true)
-    {leaveScope(ObjectPtr(new NewBoolean(result)));}
-  void leaveScope(size_t result)
-    {leaveScope(ObjectPtr(new NewPositiveInteger(result)));}
-  void leaveScope(double result)
-    {leaveScope(ObjectPtr(new NewDouble(result)));}
-  void leaveScope(const String& result)
-    {leaveScope(ObjectPtr(new NewString(result)));}
+  void leaveScope(bool result = true);
+  void leaveScope(size_t result);
+  void leaveScope(double result);
+  void leaveScope(const String& result);
+
   template<class T>
   void leaveScope(const ReferenceCountedObjectPtr<T>& value)
     {leaveScope(ObjectPtr(value));}

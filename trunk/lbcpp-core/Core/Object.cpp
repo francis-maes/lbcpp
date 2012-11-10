@@ -10,8 +10,11 @@
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/Core/Loader.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Lua/Lua.h>
+#include <lbcpp/library.h>
 #include <fstream>
 using namespace lbcpp;
 
@@ -480,7 +483,10 @@ void Object::saveToFile(ExecutionContext& context, const File& file) const
   {Variable(const_cast<Object* >(this)).saveToFile(context, file);}
 
 ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
-  {return Variable::createFromFile(context, file).getObject();}
+{
+  LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
+  return loader ? loader->loadFromFile(context, file) : ObjectPtr();
+}
 
 /*
 ** Lua

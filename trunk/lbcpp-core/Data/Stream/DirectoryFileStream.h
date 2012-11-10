@@ -24,7 +24,7 @@ public:
   DirectoryFileStream() {}
 
   virtual TypePtr getElementsType() const
-    {return fileType;}
+    {return newFileClass;}
 
   virtual bool rewind()
     {nextFileIterator = files.begin(); return true;}
@@ -39,7 +39,7 @@ public:
     File file(*nextFileIterator);
     ++nextFileIterator;
     ++position;
-    return file;
+    return NewFile::create(file);
   }
 
   static void findChildFiles(const File& directory, const String& wildCardPattern, bool searchRecursively, std::set<String>& res)
