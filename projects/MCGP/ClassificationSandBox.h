@@ -16,7 +16,11 @@
 
 namespace lbcpp
 {
- 
+
+# ifdef JUCE_WIN32
+#  pragma warning(disable:4996) // microsoft visual does not like fopen()/fclose()
+# endif // JUCE_WIN32
+
 class TestingSetParser : public TextParser
 {
 public:

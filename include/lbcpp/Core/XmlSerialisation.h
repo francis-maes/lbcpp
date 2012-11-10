@@ -27,7 +27,7 @@
 #ifndef LBCPP_CORE_XML_SERIALISATION_H_
 # define LBCPP_CORE_XML_SERIALISATION_H_
 
-# include "Variable.h"
+# include "Object.h"
 
 namespace lbcpp
 {

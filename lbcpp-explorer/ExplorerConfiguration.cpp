@@ -14,7 +14,7 @@ using namespace lbcpp;
 */
 void RecentFileVector::addRecentFile(const File& file)
 {
-  recentFiles->prepend(Variable(file, localFileType));
+  recentFiles->prepend(NewFile::create(file));
   for (size_t i = 1; i < recentFiles->getNumElements(); ++i)
     if (getRecentFile(i) == file)
     {

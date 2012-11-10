@@ -24,7 +24,7 @@ public:
   DirectoryPairFileStream() : nextFilePosition(0) {}
 
   virtual TypePtr getElementsType() const
-    {return pairClass(fileType, fileType);}
+    {return pairClass(newFileClass, newFileClass);}
 
   virtual bool rewind()
     {nextFilePosition = 0; return true;}
@@ -39,7 +39,7 @@ public:
     jassert(nextFilePosition < (int)files.size());
     std::pair<File, File> res = files[nextFilePosition];
     ++nextFilePosition;
-    return Variable::pair(res.first, res.second);
+    return Variable::pair(NewFile::create(res.first), NewFile::create(res.second));
   }
 
   virtual ProgressionStatePtr getCurrentPosition() const

@@ -28,16 +28,17 @@
 # define LBCPP_CORE_VARIABLE_H_
 
 # include "Object.h"
-# include "Boolean.h"
-# include "Integer.h"
-# include "Double.h"
-# include "String.h"
 # include "../Execution/ExecutionContext.h"
 # include "Type.h"
 # include "Enumeration.h"
 # include "Class.h"
 # include "TemplateType.h"
 # include "TypeManager.h"
+
+# include "Boolean.h"
+# include "Integer.h"
+# include "Double.h"
+# include "String.h"
 
 namespace lbcpp
 {
@@ -52,7 +53,6 @@ public:
   Variable(double doubleValue, const TypePtr& type = doubleType);
   Variable(const juce::tchar* stringValue, const TypePtr& type = stringType);
   Variable(const String& stringValue, const TypePtr& type = stringType);
-  Variable(const File& fileValue, const TypePtr& type = fileType);
   template<class T> Variable(const ReferenceCountedObjectPtr<T>& object);
   template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, const TypePtr& type);
   Variable(Object* object, const TypePtr& type);
@@ -163,9 +163,6 @@ public:
 
   bool isString() const;
   String getString() const;
-
-  bool isFile() const;
-  File getFile() const;
 
   bool isObject() const;
   const ObjectPtr& getObject() const;

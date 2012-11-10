@@ -53,9 +53,6 @@ inline Variable::Variable(const juce::tchar* stringValue, const TypePtr& type)
 inline Variable::Variable(const String& stringValue, const TypePtr& type)
   : type(type), value(stringValue) {jassert(isString());}
 
-inline Variable::Variable(const File& fileValue, const TypePtr& type)
-  : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
-
 inline Variable::Variable(Object* object, const TypePtr& type)
   : type(type), value(object) {jassert(type);}
 
@@ -133,12 +130,6 @@ inline bool Variable::isString() const
 
 inline String Variable::getString() const
   {jassert(isString()); return value.getString();}
-
-inline bool Variable::isFile() const
-  {return type->inheritsFrom(fileType);}
-
-inline File Variable::getFile() const
-  {jassert(isFile()); return value.getInteger() == 0 ? File::nonexistent : File(value.getString());}
 
 inline bool Variable::isObject() const
   {return dynamic_cast<Class* >(type.get()) != NULL;}
@@ -245,7 +236,15 @@ inline void variableToNative(ExecutionContext& context, String& dest, const Vari
   {jassert(source.isString()); dest = source.getString();}
 
 inline void variableToNative(ExecutionContext& context, File& dest, const Variable& source)
-  {jassert(source.isString()); dest = context.getProjectDirectory().getChildFile(source.getString());}
+{
+  if (source.isObject())
+    dest = context.getProjectDirectory().getChildFile(NewString::get(source.getObject()));
+  else
+  {
+    jassert(source.isString());
+    dest = context.getProjectDirectory().getChildFile(source.getString());
+  }
+}
 
 inline void variableToNative(ExecutionContext& context, ObjectPtr& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObject();}
@@ -264,6 +263,9 @@ inline void variableToNative(ExecutionContext& context, Variable& dest, const Va
 /*
 ** C++ Native => Variable
 */
+inline Variable nativeToVariable(const File& source, const TypePtr& expectedType)
+  {return Variable(NewFile::create(source), expectedType);}
+
 inline Variable nativeToVariable(const Variable& source, const TypePtr& )
   {return source;}
 
@@ -278,6 +280,7 @@ inline Variable nativeToVariable(const TT* source, const TypePtr& expectedType)
 template<class TT>
 inline Variable nativeToVariable(const TT& source, const TypePtr& expectedType)
   {return Variable(source, expectedType);}
+
 
 /*
 ** Inheritance check

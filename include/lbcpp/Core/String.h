@@ -10,6 +10,8 @@
 # define LBCPP_CORE_STRING_H_
 
 # include "Object.h"
+# include "XmlSerialisation.h"
+# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -26,7 +28,7 @@ public:
   const juce::String& get() const
     {return value;}
   
-  static juce::String get(ObjectPtr object)
+  static juce::String get(const ObjectPtr& object)
     {return object.staticCast<NewString>()->get();}
 
   virtual juce::String toShortString() const
@@ -46,17 +48,80 @@ public:
       return 0;
   }
 
-  virtual ObjectPtr clone(ExecutionContext& context) const
-    {return new NewString(value);}
-
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<NewString>()->value = value;}
+  
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    String text = importer.getAllSubText().trim();
+    return loadFromString(importer.getContext(), text);
+  }
 
-private:
+protected:
   juce::String value;
 };
 
 extern ClassPtr newStringClass;
+
+class NewFile : public NewString
+{
+public:
+  NewFile(const File& file)
+    : NewString(file.getFullPathName()) {}
+  NewFile() {}
+
+  static NewFilePtr create(const File& file);
+
+  void set(const juce::File& value)
+    {this->value = value.getFullPathName();}
+
+  juce::File get() const
+    {return juce::File(value);}
+
+  static juce::File get(const ObjectPtr& object)
+    {return object.staticCast<NewFile>()->get();}
+
+  virtual juce::String toShortString() const
+    {return get().getFileName();}
+
+  virtual juce::String toString() const
+    {return defaultExecutionContext().getFilePath(get());}
+
+  virtual void saveToXml(XmlExporter& exporter) const
+    {exporter.addTextElement(toString());}
+
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    juce::File file = context.getFile(str);
+    if (file == File::nonexistent)
+    {
+      context.errorCallback(T("Could not find file ") + str);
+      return false;
+    }
+    set(file);
+    return true;
+  }
+};
+
+extern ClassPtr newFileClass;
+
+class Directory : public NewFile
+{
+public:
+  Directory(const File& file)
+    : NewFile(file.getFullPathName()) {}
+  Directory() {}
+};
+
+extern ClassPtr directoryClass;
+
+inline NewFilePtr NewFile::create(const File& file)
+{
+  if (file.isDirectory())
+    return new Directory(file);
+  else
+    return new NewFile(file);
+}
 
 }; /* namespace lbcpp */
 

@@ -7,7 +7,10 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Execution/ExecutionCallback.h>
-#include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Core/Boolean.h>
+#include <lbcpp/Core/Integer.h>
+#include <lbcpp/Core/Double.h>
+#include <lbcpp/Core/String.h>
 #include <lbcpp/Lua/Lua.h>
 #include "Callback/ExecutionNotifications.h"
 using namespace lbcpp;
@@ -110,6 +113,21 @@ void CompositeExecutionCallback::progressCallback(const ProgressionStatePtr& pro
 
 void CompositeExecutionCallback::resultCallback(const String& name, const ObjectPtr& value)
   {notificationCallback(new ExecutionResultNotification(name, value));}
+
+void CompositeExecutionCallback::resultCallback(const String& name, bool value)
+  {resultCallback(name, ObjectPtr(new NewBoolean(value)));}
+
+void CompositeExecutionCallback::resultCallback(const String& name, juce::int64 value)
+  {resultCallback(name, ObjectPtr(new NewInteger(value)));}
+
+void CompositeExecutionCallback::resultCallback(const String& name, size_t value)
+  {resultCallback(name, ObjectPtr(new NewPositiveInteger(value)));}
+
+void CompositeExecutionCallback::resultCallback(const String& name, double value)
+  {resultCallback(name, ObjectPtr(new NewDouble(value)));}
+
+void CompositeExecutionCallback::resultCallback(const String& name, const String& value)
+  {resultCallback(name, ObjectPtr(new NewString(value)));}
 
 void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {notificationCallback(new PreExecutionNotification(stack, description, workUnit));}

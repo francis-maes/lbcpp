@@ -12,6 +12,7 @@
 # include <lbcpp/Execution/ExecutionContext.h>
 # include <lbcpp/Execution/ExecutionStack.h>
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Core/Boolean.h>
 # include "SubExecutionContext.h"
 # include <list>
 

@@ -60,6 +60,9 @@ typedef ReferenceCountedObjectPtr<NewDouble> NewDoublePtr;
 class NewString;
 typedef ReferenceCountedObjectPtr<NewString> NewStringPtr;
 
+class NewFile;
+typedef ReferenceCountedObjectPtr<NewFile> NewFilePtr;
+
 class VariableSignature;
 typedef ReferenceCountedObjectPtr<VariableSignature> VariableSignaturePtr;
 

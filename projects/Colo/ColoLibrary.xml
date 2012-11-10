@@ -7,8 +7,8 @@
   </class>
   <class name="ColoDomain" base="Domain"/>
   <class name="ColoProblem" base="Problem">
-    <variable type="File" name="javaDirectory"/>
-    <variable type="File" name="modelDirectory"/>
+    <variable type="NewFile" name="javaDirectory"/>
+    <variable type="NewFile" name="modelDirectory"/>
   </class>
   <class name="ColoSampler" base="Sampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
@@ -18,8 +18,8 @@
   </class>
 
   <class name="ColoSandBox" base="WorkUnit">
-    <variable type="File" name="javaDirectory"/>
-    <variable type="File" name="modelDirectory"/>
+    <variable type="NewFile" name="javaDirectory"/>
+    <variable type="NewFile" name="modelDirectory"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
   </class>
   

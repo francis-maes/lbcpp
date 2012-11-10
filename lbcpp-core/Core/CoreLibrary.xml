@@ -9,6 +9,10 @@
   <include file="lbcpp/Core/DynamicObject.h"/>
   <include file="lbcpp/Core/Loader.h"/>
   <include file="lbcpp/Core/XmlSerialisation.h"/>
+  <include file="lbcpp/Core/Boolean.h"/>
+  <include file="lbcpp/Core/Integer.h"/>
+  <include file="lbcpp/Core/Double.h"/>
+  <include file="lbcpp/Core/String.h"/>
 
   <class name="Loader" base="Object" abstract="yes"/>
   <class name="TextLoader" base="Loader" abstract="yes"/>
@@ -43,6 +47,8 @@
     </code>
   </class>
   <class name="NewString"/>
+  <class name="NewFile" base="NewString"/>
+  <class name="Directory" base="NewFile"/>
   
   <!-- Pair -->
   <template name="Pair" base="Object">

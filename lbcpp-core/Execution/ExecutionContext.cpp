@@ -10,6 +10,10 @@
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Boolean.h>
+#include <lbcpp/Core/Integer.h>
+#include <lbcpp/Core/Double.h>
+#include <lbcpp/Core/String.h>
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/library.h>
@@ -40,6 +44,18 @@ void ExecutionContext::leaveScope(const ObjectPtr& result)
   std::pair<String, WorkUnitPtr> entry = stack->pop();
   postExecutionCallback(stack, entry.first, entry.second, result);
 }
+
+void ExecutionContext::leaveScope(bool result)
+  {leaveScope(ObjectPtr(new NewBoolean(result)));}
+
+void ExecutionContext::leaveScope(size_t result)
+  {leaveScope(ObjectPtr(new NewPositiveInteger(result)));}
+
+void ExecutionContext::leaveScope(double result)
+  {leaveScope(ObjectPtr(new NewDouble(result)));}
+
+void ExecutionContext::leaveScope(const String& result)
+  {leaveScope(ObjectPtr(new NewString(result)));}
 
 ObjectPtr ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {

@@ -83,7 +83,6 @@ SET(LBCPP_CORE_TYPE_SOURCES
   Core/Type/IntegerType.h
   Core/Type/DoubleType.h
   Core/Type/StringType.h
-  Core/Type/FileType.h
   Core/Type/CoreTypeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreTypeLibrary.cpp
 )
