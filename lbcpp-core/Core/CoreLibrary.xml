@@ -6,7 +6,6 @@
 
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
-  <include file="lbcpp/Core/DynamicObject.h"/>
   <include file="lbcpp/Core/Loader.h"/>
   <include file="lbcpp/Core/XmlSerialisation.h"/>
   <include file="lbcpp/Core/Boolean.h"/>
@@ -96,58 +95,6 @@
   </class>
 
   <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
-
-  <!-- Dynamic Object -->
-  <class name="DynamicClass" base="DefaultClass" abstract="yes"/>
-
-  <template name="EnumBasedDoubleVector" metaclass="DynamicClass">
-    <parameter name="enumeration" type="EnumValue"/>
-    <parameter name="variablesType" type="Double"/>
-    <code>
-      virtual size_t getNumMemberVariables() const
-        {return getEnumeration()->getNumElements();}
-        
-      virtual VariableSignaturePtr getMemberVariable(size_t index) const
-        {return new VariableSignature(getVariablesType(), getEnumeration()->getElementName(index));}
-        
-      virtual void createObjectVariables()
-      {
-        EnumerationPtr enumeration = getEnumeration();
-        size_t n = enumeration->getNumElements();
-        TypePtr variablesType = getVariablesType();
-        for (size_t i = 0; i &lt; n; ++i)
-          addMemberVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
-      }
-       
-      EnumerationPtr getEnumeration() const
-      {
-        jassert(getNumTemplateArguments() == 2);
-        EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
-        jassert(enumeration);
-        return enumeration;
-      }
-         
-      TypePtr getVariablesType() const
-        {jassert(getNumTemplateArguments() == 2); return getTemplateArgument(1);}
-    </code>
-  </template>
-  
-  <template name="OneSubObjectPerInputVariable" base="Object" metaclass="DynamicClass">
-    <parameter name="inputClass" type="Object"/>
-    <parameter name="outputVariablesType" type="Variable"/>
-    <code>
-      virtual void createObjectVariables()
-      {
-        jassert(getNumTemplateArguments() == 2);
-        ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
-        TypePtr outputVariablesType = getTemplateArgument(1);
-        jassert(inputClass);
-        size_t n = inputClass->getNumMemberVariables();
-        for (size_t i = 0; i &lt; n; ++i)
-          addMemberVariable(defaultExecutionContext(), outputVariablesType, inputClass->getMemberVariableName(i));
-      }
-    </code>
-  </template>
 
   <template name="AddMissingToEnumeration" metaclass="Enumeration">
     <parameter name="enumeration" type="EnumValue"/>

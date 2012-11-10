@@ -353,7 +353,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
     columns[it->second.first] = std::make_pair(it->first, it->second.second);
   TablePtr res = new Table(numChildNodes);
   for (size_t i = 0; i < columns.size(); ++i)
-    res->addColumn(new NewString(columns[i].first), columns[i].second);
+    res->addColumn(columns[i].first, columns[i].second);
 
   /*
   ** Fill table

@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
+#include <lbcpp/Core/String.h>
 #include <lbcpp/Data/Table.h>
 #include <algorithm>
 using namespace lbcpp;
@@ -26,17 +27,23 @@ void Table::addColumn(const ObjectPtr& key, const TypePtr& type)
   columns.push_back(c);
 }
 
+void Table::addColumn(const String& name, const TypePtr& type)
+{
+  addColumn(new NewString(name), type);
+}
+
 void Table::addRow(const std::vector<ObjectPtr>& elements)
 {
   if (allIndices)
-    allIndices->append(elements.size());
+    allIndices->append(allIndices->size());
   else
     allIndices = new IndexSet(0, 1);
   jassert(elements.size() == columns.size());
   for (size_t i = 0; i < elements.size(); ++i)
   {
-    jassert(elements[i]->getClass()->inheritsFrom(columns[i].type));
-    columns[i].data->append(elements[i]);
+    const ObjectPtr& element = elements[i];
+    jassert(!element || element->getClass()->inheritsFrom(columns[i].type));
+    columns[i].data->append(element);
   }
 }
 
@@ -93,15 +100,26 @@ struct OrderContainerFunction
   {
     ObjectPtr a = data->getElement(first, columnIndex);
     ObjectPtr b = data->getElement(second, columnIndex);
+    if (!a && !b)
+      return first < second;
+    if (!a && b)
+      return !increasingOrder;
+    if (a && !b)
+      return increasingOrder;
+
     if (convertToDoubles)
     {
       double da = Variable(a).toDouble();
       double db = Variable(b).toDouble();
+      if (da == db)
+        return first < second;
       return increasingOrder ? (da > db) : (da < db);
     }
     else
     {
       int c = a->compare(b);
+      if (c == 0)
+        return first < second;
       return increasingOrder ? (c > 0) : (c < 0);
     }
   }

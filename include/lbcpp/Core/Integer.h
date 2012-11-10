@@ -11,6 +11,7 @@
 
 # include "Object.h"
 # include "Enumeration.h"
+# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -46,6 +47,17 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<NewInteger>()->value = value;}
+
+  virtual bool loadFromString(ExecutionContext& context, const String& value)
+  {
+    if (!value.trim().containsOnly(T("-+e0123456789")))
+    {
+      context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
+      return false;
+    }
+    this->value = value.getLargeIntValue();
+    return true;
+  }
 
 protected:
   juce::int64 value;

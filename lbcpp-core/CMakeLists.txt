@@ -60,8 +60,6 @@ SET(LBCPP_CORE_SOURCES
   Core/Container.cpp
   ../include/lbcpp/Core/Vector.h
   Core/Vector.cpp
-  ../include/lbcpp/Core/DynamicObject.h
-  Core/DynamicObject.cpp
   ../include/lbcpp/Core/Loader.h
   Core/Loader.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
@@ -135,8 +133,6 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/DirectoryPairFileStream.h
   Data/Stream/LibSVMDataParser.h
   Data/Stream/LibSVMDataParser.cpp
-  Data/Stream/ARFFDataParser.h
-  Data/Stream/ARFFDataParser.cpp
   Data/Stream/BuiltinTypeStream.h
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp

@@ -37,7 +37,6 @@
 # include "Core/Pair.h"
 # include "Core/Library.h"
 # include "Core/XmlSerialisation.h"
-# include "Core/DynamicObject.h"
 # include "Core/Vector.h"
 
 # include "Data/Stream.h"

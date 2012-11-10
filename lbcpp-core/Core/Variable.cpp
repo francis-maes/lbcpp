@@ -227,7 +227,7 @@ static bool printDifferencesRecursively(std::ostream& ostr, const Variable& vari
 
   if (object1.dynamicCast<Type>())
   {
-    if (!countTypeDifferences)// || object1->getClassName() == T("DynamicClass"))
+    if (!countTypeDifferences)
       return true; // ignore this
     if (object1 == object2)
       return true;

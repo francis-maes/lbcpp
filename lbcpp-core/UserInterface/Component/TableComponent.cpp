@@ -103,7 +103,7 @@ protected:
   String elementValueToString(size_t rowIndex, size_t columnIndex) const
   {
     ObjectPtr value = table->getElement(rowIndex, columnIndex);
-    return value ? value->toShortString() : String::empty;
+    return value ? value->toShortString() : T("?");
   }
 };
 
