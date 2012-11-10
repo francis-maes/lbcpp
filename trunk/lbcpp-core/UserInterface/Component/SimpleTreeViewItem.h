@@ -21,7 +21,7 @@ public:
     : uniqueName(uniqueName), iconToUse(iconToUse), mightContainSubItemsFlag(mightContainSubItems), hasBeenOpened(false) {}
 
   SimpleTreeViewItem(const String& uniqueName, const String& iconToUse, bool mightContainSubItems = false)
-    : uniqueName(uniqueName), iconToUse(userInterfaceManager().getImage(iconToUse, 18, 18)),
+    : uniqueName(uniqueName), iconToUse(iconToUse.isEmpty() ? NULL : userInterfaceManager().getImage(iconToUse, 18, 18)),
       mightContainSubItemsFlag(mightContainSubItems), hasBeenOpened(false) {}
      
   virtual bool mightContainSubItems()

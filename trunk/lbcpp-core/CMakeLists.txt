@@ -204,7 +204,7 @@ IF(LBCPP_USER_INTERFACE)
   # The generated files.
   SET(LBCPP_USER_INTERFACE_DATA_CPP ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceData.cpp)
   SET(LBCPP_USER_INTERFACE_DATA_H ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceData.h)
-
+  
   # Main commmand for resources generation.
   ADD_CUSTOM_COMMAND(
     OUTPUT ${LBCPP_USER_INTERFACE_DATA_CPP}

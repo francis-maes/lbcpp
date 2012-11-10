@@ -17,124 +17,6 @@
 namespace lbcpp
 {
  
-class JDBDataParser : public TextParser
-{
-public:
-  JDBDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels, bool sparseData = false)
-    : TextParser(context, file), features(features), labels(labels), sparseData(sparseData), hasReadDatasetName(false), hasReadAttributes(false) {}
-  JDBDataParser() {}
-
-  virtual TypePtr getElementsType() const
-    {return pairClass(features, labels);}
-
-  virtual bool parseLine(char* line)
-  {
-    while (*line == ' ' || *line == '\t')
-      ++line;
-    if (*line == 0 || *line == ';')
-      return true; // skip empty lines and comment lines
-    if (!hasReadDatasetName)
-    {
-      hasReadDatasetName = true;
-      return true;
-    }
-    if (!hasReadAttributes)
-    {
-      bool res = parseAttributes(line);
-      hasReadAttributes = true;
-      return res;
-    }
-    return parseExample(line);
-  }
-
-  bool parseAttributes(char* line)
-  {
-    std::vector< std::pair<String, int> > attributes; // kind: 0 = numerical, 1 = symbolic, 2 = skip
-
-    bool isFirst = true;
-    while (true)
-    {
-      char* name = strtok(isFirst ? line : NULL, " \t\n\r");
-      char* kind = strtok(NULL, " \t\n\r");
-      if (!name || !kind)
-        break;
-      isFirst = false;
-      int k;
-      if (!strcmp(kind, "numerical") || !strcmp(kind, "NUMERICAL"))
-        k = 0;
-      else if (!strcmp(kind, "symbolic") || !strcmp(kind, "SYMBOLIC"))
-        k = 1;
-      else if (!strcmp(kind, "name") || !strcmp(kind, "NAME"))
-        k = 2;
-      else
-      {
-        context.errorCallback(T("Could not recognize attribute type ") + String(kind).quoted());
-        return false;
-      }
-      attributes.push_back(std::make_pair(name, k));
-    }
-
-    // only keep last symbolic attribute
-    outputColumnIndex = (size_t)-1;
-    for (int i = attributes.size() - 1; i >= 0; --i)
-      if (attributes[i].second == 1)
-      {
-        if (outputColumnIndex == (size_t)-1)
-          outputColumnIndex = (size_t)i;
-        attributes[i].second = 2;
-      }
-
-    columnToVariable.resize(attributes.size(), -1);
-    for (size_t i = 0; i < attributes.size(); ++i)
-      if (attributes[i].second == 0)
-      {
-        String name = attributes[i].first;
-        int index = features->findOrAddMemberVariable(context, name, doubleType);
-        columnToVariable[i] = index;
-      }
-    return true;
-  }
-
-  bool parseExample(char* line)
-  {
-    ObjectPtr inputs = sparseData ? features->createSparseObject() : features->createDenseObject();
-    ObjectPtr output;
-    bool isFirst = true;
-    for (size_t i = 0; true; ++i)
-    {
-      char* token = strtok(isFirst ? line : NULL, " \t\n");
-      if (!token)
-        break;
-      isFirst = false;
-
-      if (i == outputColumnIndex)
-        output = new NewEnumValue(labels, labels->findOrAddElement(context, token));
-      else
-      {
-        int index = columnToVariable[i];
-        if (index >= 0)
-        {
-          double value = strtod(token, NULL);
-          inputs->setVariable((size_t)index, value);
-        }
-      }
-    }
-    setResult(new Pair(inputs, output));
-    return true;
-  }
-
-protected:
-  DynamicClassPtr features;
-  DefaultEnumerationPtr labels;
-  bool sparseData;
-
-  bool hasReadDatasetName;
-  bool hasReadAttributes;
-
-  size_t outputColumnIndex;
-  std::vector<int> columnToVariable;
-};
-
 class TestingSetParser : public TextParser
 {
 public:
@@ -262,49 +144,11 @@ private:
 
   TablePtr loadDataFile(ExecutionContext& context, const File& file, std::vector<VariableExpressionPtr>& inputs, VariableExpressionPtr& supervision)
   {
-    TablePtr res;
-
     context.enterScope(T("Loading ") + file.getFileName());
-    static const bool sparseData = true;
-    
-    DynamicClassPtr inputClass = new DynamicClass("inputs");
-    DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
-
-    TextParserPtr parser;
-    if (file.getFileExtension() == T(".jdb"))
-      parser = new JDBDataParser(context, file, inputClass, labels, sparseData);
-    else
-      parser = classificationARFFDataParser(context, file, inputClass, labels, sparseData);
-    ContainerPtr container = parser->load(maxExamples);
-    if (container && container->getNumElements())
-    {
-      PairPtr p = container->getElement(0).getObjectAndCast<Pair>();
-      
-      TypePtr inputType = p->getFirst().getType();
-      TypePtr outputType = p->getSecond().getType();
-
-      res = new Table(container->getNumElements());
-
-      inputs.resize(inputType->getNumMemberVariables());
-      for (size_t i = 0; i < inputs.size(); ++i)
-      {
-        inputs[i] = new VariableExpression(inputType->getMemberVariableType(i), inputType->getMemberVariableName(i), i);
-        res->addColumn(inputs[i], inputs[i]->getType());
-      }
-      supervision = new VariableExpression(outputType, "supervision", inputs.size());
-      res->addColumn(supervision, supervision->getType());
-      
-      for (size_t i = 0; i < container->getNumElements(); ++i)
-      {
-        PairPtr p = container->getElement(i).getObjectAndCast<Pair>();
-        ObjectPtr inputObject = p->getFirst().getObject();
-        for (size_t j = 0; j < inputs.size(); ++j)
-          res->setElement(i, j, inputObject->getVariable(j).toObject());
-        res->setElement(i, inputs.size(), p->getSecond().getObject());
-      }
-    }
-
+    TablePtr res = Object::createFromFile(context, file);
     context.leaveScope(res ? res->getNumRows() : 0);
+    // FIXME: bind table with variables
+    // FIXME: inputs, supervision
     return res;
   }
 
