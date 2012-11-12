@@ -151,14 +151,14 @@ protected:
     double range = upper - lower;
     lower -= range / 10.0;
     upper += range / 10.0;
-    return new PlotAxis(lower, upper, "F" + String((int)index + 1), false);
+    return new PlotAxis(lower, upper, "F" + string((int)index + 1), false);
   }
 };
 
 class SolutionVectorComponent : public juce::Component, public ComponentWithPreferedSize, public ObjectSelector
 {
 public:
-  SolutionVectorComponent(SolutionVectorPtr solutions, const String& name)
+  SolutionVectorComponent(SolutionVectorPtr solutions, const string& name)
     : solutions(solutions->sort(lexicographicComparator())), drawable(NULL), selectedIndex(-1)
   {
     setWantsKeyboardFocus(true);
@@ -217,7 +217,7 @@ protected:
   SolutionVectorDrawable* drawable;
   int selectedIndex;
 
-  void paintText(juce::Graphics& g, const String& text)
+  void paintText(juce::Graphics& g, const string& text)
   {
     g.setColour(juce::Colours::grey);
     g.drawText(text, 0, 0, getWidth(), getHeight(), juce::Justification::centred, true);
@@ -249,7 +249,7 @@ protected:
     if (index >= 0)
       sendSelectionChanged(solutions->getSolution(index), T("solution"));
     else
-      sendSelectionChanged(std::vector<ObjectPtr>(), String::empty);
+      sendSelectionChanged(std::vector<ObjectPtr>(), string::empty);
 
     selectedIndex = index;
     if (drawable)

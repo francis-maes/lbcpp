@@ -24,12 +24,12 @@ public:
 
 
 #ifdef JUCE_WIN32
-    String option = "-Djava.class.path=" + javaDirectory.getFullPathName() + ";" + javaDirectory.getChildFile("weka.jar").getFullPathName();
+    string option = "-Djava.class.path=" + javaDirectory.getFullPathName() + ";" + javaDirectory.getChildFile("weka.jar").getFullPathName();
 #else
-    String option = "-Djava.class.path=" + javaDirectory.getFullPathName() + ":" + javaDirectory.getChildFile("weka.jar").getFullPathName();
+    string option = "-Djava.class.path=" + javaDirectory.getFullPathName() + ":" + javaDirectory.getChildFile("weka.jar").getFullPathName();
 #endif // JUCE_WIN32
     
-    //String option =  "-Djava.class.path=C:\\Projets\\LBCpp\\workspace\\MOO;C:\\Projets\\LBCpp\\workspace\\MOO\\weka.jar";
+    //string option =  "-Djava.class.path=C:\\Projets\\LBCpp\\workspace\\MOO;C:\\Projets\\LBCpp\\workspace\\MOO\\weka.jar";
     JavaVMOption options[1];
     options[0].optionString = const_cast<char* >((const char* )option);
 	  args.options = options;
@@ -51,8 +51,8 @@ public:
       context.errorCallback("Could not find ColoEvaluator class");
       return false;
     }
-    constructor = env->GetMethodID(evaluatorClass, "<init>", "(Ljava/lang/String;)V");
-    getValuesMethod = env->GetMethodID(evaluatorClass, "getValue", "(Ljava/lang/String;)[D");
+    constructor = env->GetMethodID(evaluatorClass, "<init>", "(Ljava/lang/string;)V");
+    getValuesMethod = env->GetMethodID(evaluatorClass, "getValue", "(Ljava/lang/string;)[D");
     jstring modelpath = env->NewStringUTF(modelDirectory.getFullPathName());
     context.enterScope("Loading Weka Models");
     instance = env->NewObject(evaluatorClass, constructor, modelpath);

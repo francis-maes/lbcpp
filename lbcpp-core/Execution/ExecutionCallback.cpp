@@ -21,7 +21,7 @@ void ExecutionCallback::notificationCallback(const NotificationPtr& notification
   executionNotification->notifyCallback(refCountedPointerFromThis(this));
 }
 
-void ExecutionCallback::getThisWhereAndWhat(LuaState& state, ExecutionCallbackPtr& pthis, String& where, String& what)
+void ExecutionCallback::getThisWhereAndWhat(LuaState& state, ExecutionCallbackPtr& pthis, string& where, string& what)
 {
   pthis = state.checkObject(1, executionCallbackClass);
   if (state.getTop() >= 3)
@@ -32,7 +32,7 @@ void ExecutionCallback::getThisWhereAndWhat(LuaState& state, ExecutionCallbackPt
 int ExecutionCallback::error(LuaState& state)
 {
   ExecutionCallbackPtr pthis;
-  String where, what;
+  string where, what;
   getThisWhereAndWhat(state, pthis, where, what);
   pthis->errorCallback(where, what);
   return 0;
@@ -41,7 +41,7 @@ int ExecutionCallback::error(LuaState& state)
 int ExecutionCallback::warning(LuaState& state)
 {
   ExecutionCallbackPtr pthis;
-  String where, what;
+  string where, what;
   getThisWhereAndWhat(state, pthis, where, what);
   pthis->warningCallback(where, what);
   return 0;
@@ -51,7 +51,7 @@ int ExecutionCallback::information(LuaState& state)
 {
   ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
   
-  String info;
+  string info;
   for (int i = 2; i <= state.getTop(); ++i)
   {
     info += state.toString(i);
@@ -96,40 +96,40 @@ void CompositeExecutionCallback::notificationCallback(const NotificationPtr& not
     callbacks[i]->notificationCallback(notification);
 }
 
-void CompositeExecutionCallback::informationCallback(const String& where, const String& what)
+void CompositeExecutionCallback::informationCallback(const string& where, const string& what)
   {notificationCallback(new ExecutionMessageNotification(informationMessageType, what, where));}
 
-void CompositeExecutionCallback::warningCallback(const String& where, const String& what)
+void CompositeExecutionCallback::warningCallback(const string& where, const string& what)
   {notificationCallback(new ExecutionMessageNotification(warningMessageType, what, where));}
 
-void CompositeExecutionCallback::errorCallback(const String& where, const String& what)
+void CompositeExecutionCallback::errorCallback(const string& where, const string& what)
   {notificationCallback(new ExecutionMessageNotification(errorMessageType, what, where));}
 
 void CompositeExecutionCallback::progressCallback(const ProgressionStatePtr& progression)
   {notificationCallback(new ExecutionProgressNotification(progression));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, const ObjectPtr& value)
+void CompositeExecutionCallback::resultCallback(const string& name, const ObjectPtr& value)
   {notificationCallback(new ExecutionResultNotification(name, value));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, bool value)
+void CompositeExecutionCallback::resultCallback(const string& name, bool value)
   {resultCallback(name, ObjectPtr(new Boolean(value)));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, juce::int64 value)
+void CompositeExecutionCallback::resultCallback(const string& name, juce::int64 value)
   {resultCallback(name, ObjectPtr(new Integer(value)));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, size_t value)
+void CompositeExecutionCallback::resultCallback(const string& name, size_t value)
   {resultCallback(name, ObjectPtr(new PositiveInteger(value)));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, double value)
+void CompositeExecutionCallback::resultCallback(const string& name, double value)
   {resultCallback(name, ObjectPtr(new Double(value)));}
 
-void CompositeExecutionCallback::resultCallback(const String& name, const String& value)
-  {resultCallback(name, ObjectPtr(new NewString(value)));}
+void CompositeExecutionCallback::resultCallback(const string& name, const string& value)
+  {resultCallback(name, ObjectPtr(new String(value)));}
 
-void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
+void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit)
   {notificationCallback(new PreExecutionNotification(stack, description, workUnit));}
 
-void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {notificationCallback(new PostExecutionNotification(stack, description, workUnit, result));}
 
 void CompositeExecutionCallback::threadBeginCallback(const ExecutionStackPtr& stack)
@@ -200,17 +200,17 @@ std::vector<ExecutionCallbackPtr>& DispatchByThreadExecutionCallback::getCallbac
 /*
 ** ProgressionState
 */
-ProgressionState::ProgressionState(double value, double total, const String& unit)
+ProgressionState::ProgressionState(double value, double total, const string& unit)
   : value(value), total(total), unit(unit)
 {
 }
 
-ProgressionState::ProgressionState(size_t value, size_t total, const String& unit)
+ProgressionState::ProgressionState(size_t value, size_t total, const string& unit)
   : value((double)value), total((double)total), unit(unit)
 {
 }
 
-ProgressionState::ProgressionState(double value, const String& unit)
+ProgressionState::ProgressionState(double value, const string& unit)
   : value(value), total(0.0), unit(unit)
 {
 }
@@ -224,11 +224,11 @@ ProgressionState::ProgressionState() : value(0.0), total(0.0)
 {
 }
 
-String ProgressionState::toString() const
+string ProgressionState::toString() const
 {
-  String res(value);
+  string res(value);
   if (total)
-    res += T(" / ") + String(total);
+    res += T(" / ") + string(total);
   if (unit.isNotEmpty())
     res += T(" ") + unit;
   return res;

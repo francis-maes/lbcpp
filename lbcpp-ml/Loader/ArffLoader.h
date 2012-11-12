@@ -22,7 +22,7 @@ namespace lbcpp
 class ArffLoader : public TextLoader
 {
 public:
-  virtual String getFileExtensions() const
+  virtual string getFileExtensions() const
     {return "arff";}
 
   virtual ClassPtr getTargetClass() const
@@ -36,12 +36,12 @@ public:
     shouldReadData = false;
   }
 
-  virtual bool parseLine(ExecutionContext& context, const String& fullLine)
+  virtual bool parseLine(ExecutionContext& context, const string& fullLine)
   {
-    String line = fullLine.trim();
+    string line = fullLine.trim();
     if (line.startsWith(T("%")))                              // Skip comment line
       return true;
-    if (line == String::empty)
+    if (line == string::empty)
       return true;                // an empty line is considered as a comment line
     if (shouldReadData)                                   // line *must* be a data
     {
@@ -49,7 +49,7 @@ public:
         return parseSparseDataLine(context, line);
       return parseDataLine(context, line);
     }
-    String record = line.substring(0, juce::jmin(10, line.length())).toLowerCase();
+    string record = line.substring(0, juce::jmin(10, line.length())).toLowerCase();
     if (record.startsWith(T("@attribute")))
       return parseAttributeLine(context, line);
     if (record.startsWith(T("@relation")))  // @relation *must* be declared before
@@ -81,7 +81,7 @@ public:
 protected:
   TablePtr table;
 
-  bool parseAttributeLine(ExecutionContext& context, const String& line)
+  bool parseAttributeLine(ExecutionContext& context, const string& line)
   {
     if (line.getLastCharacter() == T('}'))
       return parseEnumerationAttributeLine(context, line);
@@ -103,12 +103,12 @@ protected:
     int tokenNumber = 1;
     while (tokenNumber < tokens.size() && tokens[tokenNumber].trim().isEmpty())
       ++tokenNumber;
-    String attributeName = tokens[tokenNumber].unquoted();
+    string attributeName = tokens[tokenNumber].unquoted();
     ++tokenNumber;
     while (tokenNumber < tokens.size() && tokens[tokenNumber].trim().isEmpty())
       ++tokenNumber;
 
-    String attributeTypeName = tokens[tokenNumber].toLowerCase();
+    string attributeTypeName = tokens[tokenNumber].toLowerCase();
     ClassPtr attributeType;
     if (attributeTypeName == T("float")
         || attributeTypeName == T("real")
@@ -118,8 +118,8 @@ protected:
       attributeType = integerClass;
     else if (attributeTypeName == T("string"))
     {
-      attributeType = newStringClass;
-      context.warningCallback(T("ARFFDataParser::parseAttributeLine"), T("String format is not (yet) supported: ") + line.quoted());
+      attributeType = stringClass;
+      context.warningCallback(T("ARFFDataParser::parseAttributeLine"), T("string format is not (yet) supported: ") + line.quoted());
     }
     else
     {
@@ -130,15 +130,15 @@ protected:
     return true;
   }
 
-  static inline bool comparePairOfStrings(const String& a, const String& b, const String& x, const String& y)
+  static inline bool comparePairOfStrings(const string& a, const string& b, const string& x, const string& y)
     {return (a == x && b == y) || (a == y && b == x);}
 
   static bool shouldBeABooleanType(const StringArray& tokens)
   {
     if (tokens.size() != 2)
       return false;
-    String first = tokens[0].toLowerCase();
-    String second = tokens[1].toLowerCase();
+    string first = tokens[0].toLowerCase();
+    string second = tokens[1].toLowerCase();
     if (comparePairOfStrings(first, second, T("yes"), T("no")))
       return true;
     if (comparePairOfStrings(first, second, T("true"), T("false")))
@@ -150,17 +150,17 @@ protected:
     return false;
   }
 
-  bool parseEnumerationAttributeLine(ExecutionContext& context, const String& line)
+  bool parseEnumerationAttributeLine(ExecutionContext& context, const string& line)
   {
     // get enumeration name
-    String trimmedLine = line.substring(10).trim();
+    string trimmedLine = line.substring(10).trim();
     int e = trimmedLine.indexOfAnyOf(T(" \t"));
     if (e < 0)
     {
       context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Malformatted enumeration description: ") + trimmedLine.quoted());
       return false;
     }
-    String attributeName = trimmedLine.substring(0, e).unquoted();
+    string attributeName = trimmedLine.substring(0, e).unquoted();
     trimmedLine = trimmedLine.substring(e);
     // get enumeration values
     int b = trimmedLine.lastIndexOfChar(T('{'));
@@ -170,7 +170,7 @@ protected:
       return false;
     }
 
-    String values = trimmedLine.substring(b + 1, trimmedLine.length() - 1);
+    string values = trimmedLine.substring(b + 1, trimmedLine.length() - 1);
     StringArray tokens;
     tokens.addTokens(values, T(","), T("'\""));
     if (tokens.size() == 0)
@@ -203,7 +203,7 @@ protected:
     return true;
   }
   
-  bool parseDataLine(ExecutionContext& context, const String& line)
+  bool parseDataLine(ExecutionContext& context, const string& line)
   {
     bool ok = true;
   
@@ -224,14 +224,14 @@ protected:
         break;
       }
       if (strcmp(token, "?"))
-        row[i] = Object::createFromString(context, table->getType(i), String(token).unquoted());
+        row[i] = Object::createFromString(context, table->getType(i), string(token).unquoted());
     }
     table->addRow(row);
     delete [] str;
     return true;
   }
 
-  bool parseSparseDataLine(ExecutionContext& context, const String& line)
+  bool parseSparseDataLine(ExecutionContext& context, const string& line)
   {
     size_t n = table->getNumColumns();
     StringArray tokens;
@@ -270,7 +270,7 @@ protected:
       {
         if (inputs->getVariable(index).exists())
         {
-          context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Duplicate index '" + String((int)index) + "' in: ") + tokens[i].quoted());
+          context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Duplicate index '" + string((int)index) + "' in: ") + tokens[i].quoted());
           return false;
         }
         inputs->setVariable(index, createFromString(context, attributesType[index], tokens[i].substring(e).trim()));

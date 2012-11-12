@@ -18,15 +18,15 @@ namespace lbcpp
 class RecentWorkUnitConfiguration : public Object
 {
 public:
-  RecentWorkUnitConfiguration(const String& workUnitName);
+  RecentWorkUnitConfiguration(const string& workUnitName);
   RecentWorkUnitConfiguration() {}
 
-  void addRecentArguments(const String& args);
+  void addRecentArguments(const string& args);
 
-  const String& getWorkUnitName() const
+  const string& getWorkUnitName() const
     {return workUnitName;}
 
-  const std::vector<String>& getArguments() const
+  const std::vector<string>& getArguments() const
     {return arguments;}
 
   WorkUnitPtr createWorkUnit() const
@@ -40,8 +40,8 @@ public:
 protected:
   friend class RecentWorkUnitConfigurationClass;
 
-  String workUnitName;
-  std::vector<String> arguments;
+  string workUnitName;
+  std::vector<string> arguments;
 };
 
 typedef ReferenceCountedObjectPtr<RecentWorkUnitConfiguration> RecentWorkUnitConfigurationPtr;
@@ -49,7 +49,7 @@ typedef ReferenceCountedObjectPtr<RecentWorkUnitConfiguration> RecentWorkUnitCon
 class RecentWorkUnitsConfiguration : public Object
 {
 public:
-  String toShortString() const
+  string toShortString() const
     {return T("RecentWorkUnitsConfiguration");}
 
   size_t getNumRecentWorkUnits() const
@@ -57,10 +57,10 @@ public:
   
   RecentWorkUnitConfigurationPtr getRecentWorkUnit(size_t index) const
     {return recents[index];}
-  RecentWorkUnitConfigurationPtr getWorkUnit(const String& name);
+  RecentWorkUnitConfigurationPtr getWorkUnit(const string& name);
 
-  void addRecentWorkUnit(const String& workUnitName);
-  void addRecent(const String& workUnitName, const String& arguments);
+  void addRecentWorkUnit(const string& workUnitName);
+  void addRecent(const string& workUnitName, const string& arguments);
 
   void clear()
     {recents.clear();}
@@ -70,7 +70,7 @@ protected:
 
   std::vector<RecentWorkUnitConfigurationPtr> recents;
 
-  int findRecentWorkUnit(const String& workUnit) const;
+  int findRecentWorkUnit(const string& workUnit) const;
 };
 
 typedef ReferenceCountedObjectPtr<RecentWorkUnitsConfiguration> RecentWorkUnitsConfigurationPtr;
@@ -103,7 +103,7 @@ public:
   void save(ExecutionContext& context);
   void close(ExecutionContext& context);
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return rootDirectory.getFileName();}
 
   /*

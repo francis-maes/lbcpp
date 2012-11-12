@@ -21,7 +21,7 @@ public:
   EqualsConstantEnumFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0)
     : enumeration(enumeration), value(value) {}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "= " + ObjectPtr(new Integer(enumeration, value))->toShortString();}
 
   virtual size_t getNumInputs() const
@@ -33,7 +33,7 @@ public:
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return booleanClass;}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" == ") + ObjectPtr(new Integer(enumeration, value))->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const

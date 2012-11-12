@@ -52,8 +52,8 @@ public:
   MorpionPoint getLinePoint(size_t index) const
     {return position.moveIntoDirection(direction, (int)index - (int)indexInLine);}
 
-  virtual String toShortString() const
-    {return position.toString() + ", " + direction.toString() + ", " + String((int)indexInLine);}
+  virtual string toShortString() const
+    {return position.toString() + ", " + direction.toString() + ", " + string((int)indexInLine);}
 
   bool operator ==(const MorpionAction& other) const
     {return position == other.position && direction == other.direction && requestedIndexInLine == other.requestedIndexInLine;}
@@ -116,12 +116,12 @@ public:
   }
   MorpionState() : crossLength(0), isDisjoint(false) {}
 
-  virtual String toShortString() const
-    {return String((int)crossLength) + (isDisjoint ? "D" : "T");}
+  virtual string toShortString() const
+    {return string((int)crossLength) + (isDisjoint ? "D" : "T");}
   
-	virtual String toString() const
+	virtual string toString() const
   {
-    String res = toShortString();
+    string res = toShortString();
     for (size_t i = 0; i < history.size(); ++i)
       res += T(" ") + history[i]->toShortString();
     return res;
@@ -174,7 +174,7 @@ public:
     //jassert(correctSize == newSize);
     if (correctSize != newSize)
     {
-      context.enterScope(T("CorrectSize: ") + String((int)correctSize) + T(" NewSize: ") + String((int)newSize));
+      context.enterScope(T("CorrectSize: ") + string((int)correctSize) + T(" NewSize: ") + string((int)newSize));
       context.resultCallback("state", cloneAndCast<DecisionProblemState>());
       context.resultCallback("correct", dbg);
       context.resultCallback("new", availableActions);
@@ -611,7 +611,7 @@ protected:
 class MorpionStateComponent : public juce::Component, public ComponentWithPreferedSize
 {
 public:
-  MorpionStateComponent(MorpionStatePtr state, const String& name)
+  MorpionStateComponent(MorpionStatePtr state, const string& name)
     : state(state) {}
 
   virtual int getDefaultWidth() const
@@ -729,7 +729,7 @@ public:
     g.setColour(juce::Colours::black);    
     g.drawRoundedRectangle(x1, y1, size, size, cornerSize, 1.f);
     g.setFont(juce::Font(juce::jmax(8.f, baseSize / 3.f)));
-    g.drawText(String((int)index + 1), (int)x1, (int)y1, (int)size, (int)size, juce::Justification::centred, false);
+    g.drawText(string((int)index + 1), (int)x1, (int)y1, (int)size, (int)size, juce::Justification::centred, false);
   }
 
 protected:

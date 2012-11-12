@@ -23,13 +23,13 @@ void RecentProcesses::addRecentExecutable(const juce::File& file)
   ExplorerConfiguration::save(defaultExecutionContext());
 }
 
-std::vector<String> RecentProcesses::getRecentArguments(const juce::File& executable) const
+std::vector<string> RecentProcesses::getRecentArguments(const juce::File& executable) const
 {
   if (!executable.exists())
-    return std::vector<String>();
+    return std::vector<string>();
   int index = findRecentExecutable(executable);
   jassert(index >= 0);
-  return index >= 0? v[index].arguments : std::vector<String>();
+  return index >= 0? v[index].arguments : std::vector<string>();
 }
 
 std::vector<juce::File> RecentProcesses::getRecentWorkingDirectories(const juce::File& executable) const
@@ -48,7 +48,7 @@ ProcessConsoleSettingsPtr RecentProcesses::getExecutableConsoleSettings(const ju
   return index >= 0? v[index].consoleSettings : ProcessConsoleSettingsPtr();
 }
 
-void RecentProcesses::addRecent(const juce::File& executable, const String& arguments, const juce::File& workingDirectory)
+void RecentProcesses::addRecent(const juce::File& executable, const string& arguments, const juce::File& workingDirectory)
 {
   addRecentExecutable(executable);
   v[0].addRecentArguments(arguments);
@@ -61,15 +61,15 @@ RecentProcesses::RecentExecutable::RecentExecutable(const juce::File& executable
   : executable(executable), consoleSettings(new ProcessConsoleSettings)
 {
   arguments.push_back(T(" "));
-  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::red));
-  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::orange));
-  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::yellow));
-  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::green));
-  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::cyan));
-  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::white));
+  consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::red));
+  consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::orange));
+  consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::yellow));
+  consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::green));
+  consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::cyan));
+  consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::white));
 }
 
-void RecentProcesses::RecentExecutable::addRecentArguments(const String& args)
+void RecentProcesses::RecentExecutable::addRecentArguments(const string& args)
 {
   size_t i;
   for (i = 0; i < arguments.size(); ++i)

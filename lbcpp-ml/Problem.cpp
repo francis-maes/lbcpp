@@ -50,7 +50,7 @@ bool DifferentiableObjective::testDerivative(ExecutionContext& context, const De
   bool res = fabs(numericDerivative - analyticDerivative) < 0.0001;
   if (!res)
   {
-    context.errorCallback("Inconsistent gradient: eps = " + String(eps) + " Numeric: " + String(numericDerivative) + " Analytic: " + String(analyticDerivative));
+    context.errorCallback("Inconsistent gradient: eps = " + string(eps) + " Numeric: " + string(numericDerivative) + " Analytic: " + string(analyticDerivative));
     jassertfalse;
   }
   return res;
@@ -95,7 +95,7 @@ void Problem::reinitialize(ExecutionContext& context)
   initialize(context);
 }
 
-bool Problem::loadFromString(ExecutionContext& context, const String& str)
+bool Problem::loadFromString(ExecutionContext& context, const string& str)
 {
   if (!Object::loadFromString(context, str))
     return false;

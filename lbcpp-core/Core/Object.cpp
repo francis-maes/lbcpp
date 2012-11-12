@@ -46,7 +46,7 @@ namespace lbcpp
 #ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
 static CriticalSection refCountInfoLock;
-static std::map<String, int> numAccessesPerType;
+static std::map<string, int> numAccessesPerType;
 static int totalNumAccesses = 0;
 
 void ReferenceCountedObject::resetRefCountDebugInfo()
@@ -60,10 +60,10 @@ void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
 {
   ScopedLock _(refCountInfoLock);
   ostr << "Total num accesses: " << totalNumAccesses << std::endl;
-  std::multimap<int, String> invMap;
-  for (std::map<String, int>::const_iterator it = numAccessesPerType.begin(); it != numAccessesPerType.end(); ++it)
+  std::multimap<int, string> invMap;
+  for (std::map<string, int>::const_iterator it = numAccessesPerType.begin(); it != numAccessesPerType.end(); ++it)
     invMap.insert(std::make_pair(it->second, it->first));
-  for (std::multimap<int, String>::const_reverse_iterator it = invMap.rbegin(); it != invMap.rend(); ++it)
+  for (std::multimap<int, string>::const_reverse_iterator it = invMap.rbegin(); it != invMap.rend(); ++it)
     ostr << "  " << it->second << ": " << it->first << std::endl;
 }
 
@@ -101,7 +101,7 @@ void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
 void Object::setThisClass(ClassPtr thisClass)
   {this->thisClass = thisClass;}
 
-String Object::getClassName() const
+string Object::getClassName() const
 {
   if (thisClass)
     return thisClass->getName();
@@ -115,7 +115,7 @@ ClassPtr Object::getClass() const
   {
     // /!!\ This is not thread-safe
     //jassert(false);
-    String typeName = getTypeName(typeid(*this));
+    string typeName = getTypeName(typeid(*this));
     const_cast<Object* >(this)->thisClass = lbcpp::getType(typeName);
     jassert(thisClass);
   }
@@ -126,9 +126,9 @@ ObjectPtr Object::create(ClassPtr type)
   {return type->createObject(defaultExecutionContext());}
 
 /*
-** Create Object From String
+** Create Object From string
 */
-static ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const String& nameOrShortName)
+static ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const string& nameOrShortName)
 {
   if (nameOrShortName == T("Missing"))
     return ObjectPtr();
@@ -142,7 +142,7 @@ static ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, Clas
   return Object::create(type);
 }
 
-static ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& context, ClassPtr baseClass, const String& value)
+static ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& context, ClassPtr baseClass, const string& value)
 {
   int n = value.indexOfChar('(');
   if (n >= 0)
@@ -157,7 +157,7 @@ static ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& conte
       context.errorCallback(T("Unmatched parenthesis in ") + value.quoted());
       return ObjectPtr();
     }
-    String arguments = value.substring(n + 1, e).trim();
+    string arguments = value.substring(n + 1, e).trim();
     if (arguments.isNotEmpty() && !res->loadFromString(context, arguments))
       res = ObjectPtr();
     return res;
@@ -166,7 +166,7 @@ static ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& conte
     return createObjectFromShortNameOrName(context, baseClass, value);
 }
 
-ObjectPtr Object::createFromString(ExecutionContext& context, ClassPtr type, const String& value)
+ObjectPtr Object::createFromString(ExecutionContext& context, ClassPtr type, const string& value)
 {
   if (type->inheritsFrom(classClass))
     return typeManager().getType(context, value);
@@ -191,7 +191,7 @@ ObjectPtr Object::createFromXml(XmlImporter& importer, ClassPtr type)
 {
   if (type->inheritsFrom(classClass))
   {
-    String text = importer.getAllSubText().trim();
+    string text = importer.getAllSubText().trim();
     if (text.isNotEmpty())
       return typeManager().getType(importer.getContext(), importer.getAllSubText());
     else
@@ -220,7 +220,7 @@ ObjectPtr Object::createFromFile(ExecutionContext& context, const juce::File& fi
 bool Object::saveToFile(ExecutionContext& context, const juce::File& file) const
 {
   XmlExporter exporter(context);
-  exporter.saveObject(String::empty, refCountedPointerFromThis(this), ClassPtr());
+  exporter.saveObject(string::empty, refCountedPointerFromThis(this), ClassPtr());
   return exporter.saveToFile(file);
 }
 
@@ -230,7 +230,7 @@ size_t Object::getNumVariables() const
 ClassPtr Object::getVariableType(size_t index) const
   {return getClass()->getMemberVariableType(index);}
 
-String Object::getVariableName(size_t index) const
+string Object::getVariableName(size_t index) const
   {return getClass()->getMemberVariableName(index);}
 
 ObjectPtr Object::getVariable(size_t index) const
@@ -271,29 +271,29 @@ bool Object::equals(const ObjectPtr& object1, const ObjectPtr& object2)
 /*
 ** to string
 */
-String Object::toString() const
+string Object::toString() const
 {
   ClassPtr thisClass = getClass();
-  String res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
+  string res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
   if (getNumVariables())
     res += T("(") + defaultToStringImplementation(false) + T(")");
   return res;
 }
 
-String Object::toShortString() const
+string Object::toShortString() const
 {
   ClassPtr thisClass = getClass();
-  String res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
+  string res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
   if (getNumVariables())
     res += T("(") + defaultToStringImplementation(true) + T(")");
   return res;
 }
 
-String Object::defaultToStringImplementation(bool useShortString) const
+string Object::defaultToStringImplementation(bool useShortString) const
 {
   ClassPtr type = getClass();
   size_t n = type->getNumMemberVariables();
-  String res;
+  string res;
   for (size_t i = 0; i < n; ++i)
   {
     ObjectPtr value = getVariable(i);
@@ -304,9 +304,9 @@ String Object::defaultToStringImplementation(bool useShortString) const
   return res;
 }
 
-String Object::variablesToString(const String& separator, bool includeTypes) const
+string Object::variablesToString(const string& separator, bool includeTypes) const
 {
-  String res;
+  string res;
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
@@ -441,7 +441,7 @@ void Object::saveToXml(XmlExporter& exporter) const
   }
 }
 
-ObjectPtr Object::computeGeneratedObject(ExecutionContext& context, const String& variableName)
+ObjectPtr Object::computeGeneratedObject(ExecutionContext& context, const string& variableName)
 {
   jassert(false);
   return ObjectPtr();
@@ -455,7 +455,7 @@ bool Object::loadFromXml(XmlImporter& importer)
   
   forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("variable"))
   {
-    String name = child->getStringAttribute(T("name"));
+    string name = child->getStringAttribute(T("name"));
     if (name.isEmpty())
     {
       importer.errorMessage(T("Object::loadFromXml"), T("Missing name attribute in variable"));
@@ -513,7 +513,7 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    String name = getVariableName(i);
+    string name = getVariableName(i);
     if (xml->hasAttribute(name))
     {
       ObjectPtr var = Object::createFromString(importer.getContext(), getVariableType(i), xml->getStringAttribute(name));
@@ -526,17 +526,17 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
   return true;
 }
 
-bool Object::loadFromString(ExecutionContext& context, const String& str)
+bool Object::loadFromString(ExecutionContext& context, const string& str)
   {return loadArgumentsFromString(context, str);}
 
 namespace lbcpp
 {
-  extern bool parseListWithParenthesis(ExecutionContext& context, const String& str, char openParenthesis, char closeParenthesis, char comma, std::vector<String>& res);
+  extern bool parseListWithParenthesis(ExecutionContext& context, const string& str, char openParenthesis, char closeParenthesis, char comma, std::vector<string>& res);
 };
 
-bool Object::loadArgumentsFromString(ExecutionContext& context, const String& str)
+bool Object::loadArgumentsFromString(ExecutionContext& context, const string& str)
 {
-  std::vector<String> tokens;
+  std::vector<string> tokens;
   if (!parseListWithParenthesis(context, str, '(', ')', ',', tokens))
     return false;
 
@@ -544,7 +544,7 @@ bool Object::loadArgumentsFromString(ExecutionContext& context, const String& st
   if (tokens.size() > n)
   {
     context.errorCallback(T("Could not parse ") + str.quoted() + T(": too much tokens (") +
-      String((int)tokens.size()) + T(" tokens, ") + String((int)n) + T(" expected variables)"));
+      string((int)tokens.size()) + T(" tokens, ") + string((int)n) + T(" expected variables)"));
     return false;
   }
   bool ok = true;
@@ -642,7 +642,7 @@ int Object::__index(LuaState& state) const
 {
   if (state.isString(1)) // indiced by a string
   {
-    String str = state.checkString(1);
+    string str = state.checkString(1);
 
     if (str == T("className"))
     {
@@ -693,7 +693,7 @@ int Object::__newIndex(LuaState& state)
 {
   if (state.isString(1))
   {
-    String str = state.checkString(1);
+    string str = state.checkString(1);
 
     // check if it is a variable
     ClassPtr type = getClass();

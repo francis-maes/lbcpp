@@ -44,7 +44,7 @@ public:
     int y = 0;
     for (size_t i = 0; i < process->getProcessOutput().size(); ++i)
     {
-      String line = process->getProcessOutput()[i];
+      string line = process->getProcessOutput()[i];
       bool display = true;
       g.setColour(settings->getColourForLine(line, display));
       if (display)

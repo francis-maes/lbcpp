@@ -21,7 +21,7 @@ bool Loader::canUnderstand(ExecutionContext& context, juce::InputStream& istr) c
 
 bool Loader::canUnderstand(ExecutionContext& context, const juce::File& file) const
 {
-  String failureReason;
+  string failureReason;
   
   juce::InputStream* istr = openFile(context, file, false);
   bool ok = false; 
@@ -33,7 +33,7 @@ bool Loader::canUnderstand(ExecutionContext& context, const juce::File& file) co
   return ok;
 }
 
-ObjectPtr Loader::loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const
+ObjectPtr Loader::loadFromStream(ExecutionContext& context, juce::InputStream& istr, const string& streamName) const
 {
   jassertfalse;
   return ObjectPtr();
@@ -67,10 +67,10 @@ juce::InputStream* Loader::openFile(ExecutionContext& context, const juce::File&
   return stream;
 }
 
-String Loader::readFirstLine(juce::InputStream& istr, size_t maxLength)
+string Loader::readFirstLine(juce::InputStream& istr, size_t maxLength)
 {
   juce::int64 position = istr.getPosition();
-  String res;
+  string res;
   for (size_t i = 0; i < maxLength; ++i)
   {
     if (istr.isExhausted())
@@ -89,7 +89,7 @@ bool Loader::guessIfIsText(juce::InputStream& istr)
 {
   enum {maxLength = 256};
   juce::int64 position = istr.getPosition();
-  String res;
+  string res;
   for (size_t i = 0; i < maxLength; ++i)
   {
     if (istr.isExhausted())
@@ -131,10 +131,10 @@ ObjectPtr TextLoader::loadFromFile(ExecutionContext& context, const juce::File& 
   {
     if (!readNextLine(f, line, maxLineLength))
       break;    
-    String lineString(line);
+    string lineString(line);
     if (!pthis->parseLine(context, lineString))
     {
-      context.errorCallback(T("-> Could not parse line ") + String((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
+      context.errorCallback(T("-> Could not parse line ") + string((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
       failed = true;
       break;
     }
@@ -149,7 +149,7 @@ ObjectPtr TextLoader::loadFromFile(ExecutionContext& context, const juce::File& 
   return res;
 }
 
-ObjectPtr TextLoader::loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const
+ObjectPtr TextLoader::loadFromStream(ExecutionContext& context, juce::InputStream& istr, const string& streamName) const
 {
   jassertfalse; // not implemented yet
   return ObjectPtr();

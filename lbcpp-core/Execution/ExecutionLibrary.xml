@@ -22,9 +22,9 @@
 
   <class name="CompositeWorkUnit" base="WorkUnit">
     <variable type="ObjectVector[WorkUnit]" name="workUnits"/>
-    <variable type="NewString" name="progressionUnit"/>
+    <variable type="String" name="progressionUnit"/>
     <variable type="Boolean" name="pushChildrenIntoStack"/>
-    <variable type="NewString" name="description"/>
+    <variable type="String" name="description"/>
   </class>
 
   <!-- Test Unit -->
@@ -33,7 +33,7 @@
   <!-- Function Stack -->
   <class name="ExecutionStack">
     <variable type="ExecutionStack" name="parentStack"/>
-    <variable type="ObjectVector[Pair[NewString,WorkUnit]]" name="stack"/>
+    <variable type="ObjectVector[Pair[String,WorkUnit]]" name="stack"/>
   </class>
 
   <!-- Notifications -->
@@ -50,7 +50,7 @@
   <class name="ProgressionState">
     <variable type="Double" name="value"/>
     <variable type="Double" name="total"/>
-    <variable type="NewString" name="unit"/>
+    <variable type="String" name="unit"/>
   </class>
 
   <class name="ExecutionCallback" base="Object" abstract="yes">
@@ -92,26 +92,26 @@
 
   <class name="MessageExecutionTraceItem" base="ExecutionTraceItem">
     <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
-    <variable type="NewString" name="what"/>
-    <variable type="NewString" name="where"/>
+    <variable type="String" name="what"/>
+    <variable type="String" name="where"/>
   </class>
 
   <class name="ExecutionTraceNode" base="ExecutionTraceItem">
-    <variable type="NewString" name="description"/>
+    <variable type="String" name="description"/>
     <variable type="ObjectVector[ExecutionTraceItem]" name="subItems"/>
     <variable type="Object" name="returnValue"/>
-    <variable type="ObjectVector[Pair[NewString,Object]]" name="results"/>
+    <variable type="ObjectVector[Pair[String,Object]]" name="results"/>
     <variable type="ProgressionState" name="progression"/>
     <variable type="Time" name="timeLength"/>
   </class>
 
   <class name="ExecutionTrace" base="Object">
-    <variable type="NewString" name="operatingSystem" shortName="os"/>
+    <variable type="String" name="operatingSystem" shortName="os"/>
     <variable type="Boolean" name="is64BitOs" shortName="x64"/>
     <variable type="PositiveInteger" name="numCpus" shortName="cpus"/>
     <variable type="Integer" name="cpuSpeedInMegaherz" shortName="freq"/>
     <variable type="Integer" name="memoryInMegabytes" shortName="mem"/>
-    <variable type="NewString" name="context" shortName="ctx"/>
+    <variable type="String" name="context" shortName="ctx"/>
 
     <variable type="ExecutionTraceNode" name="root"/>
   </class>

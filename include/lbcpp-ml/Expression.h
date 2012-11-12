@@ -231,10 +231,10 @@ extern ClassPtr expressionClass;
 class VariableExpression : public Expression
 {
 public:
-  VariableExpression(const ClassPtr& type, const String& name, size_t inputIndex);
+  VariableExpression(const ClassPtr& type, const string& name, size_t inputIndex);
   VariableExpression();
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
@@ -243,7 +243,7 @@ public:
 protected:
   friend class VariableExpressionClass;
 
-  String name;
+  string name;
   size_t inputIndex;
 };
 
@@ -256,7 +256,7 @@ public:
   ConstantExpression(const ObjectPtr& value);
   ConstantExpression() {}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
@@ -285,7 +285,7 @@ public:
   FunctionExpression(const FunctionPtr& function, const ExpressionPtr& argument);
   FunctionExpression() {}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
@@ -334,7 +334,7 @@ public:
   TestExpression(const ExpressionPtr& conditionNode, ClassPtr outputType);
   TestExpression() {}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
 
   virtual size_t getNumSubNodes() const;
@@ -388,7 +388,7 @@ public:
   SequenceExpression(ClassPtr type) : Expression(type) {}
   SequenceExpression() {}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   virtual size_t getNumSubNodes() const
     {return nodes.size();}

@@ -18,7 +18,7 @@ namespace lbcpp
 class ConfusionMatrixComponent : public juce::Component, public ComponentWithPreferedSize
 {
 public:
-  ConfusionMatrixComponent(BinaryConfusionMatrixPtr confusionMatrix, const String& name)
+  ConfusionMatrixComponent(BinaryConfusionMatrixPtr confusionMatrix, const string& name)
     : confusionMatrix(confusionMatrix)
   {}
 
@@ -54,14 +54,14 @@ public:
     g.drawTextAsPath(T("   false"), juce::AffineTransform::rotation((float)M_PI / 2.).translated((float)(center + cellWidth + 10), (float)(yCursor + cellHeight)));
 
     g.drawRect(center - cellWidth, yCursor, cellWidth, cellHeight);
-    g.drawText(String((int)confusionMatrix->getTruePositives()), center - cellWidth, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
+    g.drawText(string((int)confusionMatrix->getTruePositives()), center - cellWidth, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
     g.drawRect(center - 1, yCursor, cellWidth, cellHeight);
-    g.drawText(String((int)confusionMatrix->getFalsePositives()), center, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
+    g.drawText(string((int)confusionMatrix->getFalsePositives()), center, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
     yCursor += cellHeight;
     g.drawRect(center - cellWidth, yCursor - 1, cellWidth, cellHeight);
-    g.drawText(String((int)confusionMatrix->getFalseNegatives()), center - cellWidth, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
+    g.drawText(string((int)confusionMatrix->getFalseNegatives()), center - cellWidth, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
     g.drawRect(center - 1, yCursor - 1, cellWidth, cellHeight);
-    g.drawText(String((int)confusionMatrix->getTrueNegatives()), center, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
+    g.drawText(string((int)confusionMatrix->getTrueNegatives()), center, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
     yCursor += cellHeight;
 
     const int labelWidth = 150;
@@ -74,22 +74,22 @@ public:
     g.setFont(defaultFont);
     yCursor += 30;
     g.drawText(T("Accuracy "), rowCenter - labelWidth, yCursor, labelWidth, 20, juce::Justification::left, true);
-    g.drawText(String(confusionMatrix->computeAccuracy(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
+    g.drawText(string(confusionMatrix->computeAccuracy(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
     yCursor += 20;
     g.drawText(T("F1 Score"), rowCenter - labelWidth, yCursor, labelWidth, 20, juce::Justification::left, true);
-    g.drawText(String(confusionMatrix->computeF1Score(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
+    g.drawText(string(confusionMatrix->computeF1Score(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
     yCursor += 20;
     g.drawText(T("Precision"), rowCenter - labelWidth, yCursor, labelWidth, 20, juce::Justification::left, true);
-    g.drawText(String(confusionMatrix->computePrecision(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
+    g.drawText(string(confusionMatrix->computePrecision(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
     yCursor += 20;
     g.drawText(T("Recall (Sensitivity)"), rowCenter - labelWidth, yCursor, labelWidth, 20, juce::Justification::left, true);
-    g.drawText(String(confusionMatrix->computeRecall(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
+    g.drawText(string(confusionMatrix->computeRecall(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
     yCursor += 20;
     g.drawText(T("Specificity"), rowCenter - labelWidth, yCursor, labelWidth, 20, juce::Justification::left, true);
-    g.drawText(String(confusionMatrix->computeSpecificity(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
+    g.drawText(string(confusionMatrix->computeSpecificity(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
     yCursor += 20;
     g.drawText(T("Matthews Correlation"), rowCenter - labelWidth, yCursor, labelWidth, 20, juce::Justification::left, true);
-    g.drawText(String(confusionMatrix->computeMatthewsCorrelation(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
+    g.drawText(string(confusionMatrix->computeMatthewsCorrelation(), 4), rowCenter, yCursor, valueWidth, 20, juce::Justification::horizontallyCentred, true);    
   }
 
 protected:

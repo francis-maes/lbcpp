@@ -35,7 +35,7 @@ namespace lbcpp
 class Class : public NameableObject
 {
 public:
-  Class(const String& className, ClassPtr baseType);
+  Class(const string& className, ClassPtr baseType);
   Class(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType);
   Class() : namedType(false) {}
   virtual ~Class();
@@ -55,7 +55,7 @@ public:
   bool isNamedType() const
     {return namedType;}
 
-  const String& getShortName() const
+  const string& getShortName() const
     {return shortName;}
   
   /*
@@ -67,7 +67,7 @@ public:
   void setBaseType(ClassPtr baseType)
     {this->baseType = baseType;}
 
-  ClassPtr findBaseTypeFromTemplateName(const String& templateName) const;
+  ClassPtr findBaseTypeFromTemplateName(const string& templateName) const;
 
   bool inheritsFrom(ClassPtr baseType) const;
   bool canBeCastedTo(ClassPtr targetType) const;
@@ -109,13 +109,13 @@ public:
   virtual VariableSignaturePtr getMemberVariable(size_t index) const;
 
   ClassPtr getMemberVariableType(size_t index) const;
-  String getMemberVariableName(size_t index) const;
-  String getMemberVariableShortName(size_t index) const;
-  String getMemberVariableDescription(size_t index) const;
+  string getMemberVariableName(size_t index) const;
+  string getMemberVariableShortName(size_t index) const;
+  string getMemberVariableDescription(size_t index) const;
   VariableSignaturePtr getLastMemberVariable() const;
 
-  String makeUniqueMemberVariableName(const String& name) const;
-  virtual int findMemberVariable(const String& name) const;
+  string makeUniqueMemberVariableName(const string& name) const;
+  virtual int findMemberVariable(const string& name) const;
   virtual ObjectPtr getMemberVariableValue(const Object* pthis, size_t index) const;
   virtual void setMemberVariableValue(Object* pthis, size_t index, const ObjectPtr& subValue) const;
 
@@ -124,7 +124,7 @@ public:
   */
   virtual size_t getNumMemberFunctions() const;
   virtual FunctionSignaturePtr getMemberFunction(size_t index) const;
-  virtual int findMemberFunction(const String& name) const;
+  virtual int findMemberFunction(const string& name) const;
 
   /*
   ** Object
@@ -132,8 +132,8 @@ public:
   virtual ClassPtr getClass() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;
-  virtual String toString() const;
-  virtual String toShortString() const
+  virtual string toString() const;
+  virtual string toShortString() const
     {return shortName.isNotEmpty() ? shortName : toString();}
 
   void luaRegister(LuaState& state) const;
@@ -151,7 +151,7 @@ protected:
   TemplateClassPtr templateType;
   std::vector<ClassPtr> templateArguments;
   bool namedType;
-  String shortName;
+  string shortName;
 };
 
 extern ClassPtr classClass;

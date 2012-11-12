@@ -22,7 +22,7 @@ public:
   void clearProperties()
     {properties.clear(); repaint();}
 
-  void addProperty(const String& name, const String& value)
+  void addProperty(const string& name, const string& value)
     {properties.push_back(std::make_pair(name, value)); repaint();}
 
   virtual void paint(Graphics& g)
@@ -47,7 +47,7 @@ public:
 
 private:
   int namesWidth;
-  std::vector< std::pair<String, String> > properties;
+  std::vector< std::pair<string, string> > properties;
 };
 
 }; /* namespace lbcpp */

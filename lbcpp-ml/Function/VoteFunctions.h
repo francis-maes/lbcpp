@@ -97,7 +97,7 @@ public:
       return new Double();
   }
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + ObjectPtr(new Double(vote))->toShortString() + ")";}
 
 protected:
@@ -120,7 +120,7 @@ public:
     return res;
   }
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + vote->toShortString() + ")";}
 
 protected:

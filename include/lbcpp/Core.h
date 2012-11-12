@@ -20,7 +20,7 @@
 # include "Core/Boolean.h"
 # include "Core/Integer.h"
 # include "Core/Double.h"
-# include "Core/String.h"
+# include "Core/string.h"
 
 # include "Core/Pair.h"
 # include "Core/Vector.h"

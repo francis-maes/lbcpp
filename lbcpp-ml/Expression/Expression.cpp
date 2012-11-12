@@ -212,7 +212,7 @@ DataVectorPtr Expression::compute(ExecutionContext& context, const TablePtr& dat
 /*
 ** VariableExpression
 */
-VariableExpression::VariableExpression(const ClassPtr& type, const String& name, size_t inputIndex)
+VariableExpression::VariableExpression(const ClassPtr& type, const string& name, size_t inputIndex)
   : Expression(type), name(name), inputIndex(inputIndex)
 {
 }
@@ -221,7 +221,7 @@ VariableExpression::VariableExpression() : inputIndex(0)
 {
 }
 
-String VariableExpression::toShortString() const
+string VariableExpression::toShortString() const
   {return name;}
 
 ObjectPtr VariableExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
@@ -241,7 +241,7 @@ ConstantExpression::ConstantExpression(const ObjectPtr& value)
 {
 }
 
-String ConstantExpression::toShortString() const
+string ConstantExpression::toShortString() const
   {return value->toShortString();}
 
 ObjectPtr ConstantExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
@@ -273,7 +273,7 @@ FunctionExpression::FunctionExpression(const FunctionPtr& function, const Expres
   initialize();
 }
 
-String FunctionExpression::toShortString() const
+string FunctionExpression::toShortString() const
   {return function->makeNodeName(arguments);}
 
 void FunctionExpression::initialize()
@@ -355,9 +355,9 @@ const ExpressionPtr& TestExpression::getSubNode(size_t index) const
   return conditionNode;
 }
 
-String TestExpression::toShortString() const
+string TestExpression::toShortString() const
 {
-  String res = "(" + conditionNode->toShortString() + " ? " + 
+  string res = "(" + conditionNode->toShortString() + " ? " + 
     (successNode ? successNode->toShortString() : T("NULL")) + T(" : ") + 
     (failureNode ? failureNode->toShortString() : T("NULL"));
   if (missingNode && missingNode.isInstanceOf<ConstantExpression>() && missingNode.staticCast<ConstantExpression>()->getValue().exists())
@@ -486,9 +486,9 @@ SequenceExpression::SequenceExpression(ClassPtr type, const std::vector<Expressi
 {
 }
 
-String SequenceExpression::toShortString() const
+string SequenceExpression::toShortString() const
 {
-  String res = getClass()->getShortName() + "\n";
+  string res = getClass()->getShortName() + "\n";
   for (size_t i = 0; i < nodes.size(); ++i)
     res += nodes[i]->toShortString() + T("\n");
   return res;

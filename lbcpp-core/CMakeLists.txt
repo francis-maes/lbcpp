@@ -40,8 +40,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Integer.cpp
   ../include/lbcpp/Core/Double.h
   Core/Double.cpp
-  ../include/lbcpp/Core/String.h
-  Core/String.cpp
+  ../include/lbcpp/Core/string.h
+  Core/string.cpp
   ../include/lbcpp/Core/ClassManager.h
   Core/ClassManager.cpp
   ../include/lbcpp/Core/Signature.h
@@ -74,6 +74,7 @@ SET(LBCPP_CORE_LOADER_SOURCES
   Core/Loader/LbcppLoader.h
   Core/Loader/RawTextLoader.h
   Core/Loader/XmlLoader.h
+  Core/Loader/DirectoryLoader.h
   Core/Loader/CoreLoaderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLoaderLibrary.cpp
 )

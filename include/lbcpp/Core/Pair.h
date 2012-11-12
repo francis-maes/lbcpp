@@ -47,10 +47,10 @@ public:
     : Object(pairClass(pair.first ? pair.first->getClass() : objectClass, pair.second ? pair.second->getClass() : objectClass)), first(pair.first), second(pair.second) {}
   Pair() {}
   
-  virtual String toString() const
+  virtual string toString() const
     {return T("(") + first->toString() + T(", ") + second->toString() + T(")");}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return T("(") + first->toShortString() + T(", ") + second->toShortString() + T(")");}
  
   virtual int compare(const ObjectPtr& otherObject) const

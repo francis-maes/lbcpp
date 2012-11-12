@@ -276,7 +276,7 @@ protected:
 
   SamplerPtr optimizeDistribution(ExecutionContext& context, bool usePostfixNotation)
   {
-    context.enterScope(String("Optimizing probabilities with ") + (usePostfixNotation ? "postfix" : "prefix") + " notation");
+    context.enterScope(string("Optimizing probabilities with ") + (usePostfixNotation ? "postfix" : "prefix") + " notation");
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
     ExpressionSearchProbabilitiesProblemPtr problem = new ExpressionSearchProbabilitiesProblem(this->problem->getDomain(), maxExpressionSize, usePostfixNotation);
     ExpressionSearchProbabilitiesObjectivePtr objective = problem->getObjective(0).staticCast<ExpressionSearchProbabilitiesObjective>();
@@ -294,17 +294,17 @@ protected:
     return objective->makeSampler(context, probabilities->getValues());
   }
 
-  void computeHistogramForProbabilities(ExecutionContext& context, const String& name, const DenseDoubleVectorPtr& probabilities, bool usePostfixNotation)
+  void computeHistogramForProbabilities(ExecutionContext& context, const string& name, const DenseDoubleVectorPtr& probabilities, bool usePostfixNotation)
   {
     ExpressionDomainPtr domain = problem->getDomain().staticCast<ExpressionDomain>();
     ExpressionSearchProbabilitiesProblemPtr test = new ExpressionSearchProbabilitiesProblem(problem->getDomain(), maxExpressionSize, usePostfixNotation);
     ExpressionSearchProbabilitiesObjectivePtr objective = test->getObjective(0).staticCast<ExpressionSearchProbabilitiesObjective>();
 
     DenseDoubleVectorPtr histo = objective->estimateHistogram(context, numExpressions, probabilities->getValues());
-    context.enterScope(name + " -> " + String(histo->computeEntropy()));
+    context.enterScope(name + " -> " + string(histo->computeEntropy()));
     for (size_t i = 0; i < histo->getNumValues(); ++i)
     {
-      context.enterScope(String((int)i+1));
+      context.enterScope(string((int)i+1));
       context.resultCallback("i", i+1);
       context.resultCallback("p", histo->getValue(i));
       context.leaveScope();
@@ -312,7 +312,7 @@ protected:
     context.leaveScope();
   }
 
-  void sampleTrajectories(ExecutionContext& context, const String& name, ExpressionStatePtr initialState, SamplerPtr sampler)
+  void sampleTrajectories(ExecutionContext& context, const string& name, ExpressionStatePtr initialState, SamplerPtr sampler)
   {
     std::vector<size_t> countsPerSize;
     sampler->initialize(context, new SearchDomain(initialState));
@@ -341,7 +341,7 @@ protected:
     context.enterScope("Size Histogram");
     for (size_t i = 1; i < countsPerSize.size(); ++i)
     {
-      context.enterScope("Size " + String((int)i));
+      context.enterScope("Size " + string((int)i));
       context.resultCallback("size", i);
       context.resultCallback("probability", countsPerSize[i] / (double)numExpressions);
       context.leaveScope();

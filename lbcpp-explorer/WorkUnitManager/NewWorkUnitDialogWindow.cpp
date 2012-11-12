@@ -11,7 +11,7 @@
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
-extern void flushErrorAndWarningMessages(const String& title);
+extern void flushErrorAndWarningMessages(const string& title);
 
 namespace lbcpp {
 
@@ -57,7 +57,7 @@ public:
     if (value)
       editor->setText(value->toString());
     else
-      editor->setText(String::empty);
+      editor->setText(string::empty);
   }
 
   virtual ObjectPtr getValue() const
@@ -131,7 +131,7 @@ ObjectEditorComponent* ObjectEditorComponent::create(ExecutionContext& context, 
 class WorkUnitSelectorComboxBox : public ComboBox, public juce::ComboBoxListener
 {
 public:
-  WorkUnitSelectorComboxBox(RecentWorkUnitsConfigurationPtr recent, String& workUnitName)
+  WorkUnitSelectorComboxBox(RecentWorkUnitsConfigurationPtr recent, string& workUnitName)
     : juce::ComboBox(T("Toto")), recent(recent), workUnitName(workUnitName)
   {
     //setEditableText(true);
@@ -148,7 +148,7 @@ public:
       if (numRecents > 8) numRecents = 8;
       for (size_t i = 0; i < numRecents; ++i)
       {
-        String str = recent->getRecentWorkUnit(i)->getWorkUnitName();
+        string str = recent->getRecentWorkUnit(i)->getWorkUnitName();
         addItem(str, id++);
       }
     }
@@ -180,7 +180,7 @@ public:
   }
 
   RecentWorkUnitsConfigurationPtr recent;
-  String& workUnitName;
+  string& workUnitName;
 
   juce_UseDebuggingNewOperator
 };
@@ -192,9 +192,9 @@ public:
     : context(context), name(NULL), shortName(NULL), description(NULL), variableIndex(variableIndex)
   {
     ClassPtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
-    String nameValue = workUnitClass->getMemberVariableName(variableIndex);
-    String shortNameValue = workUnitClass->getMemberVariableShortName(variableIndex);
-    String descriptionValue = workUnitClass->getMemberVariableDescription(variableIndex);
+    string nameValue = workUnitClass->getMemberVariableName(variableIndex);
+    string shortNameValue = workUnitClass->getMemberVariableShortName(variableIndex);
+    string descriptionValue = workUnitClass->getMemberVariableDescription(variableIndex);
 
     int desiredHeight = namesHeight;
     addAndMakeVisible(name = new Label(T("name"), nameValue));
@@ -259,7 +259,7 @@ private:
 class WorkUnitArgumentListComponent : public Component
 {
 public:
-  WorkUnitArgumentListComponent(ExecutionContext& context, RecentWorkUnitConfigurationPtr workUnit, String& resultString)
+  WorkUnitArgumentListComponent(ExecutionContext& context, RecentWorkUnitConfigurationPtr workUnit, string& resultString)
     : context(context), workUnit(workUnit), resultString(resultString)
   {
     ClassPtr workUnitClass = getType(workUnit->getWorkUnitName());
@@ -289,7 +289,7 @@ public:
     }
   }
 
-  void setValuesFromCommandLine(const String& commandLine)
+  void setValuesFromCommandLine(const string& commandLine)
   {
     WorkUnitPtr workUnit = WorkUnit::create(getType(this->workUnit->getWorkUnitName()));
     if (!workUnit)
@@ -309,7 +309,7 @@ protected:
   ExecutionContext& context;
   RecentWorkUnitConfigurationPtr workUnit;
   std::vector<WorkUnitArgumentComponent* > arguments;
-  String& resultString;
+  string& resultString;
 };
 
 class WorkUnitArgumentsViewport : public Viewport
@@ -330,7 +330,7 @@ public:
 class WorkUnitArgumentsComponent : public Component, public juce::ComboBoxListener
 {
 public:
-  WorkUnitArgumentsComponent(ExecutionContext& context, RecentWorkUnitConfigurationPtr workUnit, String& resultString)
+  WorkUnitArgumentsComponent(ExecutionContext& context, RecentWorkUnitConfigurationPtr workUnit, string& resultString)
     : context(context), argumentList(NULL), workUnit(workUnit), resultString(resultString)
   {
     // argument list
@@ -344,7 +344,7 @@ public:
     // command line
     addAndMakeVisible(commandLine = new ComboBox(T("recentArgs")));
     commandLine->setEditableText(true);
-    std::vector<String> recents = workUnit->getArguments();
+    std::vector<string> recents = workUnit->getArguments();
     commandLine->clear();
     for (size_t i = 0; i < recents.size(); ++i)
       if (recents[i].trim().isNotEmpty())
@@ -403,10 +403,10 @@ public:
     commandLine->setText(resultString, true);
   }
 
-  String argumentsToString(WorkUnitPtr workUnit, const std::vector< std::pair<size_t, ObjectPtr> >& args) const
+  string argumentsToString(WorkUnitPtr workUnit, const std::vector< std::pair<size_t, ObjectPtr> >& args) const
   {
     ClassPtr workUnitClass = workUnit->getClass();
-    String res;
+    string res;
     for (size_t i = 0; i < args.size(); ++i)
     {
       size_t variableIndex = args[i].first;
@@ -415,8 +415,8 @@ public:
         continue;
 
       ClassPtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
-      String name = workUnitClass->getMemberVariableName(variableIndex);
-      String shortName = workUnitClass->getMemberVariableShortName(variableIndex);
+      string name = workUnitClass->getMemberVariableName(variableIndex);
+      string shortName = workUnitClass->getMemberVariableShortName(variableIndex);
       
       if (shortName.isNotEmpty() && shortName.length() < name.length())
         res += T(" -") + shortName;
@@ -429,7 +429,7 @@ public:
         res += T(" ") + context.getFilePath(File::get(value));
       else
       {
-        String stringValue = value->toString();
+        string stringValue = value->toString();
         if (stringValue.indexOfAnyOf(T(" \t\n\r")) >= 0)
           stringValue = stringValue.quoted();
         res += T(" ") + stringValue;
@@ -449,7 +449,7 @@ private:
   ComboBox* commandLine;
 
   RecentWorkUnitConfigurationPtr workUnit;
-  String& resultString;
+  string& resultString;
 };
 
 void WorkUnitArgumentComponent::changeListenerCallback(void* )
@@ -462,7 +462,7 @@ void WorkUnitArgumentComponent::changeListenerCallback(void* )
 class NewWorkUnitContentComponent : public Component, public juce::ComboBoxListener, public juce::ButtonListener
 {
 public:
-  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters)
+  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& workUnitParameters)
     : context(context), argumentsSelector(NULL), recent(recent), workUnitName(workUnitName), workUnitParameters(workUnitParameters)
   {
     addAndMakeVisible(workUnitSelectorLabel = new Label(T("selector"), T("Work Unit")));
@@ -499,14 +499,14 @@ public:
       ClassPtr type = getType(workUnit->getWorkUnitName());
       if (type && type->getNumMemberVariables() > 0)
       {
-        const std::vector<String>& recentArguments = workUnit->getArguments();
-        workUnitParameters = (recentArguments.size() ? recentArguments[0] : String::empty);
+        const std::vector<string>& recentArguments = workUnit->getArguments();
+        workUnitParameters = (recentArguments.size() ? recentArguments[0] : string::empty);
         addAndMakeVisible(argumentsSelector = new WorkUnitArgumentsComponent(context, workUnit, workUnitParameters));
         argumentsSelectorLabel->setText(T("Arguments"), false);
       }
       else
       {
-        workUnitParameters = String::empty;
+        workUnitParameters = string::empty;
         argumentsSelectorLabel->setText(T("No arguments"), false);
       }
 
@@ -551,8 +551,8 @@ private:
   TextButton* cancelButton;
 
   RecentWorkUnitsConfigurationPtr recent;
-  String& workUnitName;
-  String& workUnitParameters;
+  string& workUnitName;
+  string& workUnitParameters;
 };
 
 
@@ -561,7 +561,7 @@ private:
 /*
 ** NewWorkUnitDialogWindow
 */
-NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments)
+NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& arguments)
   : juce::DocumentWindow(T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true), context(context)
 {
   setResizable(true, true);
@@ -569,7 +569,7 @@ NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, Rece
   setContentComponent(new NewWorkUnitContentComponent(context, recent, workUnitName, arguments));
 }
 
-bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments)
+bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& arguments)
 {
   NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(context, recent, workUnitName, arguments);
   const int result = window->runModalLoop();

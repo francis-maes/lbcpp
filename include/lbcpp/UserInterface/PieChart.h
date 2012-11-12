@@ -17,16 +17,16 @@ namespace lbcpp
 class PieChart : public NameableObject
 {
 public:
-  PieChart(const String& name = String::empty)
+  PieChart(const string& name = string::empty)
     : NameableObject(name) {}
 
   size_t getNumElements() const
     {return values.size();}
 
-  void appendElement(const String& name, double value)
+  void appendElement(const string& name, double value)
     {values.push_back(std::make_pair(name, value));}
 
-  const String& getElementName(size_t index) const
+  const string& getElementName(size_t index) const
     {jassert(index < values.size()); return values[index].first;}
 
   double getElementValue(size_t index) const
@@ -35,7 +35,7 @@ public:
 protected:
   friend class PieChartClass;
 
-  std::vector<std::pair<String, double> > values;
+  std::vector<std::pair<string, double> > values;
 };
 
 typedef ReferenceCountedObjectPtr<PieChart> PieChartPtr;

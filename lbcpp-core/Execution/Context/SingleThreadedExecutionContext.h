@@ -22,7 +22,7 @@ public:
     : ExecutionContext(projectDirectory) {}
   SingleThreadedExecutionContext() {}
 
-  virtual String toString() const
+  virtual string toString() const
     {return T("SingleThreaded");}
 
   virtual bool isMultiThread() const

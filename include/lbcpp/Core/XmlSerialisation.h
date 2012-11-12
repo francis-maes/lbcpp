@@ -41,7 +41,7 @@ typedef ReferenceCountedObjectPtr<XmlElement> XmlElementPtr;
 class XmlElement : public Object
 {
 public:
-  XmlElement(const String& tagName)
+  XmlElement(const string& tagName)
     : tagName(tagName) {}
   XmlElement() {}
   virtual ~XmlElement() {}
@@ -53,10 +53,10 @@ public:
   /*
   ** Tag
   */
-  String getTagName() const
+  string getTagName() const
     {return tagName;}
 
-  void setTagName(const String& tagName)
+  void setTagName(const string& tagName)
     {this->tagName = tagName;}
 
   /*
@@ -65,26 +65,26 @@ public:
   size_t getNumAttributes() const
     {return attributes.size();}
   
-  const String& getAttributeName(size_t index) const
+  const string& getAttributeName(size_t index) const
     {return attributes[index].first;}
 
-  void setAttributeName(size_t index, const String& name)
+  void setAttributeName(size_t index, const string& name)
     {attributes[index].first = name;}
 
-  const String& getAttributeValue(size_t index) const
+  const string& getAttributeValue(size_t index) const
     {return attributes[index].second;}
 
-  void setAttribute(const String& name, const String& value);
-  void setAttribute(const String& name, int value)
-    {setAttribute(name, String(value));}
-  void setAttribute(const String& name, double value)
-    {setAttribute(name, String(value));}
+  void setAttribute(const string& name, const string& value);
+  void setAttribute(const string& name, int value)
+    {setAttribute(name, string(value));}
+  void setAttribute(const string& name, double value)
+    {setAttribute(name, string(value));}
 
-  bool hasAttribute(const String& name) const;
-  void removeAttribute(const String& name);
+  bool hasAttribute(const string& name) const;
+  void removeAttribute(const string& name);
 
-  String getStringAttribute(const String& name, const String& defaultValue = String::empty) const;
-  int getIntAttribute(const String& name, int defaultValue = 0) const;
+  string getStringAttribute(const string& name, const string& defaultValue = string::empty) const;
+  int getIntAttribute(const string& name, int defaultValue = 0) const;
 
   /*
   ** Text
@@ -92,9 +92,9 @@ public:
   bool isTextElement() const
     {return tagName.isEmpty();}
 
-  String getText() const
+  string getText() const
     {return text;}
-  String getAllSubText() const;
+  string getAllSubText() const;
 
   /*
   ** Child Elements
@@ -105,14 +105,14 @@ public:
   XmlElementPtr getChildElement(size_t index) const
     {return childElements[index];}
 
-  XmlElementPtr getChildByName(const String& name) const;
+  XmlElementPtr getChildByName(const string& name) const;
 
   void addChildElement(XmlElementPtr element)
     {childElements.push_back(element);}
 
-  void addTextElement(const String& text)
+  void addTextElement(const string& text)
   {
-    XmlElementPtr element(new XmlElement(String::empty));
+    XmlElementPtr element(new XmlElement(string::empty));
     element->text = text;
     addChildElement(element);
   }
@@ -127,18 +127,18 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
-  virtual String toString() const;
-  virtual String toShortString() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
 
   lbcpp_UseDebuggingNewOperator
 
 private:
   friend class XmlElementClass;
   
-  String tagName;
+  string tagName;
   std::vector<XmlElementPtr> childElements;
-  std::vector< std::pair<String, String> > attributes;
-  String text;
+  std::vector< std::pair<string, string> > attributes;
+  string text;
 };
 
 extern ClassPtr xmlElementClass;
@@ -149,32 +149,32 @@ extern ClassPtr xmlElementClass;
 class XmlExporter
 {
 public:
-  XmlExporter(ExecutionContext& context, const String& rootTag = T("lbcpp"), int version = 200);
+  XmlExporter(ExecutionContext& context, const string& rootTag = T("lbcpp"), int version = 200);
   XmlExporter(ExecutionContext& context, XmlElementPtr target);
 
   bool saveToFile(const juce::File& file);
-  String toString();
+  string toString();
 
   XmlElementPtr getCurrentElement();
 
-  void saveObject(const String& name, const ObjectPtr& object, ClassPtr expectedType);
-  void saveGeneratedObject(const String& name, const ObjectPtr& object, ClassPtr expectedType);
+  void saveObject(const string& name, const ObjectPtr& object, ClassPtr expectedType);
+  void saveGeneratedObject(const string& name, const ObjectPtr& object, ClassPtr expectedType);
 
   void saveElement(size_t index, const ObjectPtr& object, ClassPtr expectedType);
   
-  void enter(const String& tagName, const String& name = String::empty);
+  void enter(const string& tagName, const string& name = string::empty);
   void writeType(ClassPtr type);
-  void writeName(const String& name);
+  void writeName(const string& name);
   void writeObject(const ObjectPtr& object, ClassPtr expectedType);
   void leave();
 
-  void addTextElement(const String& text);
+  void addTextElement(const string& text);
 
   template<class TT>
-  void setAttribute(const String& name, const TT& value)
+  void setAttribute(const string& name, const TT& value)
     {getCurrentElement()->setAttribute(name, value);}
 
-  void setAttribute(const String& name, size_t value)
+  void setAttribute(const string& name, size_t value)
     {getCurrentElement()->setAttribute(name, (int)value);}
 
   void addChildElement(XmlElementPtr elt)
@@ -188,13 +188,13 @@ private:
   XmlElementPtr root;
   std::vector<XmlElementPtr> currentStack;
 
-  std::set<String> sharedObjectsIdentifiers;
+  std::set<string> sharedObjectsIdentifiers;
 
-  typedef std::map<ObjectPtr, std::pair<XmlElementPtr, String> > ObjectXmlElementsMap; // Object -> (XmlElement, Identifier)
+  typedef std::map<ObjectPtr, std::pair<XmlElementPtr, string> > ObjectXmlElementsMap; // Object -> (XmlElement, Identifier)
   ObjectXmlElementsMap objectXmlElements;
 
   void linkObjectToCurrentElement(const ObjectPtr& object);
-  String makeSharedObjectIdentifier(ObjectPtr object);
+  string makeSharedObjectIdentifier(ObjectPtr object);
 
   void writeObjectImpl(const ObjectPtr& object, ClassPtr expectedType);
 };
@@ -214,42 +214,42 @@ public:
   bool isOpened() const
     {return root != NULL;}
 
-  void errorMessage(const String& where, const String& what) const;
-  void warningMessage(const String& where, const String& what) const;
-  void unknownVariableWarning(ClassPtr type, const String& variableName) const;
+  void errorMessage(const string& where, const string& what) const;
+  void warningMessage(const string& where, const string& what) const;
+  void unknownVariableWarning(ClassPtr type, const string& variableName) const;
 
-  typedef std::map<String, ObjectPtr> SharedObjectMap;
+  typedef std::map<string, ObjectPtr> SharedObjectMap;
 
   ObjectPtr load();
 
   juce::XmlElement* getCurrentElement() const
     {return stack.back();}
 
-  String getTagName() const
+  string getTagName() const
     {return getCurrentElement()->getTagName();}
 
-  String getAllSubText() const
+  string getAllSubText() const
     {return getCurrentElement()->getAllSubText();}
 
-  bool hasAttribute(const String& attributeName) const
+  bool hasAttribute(const string& attributeName) const
     {return getCurrentElement()->hasAttribute(attributeName);}
 
-  bool getBoolAttribute(const String& attributeName, bool defaultResult = 0) const
+  bool getBoolAttribute(const string& attributeName, bool defaultResult = 0) const
     {return getCurrentElement()->getBoolAttribute(attributeName, defaultResult);}
 
-  int getIntAttribute(const String& attributeName, int defaultResult = 0) const
+  int getIntAttribute(const string& attributeName, int defaultResult = 0) const
     {return getCurrentElement()->getIntAttribute(attributeName, defaultResult);}
 
-  double getDoubleAttribute(const String& attributeName, double defaultResult = 0.0) const
+  double getDoubleAttribute(const string& attributeName, double defaultResult = 0.0) const
     {return getCurrentElement()->getDoubleAttribute(attributeName, defaultResult);}
 
-  String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
+  string getStringAttribute(const string& attributeName, const string& defaultResult = string::empty) const
     {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
 
   ObjectPtr loadObject(juce::XmlElement* child, ClassPtr expectedType);
 
   void enter(juce::XmlElement* child);
-  bool enter(const String& childTagName);
+  bool enter(const string& childTagName);
   ClassPtr loadType(ClassPtr expectedType);
   ClassPtr loadUnnamedType();
   ObjectPtr loadObject(ClassPtr expectedType);
@@ -266,13 +266,13 @@ private:
 
   std::vector<juce::XmlElement* > stack;
 
-  typedef std::map<String, ObjectPtr> SharedObjectsMap;
+  typedef std::map<string, ObjectPtr> SharedObjectsMap;
   SharedObjectsMap sharedObjects;
 
-  bool addSharedObject(const String& name, ObjectPtr object);
-  ObjectPtr getSharedObject(const String& name) const;
+  bool addSharedObject(const string& name, ObjectPtr object);
+  ObjectPtr getSharedObject(const string& name) const;
 
-  std::set<std::pair<ClassPtr, String> > unknownVariables; // store unknown variables to produce warnings only once
+  std::set<std::pair<ClassPtr, string> > unknownVariables; // store unknown variables to produce warnings only once
 };
 
 }; /* namespace lbcpp */

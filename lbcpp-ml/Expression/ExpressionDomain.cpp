@@ -10,9 +10,9 @@
 #include <lbcpp-ml/PostfixExpression.h>
 using namespace lbcpp;
 
-String ExpressionDomain::toShortString() const
+string ExpressionDomain::toShortString() const
 {
-  String res;
+  string res;
   if (inputs.size())
   {
     res += "Variables: ";
@@ -55,7 +55,7 @@ String ExpressionDomain::toShortString() const
   return res;
 }
 
-VariableExpressionPtr ExpressionDomain::addInput(const ClassPtr& type, const String& name)
+VariableExpressionPtr ExpressionDomain::addInput(const ClassPtr& type, const string& name)
 {
   size_t index = inputs.size();
   VariableExpressionPtr res(new VariableExpression(type, name, index));
@@ -63,7 +63,7 @@ VariableExpressionPtr ExpressionDomain::addInput(const ClassPtr& type, const Str
   return res;
 }
 
-VariableExpressionPtr ExpressionDomain::createSupervision(const ClassPtr& type, const String& name)
+VariableExpressionPtr ExpressionDomain::createSupervision(const ClassPtr& type, const string& name)
 {
   supervision = new VariableExpression(type, name, inputs.size());
   return supervision;

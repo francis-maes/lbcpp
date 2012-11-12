@@ -59,8 +59,8 @@ typedef ReferenceCountedObjectPtr<EnumValue> EnumValuePtr;
 class Double;
 typedef ReferenceCountedObjectPtr<Double> DoublePtr;
 
-class NewString;
-typedef ReferenceCountedObjectPtr<NewString> NewStringPtr;
+class String;
+typedef ReferenceCountedObjectPtr<String> NewStringPtr;
 
 class File;
 typedef ReferenceCountedObjectPtr<File> FilePtr;

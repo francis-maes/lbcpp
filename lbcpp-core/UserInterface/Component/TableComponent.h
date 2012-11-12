@@ -19,7 +19,7 @@ namespace lbcpp
 class TableComponent : public juce::TableListBox, public ComponentWithPreferedSize
 {
 public:
-  TableComponent(const TablePtr& table, const String& name);
+  TableComponent(const TablePtr& table, const string& name);
   ~TableComponent();
   
   virtual int getDefaultWidth() const

@@ -76,7 +76,7 @@ void ProcessManager::killAllRunningProcesses()
 class LocalProcess : public Process
 {
 public:
-  LocalProcess(const juce::File& executableFile, const String& arguments, const juce::File& workingDirectory, const String& name = String::empty)
+  LocalProcess(const juce::File& executableFile, const string& arguments, const juce::File& workingDirectory, const string& name = string::empty)
     : Process(executableFile, arguments, workingDirectory, name), process(NULL) {}
   virtual ~LocalProcess()
   {
@@ -120,20 +120,20 @@ public:
       return;
     for (int i = 0; i < 10; ++i)
     {
-      String str;
+      string str;
       if (!process->readStandardOutput(str) || str.isEmpty())
         break;
       
       if (processOutput.empty())
-        processOutput.push_back(String::empty);
-      String* lastLine = &processOutput.back();
+        processOutput.push_back(string::empty);
+      string* lastLine = &processOutput.back();
       for (int j = 0; j < str.length(); ++j)
       {
         if (str[j] == '\r')
           continue;
         if (str[j] == '\n')
         {
-          processOutput.push_back(String::empty);
+          processOutput.push_back(string::empty);
           lastLine = &processOutput.back();
         }
         else
@@ -152,8 +152,8 @@ private:
   {
     juce::Time lastModificationTime = executable.getLastModificationTime();
     juce::File applicationData = ExplorerConfiguration::getApplicationDataDirectory(context);
-    String name = executable.getFileNameWithoutExtension();
-    String date = lastModificationTime.toString(true, true, true, true);
+    string name = executable.getFileNameWithoutExtension();
+    string date = lastModificationTime.toString(true, true, true, true);
     name += T("_");
     name += date.replaceCharacter(' ', '_').replaceCharacter(':', '_');
     name += executable.getFileExtension();
@@ -167,7 +167,7 @@ public:
   virtual size_t getNumberOfCpus() const
     {return juce::SystemStats::getNumCpus();}
 
-  virtual ProcessPtr addNewProcess(const juce::File& executable, const String& arguments, const juce::File& workingDirectory)
+  virtual ProcessPtr addNewProcess(const juce::File& executable, const string& arguments, const juce::File& workingDirectory)
   {
     ProcessPtr res = new LocalProcess(executable, arguments, workingDirectory);
     waitingProcesses->append(res);
@@ -181,7 +181,7 @@ ProcessManagerPtr lbcpp::localProcessManager()
 #if 1
 class SshSgeProcess : public Process
 {
-  SshSgeProcess(const juce::File& executableFile, const String& arguments, const juce::File& workingDirectory, const String& name = String::empty)
+  SshSgeProcess(const juce::File& executableFile, const string& arguments, const juce::File& workingDirectory, const string& name = string::empty)
   : Process(executableFile, arguments, workingDirectory, name), process(0) {}
   
   virtual bool start()

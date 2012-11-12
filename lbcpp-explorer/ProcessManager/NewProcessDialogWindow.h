@@ -87,7 +87,7 @@ public:
     juce::Button* browseButton;
 
     juce::File startingDirectory;
-    String wildCardPattern;
+    string wildCardPattern;
   };
 
   struct ExecutableSelector : public FileSelector
@@ -98,7 +98,7 @@ public:
       size_t numRecents = recent->getNumRecentExecutables();
       for (size_t i = 0; i < numRecents; ++i)
       {
-        String str = recent->getRecentExecutable(i).getFullPathName();
+        string str = recent->getRecentExecutable(i).getFullPathName();
         if (str.isNotEmpty())
           comboBox->addItem(str, (int)i + 1);
       }
@@ -122,7 +122,7 @@ public:
 
   struct ArgumentsSelector : public juce::ComboBox, public juce::ComboBoxListener
   {
-    ArgumentsSelector(String& arguments)
+    ArgumentsSelector(string& arguments)
       : juce::ComboBox(T("Toto")), arguments(arguments)
     {
       setEditableText(true);
@@ -138,14 +138,14 @@ public:
       {
         clear();
         RecentProcessesPtr recent = RecentProcesses::getInstance();
-        std::vector<String> arguments = recent->getRecentArguments(comboBoxThatHasChanged->getText());
+        std::vector<string> arguments = recent->getRecentArguments(comboBoxThatHasChanged->getText());
         for (size_t i = 0; i < arguments.size(); ++i)
           addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], (int)i + 1);
         setSelectedItemIndex(0);
       }
     }
 
-    String& arguments;
+    string& arguments;
 
     juce_UseDebuggingNewOperator
   };
@@ -176,7 +176,7 @@ public:
   ArgumentsSelector argumentsSelector;
   WorkingDirectorySelector workingDirectorySelector;
 
-  NewProcessDialogWindow(juce::File& executable, String& arguments, juce::File& workingDirectory)
+  NewProcessDialogWindow(juce::File& executable, string& arguments, juce::File& workingDirectory)
     : AlertWindow(T("New Process"), T("Select a program and its arguments"), QuestionIcon),
       executableSelector(executable), argumentsSelector(arguments), workingDirectorySelector(workingDirectory)
   {
@@ -195,7 +195,7 @@ public:
       executableSelector.getComboBox()->setSelectedItemIndex(0);
   }
 
-  static bool run(juce::File& executable, String& arguments, juce::File& workingDirectory)
+  static bool run(juce::File& executable, string& arguments, juce::File& workingDirectory)
   {
     NewProcessDialogWindow* window = new NewProcessDialogWindow(executable, arguments, workingDirectory);
     const int result = window->runModalLoop();

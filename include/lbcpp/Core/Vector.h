@@ -37,8 +37,8 @@ public:
   /*
   ** Object
   */
-  virtual String toString() const;
-  virtual bool loadFromString(ExecutionContext& context, const String& stringValue);
+  virtual string toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& stringValue);
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
@@ -101,7 +101,7 @@ public:
   /*
   ** Object
   */
-  virtual String toString() const;
+  virtual string toString() const;
   virtual size_t getSizeInBytes(bool recursively) const;
 
   lbcpp_UseDebuggingNewOperator

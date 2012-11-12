@@ -211,7 +211,7 @@ typedef ReferenceCountedObjectPtr<SantaFeTrailAction> SantaFeTrailActionPtr;
 class MoveSantaFeTrailAction : public SantaFeTrailAction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "move";}
 
   virtual void execute(SantaFeTrailStatePtr state)
@@ -221,7 +221,7 @@ public:
 class LeftSantaFeTrailAction : public SantaFeTrailAction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "left";}
 
   virtual void execute(SantaFeTrailStatePtr state)
@@ -231,7 +231,7 @@ public:
 class RightSantaFeTrailAction : public SantaFeTrailAction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "right";}
 
   virtual void execute(SantaFeTrailStatePtr state)
@@ -291,9 +291,9 @@ public:
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return santaFeTrailActionClass;}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
   {
-    String res = toShortString() + "(";
+    string res = toShortString() + "(";
     for (size_t i = 0; i < inputs.size(); ++i)
     {
       res += inputs[i]->toShortString();
@@ -311,7 +311,7 @@ public:
   virtual size_t getNumInputs() const
     {return 2;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "progn2";}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
@@ -329,7 +329,7 @@ public:
   virtual size_t getNumInputs() const
     {return 3;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "progn3";}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
@@ -348,7 +348,7 @@ public:
   virtual size_t getNumInputs() const
     {return 2;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "if-food-ahead";}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const

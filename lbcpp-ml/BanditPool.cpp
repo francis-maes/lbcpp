@@ -32,11 +32,11 @@ void BanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showP
     if (useMultiThreading && context.isMultiThread())
     {
       context.flushCallbacks();
-      //context.informationCallback(T("Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
+      //context.informationCallback(T("Num played: ") + string((int)j + 1) + T(" num currently evaluated: " ) + string((int)getNumCurrentlyEvaluatedFormulas()));
       
       while (getNumCurrentlyPlayedArms() >= 25)
       {
-        //context.informationCallback(T("Waiting - Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
+        //context.informationCallback(T("Waiting - Num played: ") + string((int)j + 1) + T(" num currently evaluated: " ) + string((int)getNumCurrentlyEvaluatedFormulas()));
         Thread::sleep(1);
         context.flushCallbacks();
       }
@@ -55,7 +55,7 @@ void BanditPool::playIterations(ExecutionContext& context, size_t numIterations,
 {
   for (size_t i = 0; i < numIterations; ++i)
   {
-    context.enterScope(T("Iteration ") + String((int)i+1));
+    context.enterScope(T("Iteration ") + string((int)i+1));
     context.resultCallback(T("iteration"), i+1);
     play(context, stepsPerIteration);
     displayInformation(context, 20, 5);
@@ -169,9 +169,9 @@ void BanditPool::displayArmInformation(ExecutionContext& context, size_t order, 
 {
   const Arm& arm = arms[armIndex];
   double objectiveValue = optimizeMax ? arm.objectiveValueBest : arm.getMeanObjectiveValue();
-  context.informationCallback(T("[") + String((int)order+1) + T("] ") + 
-    arm.object->toShortString() + T(" -> ") + String(objectiveValue) +
-      T(" (played ") + String((int)arm.playedCount) + T(" times)"));
+  context.informationCallback(T("[") + string((int)order+1) + T("] ") + 
+    arm.object->toShortString() + T(" -> ") + string(objectiveValue) +
+      T(" (played ") + string((int)arm.playedCount) + T(" times)"));
 }
 
 void BanditPool::displayInformation(ExecutionContext& context, size_t numBestArms, size_t numWorstArms) const

@@ -35,7 +35,7 @@ public:
   const std::vector<VariableExpressionPtr>& getInputs() const
     {return inputs;}
 
-  VariableExpressionPtr addInput(const ClassPtr& type, const String& name);
+  VariableExpressionPtr addInput(const ClassPtr& type, const string& name);
   
   /*
   ** Available Constants
@@ -72,7 +72,7 @@ public:
   VariableExpressionPtr getSupervision() const
     {return supervision;}
 
-  VariableExpressionPtr createSupervision(const ClassPtr& type, const String& name);
+  VariableExpressionPtr createSupervision(const ClassPtr& type, const string& name);
 
   /*
   ** Available Functions
@@ -115,7 +115,7 @@ public:
   /*
   ** Object
   */
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   /*
   ** Search space - bof

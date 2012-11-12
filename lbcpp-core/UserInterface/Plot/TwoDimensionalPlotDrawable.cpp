@@ -128,7 +128,7 @@ void TwoDimensionalPlotDrawable::drawFrameMarker(Graphics& g, const AffineTransf
   if (isMainMarker)
   {
     g.setFont(11);
-    String str = ObjectPtr(new Double(value))->toShortString();
+    string str = ObjectPtr(new Double(value))->toShortString();
     if (isHorizontal)
       g.drawText(str, (int)(x - 40), (int)(y + 5), 80, bottomValuesSize - 5, Justification::centred, false);
     else
@@ -168,7 +168,7 @@ void TwoDimensionalPlotDrawable::drawFrame(Graphics& g, const AffineTransform& t
   g.setFont(16);
   g.drawText(getXAxisLabel(), rect.getX(), rect.getBottom() + bottomValuesSize, rect.getWidth(), 20, Justification::centred, false);
 
-  String yAxisLabel = getYAxisLabel();
+  string yAxisLabel = getYAxisLabel();
   float transx = (float)rect.getX() - 40.f;
   float transy = (float)rect.getY() + rect.getHeight() * (0.75f + juce::jmin(1.f, yAxisLabel.length() / 50.f)) / 2.f;
   g.drawTextAsPath(yAxisLabel, AffineTransform::rotation(-(float)(M_PI / 2.f)).translated(transx, transy));

@@ -14,22 +14,22 @@ using namespace lbcpp;
 /*
 ** ScalarVariableMean
 */
-ScalarVariableMean::ScalarVariableMean(const String& name)
+ScalarVariableMean::ScalarVariableMean(const string& name)
   : NameableObject(name), samplesSum(0.0), samplesCount(0.0)
 {
 }
 
-String ScalarVariableMean::toString() const
+string ScalarVariableMean::toString() const
 {
-  String res;
-  String name = getName();
+  string res;
+  string name = getName();
   if (name.isNotEmpty())
     res = name + T(" = ");
-  res += String(getMean());
+  res += string(getMean());
   return res;
 }
 
-String ScalarVariableMean::toShortString() const
+string ScalarVariableMean::toShortString() const
   {return ObjectPtr(new Double(getMean()))->toShortString();}
 
 int ScalarVariableMean::clear(LuaState& state)
@@ -78,15 +78,15 @@ int ScalarVariableMean::getCount(LuaState& state)
 /*
 ** ScalarVariableMeanAndVariance
 */
-ScalarVariableMeanAndVariance::ScalarVariableMeanAndVariance(const String& name)
+ScalarVariableMeanAndVariance::ScalarVariableMeanAndVariance(const string& name)
   : ScalarVariableMean(name), samplesSumOfSquares(0.0) {}
 
-String ScalarVariableMeanAndVariance::toString() const
-  {return ScalarVariableMean::toString() + " +/- " + String(getStandardDeviation());}
+string ScalarVariableMeanAndVariance::toString() const
+  {return ScalarVariableMean::toString() + " +/- " + string(getStandardDeviation());}
 
-String ScalarVariableMeanAndVariance::toShortString() const
+string ScalarVariableMeanAndVariance::toShortString() const
 {
-  String res = ScalarVariableMean::toShortString();
+  string res = ScalarVariableMean::toShortString();
   double stddev = getStandardDeviation();
   if (stddev)
     res += T(" +/- ") + ObjectPtr(new Double(stddev))->toShortString();
@@ -110,7 +110,7 @@ int ScalarVariableMeanAndVariance::getVariance(LuaState& state)
 /*
 ** ScalarVariableStatistics
 */
-ScalarVariableStatistics::ScalarVariableStatistics(const String& name)
+ScalarVariableStatistics::ScalarVariableStatistics(const string& name)
   : ScalarVariableMeanAndVariance(name), minimumValue(DBL_MAX), maximumValue(-DBL_MAX)
 {
 }
@@ -146,13 +146,13 @@ void ScalarVariableStatistics::push(double val, double weight)
     maximumValue = val;
 }
 
-String ScalarVariableStatistics::toString() const
+string ScalarVariableStatistics::toString() const
 {
   return ScalarVariableMeanAndVariance::toString() + " [" +
-    String(minimumValue) + " - " + String(maximumValue) + "]";
+    string(minimumValue) + " - " + string(maximumValue) + "]";
 }
 
-String ScalarVariableStatistics::toShortString() const
+string ScalarVariableStatistics::toShortString() const
   {return ScalarVariableMeanAndVariance::toShortString();}
 
 int ScalarVariableStatistics::getMinimum(LuaState& state)
@@ -172,7 +172,7 @@ int ScalarVariableStatistics::getMaximum(LuaState& state)
 /*
 ** ScalarVariableRecentMean
 */
-ScalarVariableRecentMean::ScalarVariableRecentMean(const String& name, size_t memorySize)
+ScalarVariableRecentMean::ScalarVariableRecentMean(const string& name, size_t memorySize)
   : NameableObject(name), memorySize(memorySize), currentSum(0.0), epoch(0) {}
 
 void ScalarVariableRecentMean::push(double value)
@@ -202,7 +202,7 @@ void ScalarVariableRecentMean::recomputeCurrentSum()
 /*
 ** ScalarVariableRecentMeanAndVariance
 */
-ScalarVariableRecentMeanAndVariance::ScalarVariableRecentMeanAndVariance(const String& name, size_t memorySize)
+ScalarVariableRecentMeanAndVariance::ScalarVariableRecentMeanAndVariance(const string& name, size_t memorySize)
   : ScalarVariableRecentMean(name, memorySize), meansqr(name + T(" sqr"), memorySize)
 {
 }

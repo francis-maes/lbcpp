@@ -51,7 +51,7 @@ class ObjectSelectorCallback
 public:
   virtual ~ObjectSelectorCallback() {}
 
-  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedObjects, const String& selectionName) = 0;
+  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedObjects, const string& selectionName) = 0;
 };
 
 class ObjectSelector
@@ -62,16 +62,16 @@ public:
   void addCallback(ObjectSelectorCallback& callback)
     {callbacks.push_back(&callback);}
 
-  void sendSelectionChanged(const ObjectPtr& selectedObject, const String& selectionName)
+  void sendSelectionChanged(const ObjectPtr& selectedObject, const string& selectionName)
     {sendSelectionChanged(std::vector<ObjectPtr>(1, selectedObject), selectionName);}
 
-  void sendSelectionChanged(const std::vector<ObjectPtr>& selectedObjects, const String& selectionName)
+  void sendSelectionChanged(const std::vector<ObjectPtr>& selectedObjects, const string& selectionName)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
       callbacks[i]->selectionChangedCallback(this, selectedObjects, selectionName);
   }
 
-  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)
+  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& name)
     {return NULL;}
 
 protected:
@@ -83,7 +83,7 @@ class ObjectSelectorTabbedButtonBar : public juce::TabbedButtonBar, public Objec
 public:
   ObjectSelectorTabbedButtonBar(const ObjectPtr& object);
 
-  virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const String& tabName) const;
+  virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const string& tabName) const;
   virtual void changeListenerCallback(void* objectThatHasChanged);
   virtual int getDefaultWidth() const;
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const;

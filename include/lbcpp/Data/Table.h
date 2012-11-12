@@ -22,7 +22,7 @@ public:
   Table() {}
 
   void addColumn(const ObjectPtr& key, const ClassPtr& type);
-  void addColumn(const String& name, const ClassPtr& type);
+  void addColumn(const string& name, const ClassPtr& type);
   void addRow(const std::vector<ObjectPtr>& elements);
   void resize(size_t numRows);
 
@@ -32,7 +32,7 @@ public:
   size_t getNumRows() const
     {return allIndices ? allIndices->size() : 0;}
 
-  String getDescription(size_t index) const;
+  string getDescription(size_t index) const;
 
   ObjectPtr getKey(size_t index) const
     {jassert(index < columns.size()); return columns[index].key;}

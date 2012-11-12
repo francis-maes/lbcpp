@@ -13,12 +13,12 @@ using namespace lbcpp;
 /*
 ** DefaultClass
 */
-DefaultClass::DefaultClass(const String& name, ClassPtr baseClass)
+DefaultClass::DefaultClass(const string& name, ClassPtr baseClass)
   : Class(name, baseClass), abstractClass(false)
 {
 }
 
-DefaultClass::DefaultClass(const String& name, const String& baseClass)
+DefaultClass::DefaultClass(const string& name, const string& baseClass)
   : Class(name, baseClass.isNotEmpty() ? lbcpp::getType(baseClass) : ClassPtr()), abstractClass(false)
 {
 }
@@ -31,7 +31,7 @@ namespace lbcpp {extern ClassPtr defaultClassClass;};
 ClassPtr DefaultClass::getClass() const
   {return defaultClassClass;}
 
-size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description, bool isGenerated)
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, const string& typeName, const string& name, const string& shortName, const string& description, bool isGenerated)
 {
   ClassPtr type;
   if (templateType)
@@ -48,15 +48,15 @@ class GeneratedVariableSignature : public VariableSignature
 {
 public:
   GeneratedVariableSignature(ClassPtr type,
-                    const String& name,
-                    const String& shortName = String::empty,
-                    const String& description = String::empty)
+                    const string& name,
+                    const string& shortName = string::empty,
+                    const string& description = string::empty)
     : VariableSignature(type, name, shortName, description) {thisClass = variableSignatureClass;}
     
   GeneratedVariableSignature() {thisClass = variableSignatureClass;}
 };
 
-size_t DefaultClass::addMemberVariable(ExecutionContext& context, ClassPtr type, const String& name, const String& shortName, const String& description, bool isGenerated)
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, ClassPtr type, const string& name, const string& shortName, const string& description, bool isGenerated)
 {
   if (!type || name.isEmpty())
   {
@@ -112,15 +112,15 @@ void DefaultClass::deinitialize()
   Class::deinitialize();
 }
 
-int DefaultClass::findMemberVariable(const String& name) const
+int DefaultClass::findMemberVariable(const string& name) const
 {
-  std::map<String, size_t>::const_iterator it = variablesMap.find(name);
+  std::map<string, size_t>::const_iterator it = variablesMap.find(name);
   if (it != variablesMap.end())
     return (int)(baseType->getNumMemberVariables() + it->second);
   return baseType->findMemberVariable(name);
 }
 
-size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const String& name, ClassPtr type)
+size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const string& name, ClassPtr type)
 {
   int idx = findMemberVariable(name);
   if (idx >= 0)
@@ -142,15 +142,15 @@ FunctionSignaturePtr DefaultClass::getMemberFunction(size_t index) const
   return functions[index];
 }
 
-int DefaultClass::findMemberFunction(const String& name) const
+int DefaultClass::findMemberFunction(const string& name) const
 {
-  std::map<String, size_t>::const_iterator it = functionsMap.find(name);
+  std::map<string, size_t>::const_iterator it = functionsMap.find(name);
   if (it != functionsMap.end())
     return (int)(baseType->getNumMemberFunctions() + it->second);
   return baseType->findMemberFunction(name);
 }
 
-size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaCFunction function, const String& name, const String& shortName, const String& description, bool isStatic)
+size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaCFunction function, const string& name, const string& shortName, const string& description, bool isStatic)
 {
   if (!function || name.isEmpty())
   {

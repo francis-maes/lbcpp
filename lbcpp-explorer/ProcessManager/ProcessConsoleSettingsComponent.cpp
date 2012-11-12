@@ -16,7 +16,7 @@ public:
   ProcessConsoleFilterComponent(ExecutionContext& context, ProcessConsoleFilterPtr filter)
     : context(context), filter(filter)
   {
-    addAndMakeVisible(displayButton = new juce::ToggleButton(String::empty));
+    addAndMakeVisible(displayButton = new juce::ToggleButton(string::empty));
     displayButton->setToggleState(filter->getDisplayFlag(), false);
     displayButton->addButtonListener(this);
 

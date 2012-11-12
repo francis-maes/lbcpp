@@ -32,13 +32,13 @@ public:
     ExecutionCallback::notificationCallback(notification);
   }
 
-  virtual void informationCallback(const String& where, const String& what)
+  virtual void informationCallback(const string& where, const string& what)
     {appendTraceItem(new MessageExecutionTraceItem(currentNotificationTime, informationMessageType, what, where));}
 
-  virtual void warningCallback(const String& where, const String& what)
+  virtual void warningCallback(const string& where, const string& what)
     {appendTraceItem(new MessageExecutionTraceItem(currentNotificationTime, warningMessageType, what, where));}
 
-  virtual void errorCallback(const String& where, const String& what)
+  virtual void errorCallback(const string& where, const string& what)
     {appendTraceItem(new MessageExecutionTraceItem(currentNotificationTime, errorMessageType, what, where));}
 
   virtual void progressCallback(const ProgressionStatePtr& progression)
@@ -48,10 +48,10 @@ public:
     node->setEndTime(currentNotificationTime);
   }
 
-  virtual void resultCallback(const String& name, const ObjectPtr& value)
+  virtual void resultCallback(const string& name, const ObjectPtr& value)
     {getCurrentNode()->setResult(name, value);}
 
-  virtual void preExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit)
+  virtual void preExecutionCallback(const ExecutionStackPtr& , const string& description, const WorkUnitPtr& workUnit)
   {
     jassert(stack.size());
     ExecutionTraceNodePtr newNode(new ExecutionTraceNode(description, workUnit, currentNotificationTime));
@@ -59,7 +59,7 @@ public:
     stack.push_back(newNode);
   }
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& , const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     ExecutionTraceNodePtr finishedNode = getCurrentNode();
     finishedNode->setEndTime(currentNotificationTime);

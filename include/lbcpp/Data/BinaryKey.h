@@ -95,11 +95,11 @@ public:
     return res;
   }
   
-  virtual String toShortString() const
+  virtual string toShortString() const
   {
-    String res;
+    string res;
     for (size_t i = 0; i < values.size(); ++i)
-      res += String::toHexString(values[i]);
+      res += string::toHexString(values[i]);
     return res;
   }
 

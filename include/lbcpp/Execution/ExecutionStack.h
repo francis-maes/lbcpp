@@ -21,13 +21,13 @@ public:
     : parentStack(parentStack) {}
   ExecutionStack() {}
 
-  void push(const String& description, const WorkUnitPtr& object = WorkUnitPtr());
-  std::pair<String, WorkUnitPtr> pop();
+  void push(const string& description, const WorkUnitPtr& object = WorkUnitPtr());
+  std::pair<string, WorkUnitPtr> pop();
   
   size_t getDepth() const;
-  const std::pair<String, WorkUnitPtr>& getEntry(size_t depth) const;
+  const std::pair<string, WorkUnitPtr>& getEntry(size_t depth) const;
 
-  const String& getDescription(size_t depth) const
+  const string& getDescription(size_t depth) const
     {return getEntry(depth).first;}
 
   const WorkUnitPtr& getWorkUnit(size_t depth) const
@@ -48,7 +48,7 @@ private:
   friend class ExecutionStackClass;
 
   ExecutionStackPtr parentStack;
-  std::vector< std::pair<String, WorkUnitPtr> > stack;
+  std::vector< std::pair<string, WorkUnitPtr> > stack;
 };
 
 }; /* namespace lbcpp */

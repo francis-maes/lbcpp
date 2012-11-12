@@ -47,7 +47,7 @@ protected:
   // command+g
   void gotoLine()
   {
-    String lineStr(getCaretPos().getLineNumber() + 1);
+    string lineStr(getCaretPos().getLineNumber() + 1);
     AlertWindow alertWindow("Goto line", "Choose the line number", AlertWindow::QuestionIcon);
     alertWindow.addTextEditor("line", lineStr);
     alertWindow.addButton("Ok", 1, juce::KeyPress::returnKey);
@@ -77,7 +77,7 @@ protected:
     document.newTransaction();
     for (int lineNumber = selectionStart.getLineNumber(); lineNumber <= selectionEnd.getLineNumber(); ++lineNumber)
     {
-      String line = document.getLine(lineNumber);
+      string line = document.getLine(lineNumber);
       document.deleteSection(Position(&document, lineNumber, 0), Position(&document, lineNumber, line.length()));
       line = line.dropLastCharacters(1); // remove \n
 
@@ -112,7 +112,7 @@ public:
   virtual void paint(Graphics& g)
   {
     g.fillAll(Colour(240, 245, 250));
-    String text = "Ln " + String(currentPosition.getLineNumber() + 1) + " Col " + String(currentPosition.getIndexInLine() + 1);
+    string text = "Ln " + string(currentPosition.getLineNumber() + 1) + " Col " + string(currentPosition.getIndexInLine() + 1);
     g.setColour(Colours::black);
     g.drawText(text, 0, 0, getWidth(), getHeight(), Justification::centredRight, false);
   }
@@ -127,7 +127,7 @@ LuaCodeEditor::LuaCodeEditor(const juce::File& luaFile)
   InputStream* istr = luaFile.createInputStream();
   if (istr)
   {
-    String luaCode;
+    string luaCode;
     while (!istr->isExhausted())
       luaCode += istr->readNextLine() + T("\n");
     delete istr;
@@ -144,7 +144,7 @@ LuaCodeEditor::LuaCodeEditor(const juce::File& luaFile)
 LuaCodeEditor::~LuaCodeEditor()
 {
   deleteAllChildren();
-  document.replaceAllContent(String::empty);
+  document.replaceAllContent(string::empty);
 }
 
 void LuaCodeEditor::resized()
@@ -184,7 +184,7 @@ void LuaCodeEditor::updateStatus()
 // command+enter
 void LuaCodeEditor::executeCode(bool verbose)
 {
-  String code = codeEditor->getSelectedText();
+  string code = codeEditor->getSelectedText();
   if (!code.containsNonWhitespaceChars())
     code = document.getAllContent();
   if (!code.containsNonWhitespaceChars())
@@ -206,8 +206,8 @@ void LuaCodeEditor::executeCode(bool verbose)
   if (workUnitClass)
   {
     WorkUnitPtr workUnit = WorkUnit::create(workUnitClass);
-    workUnit->setVariable(0, new NewString(code));
-    workUnit->setVariable(1, new NewString(name));
+    workUnit->setVariable(0, new String(code));
+    workUnit->setVariable(1, new String(name));
     workUnit->setVariable(2, new Boolean(verbose));
     context->pushWorkUnit(workUnit);
   }

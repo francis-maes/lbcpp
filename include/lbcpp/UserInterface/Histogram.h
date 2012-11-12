@@ -15,7 +15,7 @@ namespace lbcpp
 class Histogram : public NameableObject
 {
 public:
-  Histogram(double stepSize, double minValue, double maxValue, bool includeOutOfBound = true, const String& name = String::empty)
+  Histogram(double stepSize, double minValue, double maxValue, bool includeOutOfBound = true, const string& name = string::empty)
     : NameableObject(name), stepSize(stepSize), minValue(minValue), maxValue(maxValue), includeOutOfBound(includeOutOfBound)
     {jassert(minValue <= maxValue);}
   Histogram() {}

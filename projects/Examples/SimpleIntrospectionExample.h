@@ -27,7 +27,7 @@ private:
   bool myBool;
   int myInt;
   double myDouble;
-  String myString;
+  string myString;
   ObjectPtr myObject;
 };
 

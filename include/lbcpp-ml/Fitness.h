@@ -61,7 +61,7 @@ public:
   bool strictlyDominates(const FitnessPtr& other) const;
   bool isBetterForAtLeastOneObjectiveThan(const FitnessPtr& other, bool strictly = true) const;
   
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;
 
   static FitnessPtr makeWorstCombination(const FitnessPtr& fitness1, const FitnessPtr& fitness2);

@@ -23,8 +23,8 @@ public:
   StumpFunction(double threshold = 0.0) 
     : threshold(threshold) {}
 
-  virtual String toShortString() const
-    {return ">= " + String(threshold);}
+  virtual string toShortString() const
+    {return ">= " + string(threshold);}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -35,8 +35,8 @@ public:
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return booleanClass;}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + " >= " + String(threshold);}
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+    {return inputs[0]->toShortString() + " >= " + string(threshold);}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
@@ -112,7 +112,7 @@ typedef ReferenceCountedObjectPtr<StumpFunction> StumpFunctionPtr;
 class GreaterThanDoubleFunction : public Function
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return ">";}
 
   virtual size_t getNumInputs() const
@@ -124,7 +124,7 @@ public:
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return booleanClass;}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
@@ -150,7 +150,7 @@ public:
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)
     {computePercentiles(inputValues, numPercentiles, percentiles);}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "normalize(" + inputs[0]->toShortString() + ")";}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const

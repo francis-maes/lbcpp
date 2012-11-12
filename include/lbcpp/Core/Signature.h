@@ -37,19 +37,19 @@ extern ClassPtr variableSignatureClass;
 class Signature : public NameableObject
 {
 public:
-  Signature(const String& name = String::empty, const String& shortName = String::empty, const String& description = String::empty)
+  Signature(const string& name = string::empty, const string& shortName = string::empty, const string& description = string::empty)
     : NameableObject(name), shortName(shortName), description(description) {}
 
-  const String& getShortName() const
+  const string& getShortName() const
     {return shortName;}
 
-  void setShortName(const String& shortName)
+  void setShortName(const string& shortName)
     {this->shortName = shortName;}
 
-  const String& getDescription() const
+  const string& getDescription() const
     {return description;}
 
-  void setDescription(const String& description)
+  void setDescription(const string& description)
     {this->description = description;}
 
   lbcpp_UseDebuggingNewOperator
@@ -57,17 +57,17 @@ public:
 protected:
   friend class SignatureClass;
 
-  String shortName;
-  String description;
+  string shortName;
+  string description;
 };
 
 class VariableSignature : public Signature
 {
 public:
   VariableSignature(ClassPtr type,
-                    const String& name,
-                    const String& shortName = String::empty,
-                    const String& description = String::empty)
+                    const string& name,
+                    const string& shortName = string::empty,
+                    const string& description = string::empty)
     : Signature(name, shortName, description), type(type) {}
   VariableSignature(const VariableSignature& other)
     : Signature(other.name, other.shortName, other.description) {}
@@ -90,9 +90,9 @@ protected:
 class FunctionSignature : public Signature
 {
 public:
-  FunctionSignature(const String& name,
-                        const String& shortName = String::empty,
-                        const String& description = String::empty,
+  FunctionSignature(const string& name,
+                        const string& shortName = string::empty,
+                        const string& description = string::empty,
                         bool isStatic = false)
     : Signature(name, shortName, description), staticFunction(isStatic) {}
   FunctionSignature() {}
@@ -112,9 +112,9 @@ class LuaFunctionSignature : public FunctionSignature
 {
 public:
   LuaFunctionSignature(LuaCFunction function,
-                        const String& name,
-                        const String& shortName = String::empty,
-                        const String& description = String::empty,
+                        const string& name,
+                        const string& shortName = string::empty,
+                        const string& description = string::empty,
                         bool isStatic = false)
     : FunctionSignature(name, shortName, description, isStatic), function(function) {}
 

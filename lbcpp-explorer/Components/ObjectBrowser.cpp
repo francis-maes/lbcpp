@@ -12,7 +12,7 @@
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
 using namespace lbcpp;
 
-extern void flushErrorAndWarningMessages(const String& title);
+extern void flushErrorAndWarningMessages(const string& title);
 
 class ObjectBrowserResizerBar : public Component
 {
@@ -51,11 +51,11 @@ private:
 
 struct ObjectRelatedCommand
 {
-  ObjectRelatedCommand(const String& name, const String& iconToUse)
+  ObjectRelatedCommand(const string& name, const string& iconToUse)
     : name(name), iconToUse(iconToUse) {}
 
-  String name;
-  String iconToUse;
+  string name;
+  string iconToUse;
 
   static std::vector<ObjectRelatedCommand> getObjectCommands(const ObjectPtr& object)
   {
@@ -116,7 +116,7 @@ struct ObjectRelatedCommand
     {
       ObjectPtr object = container->getElement(i);
       for (size_t j = 0; j < columns.size(); ++j)
-        *ostr << String(object->getVariable(columns[j])->toDouble()) << " ";
+        *ostr << string(object->getVariable(columns[j])->toDouble()) << " ";
       *ostr << "\n";
     }
     ostr->flush();
@@ -124,7 +124,7 @@ struct ObjectRelatedCommand
     return true;
   }
 
-  static juce::File selectFileToSave(const String& extension)
+  static juce::File selectFileToSave(const string& extension)
   {
     juce::File defaultDirectory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
     ExplorerProjectPtr project = ExplorerProject::getCurrentProject();
@@ -153,12 +153,12 @@ public:
 
     // properties
     properties->addProperty(T("Type"), object->getClassName());
-    String str = object->toShortString();
+    string str = object->toShortString();
     if (str.isNotEmpty())
       properties->addProperty(T("Desc"), str);
     ContainerPtr container = object.dynamicCast<Container>();
     if (container)
-      properties->addProperty(T("Size"), String((int)container->getNumElements()));
+      properties->addProperty(T("Size"), string((int)container->getNumElements()));
     
     // command buttons
     commands = ObjectRelatedCommand::getObjectCommands(object);
@@ -345,7 +345,7 @@ public:
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
     {int w = getPreferedWidth(); return w ? w : availableWidth;}
 
-  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedObjects, const String& selectionName)
+  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedObjects, const string& selectionName)
   {
     int rowNumber = findRowNumber(selector);
     jassert(rowNumber >= 0);

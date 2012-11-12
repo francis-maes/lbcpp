@@ -395,9 +395,9 @@ protected:
     
     String arguments = typeArgument + T(", T(") + name.quoted() + T(")");
     arguments += T(", ");
-    arguments += shortName.isEmpty() ? T("String::empty") : T("T(") + shortName.quoted() + T(")");
+    arguments += shortName.isEmpty() ? T("lbcpp::string::empty") : T("T(") + shortName.quoted() + T(")");
     arguments += T(", ");
-    arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
+    arguments += description.isEmpty() ? T("lbcpp::string::empty") : T("T(") + description.quoted() + T(")");
     
     if (xml->getBoolAttribute(T("generated"), false))
       arguments += T(", true");
@@ -417,9 +417,9 @@ protected:
 
     String arguments = name + T("Forwarder, T(") + name.quoted() + T(")");
     arguments += T(", ");
-    arguments += shortName.isEmpty() ? T("String::empty") : T("T(") + shortName.quoted() + T(")");
+    arguments += shortName.isEmpty() ? T("lbcpp::string::empty") : T("T(") + shortName.quoted() + T(")");
     arguments += T(", ");
-    arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
+    arguments += description.isEmpty() ? T("lbcpp::string::empty") : T("T(") + description.quoted() + T(")");
     if (xml->getBoolAttribute(T("static"), false))
       arguments += T(", true");
 

@@ -523,10 +523,10 @@ void SparseDoubleVector::saveToXml(XmlExporter& exporter) const
 {
   Object::saveToXml(exporter);
   size_t n = values.size();
-  String res;
+  string res;
   for (size_t i = 0; i < n; ++i)
     if (values[i].second)
-      res += String((int)values[i].first) + T(":") + String(values[i].second) + T(" ");
+      res += string((int)values[i].first) + T(":") + string(values[i].second) + T(" ");
   exporter.addTextElement(res.trimEnd());
 }
 
@@ -787,12 +787,12 @@ void SparseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& targe
   targetVector->lastIndex = lastIndex;
 }
 
-String SparseDoubleVector::toShortString() const
+string SparseDoubleVector::toShortString() const
 {
-  String res;
+  string res;
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i].second)
-      res += getElementName(values[i].first) + T(":") + String(values[i].second) + T(" ");
+      res += getElementName(values[i].first) + T(":") + string(values[i].second) + T(" ");
   if (res.isNotEmpty())
     res.dropLastCharacters(1);
   return res;
@@ -916,14 +916,14 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
   Object::saveToXml(exporter);
   size_t n = values->size();
   ClassPtr elementsType = getElementsType();
-  String res;
+  string res;
   for (size_t i = 0; i < n; ++i)
   {
     double value = (*values)[i];
     if (value == doubleMissingValue)
       res += T("_ ");
     else
-      res += String(value) + T(" ");
+      res += string(value) + T(" ");
   }
   exporter.addTextElement(res.trimEnd());
   exporter.setAttribute(T("size"), n);
@@ -936,7 +936,7 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
 
   bool ok = true;
   StringArray tokens;
-  String allText = importer.getAllSubText();
+  string allText = importer.getAllSubText();
   tokens.addTokens(allText, true);
   tokens.removeEmptyStrings();
   size_t n = tokens.size();
@@ -946,7 +946,7 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
     if (expectedSize != (int)n)
     {
       importer.getContext().errorCallback(T("Invalid number of tokens: expected ") +
-        String(expectedSize) + T(" values, found ") + String((int)n) + T(" values"));
+        string(expectedSize) + T(" values, found ") + string((int)n) + T(" values"));
       ok = false;
     }
   }
@@ -955,7 +955,7 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   ensureSize(n);
   for (size_t i = 0; i < n; ++i)
   {
-    String token = tokens[i];
+    string token = tokens[i];
     double& value = getValueReference(i);
     if (token == T("_"))
       value = doubleMissingValue;

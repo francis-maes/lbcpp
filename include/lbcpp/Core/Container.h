@@ -38,14 +38,14 @@ public:
   virtual EnumerationPtr getElementsEnumeration() const
     {return positiveIntegerEnumerationEnumeration;}
 
-  String getElementName(size_t index) const;
+  string getElementName(size_t index) const;
 
   virtual size_t getNumElements() const = 0;
   virtual ObjectPtr getElement(size_t index) const = 0;
   virtual void setElement(size_t index, const ObjectPtr& value) = 0;
 
-  virtual String toString() const;
-  virtual String toShortString() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
   VectorPtr toVector() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;

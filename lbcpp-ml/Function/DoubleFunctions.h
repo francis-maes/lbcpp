@@ -45,7 +45,7 @@ public:
     return new DataVector(inputs->getIndices(), res);
   }
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return toShortString() + "(" + inputs[0]->toShortString() + ")";}
 
 protected:
@@ -55,7 +55,7 @@ protected:
 class OppositeDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "-";}
 
   virtual double computeDouble(double value) const
@@ -65,7 +65,7 @@ public:
 class InverseDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "inverse";}
 
   virtual double computeDouble(double value) const
@@ -75,7 +75,7 @@ public:
 class AbsDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "abs";}
 
   virtual double computeDouble(double value) const
@@ -85,7 +85,7 @@ public:
 class LogDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "log";}
 
   virtual double computeDouble(double value) const
@@ -95,7 +95,7 @@ public:
 class ProtectedLogDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "plog";}
 
   virtual double computeDouble(double value) const
@@ -105,7 +105,7 @@ public:
 class ExpDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "exp";}
 
   virtual double computeDouble(double value) const
@@ -115,7 +115,7 @@ public:
 class SqrtDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "sqrt";}
 
   virtual double computeDouble(double value) const
@@ -125,7 +125,7 @@ public:
 class CosDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "cos";}
 
   virtual double computeDouble(double value) const
@@ -135,7 +135,7 @@ public:
 class SinDoubleFunction : public UnaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "sin";}
 
   virtual double computeDouble(double value) const
@@ -185,14 +185,14 @@ public:
     return new DataVector(inputs[0]->getIndices(), res);
   }
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " " + toShortString() + " " + inputs[1]->toShortString() + ")";}
 };
 
 class AddDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "+";}
 
   virtual double computeDouble(double first, double second) const
@@ -205,7 +205,7 @@ public:
 class SubDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "-";}
 
   virtual double computeDouble(double first, double second) const
@@ -218,7 +218,7 @@ public:
 class MulDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "*";}
 
   virtual double computeDouble(double first, double second) const
@@ -231,7 +231,7 @@ public:
 class DivDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "/";}
 
   virtual double computeDouble(double first, double second) const
@@ -244,7 +244,7 @@ public:
 class ProtectedDivDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "p/";}
 
   virtual double computeDouble(double first, double second) const
@@ -257,7 +257,7 @@ public:
 class PowDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "^";}
 
   virtual double computeDouble(double first, double second) const
@@ -267,10 +267,10 @@ public:
 class MinDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "min";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "min(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -283,10 +283,10 @@ public:
 class MaxDoubleFunction : public BinaryDoubleFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "max";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "max(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const

@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/String.h>
+#include <lbcpp/Core/string.h>
 #include <lbcpp/Data/Table.h>
 #include <algorithm>
 using namespace lbcpp;
@@ -27,9 +27,9 @@ void Table::addColumn(const ObjectPtr& key, const ClassPtr& type)
   columns.push_back(c);
 }
 
-void Table::addColumn(const String& name, const ClassPtr& type)
+void Table::addColumn(const string& name, const ClassPtr& type)
 {
-  addColumn(new NewString(name), type);
+  addColumn(new String(name), type);
 }
 
 void Table::addRow(const std::vector<ObjectPtr>& elements)
@@ -54,7 +54,7 @@ void Table::resize(size_t numRows)
   allIndices = new IndexSet(0, numRows);
 }
 
-String Table::getDescription(size_t index) const
+string Table::getDescription(size_t index) const
 {
   jassert(index < columns.size());
   return columns[index].key->toShortString();

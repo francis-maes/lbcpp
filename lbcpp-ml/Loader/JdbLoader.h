@@ -22,7 +22,7 @@ namespace lbcpp
 class JdbLoader : public TextLoader
 {
 public:
-  virtual String getFileExtensions() const
+  virtual string getFileExtensions() const
     {return "jdb";}
 
   virtual ClassPtr getTargetClass() const
@@ -35,7 +35,7 @@ public:
     table = TablePtr();
   }
 
-  virtual bool parseLine(ExecutionContext& context, const String& l)
+  virtual bool parseLine(ExecutionContext& context, const string& l)
   {
     char* line = const_cast<char* >((const char* )l);
     while (*line == ' ' || *line == '\t')
@@ -82,10 +82,10 @@ protected:
       else if (!strcmp(kind, "symbolic") || !strcmp(kind, "SYMBOLIC"))
         attributeClass = new DefaultEnumeration();
       else if (!strcmp(kind, "name") || !strcmp(kind, "NAME"))
-        attributeClass = newStringClass;
+        attributeClass = stringClass;
       else
       {
-        context.errorCallback(T("Could not recognize attribute type ") + String(kind).quoted());
+        context.errorCallback(T("Could not recognize attribute type ") + string(kind).quoted());
         return TablePtr();
       }
       res->addColumn(name, attributeClass);
@@ -110,8 +110,8 @@ protected:
         value = new EnumValue(enumeration, enumeration->findOrAddElement(context, token));
       else if (attributeClass == doubleClass)
         value = new Double(strtod(token, NULL));
-      else if (attributeClass == newStringClass)
-        value = new NewString(token);
+      else if (attributeClass == stringClass)
+        value = new String(token);
       else
         jassertfalse;
 

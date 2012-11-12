@@ -108,7 +108,7 @@ public:
 
         /*if (i == 0)
         {
-          context.enterScope(String((int)epoch));
+          context.enterScope(string((int)epoch));
           context.resultCallback("epoch", epoch);
           context.resultCallback("value", value);
           context.resultCallback("mean", mean);

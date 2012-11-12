@@ -85,7 +85,7 @@ protected:
 
     for (size_t j = 0; j < numColumns; ++j)
     {
-      String value = table->getDescription(j);
+      string value = table->getDescription(j);
       autoSizeWidths.push_back(font.getStringWidth(value));
     }
 
@@ -100,7 +100,7 @@ protected:
     }
   }
 
-  String elementValueToString(size_t rowIndex, size_t columnIndex) const
+  string elementValueToString(size_t rowIndex, size_t columnIndex) const
   {
     ObjectPtr value = table->getElement(rowIndex, columnIndex);
     return value ? value->toShortString() : T("?");
@@ -110,7 +110,7 @@ protected:
 /*
 ** TableComponent
 */
-TableComponent::TableComponent(const TablePtr& table, const String& name)
+TableComponent::TableComponent(const TablePtr& table, const string& name)
   : TableListBox(name, NULL)
 {
   TableHeaderComponent* hdr = getHeader();

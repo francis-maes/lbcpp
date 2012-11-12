@@ -83,12 +83,12 @@ public:
   double checkNumber(int index);
   void pushNumber(double value);
 
-  // String
+  // string
   bool isString(int index) const;
-  String toString(int index);
+  string toString(int index);
   const char* checkString(int index);
   void pushString(const char* value);
-  void pushString(const String& value);
+  void pushString(const string& value);
   const char* pushFString(const char* format, ...);
 
   // Function
@@ -127,7 +127,7 @@ public:
 
   // Errors
   void error(const char* message);
-  void error(const String& message);
+  void error(const string& message);
   bool processExecuteError(int error);
 
   // misc

@@ -109,7 +109,7 @@ bool TextParser::rewind()
 ProgressionStatePtr TextParser::getCurrentPosition() const
   {return new ProgressionState(lineNumber, 0, "Lines");}
 
-inline int indexOfAnyNotOf(const String& str, int strLength, const String& characters, int startPosition = 0)
+inline int indexOfAnyNotOf(const string& str, int strLength, const string& characters, int startPosition = 0)
 {
   for (int i = startPosition; i < strLength; ++i)
     if (characters.indexOfChar(str[i]) < 0)
@@ -117,7 +117,7 @@ inline int indexOfAnyNotOf(const String& str, int strLength, const String& chara
   return -1;
 }
 
-void TextParser::tokenize(const String& line, std::vector<String>& columns, const juce::tchar* separators)
+void TextParser::tokenize(const string& line, std::vector<string>& columns, const juce::tchar* separators)
 {
   int lineLength = line.length();
   int b = indexOfAnyNotOf(line, lineLength, separators);
@@ -160,8 +160,8 @@ ObjectPtr TextParser::next()
     ++lineNumber;
     if (!parseLine(line))
     {
-      String lineString(line);
-      context.errorCallback(T("-> Could not parse line ") + String((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
+      string lineString(line);
+      context.errorCallback(T("-> Could not parse line ") + string((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
       if (f) {fclose(f); f = NULL;}
       return ObjectPtr();
     }

@@ -47,7 +47,7 @@ public:
    **  inherited class are responsible for throwing an error
    **  to the ErrorManager.
    */
-  virtual bool parseDataLine(const std::vector<String>& columns)
+  virtual bool parseDataLine(const std::vector<string>& columns)
     {return false;}
   
   /**
@@ -59,7 +59,7 @@ public:
    **  inherited class are responsible for throwing an error
    **  to the ErrorManager.
    */
-  virtual bool parseCommentLine(const String& comment)
+  virtual bool parseCommentLine(const string& comment)
     {return true;}
   
   /**
@@ -89,7 +89,7 @@ public:
    ** @see LearningDataObjectParser::parseCommentLine
    ** @see LearningDataObjectParser::parseDataLine
    */
-  virtual bool parseLine(const String& line);
+  virtual bool parseLine(const string& line);
   
 protected:
   /**
@@ -101,7 +101,7 @@ protected:
    ** @param columns : the columns to parse.
    ** @param firstColumn : start column number.
    */
-  SparseDoubleVectorPtr parseFeatureList(DefaultEnumerationPtr features, const std::vector<String>& columns, size_t firstIndex) const;
+  SparseDoubleVectorPtr parseFeatureList(DefaultEnumerationPtr features, const std::vector<string>& columns, size_t firstIndex) const;
   
   
   /**
@@ -116,7 +116,7 @@ protected:
    **
    ** @return False if any error occurs.
    */
-  static bool parseFeature(const String& str, String& featureId, double& featureValue);
+  static bool parseFeature(const string& str, string& featureId, double& featureValue);
   
   /**
    ** Parses a feature identifier
@@ -129,7 +129,7 @@ protected:
    **
    ** @return True.
    */
-  static bool parseFeatureIdentifier(const String& identifier, std::vector<String>& path)
+  static bool parseFeatureIdentifier(const string& identifier, std::vector<string>& path)
     {tokenize(identifier, path, T(".")); return true;}
 };
 
@@ -145,7 +145,7 @@ public:
   virtual ClassPtr getElementsType() const
     {return elementsType;}
 
-  virtual bool parseDataLine(const std::vector<String>& columns)
+  virtual bool parseDataLine(const std::vector<string>& columns)
   {
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
@@ -171,9 +171,9 @@ public:
   virtual ClassPtr getElementsType() const
     {return elementsType;}
 
-  virtual bool parseDataLine(const std::vector<String>& columns)
+  virtual bool parseDataLine(const std::vector<string>& columns)
   {
-    String label = columns[0];
+    string label = columns[0];
     jassert(label.isNotEmpty());
     juce::tchar lowerCase = juce::CharacterFunctions::toLowerCase(label[0]);
     bool supervision = (lowerCase == 'y' || lowerCase == 't' || lowerCase == '+' || lowerCase == '1');
@@ -213,7 +213,7 @@ public:
   virtual ClassPtr getElementsType() const
     {return elementsType;}
 
-  virtual bool parseDataLine(const std::vector<String>& columns)
+  virtual bool parseDataLine(const std::vector<string>& columns)
   {
     size_t label = labels->findOrAddElement(context, columns[0]);
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
@@ -241,7 +241,7 @@ public:
   virtual ClassPtr getElementsType() const
     {return elementsType;}
 
-  SparseDoubleVectorPtr parseLabelsList(const String& text) const
+  SparseDoubleVectorPtr parseLabelsList(const string& text) const
   {
     StringArray tokens;
     tokens.addTokens(text, T(","), NULL);
@@ -254,7 +254,7 @@ public:
     return res;
   }
 
-  virtual bool parseDataLine(const std::vector<String>& columns)
+  virtual bool parseDataLine(const std::vector<string>& columns)
   {
     SparseDoubleVectorPtr labelsVector = parseLabelsList(columns[0]);
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);

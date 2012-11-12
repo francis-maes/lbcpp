@@ -18,7 +18,7 @@ namespace lbcpp
 class XmlLoader : public Loader
 {
 public:
-  virtual String getFileExtensions() const
+  virtual string getFileExtensions() const
     {return "xml";}
 
   virtual ClassPtr getTargetClass() const
@@ -26,7 +26,7 @@ public:
 
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const
   {
-    String firstLine = readFirstLine(istr).trim();
+    string firstLine = readFirstLine(istr).trim();
     return firstLine.isNotEmpty() && firstLine[0] == '<';
   }
 
@@ -34,7 +34,7 @@ public:
   {
     juce::XmlDocument document(file);
     juce::XmlElement* root = document.getDocumentElement();
-    String lastParseError = document.getLastParseError();
+    string lastParseError = document.getLastParseError();
     if (!root)
     {
       context.errorCallback(T("XmlLoader::loadFromFile"),

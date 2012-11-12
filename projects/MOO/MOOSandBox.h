@@ -53,7 +53,7 @@ protected:
 #if 0
     for (size_t numTrainingSamples = 10; numTrainingSamples < 100; numTrainingSamples += 5)
     {
-      context.enterScope(String((int)numTrainingSamples));
+      context.enterScope(string((int)numTrainingSamples));
       context.resultCallback("numTrainingSamples", numTrainingSamples);
       context.resultCallback("CE", evaluateSingleObjectiveOptimizer(context, problems,
         new CrossEntropySolver(new DiagonalGaussianSampler(), 100, numTrainingSamples)));
@@ -140,7 +140,7 @@ protected:
       for (size_t i = 0; i < scores->getNumValues(); ++i)
       {
         size_t numEvaluations = i * evaluationPeriod;
-        context.enterScope(String((int)numEvaluations));
+        context.enterScope(string((int)numEvaluations));
         context.resultCallback("numEvaluations", numEvaluations);
         context.resultCallback("score", scores->getValue(i));
         context.resultCallback("cpuTime", cpuTimes->getValue(i));
@@ -225,7 +225,7 @@ protected:
       for (size_t i = 0; i < hyperVolumes->getNumValues(); ++i)
       {
         size_t numEvaluations = i * evaluationPeriod;
-        context.enterScope(String((int)numEvaluations));
+        context.enterScope(string((int)numEvaluations));
         context.resultCallback("numEvaluations", numEvaluations);
         context.resultCallback("hyperVolume", hyperVolumes->getValue(i));
         context.resultCallback("cpuTime", cpuTimes->getValue(i));

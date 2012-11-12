@@ -24,10 +24,10 @@ public:
   NotBooleanFunction()
     : HomogeneousUnaryFunction(booleanClass) {}
   
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "!";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "!" + inputs[0]->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
@@ -62,7 +62,7 @@ public:
 
   virtual bool computeBoolean(bool first, bool second) const = 0;
   
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " " + toShortString() + " " + inputs[1]->toShortString() + ")";}
 
   virtual Flags getFlags() const
@@ -103,7 +103,7 @@ public:
 class AndBooleanFunction : public BinaryBooleanFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "&&";}
 
   virtual bool computeBoolean(bool first, bool second) const
@@ -113,7 +113,7 @@ public:
 class OrBooleanFunction : public BinaryBooleanFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "||";}
 
   virtual bool computeBoolean(bool first, bool second) const
@@ -123,7 +123,7 @@ public:
 class NandBooleanFunction : public BinaryBooleanFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "!&&";}
 
   virtual bool computeBoolean(bool first, bool second) const
@@ -133,7 +133,7 @@ public:
 class NorBooleanFunction : public BinaryBooleanFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "!||";}
 
   virtual bool computeBoolean(bool first, bool second) const
@@ -143,7 +143,7 @@ public:
 class EqualBooleanFunction : public BinaryBooleanFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "==";}
 
   virtual bool computeBoolean(bool first, bool second) const
@@ -159,10 +159,10 @@ class IfThenElseBooleanFunction : public HomogeneousTernaryFunction
 public:
   IfThenElseBooleanFunction() : HomogeneousTernaryFunction(booleanClass) {}
   
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "if-then-else";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " ? " + inputs[1]->toShortString() + " : " + inputs[2]->toShortString() + ")";}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const

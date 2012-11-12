@@ -59,7 +59,7 @@ public:
   ** Loading / Initialization
   */
   void reinitialize(ExecutionContext& context);
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
+  virtual bool loadFromString(ExecutionContext& context, const string& str);
 
 protected:
   DomainPtr domain;

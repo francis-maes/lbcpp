@@ -13,12 +13,12 @@ using namespace lbcpp;
 /*
 ** EnumerationElement
 */
-EnumerationElement::EnumerationElement(const String& name, const String& oneLetterCode, const String& shortName, const String& description)
+EnumerationElement::EnumerationElement(const string& name, const string& oneLetterCode, const string& shortName, const string& description)
   : name(name), oneLetterCode(oneLetterCode), shortName(shortName), description(description)
 {
 }
 
-String EnumerationElement::toShortString() const
+string EnumerationElement::toShortString() const
 {
   if (oneLetterCode.isNotEmpty())
     return oneLetterCode;
@@ -30,7 +30,7 @@ String EnumerationElement::toShortString() const
 /*
 ** Enumeration
 */
-Enumeration::Enumeration(const String& name, const String& baseTypeName)
+Enumeration::Enumeration(const string& name, const string& baseTypeName)
   : Class(name, lbcpp::getType(baseTypeName))
 {
 }
@@ -50,7 +50,7 @@ bool Enumeration::hasOneLetterCodes() const
   return true;
 }
 
-int Enumeration::findElementByName(const String& name) const
+int Enumeration::findElementByName(const string& name) const
 {
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
@@ -64,18 +64,18 @@ int Enumeration::findElementByOneLetterCode(const juce::tchar c) const
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    String code = getElement(i)->getOneLetterCode();
+    string code = getElement(i)->getOneLetterCode();
     if (code.length() == 1 && code[0] == c)
       return (int)i;
   }
   return -1;
 }
 
-String Enumeration::getElementName(size_t index) const
+string Enumeration::getElementName(size_t index) const
 {
   jassert(index < getNumElements() || getNumElements() == 0);
   EnumerationElementPtr element = getElement(index);
-  return element ? element->getName() : String::empty;
+  return element ? element->getName() : string::empty;
 }
 
 int Enumeration::compare(const ObjectPtr& otherObject) const
@@ -95,7 +95,7 @@ int Enumeration::compare(const ObjectPtr& otherObject) const
 /*
 ** DefaultEnumeration
 */
-DefaultEnumeration::DefaultEnumeration(const String& name, const String& baseTypeName)
+DefaultEnumeration::DefaultEnumeration(const string& name, const string& baseTypeName)
   : Enumeration(name, baseTypeName)
 {
 }
@@ -105,7 +105,7 @@ DefaultEnumeration::DefaultEnumeration()
 {
 }
 
-void DefaultEnumeration::addElement(ExecutionContext& context, const String& name, const String& oneLetterCode, const String& shortName, const String& description)
+void DefaultEnumeration::addElement(ExecutionContext& context, const string& name, const string& oneLetterCode, const string& shortName, const string& description)
 {
   if (findElementByName(name) >= 0)
   {
@@ -116,13 +116,13 @@ void DefaultEnumeration::addElement(ExecutionContext& context, const String& nam
   elements.push_back(new EnumerationElement(name, oneLetterCode, shortName, description));
 }
 
-int DefaultEnumeration::findElementByName(const String& name) const
+int DefaultEnumeration::findElementByName(const string& name) const
 {
-  std::map<String, size_t>::const_iterator it = elementsMap.find(name);
+  std::map<string, size_t>::const_iterator it = elementsMap.find(name);
   return it == elementsMap.end() ? -1 : it->second;
 }
 
-size_t DefaultEnumeration::findOrAddElement(ExecutionContext& context, const String& name)
+size_t DefaultEnumeration::findOrAddElement(ExecutionContext& context, const string& name)
 {
   int elt = findElementByName(name);
   if (elt >= 0)
@@ -133,21 +133,21 @@ size_t DefaultEnumeration::findOrAddElement(ExecutionContext& context, const Str
   return res;
 }
 
-void DefaultEnumeration::addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const String& namePrefix, const String& shortNamePrefix)
+void DefaultEnumeration::addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const string& namePrefix, const string& shortNamePrefix)
 {
   size_t n = enumeration->getNumElements();
   elements.reserve(elements.size() + n);
   for (size_t i = 0; i < n; ++i)
   {
     EnumerationElementPtr element = enumeration->getElement(i);
-    elements.push_back(new EnumerationElement(namePrefix + element->getName(), String::empty, shortNamePrefix + element->getShortName()));
+    elements.push_back(new EnumerationElement(namePrefix + element->getName(), string::empty, shortNamePrefix + element->getShortName()));
   }
 }
 
 /*
 ** ConcatenateEnumeration
 */
-ConcatenateEnumeration::ConcatenateEnumeration(const String& name)
+ConcatenateEnumeration::ConcatenateEnumeration(const string& name)
   : Enumeration(name)
 {
   indexToBaseIndex[0] = 0;
@@ -166,12 +166,12 @@ EnumerationElementPtr ConcatenateEnumeration::getElement(size_t index) const
   index -= it->first;
   size_t subEnumIndex = it->second;
   jassert(subEnumIndex < subEnumerations.size() && index < subEnumerations[subEnumIndex].second->getNumElements());
-  const String& prefix = subEnumerations[subEnumIndex].first;
+  const string& prefix = subEnumerations[subEnumIndex].first;
   EnumerationElementPtr element = subEnumerations[subEnumIndex].second->getElement(index);
-  return new EnumerationElement(prefix + T(".") + element->getName(), String::empty, prefix + T(".") + element->getShortName());
+  return new EnumerationElement(prefix + T(".") + element->getName(), string::empty, prefix + T(".") + element->getShortName());
 }
 
-void ConcatenateEnumeration::addSubEnumeration(const String& prefix, const EnumerationPtr& enumeration)
+void ConcatenateEnumeration::addSubEnumeration(const string& prefix, const EnumerationPtr& enumeration)
 {
   size_t numElements = indexToBaseIndex.rbegin()->first;
   subEnumerations.push_back(std::make_pair(prefix, enumeration));

@@ -35,32 +35,32 @@ namespace lbcpp
 class EnumerationElement : public Object
 {
 public:
-  EnumerationElement(const String& name = String::empty, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty);
+  EnumerationElement(const string& name = string::empty, const string& oneLetterCode = string::empty, const string& shortName = string::empty, const string& description = string::empty);
 
-  const String& getName() const
+  const string& getName() const
     {return name;}
 
-  const String& getOneLetterCode() const
+  const string& getOneLetterCode() const
     {return oneLetterCode;}
 
-  const String& getShortName() const
+  const string& getShortName() const
     {return shortName;}
 
-  const String& getDescription() const
+  const string& getDescription() const
     {return description;}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
-  void setName(const String& name)
+  void setName(const string& name)
     {this->name = name;}
 
 private:
   friend class EnumerationElementClass;
 
-  String name;
-  String oneLetterCode;
-  String shortName;
-  String description;
+  string name;
+  string oneLetterCode;
+  string shortName;
+  string description;
 };
 
 typedef ReferenceCountedObjectPtr<EnumerationElement> EnumerationElementPtr;
@@ -68,7 +68,7 @@ typedef ReferenceCountedObjectPtr<EnumerationElement> EnumerationElementPtr;
 class Enumeration : public Class
 {
 public:
-  Enumeration(const String& name, const String& baseTypeName = T("EnumValue"));
+  Enumeration(const string& name, const string& baseTypeName = T("EnumValue"));
   Enumeration(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
     : Class(templateType, templateArguments, baseClass) {}
 
@@ -80,9 +80,9 @@ public:
   virtual size_t getNumElements() const = 0;
   virtual EnumerationElementPtr getElement(size_t index) const = 0;
 
-  String getElementName(size_t index) const;
+  string getElementName(size_t index) const;
 
-  virtual int findElementByName(const String& name) const;
+  virtual int findElementByName(const string& name) const;
   int findElementByOneLetterCode(const juce::tchar c) const;
 
   bool hasOneLetterCodes() const;
@@ -108,9 +108,9 @@ extern EnumerationPtr cartesianProductEnumerationEnumeration(ClassPtr firstType,
 class DefaultEnumeration : public Enumeration
 {
 public:
-  //DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
-  //DefaultEnumeration(const String& name, const String& oneLetterCodes);
-  DefaultEnumeration(const String& name, const String& baseTypeName = T("EnumValue"));
+  //DefaultEnumeration(const string& name, const juce::tchar** elements, const string& oneLetterCodes = string::empty);
+  //DefaultEnumeration(const string& name, const string& oneLetterCodes);
+  DefaultEnumeration(const string& name, const string& baseTypeName = T("EnumValue"));
   DefaultEnumeration();
 
   virtual size_t getNumElements() const
@@ -119,12 +119,12 @@ public:
   virtual EnumerationElementPtr getElement(size_t index) const
     {jassert(index < elements.size()); return elements[index];}
 
-  void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty);
-  virtual int findElementByName(const String& name) const;
+  void addElement(ExecutionContext& context, const string& elementName, const string& oneLetterCode = string::empty, const string& shortName = string::empty, const string& description = string::empty);
+  virtual int findElementByName(const string& name) const;
 
-  size_t findOrAddElement(ExecutionContext& context, const String& name);
+  size_t findOrAddElement(ExecutionContext& context, const string& name);
   
-  void addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const String& namePrefix, const String& shortNamePrefix);
+  void addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const string& namePrefix, const string& shortNamePrefix);
 
   void reserveElements(size_t size)
     {elements.reserve(size);}
@@ -133,13 +133,13 @@ private:
   friend class DefaultEnumerationClass;
   
   std::vector<EnumerationElementPtr> elements;
-  std::map<String, size_t> elementsMap;
+  std::map<string, size_t> elementsMap;
 };
 
 class ConcatenateEnumeration : public Enumeration
 {
 public:
-  ConcatenateEnumeration(const String& name = T("UnnamedEnumeration"));
+  ConcatenateEnumeration(const string& name = T("UnnamedEnumeration"));
 
   virtual size_t getNumElements() const;
   virtual EnumerationElementPtr getElement(size_t index) const;
@@ -147,7 +147,7 @@ public:
   size_t getNumSubEnumerations() const
     {return subEnumerations.size();}
 
-  const String& getSubEnumerationPrefix(size_t index) const
+  const string& getSubEnumerationPrefix(size_t index) const
     {jassert(index < subEnumerations.size()); return subEnumerations[index].first;}
 
   const EnumerationPtr& getSubEnumeration(size_t index) const
@@ -156,12 +156,12 @@ public:
   void reserveSubEnumerations(size_t size)
     {subEnumerations.reserve(size);}
 
-  void addSubEnumeration(const String& prefix, const EnumerationPtr& enumeration);
+  void addSubEnumeration(const string& prefix, const EnumerationPtr& enumeration);
 
 private:
   friend class ConcatenateEnumerationClass;
 
-  std::vector< std::pair<String, EnumerationPtr> > subEnumerations;
+  std::vector< std::pair<string, EnumerationPtr> > subEnumerations;
   std::map<size_t, size_t> indexToBaseIndex; // element index -> base enumeration index
 };
 

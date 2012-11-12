@@ -124,7 +124,7 @@
   <class name="UnaryObjectFunction" base="Function" abstract="yes"/>
   <class name="GetVariableFunction" base="UnaryObjectFunction">
     <constructor arguments="ClassPtr inputClass, size_t variableIndex" returnType="Function"/>
-    <constructor arguments="ClassPtr inputClass, const String&amp; variableName" returnType="Function"/>
+    <constructor arguments="ClassPtr inputClass, const string&amp; variableName" returnType="Function"/>
     <variable type="Class" name="inputClass"/>
     <variable type="PositiveInteger" name="variableIndex"/>
   </class>

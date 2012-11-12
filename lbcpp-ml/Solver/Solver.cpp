@@ -58,7 +58,7 @@ void IterativeSolver::runSolver(ExecutionContext& context)
 
     if (verbosity >= verbosityDetailed)
     {
-      context.enterScope("Iteration " + String((int)i + 1));
+      context.enterScope("Iteration " + string((int)i + 1));
       context.resultCallback("iteration", i + 1);
     }
 
@@ -87,8 +87,8 @@ void IterativeSolver::runSolver(ExecutionContext& context)
           FitnessLimitsPtr empiricalLimits = solutions->getEmpiricalFitnessLimits();
           for (size_t i = 0; i < empiricalLimits->getNumDimensions(); ++i)
           {
-            context.resultCallback("objective" + String((int)i) + "lower", empiricalLimits->getLowerLimit(i));
-            context.resultCallback("objective" + String((int)i) + "upper", empiricalLimits->getUpperLimit(i));
+            context.resultCallback("objective" + string((int)i) + "lower", empiricalLimits->getLowerLimit(i));
+            context.resultCallback("objective" + string((int)i) + "upper", empiricalLimits->getUpperLimit(i));
           }
           ParetoFrontPtr front = solutions.dynamicCast<ParetoFront>();
           if (front)

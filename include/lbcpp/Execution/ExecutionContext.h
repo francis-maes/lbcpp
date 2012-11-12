@@ -46,14 +46,14 @@ public:
   void setStack(const ExecutionStackPtr& stack)
     {this->stack = stack;}
 
-  void enterScope(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr());
+  void enterScope(const string& description, const WorkUnitPtr& workUnit = WorkUnitPtr());
   void enterScope(const WorkUnitPtr& workUnit);
   void leaveScope(const ObjectPtr& result);
   
   void leaveScope(bool result = true);
   void leaveScope(size_t result);
   void leaveScope(double result);
-  void leaveScope(const String& result);
+  void leaveScope(const string& result);
 
   template<class T>
   void leaveScope(const ReferenceCountedObjectPtr<T>& value)
@@ -78,8 +78,8 @@ public:
   /*
   ** Access to files
   */
-  juce::File getFile(const String& path);
-  String getFilePath(const juce::File& file) const;
+  juce::File getFile(const string& path);
+  string getFilePath(const juce::File& file) const;
 
   virtual juce::File getProjectDirectory() const
     {return projectDirectory;}
@@ -134,12 +134,12 @@ extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading 
 class TimedScope
 {
 public:
-  TimedScope(ExecutionContext& context, const String& name, bool enable = true);
+  TimedScope(ExecutionContext& context, const string& name, bool enable = true);
   ~TimedScope();
   
 private:
   ExecutionContext& context;
-  String name;
+  string name;
   double startTime;
 };
 

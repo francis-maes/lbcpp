@@ -17,7 +17,7 @@ namespace lbcpp
 class DirectoryPairFileStream : public Stream
 {
 public:
-  DirectoryPairFileStream(ExecutionContext& context, const juce::File& mainDirectory, const juce::File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
+  DirectoryPairFileStream(ExecutionContext& context, const juce::File& mainDirectory, const juce::File& secondDirectory, const string& wildCardPattern = T("*"), bool searchFilesRecursively = false)
     : Stream(context), mainDirectory(mainDirectory), secondDirectory(secondDirectory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
     {initialize();}
 
@@ -48,7 +48,7 @@ public:
 private:
   juce::File mainDirectory;
   juce::File secondDirectory;
-  String wildCardPattern;
+  string wildCardPattern;
   bool searchFilesRecursively;
 
   std::vector< std::pair<juce::File, juce::File> > files;
@@ -56,11 +56,11 @@ private:
 
   void initialize()
   {
-    std::set<String> mainFiles;
+    std::set<string> mainFiles;
     DirectoryFileStream::findChildFiles(mainDirectory, wildCardPattern, searchFilesRecursively, mainFiles);
 
     files.reserve(mainFiles.size());
-    for (std::set<String>::const_iterator it = mainFiles.begin(); it != mainFiles.end(); ++it)
+    for (std::set<string>::const_iterator it = mainFiles.begin(); it != mainFiles.end(); ++it)
     {
       juce::File file1(*it);
       juce::File file2 = secondDirectory.getChildFile(file1.getRelativePathFrom(mainDirectory));

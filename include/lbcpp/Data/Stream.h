@@ -131,8 +131,8 @@ extern StreamPtr booleanStream(const std::vector<bool>& values);
 extern StreamPtr booleanStream(bool value);
 extern StreamPtr objectStream(ClassPtr elementsType, const std::vector<ObjectPtr>& values);
 
-StreamPtr directoryFileStream(ExecutionContext& context, const juce::File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
-StreamPtr directoryPairFileStream(ExecutionContext& context, const juce::File& mainDirectory, const juce::File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+StreamPtr directoryFileStream(ExecutionContext& context, const juce::File& directory, const string& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+StreamPtr directoryPairFileStream(ExecutionContext& context, const juce::File& mainDirectory, const juce::File& secondDirectory, const string& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 
 /**
  ** @class TextObjectParser
@@ -184,11 +184,11 @@ public:
    **  to the ErrorManager.
    ** @see setResult
    */
-  virtual bool parseLine(const String& line)
+  virtual bool parseLine(const string& line)
     {jassert(false); return false;}
 
   virtual bool parseLine(char* line)
-    {return parseLine(String(line));}
+    {return parseLine(string(line));}
   
   /**
    ** This function is called at the end of the parsing.
@@ -239,8 +239,8 @@ protected:
    ** @param columns : item container.
    ** @param separators : item text separators (" " and "\t" by default).
    */
-  static void tokenize(const String& line,
-                       std::vector< String >& columns,
+  static void tokenize(const string& line,
+                       std::vector< string >& columns,
                        const juce::tchar* separators = T(" \t"));
   
 private:

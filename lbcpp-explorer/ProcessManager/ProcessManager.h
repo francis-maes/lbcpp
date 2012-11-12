@@ -18,11 +18,11 @@ typedef ReferenceCountedObjectPtr<ProcessConsoleSettings> ProcessConsoleSettings
 class Process : public NameableObject
 {
 public:
-  Process(const juce::File& executableFile, const String& arguments, const juce::File& workingDirectory, const String& name = String::empty)
+  Process(const juce::File& executableFile, const string& arguments, const juce::File& workingDirectory, const string& name = string::empty)
     : NameableObject(name.isEmpty() ? executableFile.getFileNameWithoutExtension() + T(" ") + arguments : name),
       executableFile(executableFile), arguments(arguments), workingDirectory(workingDirectory) {}
 
-  virtual String toString() const
+  virtual string toString() const
     {return executableFile.getFullPathName() + T(" ") + arguments;}
 
   virtual bool start() = 0;
@@ -31,13 +31,13 @@ public:
   virtual void update() = 0;
   virtual bool isFinished() const = 0;
   
-  const std::vector<String>& getProcessOutput() const
+  const std::vector<string>& getProcessOutput() const
     {return processOutput;}
 
   juce::File getExecutableFile() const
     {return executableFile;}
 
-  String getArguments() const
+  string getArguments() const
     {return arguments;}
 
   juce::File getWorkingDirectory() const
@@ -50,10 +50,10 @@ public:
 
 protected:
   juce::File executableFile;
-  String arguments;
+  string arguments;
   juce::File workingDirectory;
 
-  std::vector<String> processOutput;
+  std::vector<string> processOutput;
 };
 
 typedef ReferenceCountedObjectPtr<Process> ProcessPtr;
@@ -61,7 +61,7 @@ typedef ReferenceCountedObjectPtr<Process> ProcessPtr;
 class ProcessConsoleFilter : public Object
 {
 public:
-  ProcessConsoleFilter(const String& pattern = String::empty, const juce::Colour& colour = juce::Colours::red)
+  ProcessConsoleFilter(const string& pattern = string::empty, const juce::Colour& colour = juce::Colours::red)
     : pattern(pattern), display(true), colour(colour) {}
   
   virtual juce::Component* createComponent() const;
@@ -69,7 +69,7 @@ public:
   juce::Colour getColour() const
     {return colour;}
 
-  bool match(const String& text) const
+  bool match(const string& text) const
     {return pattern.isNotEmpty() && text.indexOf(pattern) >= 0;}
 
   void setDisplayFlag(bool display)
@@ -78,14 +78,14 @@ public:
   bool getDisplayFlag() const
     {return display;}
 
-  String getPattern() const
+  string getPattern() const
     {return pattern;}
 
-  void setPattern(const String& pattern)
+  void setPattern(const string& pattern)
     {this->pattern = pattern;}
 
 private:
-  String pattern;
+  string pattern;
   bool display;
   juce::Colour colour;
 };
@@ -106,7 +106,7 @@ public:
 
   virtual juce::Component* createComponent() const;
 
-  juce::Colour getColourForLine(const String& line, bool& display) const
+  juce::Colour getColourForLine(const string& line, bool& display) const
   {
     if (filters.empty())
       return juce::Colours::white;
@@ -163,12 +163,12 @@ public:
   virtual ~ProcessManager()
     {killAllRunningProcesses();}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return T("Process Manager");}
 
   virtual juce::Component* createComponent() const;
 
-  virtual ProcessPtr addNewProcess(const juce::File& executable, const String& arguments, const juce::File& workingDirectory) = 0;
+  virtual ProcessPtr addNewProcess(const juce::File& executable, const string& arguments, const juce::File& workingDirectory) = 0;
   virtual size_t getNumberOfCpus() const = 0;
 
   ProcessListPtr getRunningProcesses() const

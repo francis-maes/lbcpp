@@ -18,16 +18,16 @@ namespace lbcpp
 class ConsoleOutput
 {
 public:
-  void print(size_t threadNumber, size_t depth, const String& type, const String& text, bool isError)
+  void print(size_t threadNumber, size_t depth, const string& type, const string& text, bool isError)
   {
-    String prefix = T("T") + makeFixedSizeNumber(threadNumber, 5) + T(" ");
+    string prefix = T("T") + makeFixedSizeNumber(threadNumber, 5) + T(" ");
     prefix += makeFixedSizeString(type, 8) + T(" ");
     for (size_t i = 0; i < depth; ++i)
       prefix += T("  ");
 
-    String res = prefix + text;
+    string res = prefix + text;
     if (res.length() % numColumns)
-      res += makeFixedSizeString(String::empty, numColumns - (res.length() % numColumns) - 1);
+      res += makeFixedSizeString(string::empty, numColumns - (res.length() % numColumns) - 1);
     print(res, isError);
 /*
     int remainingLength = numColumns - prefix.length() - 1;
@@ -39,7 +39,7 @@ public:
       ScopedLock _(lock);
       for (int i = 0; i < lines.size(); ++i)
       {
-        String line;
+        string line;
         if (i == 0)
           line = prefix;
         else
@@ -51,7 +51,7 @@ public:
     }*/
   }
 
-  void print(const String& line, bool isError)
+  void print(const string& line, bool isError)
   {
     ScopedLock _(lock);
     std::cout << line << std::endl;
@@ -64,9 +64,9 @@ private:
 
   CriticalSection lock;
  
-  static String makeFixedSizeNumber(size_t number, int requiredLength)
+  static string makeFixedSizeNumber(size_t number, int requiredLength)
   {
-    String res((int)number);
+    string res((int)number);
     while (res.length() < requiredLength)
       res = T("0") + res;
     if (res.length() > requiredLength)
@@ -74,9 +74,9 @@ private:
     return res;
   }
 
-  static String makeFixedSizeString(const String& str, int requiredLength)
+  static string makeFixedSizeString(const string& str, int requiredLength)
   {
-    String res = str;
+    string res = str;
     if (res.length() <= requiredLength)
     {
       while (res.length() < requiredLength)
@@ -100,25 +100,25 @@ public:
     : output(output), depth(depth), threadNumber(threadNumber), lastMessageTime(0) {} 
   ConsoleThreadExecutionCallback() : output(*(ConsoleOutput* )0), depth(0), threadNumber(0), lastMessageTime(0) {}
 
-  virtual void informationCallback(const String& where, const String& what)
+  virtual void informationCallback(const string& where, const string& what)
   {
-    String text = what;
+    string text = what;
     if (where.isNotEmpty())
       text += T(" (in ") + where + T(")");
     print(T("info"), text, false);
   }
 
-  virtual void warningCallback(const String& where, const String& what)
+  virtual void warningCallback(const string& where, const string& what)
   {
-    String text = what;
+    string text = what;
     if (where.isNotEmpty())
       text += T(" (in ") + where + T(")");
     print(T("warning"), text, false);
   }
 
-  virtual void errorCallback(const String& where, const String& what)
+  virtual void errorCallback(const string& where, const string& what)
   {
-    String text = what;
+    string text = what;
     if (where.isNotEmpty())
       text += T(" (in ") + where + T(")");
     print(T("error"), text, false);
@@ -132,16 +132,16 @@ public:
       print(T("progress"), progression->toString(), false);
   }
 
-  virtual void resultCallback(const String& name, const ObjectPtr& value)
+  virtual void resultCallback(const string& name, const ObjectPtr& value)
   {
     if (false) // todo: verboseResults flag
       print(T("result"), name + T(" = ") + value->toShortString(), false);
   }
 
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit)
     {print(T("start"), description, false); ++depth;}
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     if (result)
       print(T("result"), description + T(" ") + result->toShortString(), false);
@@ -155,7 +155,7 @@ private:
   size_t threadNumber;
   juce::uint32 lastMessageTime;
 
-  void print(const String& type, const String& text, bool isError)
+  void print(const string& type, const string& text, bool isError)
   {
     lastMessageTime = juce::Time::getApproximateMillisecondCounter();
     output.print(threadNumber, depth, type, text, isError);

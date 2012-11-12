@@ -22,33 +22,33 @@ class ExplorerExecutionCallback : public ExecutionCallback
 public:
   ExplorerExecutionCallback() : numErrors(0), numWarnings(0) {thisClass = executionCallbackClass;}
 
-  virtual void errorCallback(const String& where, const String& what)
+  virtual void errorCallback(const string& where, const string& what)
   {
     ++numErrors;
     lastError = T("Error in ") + where + T(": ") + what;
   }
   
-  virtual void warningCallback(const String& where, const String& what)
+  virtual void warningCallback(const string& where, const string& what)
   {
     ++numWarnings;
     lastWarning = T("Warning in ") + where + T(": ") + what;
   }
 
-  virtual void informationCallback(const String& where, const String& what)
+  virtual void informationCallback(const string& where, const string& what)
     {}
 
-  void flushMessages(const String& title)
+  void flushMessages(const string& title)
   {
     if (numErrors || numWarnings)
     {
-      String text = String(numErrors) + T(" error(s), ") + String(numWarnings) + T(" warning(s)\n");
+      string text = string(numErrors) + T(" error(s), ") + string(numWarnings) + T(" warning(s)\n");
       if (lastError.isNotEmpty())
         text += T("Last Error: ") + lastError + T("\n");
       if (lastWarning.isNotEmpty())
         text += T("Last Warning: ") + lastWarning + T("\n");
 
       numErrors = numWarnings = 0;
-      lastError = lastWarning = String::empty;
+      lastError = lastWarning = string::empty;
       AlertWindow::showMessageBox(AlertWindow::WarningIcon, title, text);
     }
   }
@@ -56,11 +56,11 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  String text;
+  string text;
   int numErrors, numWarnings;
-  String lastError, lastWarning;
+  string lastError, lastWarning;
 
-  void addMessage(const String& str)
+  void addMessage(const string& str)
   {
     if (text.isNotEmpty())
       text += T("\n");
@@ -72,7 +72,7 @@ typedef ReferenceCountedObjectPtr<ExplorerExecutionCallback> ExplorerExecutionCa
 
 static ExplorerExecutionCallbackPtr explorerExecutionCallback;
 
-void flushErrorAndWarningMessages(const String& title)
+void flushErrorAndWarningMessages(const string& title)
   {explorerExecutionCallback->flushMessages(title);}
 
 class ExplorerContentTabs : public TabbedComponent
@@ -81,7 +81,7 @@ public:
   ExplorerContentTabs(DocumentWindow* mainWindow)
     : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
 
-  void addObject(ExecutionContext& context, const ObjectPtr& object, const String& name, Component* component = NULL)
+  void addObject(ExecutionContext& context, const ObjectPtr& object, const string& name, Component* component = NULL)
   {
     if (!component)
       component = createComponentForObject(context, object, name, true);
@@ -98,9 +98,9 @@ public:
       removeTab(current);
   }
 
-  virtual void currentTabChanged(const int newCurrentTabIndex, const String& newCurrentTabName)
+  virtual void currentTabChanged(const int newCurrentTabIndex, const string& newCurrentTabName)
   {
-    String windowName = T("LBC++ Explorer");
+    string windowName = T("LBC++ Explorer");
     if (newCurrentTabIndex >= 0)
       windowName += T(" - ") + getCurrentTabName();
     mainWindow->setName(windowName);
@@ -182,7 +182,7 @@ public:
     openRecentProjectMenu,
   };
 
-  virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const String& menuName)
+  virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const string& menuName)
   {
     ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
 
@@ -406,7 +406,7 @@ class ExplorerJUCEApplication : public JUCEApplication
 public:
   ExplorerJUCEApplication() : mainWindow(0) {/*_crtBreakAlloc = 729;*/}
 
-  virtual void initialise(const String& commandLine)
+  virtual void initialise(const string& commandLine)
   {    
     lbcpp::initialize(NULL);
     setDefaultExecutionContext(singleThreadedExecutionContext());
@@ -451,16 +451,16 @@ public:
     }
   }
 
-  virtual const String getApplicationName()
+  virtual const string getApplicationName()
     {return T("LBC++ Explorer");}
 
-  const String getApplicationVersion()
+  const string getApplicationVersion()
     {return T("1.0");}
 
   virtual bool moreThanOneInstanceAllowed()
     {return true;}
 
-  virtual void anotherInstanceStarted(const String& commandLine)
+  virtual void anotherInstanceStarted(const string& commandLine)
     {}
 
   juce_UseDebuggingNewOperator

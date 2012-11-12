@@ -52,7 +52,7 @@ protected:
 class ExecutionResultNotification : public ExecutionNotification
 {
 public:
-  ExecutionResultNotification(const String& name, const ObjectPtr& value)
+  ExecutionResultNotification(const string& name, const ObjectPtr& value)
     : name(name), value(value) {}
   ExecutionResultNotification() {}
 
@@ -64,14 +64,14 @@ public:
 protected:
   friend class ExecutionResultNotificationClass;
 
-  String name;
+  string name;
   ObjectPtr value;
 };
 
 class ExecutionMessageNotification : public ExecutionNotification
 {
 public:
-  ExecutionMessageNotification(ExecutionMessageType messageType, const String& what, const String& where = String::empty)
+  ExecutionMessageNotification(ExecutionMessageType messageType, const string& what, const string& where = string::empty)
     : messageType(messageType), what(what), where(where) {}
   ExecutionMessageNotification() : messageType(errorMessageType) {}
 
@@ -92,14 +92,14 @@ protected:
   friend class ExecutionMessageNotificationClass;
 
   ExecutionMessageType messageType;
-  String what;
-  String where;
+  string what;
+  string where;
 };
 
 class PreExecutionNotification : public ExecutionNotification
 {
 public:
-  PreExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
+  PreExecutionNotification(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit)
     : stack(stack->cloneAndCast<ExecutionStack>()), description(description), workUnit(workUnit) {}
   PreExecutionNotification() {}
 
@@ -112,14 +112,14 @@ protected:
   friend class PreExecutionNotificationClass;
 
   ExecutionStackPtr stack;
-  String description;
+  string description;
   WorkUnitPtr workUnit;
 };
 
 class PostExecutionNotification : public ExecutionNotification
 {
 public:
-  PostExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
+  PostExecutionNotification(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
     : stack(stack->cloneAndCast<ExecutionStack>()), description(description), workUnit(workUnit), result(result) {}
   PostExecutionNotification() {}
 
@@ -132,7 +132,7 @@ protected:
   friend class PostExecutionNotificationClass;
 
   ExecutionStackPtr stack;
-  String description;
+  string description;
   WorkUnitPtr workUnit;
   ObjectPtr result;
 };

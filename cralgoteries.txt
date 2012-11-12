@@ -1,10 +1,10 @@
 
- * Renommer Double en Double, Integer en Integer, Boolean en Boolean
- * Gerer les noms de NewString et File 
 
 Vector:
  * DoubleVector sans math
  * Cleaner doubleMissingValue
+ * System de specialisation de templates
+ * Finir de cleaner Vector
 
 Explorer:
  * Cassé: LuaCodeEditor/StringComponent/LuaCodeEditor

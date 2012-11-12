@@ -11,7 +11,7 @@
     <variable type="Boolean" name="myBool"/>
     <variable type="Integer" name="myInt"/>
     <variable type="Double" name="myDouble"/>
-    <variable type="NewString" name="myString"/>
+    <variable type="String" name="myString"/>
     <variable type="Object" name="myObject"/>
   </class>
   <class name="SimpleIntrospectionExample" base="WorkUnit"/>

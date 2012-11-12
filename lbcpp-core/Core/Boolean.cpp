@@ -11,10 +11,10 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
-String Boolean::toShortString() const
+string Boolean::toShortString() const
   {return value ? "true" : "false";}
 
-String Boolean::toString() const
+string Boolean::toString() const
   {return value ? "true" : "false";}
 
 double Boolean::toDouble() const
@@ -32,9 +32,9 @@ int Boolean::compare(const ObjectPtr& otherObject) const
 void Boolean::clone(ExecutionContext& context, const ObjectPtr& target) const
   {target.staticCast<Boolean>()->value = value;}
 
-bool Boolean::loadFromString(ExecutionContext& context, const String& str)
+bool Boolean::loadFromString(ExecutionContext& context, const string& str)
 {
-  String v = str.trim().toLowerCase();
+  string v = str.trim().toLowerCase();
   if (v == T("true"))
   {
     value = true;
