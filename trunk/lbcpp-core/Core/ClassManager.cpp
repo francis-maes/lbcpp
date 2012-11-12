@@ -1,39 +1,39 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: TypeManager.cpp                | Global Class Manager            |
+| Filename: ClassManager.cpp               | Global Class Manager            |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/11/2010 18:39               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/TypeManager.h>
-#include <lbcpp/Core/Type.h>
+#include <lbcpp/Core/ClassManager.h>
+#include <lbcpp/Core/Class.h>
 #include <lbcpp/Core/DefaultClass.h>
-#include <lbcpp/Core/TemplateType.h>
+#include <lbcpp/Core/TemplateClass.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
 /*
-** TemplateTypeCache
+** TemplateClassCache
 */
 namespace lbcpp
 {
 
-struct TemplateTypeCache
+struct TemplateClassCache
 {
-  TemplateTypeCache() {}
-  TemplateTypeCache(const TemplateTypeCache& other) : definition(other.definition)
+  TemplateClassCache() {}
+  TemplateClassCache(const TemplateClassCache& other) : definition(other.definition)
   {
     ScopedLock _(other.instancesLock);
     instances = other.instances;
   }
-  TemplateTypePtr definition;
+  TemplateClassPtr definition;
 
   ClassPtr getInstanceCached(ExecutionContext& context, const std::vector<ClassPtr>& arguments)
   {
     ScopedLock _(instancesLock);
-    TemplateTypeCache::InstanceMap::iterator it = instances.find(arguments);
+    TemplateClassCache::InstanceMap::iterator it = instances.find(arguments);
     if (it != instances.end())
       return it->second;
     else
@@ -75,18 +75,18 @@ private:
 }; /* namespace lbcpp */
 
 /*
-** TypeManager
+** ClassManager
 */
-TypeManager::TypeManager() {}
+ClassManager::ClassManager() {}
 
-TypeManager::~TypeManager()
+ClassManager::~ClassManager()
   {shutdown();}
 
-bool TypeManager::declare(ExecutionContext& context, ClassPtr type)
+bool ClassManager::declare(ExecutionContext& context, ClassPtr type)
 {
   if (!type || type->getName().isEmpty())
   {
-    context.errorCallback(T("TypeManager::declare"), T("Empty class name"));
+    context.errorCallback(T("ClassManager::declare"), T("Empty class name"));
     return false;
   }
 
@@ -94,7 +94,7 @@ bool TypeManager::declare(ExecutionContext& context, ClassPtr type)
   String typeName = type->getName();
   if (doTypeExists(typeName))
   {
-    context.errorCallback(T("TypeManager::declare"), T("Class '") + typeName + T("' has already been declared"));
+    context.errorCallback(T("ClassManager::declare"), T("Class '") + typeName + T("' has already been declared"));
     return false;
   }
   type->setStaticAllocationFlag();
@@ -105,24 +105,24 @@ bool TypeManager::declare(ExecutionContext& context, ClassPtr type)
   return true;
 }
 
-bool TypeManager::declare(ExecutionContext& context, TemplateTypePtr templateType)
+bool ClassManager::declare(ExecutionContext& context, TemplateClassPtr templateType)
 {
   if (!templateType || templateType->getName().isEmpty())
-    context.errorCallback(T("TypeManager::declare"), T("Empty template class name"));
+    context.errorCallback(T("ClassManager::declare"), T("Empty template class name"));
 
   ScopedLock _(typesLock);
   String typeName = templateType->getName();
-  TemplateTypeMap::const_iterator it = templateTypes.find(typeName);
+  TemplateClassMap::const_iterator it = templateTypes.find(typeName);
   if (it != templateTypes.end())
   {
-    context.errorCallback(T("TypeManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
+    context.errorCallback(T("ClassManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
     return false;
   }
   templateTypes[typeName].definition = templateType;
   return true;
 }
 
-void TypeManager::finishDeclarations(ExecutionContext& context)
+void ClassManager::finishDeclarations(ExecutionContext& context)
 {
   ScopedLock _(typesLock);
   for (TypeMap::const_iterator it = types.begin(); it != types.end(); ++it)
@@ -130,19 +130,19 @@ void TypeManager::finishDeclarations(ExecutionContext& context)
     String name = it->first;
     ClassPtr type = it->second;
     if (!type->isInitialized() && !type->initialize(context))
-      context.errorCallback(T("TypeManager::finishDeclarations()"), T("Could not initialize type ") + type->getName());
+      context.errorCallback(T("ClassManager::finishDeclarations()"), T("Could not initialize type ") + type->getName());
   }
 
-  for (TemplateTypeMap::const_iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
+  for (TemplateClassMap::const_iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
   {
     String name = it->first;
-    TemplateTypePtr templateType = it->second.definition;
+    TemplateClassPtr templateType = it->second.definition;
     if (!templateType->isInitialized() && !templateType->initialize(context))
-      context.errorCallback(T("TypeManager::finishDeclarations()"), T("Could not initialize template type ") + templateType->getName());
+      context.errorCallback(T("ClassManager::finishDeclarations()"), T("Could not initialize template type ") + templateType->getName());
   }
 }
 
-ClassPtr TypeManager::getType(ExecutionContext& context, const String& typeName, const std::vector<ClassPtr>& arguments) const
+ClassPtr ClassManager::getType(ExecutionContext& context, const String& typeName, const std::vector<ClassPtr>& arguments) const
 {
 #ifdef JUCE_DEBUG
   jassert(arguments.size());
@@ -153,17 +153,17 @@ ClassPtr TypeManager::getType(ExecutionContext& context, const String& typeName,
   jassert(!typeName.containsAnyOf(T(" \t\r\n")));
   if (typeName.isEmpty())
   {
-    context.errorCallback(T("TypeManager::getType"), T("Empty type name"));
+    context.errorCallback(T("ClassManager::getType"), T("Empty type name"));
     return ClassPtr();
   }
-  jassert(!TemplateType::isInstanciatedTypeName(typeName));
+  jassert(!TemplateClass::isInstanciatedTypeName(typeName));
 
   ScopedLock _(typesLock);
-  TemplateTypeCache* templateType = getTemplateType(context, typeName);
+  TemplateClassCache* templateType = getTemplateClass(context, typeName);
   return templateType ? templateType->getInstanceCached(context, arguments) : ClassPtr();
 }
 
-ClassPtr TypeManager::getTypeByShortName(ExecutionContext& context, const String& shortName) const
+ClassPtr ClassManager::getTypeByShortName(ExecutionContext& context, const String& shortName) const
 {
   TypeMap::const_iterator it = typesByShortName.find(shortName);
   if (it == typesByShortName.end())
@@ -172,12 +172,12 @@ ClassPtr TypeManager::getTypeByShortName(ExecutionContext& context, const String
     return it->second;
 }
 
-ClassPtr TypeManager::getType(ExecutionContext& context, const String& name) const
+ClassPtr ClassManager::getType(ExecutionContext& context, const String& name) const
 {
   String typeName = removeAllSpaces(name);
   if (typeName.isEmpty())
   {
-    context.errorCallback(T("TypeManager::getType"), T("Empty type name"));
+    context.errorCallback(T("ClassManager::getType"), T("Empty type name"));
     return ClassPtr();
   }
 
@@ -186,12 +186,12 @@ ClassPtr TypeManager::getType(ExecutionContext& context, const String& name) con
   if (type)
     return type;
 
-  if (TemplateType::isInstanciatedTypeName(typeName))
+  if (TemplateClass::isInstanciatedTypeName(typeName))
   {
     // this is a template type, parse, instantiate and retrieve it
     String templateName;
     std::vector<ClassPtr> templateArguments;
-    if (!TemplateType::parseInstanciatedTypeName(context, typeName, templateName, templateArguments))
+    if (!TemplateClass::parseInstanciatedTypeName(context, typeName, templateName, templateArguments))
       return ClassPtr();
     return getType(context, templateName, templateArguments);
   }
@@ -199,9 +199,9 @@ ClassPtr TypeManager::getType(ExecutionContext& context, const String& name) con
   {
     // this is a simple type that was not found, make error message
     String message;
-    if (hasTemplateType(typeName))
+    if (hasTemplateClass(typeName))
     {
-      TemplateTypeCache* cache = getTemplateType(context, typeName);
+      TemplateClassCache* cache = getTemplateClass(context, typeName);
       size_t n = cache->definition->getNumParameters();
       message = typeName.quoted() + T(" is a template type with ") + String((int)n) + T(" parameters. Replace ") + typeName + T(" by ");
       message += typeName + T("[");
@@ -216,12 +216,12 @@ ClassPtr TypeManager::getType(ExecutionContext& context, const String& name) con
     else
       message = T("Class ") + typeName.quoted() + T(" does not exists");
 
-    context.errorCallback(T("TypeManager::getType"), message);
+    context.errorCallback(T("ClassManager::getType"), message);
     return ClassPtr();
   }
 }
 
-String TypeManager::removeAllSpaces(const String& str)
+String ClassManager::removeAllSpaces(const String& str)
 {
   if (str.indexOfAnyOf(T(" \t\n\r")) < 0)
     return str;
@@ -232,21 +232,21 @@ String TypeManager::removeAllSpaces(const String& str)
   return res;
 }
 
-ClassPtr TypeManager::findType(const String& name) const
+ClassPtr ClassManager::findType(const String& name) const
 {
   ScopedLock _(typesLock);
   TypeMap::const_iterator it = types.find(removeAllSpaces(name));
   return it == types.end() ? ClassPtr() : it->second;
 }
 
-bool TypeManager::doTypeExists(const String& type) const
+bool ClassManager::doTypeExists(const String& type) const
   {return findType(type);}
 
-void TypeManager::shutdown()
+void ClassManager::shutdown()
 {
   ScopedLock _(typesLock);
   std::vector<Class* > toDelete; // we keep traditional pointers, remove the remaining shared ptr and then perform deletion
-  for (TemplateTypeMap::iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
+  for (TemplateClassMap::iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
     it->second.clear(toDelete);
   templateTypes.clear();
 
@@ -264,20 +264,20 @@ void TypeManager::shutdown()
     delete toDelete[i];
 }
 
-bool TypeManager::hasTemplateType(const String& templateTypeName) const
+bool ClassManager::hasTemplateClass(const String& templateTypeName) const
 {
   ScopedLock _(typesLock);
-  TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(templateTypeName);
+  TemplateClassMap::iterator it = const_cast<ClassManager* >(this)->templateTypes.find(templateTypeName);
   return it != templateTypes.end();
 }
 
-TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const String& templateTypeName) const
+TemplateClassCache* ClassManager::getTemplateClass(ExecutionContext& context, const String& templateTypeName) const
 {
   ScopedLock _(typesLock);
-  TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(templateTypeName);
+  TemplateClassMap::iterator it = const_cast<ClassManager* >(this)->templateTypes.find(templateTypeName);
   if (it == templateTypes.end())
   {
-    context.errorCallback(T("TypeManager::getTemplateType()"), T("Could not find template type ") + templateTypeName);
+    context.errorCallback(T("ClassManager::getTemplateClass()"), T("Could not find template type ") + templateTypeName);
     return NULL;
   }
   return &it->second;

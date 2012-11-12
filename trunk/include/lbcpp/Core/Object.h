@@ -210,6 +210,8 @@ protected:
   virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName);
 };
 
+extern ClassPtr objectClass;
+
 struct ObjectComparator
 {
   bool operator ()(const ObjectPtr& object1, const ObjectPtr& object2) const

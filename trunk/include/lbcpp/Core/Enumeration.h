@@ -69,7 +69,7 @@ class Enumeration : public Class
 {
 public:
   Enumeration(const String& name, const String& baseTypeName = T("NewEnumValue"));
-  Enumeration(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
+  Enumeration(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
     : Class(templateType, templateArguments, baseClass) {}
 
   virtual ClassPtr getClass() const;
@@ -91,6 +91,8 @@ public:
 
   lbcpp_UseDebuggingNewOperator
 };
+
+extern ClassPtr enumerationClass;
 
 extern EnumerationPtr addMissingToEnumerationEnumeration(ClassPtr type);
 extern EnumerationPtr addEntropyToEnumerationEnumeration(ClassPtr type);

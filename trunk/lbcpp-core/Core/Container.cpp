@@ -127,12 +127,12 @@ ClassPtr Container::computeElementsCommonBaseType() const
 {
   size_t n = getNumElements();
   if (n == 0)
-    return topLevelType;
+    return objectClass;
   ClassPtr type = getElement(0)->getClass();
   for (size_t i = 1; i < n; ++i)
   {
     type = Class::findCommonBaseClass(type, getElement(i)->getClass());
-    if (type == topLevelType)
+    if (type == objectClass)
       break;
   }
   return type;

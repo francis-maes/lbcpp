@@ -9,7 +9,7 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Object.h>
 #include <lbcpp/Core/DefaultClass.h>
-#include <lbcpp/Core/TypeManager.h>
+#include <lbcpp/Core/ClassManager.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 

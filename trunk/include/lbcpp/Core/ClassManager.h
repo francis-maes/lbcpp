@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: TypeManager.h                  | Global Type Manager             |
+| Filename: ClassManager.h                 | Global Class Manager            |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/11/2010 18:37               |                                 |
 `------------------------------------------/                                 |
@@ -13,15 +13,15 @@
 namespace lbcpp
 {
 
-struct TemplateTypeCache;
-class TypeManager
+struct TemplateClassCache;
+class ClassManager
 {
 public:
-  TypeManager();
-  ~TypeManager();
+  ClassManager();
+  ~ClassManager();
 
   bool declare(ExecutionContext& context, ClassPtr type);
-  bool declare(ExecutionContext& context, TemplateTypePtr templateType);
+  bool declare(ExecutionContext& context, TemplateClassPtr templateType);
 
   void finishDeclarations(ExecutionContext& context);
 
@@ -36,20 +36,20 @@ public:
 
 private:
   typedef std::map<String, ClassPtr> TypeMap;
-  typedef std::map<String, TemplateTypeCache> TemplateTypeMap;
+  typedef std::map<String, TemplateClassCache> TemplateClassMap;
 
   CriticalSection typesLock;
   TypeMap types;
   TypeMap typesByShortName;
-  TemplateTypeMap templateTypes;
+  TemplateClassMap templateTypes;
  
-  bool hasTemplateType(const String& templateTypeName) const;
-  TemplateTypeCache* getTemplateType(ExecutionContext& context, const String& templateTypeName) const;
+  bool hasTemplateClass(const String& templateTypeName) const;
+  TemplateClassCache* getTemplateClass(ExecutionContext& context, const String& templateTypeName) const;
 
   static String removeAllSpaces(const String& str);
 };
 
-extern TypeManager& typeManager();
+extern ClassManager& typeManager();
 
 extern ClassPtr getType(const String& typeName);
 extern ClassPtr getType(const String& name, const std::vector<ClassPtr>& arguments);

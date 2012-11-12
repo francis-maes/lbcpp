@@ -10,16 +10,13 @@
 #include <map>
 using namespace lbcpp;
 
-ClassPtr lbcpp::topLevelType;
-ClassPtr lbcpp::anyType;
-
 int lbcpp::integerMissingValue = 0;
 double lbcpp::doubleMissingValue = 0.0;
 
 Class::Class(const String& className, ClassPtr baseType)
   : NameableObject(className), initialized(false), baseType(baseType), namedType(false) {}
 
-Class::Class(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType)
+Class::Class(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType)
   : NameableObject(templateType->makeTypeName(templateArguments)), initialized(false),
       baseType(baseType), templateType(templateType), templateArguments(templateArguments), namedType(false)
  {}
@@ -32,7 +29,7 @@ bool Class::initialize(ExecutionContext& context)
 void Class::deinitialize()
 {
   baseType = ClassPtr();
-  templateType = TemplateTypePtr();
+  templateType = TemplateClassPtr();
   templateArguments.clear();
   initialized = false;
 }
@@ -84,8 +81,8 @@ ClassPtr Class::findCommonBaseClass(ClassPtr type1, ClassPtr type2)
     return type2;
   if (type2->inheritsFrom(type1))
     return type1;
-  if (type1 == topLevelType || type2 == topLevelType)
-    return topLevelType;
+  if (type1 == objectClass || type2 == objectClass)
+    return objectClass;
   ClassPtr baseType1 = type1->getBaseType();
   ClassPtr baseType2 = type2->getBaseType();
   jassert(baseType1 && baseType2);

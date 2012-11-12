@@ -6,7 +6,6 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Core/Type/CoreTypeLibrary.xml CoreTypeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/Loader/CoreLoaderLibrary.xml CoreLoaderLibrary.cpp)
 
@@ -43,17 +42,17 @@ SET(LBCPP_CORE_SOURCES
   Core/Double.cpp
   ../include/lbcpp/Core/String.h
   Core/String.cpp
-  ../include/lbcpp/Core/TypeManager.h
-  Core/TypeManager.cpp
+  ../include/lbcpp/Core/ClassManager.h
+  Core/ClassManager.cpp
   ../include/lbcpp/Core/Signature.h
-  ../include/lbcpp/Core/Type.h
-  Core/Type.cpp
+  ../include/lbcpp/Core/Class.h
+  Core/Class.cpp
   ../include/lbcpp/Core/Enumeration.h
   Core/Enumeration.cpp
   ../include/lbcpp/Core/DefaultClass.h
   Core/DefaultClass.cpp
-  ../include/lbcpp/Core/TemplateType.h
-  Core/TemplateType.cpp
+  ../include/lbcpp/Core/TemplateClass.h
+  Core/TemplateClass.cpp
   ../include/lbcpp/Core/Library.h
   Core/Library.cpp
   ../include/lbcpp/Core/Pair.h
@@ -69,12 +68,6 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/ObjectToNative.h
   Core/CoreLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLibrary.cpp
-)
-
-SET(LBCPP_CORE_TYPE_SOURCES
-  Core/Type/TopLevelType.h
-  Core/Type/CoreTypeLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/CoreTypeLibrary.cpp
 )
 
 SET(LBCPP_CORE_LOADER_SOURCES
@@ -273,7 +266,6 @@ SET(LBCPP_SOURCES
 
   # Core
   ${LBCPP_CORE_SOURCES}
-    ${LBCPP_CORE_TYPE_SOURCES}
 	${LBCPP_CORE_LOADER_SOURCES}
 
   # Data
@@ -310,7 +302,6 @@ SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 
 ## Core
 SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
-SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 
 ## Data

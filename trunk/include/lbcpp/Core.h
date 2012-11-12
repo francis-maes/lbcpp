@@ -10,11 +10,11 @@
 # define LBCPP_CORE_H_
 
 # include "Core/Object.h"
-# include "Core/Type.h"
+# include "Core/Class.h"
 # include "Core/Enumeration.h"
 # include "Core/DefaultClass.h"
-# include "Core/TemplateType.h"
-# include "Core/TypeManager.h"
+# include "Core/TemplateClass.h"
+# include "Core/ClassManager.h"
 # include "Core/Library.h"
 
 # include "Core/Boolean.h"

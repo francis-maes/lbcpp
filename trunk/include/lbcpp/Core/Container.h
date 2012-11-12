@@ -181,7 +181,7 @@ public:
   static ContainerPtr makePairsContainer(const ContainerPtr& inputs, const ContainerPtr& samples);
 };
 
-extern ClassPtr containerClass(ClassPtr elementsType = anyType);
+extern ClassPtr containerClass(ClassPtr elementsType = objectClass);
 
 extern ClassPtr cumulativeScoreVectorClass(ClassPtr scoresEnumeration);
 

@@ -209,7 +209,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ObjectVector> ObjectVectorPtr;
 
-extern ClassPtr vectorClass(ClassPtr elementsType = anyType);
+extern ClassPtr vectorClass(ClassPtr elementsType = objectClass);
 extern ClassPtr objectVectorClass(ClassPtr elementsType);
 extern ClassPtr booleanVectorClass;
 extern ClassPtr integerVectorClass(ClassPtr elementsType);

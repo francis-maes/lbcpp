@@ -36,7 +36,7 @@ class Class : public NameableObject
 {
 public:
   Class(const String& className, ClassPtr baseType);
-  Class(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType);
+  Class(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType);
   Class() : namedType(false) {}
   virtual ~Class();
 
@@ -77,7 +77,7 @@ public:
   /*
   ** Template Arguments
   */
-  TemplateTypePtr getTemplate() const
+  TemplateClassPtr getTemplate() const
     {return templateType;}
 
   const std::vector<ClassPtr>& getTemplateArguments() const
@@ -142,28 +142,19 @@ public:
 
 protected:
   friend class ClassClass;
-  friend class TypeManager;
-  friend struct TemplateTypeCache;
+  friend class ClassManager;
+  friend struct TemplateClassCache;
 
   bool initialized;
 
   ClassPtr baseType;
-  TemplateTypePtr templateType;
+  TemplateClassPtr templateType;
   std::vector<ClassPtr> templateArguments;
   bool namedType;
   String shortName;
 };
 
 extern ClassPtr classClass;
-
-// all three are synonims of variableType
-extern ClassPtr variableType;
-extern ClassPtr topLevelType;
-extern ClassPtr anyType;
-
-extern ClassPtr objectClass;
-extern ClassPtr pairClass(ClassPtr firstClass, ClassPtr secondClass);
-extern ClassPtr enumerationClass;
 
 extern int integerMissingValue;
 extern double doubleMissingValue;

@@ -17,29 +17,29 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: TemplateType.h                 | Parameterized Type Generator    |
+| Filename: TemplateClass.h                | Parameterized Class Generator   |
 | Author  : Francis Maes                   |                                 |
 | Started : 24/08/2010 17:54               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_TEMPLATE_TYPE_H_
-# define LBCPP_CORE_TEMPLATE_TYPE_H_
+#ifndef LBCPP_CORE_TEMPLATE_CLASS_H_
+# define LBCPP_CORE_TEMPLATE_CLASS_H_
 
-# include "Type.h"
+# include "Class.h"
 
 namespace lbcpp
 {
 
-extern ClassPtr templateTypeClass;
+extern ClassPtr templateClassClass;
 
-class TemplateType : public NameableObject
+class TemplateClass : public NameableObject
 {
 public:
-  TemplateType(const String& name)
+  TemplateClass(const String& name)
     : NameableObject(name), initialized(false) {}
-  TemplateType() : initialized(false) {}
+  TemplateClass() : initialized(false) {}
 
   static bool isInstanciatedTypeName(const String& name);
   static bool parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<String>& arguments);
@@ -72,7 +72,7 @@ public:
   ** Object
   */
   virtual ClassPtr getClass() const
-    {return templateTypeClass;}
+    {return templateClassClass;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -80,11 +80,11 @@ protected:
   bool initialized;
 };
 
-class DefaultTemplateType : public TemplateType
+class DefaultTemplateClass : public TemplateClass
 {
 public:
-  DefaultTemplateType(const String& name, const String& baseTypeExpr);
-  DefaultTemplateType() {}
+  DefaultTemplateClass(const String& name, const String& baseTypeExpr);
+  DefaultTemplateClass() {}
 
   virtual size_t getNumParameters() const;
   virtual String getParameterName(size_t index) const;
@@ -103,10 +103,10 @@ protected:
   String baseTypeExpr;
   std::vector<std::pair<String, ClassPtr> > parameters;
 
-  void addParameter(const String& name, ClassPtr baseType = anyType);
+  void addParameter(const String& name, ClassPtr baseType = objectClass);
   void addParameter(ExecutionContext& context, const String& name, const String& type);
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_TEMPLATE_TYPE_H_
+#endif // !LBCPP_CORE_TEMPLATE_CLASS_H_
