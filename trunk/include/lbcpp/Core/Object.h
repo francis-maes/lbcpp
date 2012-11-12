@@ -77,6 +77,9 @@ public:
   virtual double toDouble() const
     {jassertfalse; return 0.0;}
 
+  virtual bool toBoolean() const
+    {jassertfalse; return false;}
+
   /**
   ** Clones the current object.
   **
@@ -158,25 +161,6 @@ public:
   String getVariableName(size_t index) const;
   ObjectPtr getVariable(size_t index) const;
   void setVariable(size_t index, const ObjectPtr& value);
-
-  void getChildObjects(std::vector<ObjectPtr>& res) const;
-  void getAllChildObjects(std::set<ObjectPtr>& res) const;
-  
-  class VariableIterator
-  {
-  public:
-    virtual ~VariableIterator() {}
-
-    virtual bool exists() const = 0;
-    virtual Variable getCurrentVariable(size_t& index) const = 0;
-    virtual void next() = 0;
-
-    lbcpp_UseDebuggingNewOperator
-  };
-
-  // optional specialized variable iterator
-  virtual VariableIterator* createVariablesIterator() const
-    {return NULL;}
 
   virtual size_t getSizeInBytes(bool recursively) const;
 

@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_BINARY_KEY_H_
 # define LBCPP_DATA_BINARY_KEY_H_
 
-# include "../Core/Variable.h"
+# include "../Core/Object.h"
 
 namespace lbcpp
 {

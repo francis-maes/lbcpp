@@ -108,6 +108,7 @@ public:
     {return toString(value);}
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
+  virtual bool isConvertibleToBoolean() const;
   virtual bool isConvertibleToDouble() const;
 
   /*

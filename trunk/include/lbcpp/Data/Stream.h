@@ -87,7 +87,7 @@ public:
   **
   ** @return a Variable containing the next database element.
   */
-  virtual Variable next() = 0;
+  virtual ObjectPtr next() = 0;
 
 
   /**
@@ -216,7 +216,7 @@ public:
    ** @return a pointer on the next parsed object or Variable()
    ** if there are no more object in the stream.
    */
-  virtual Variable next();
+  virtual ObjectPtr next();
   
 protected:
   /**
@@ -228,7 +228,7 @@ protected:
    **
    ** @param object : object pointer.
    */
-  void setResult(const Variable& result)
+  void setResult(const ObjectPtr& result)
     {currentResult = result;}
   
   /**
@@ -243,7 +243,7 @@ protected:
                        const juce::tchar* separators = T(" \t"));
   
 private:
-  Variable currentResult;      /*!< The current Variable. */
+  ObjectPtr currentResult;      /*!< The current Variable. */
 //  InputStream* istr;           /*!< A pointer to the current stream. */
   ProgressionStatePtr progression;
 

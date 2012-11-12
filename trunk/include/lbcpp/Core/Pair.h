@@ -27,7 +27,7 @@
 #ifndef LBCPP_CORE_PAIR_H_
 # define LBCPP_CORE_PAIR_H_
 
-# include "Variable.h"
+# include "Object.h"
 
 namespace lbcpp
 {
@@ -83,33 +83,6 @@ protected:
   ObjectPtr first;
   ObjectPtr second;
 };
-
-/*
-** Variable <-> Native conversions
-*/
-template<class T1, class T2>
-inline void objectToNative(ExecutionContext& context, std::pair<T1, T2>& dest, const ObjectPtr& source)
-{
-  const PairPtr& sourcePair = source.staticCast<Pair>();
-  if (sourcePair)
-  {
-    lbcpp::objectToNative(context, dest.first, sourcePair->getFirst());
-    lbcpp::objectToNative(context, dest.second, sourcePair->getSecond());
-  }
-  else
-  {
-    dest.first = T1();
-    dest.second = T2();
-  }
-}
-
-template<class T1, class T2>
-inline ObjectPtr nativeToObject(const std::pair<T1, T2>& source, const TypePtr& expectedType)
-{
-  jassert(expectedType->getNumTemplateArguments() == 2);
-  return new Pair(expectedType, nativeToObject(source.first, expectedType->getTemplateArgument(0)),
-                                nativeToObject(source.second, expectedType->getTemplateArgument(1)));
-}
 
 }; /* namespace lbcpp */
 

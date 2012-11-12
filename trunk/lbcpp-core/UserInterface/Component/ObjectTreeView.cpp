@@ -1,12 +1,12 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VariableTreeView.cpp           | Variable Tree component         |
+| Filename: ObjectTreeView.cpp             | Object Tree component           |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/08/2010 16:10               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "VariableTreeView.h"
+#include "ObjectTreeView.h"
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Core/Loader.h>
 #include <lbcpp/Core/Double.h>
@@ -32,80 +32,60 @@ static String getIconForType(const TypePtr& type)
   return "Object-32.png";
 }
 
-static String getIconForVariable(const Variable& variable)
+static String getIconForObject(const ObjectPtr& object)
 {
-  if (variable.isObject() && variable.getObject().isInstanceOf<NewFile>())
+  if (object.isInstanceOf<NewFile>())
   {
-    File file = NewFile::get(variable.getObject());
+    File file = NewFile::get(object);
     LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(defaultExecutionContext(), file);
     if (loader)
       return getIconForType(loader->getTargetClass());
   }
-  return getIconForType(variable.getType());
+  return getIconForType(object->getClass());
 }
 
-class VariableTreeViewItem : public SimpleTreeViewItem
+class ObjectTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  VariableTreeViewItem(const String& name, const Variable& variable, const VariableTreeOptions& options)
-    : SimpleTreeViewItem(name, getIconForVariable(variable), true), 
-      variable(variable), options(options), typeName(variable.getTypeName()), component(NULL), numUndisplayedChildElements(0)
+  ObjectTreeViewItem(const String& name, const ObjectPtr& object, const ObjectTreeOptions& options)
+    : SimpleTreeViewItem(name, getIconForObject(object), true), 
+      object(object), options(options), typeName(object->getClassName()), component(NULL), numUndisplayedChildElements(0)
   {
     mightContainSubItemsFlag = false;
-    shortSummary = variable.toShortString();
-    TypePtr type = variable.getType();
-    if (variable.exists() && variable.isObject())
+    shortSummary = object->toShortString();
+    TypePtr type = object->getClass();
+    if (options.showMissingVariables)
     {
-      ObjectPtr object = variable.getObject();
-      type = object->getClass(); // the exact type may be different from the base type
-      if (options.showMissingVariables)
-      {
-        subVariables.reserve(subVariables.size() + type->getNumMemberVariables());
-        for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
-          addSubVariable(type->getMemberVariableName(i), object->getVariable(i));
-      }
-      else
-      {
-        Object::VariableIterator* iterator = object->createVariablesIterator();
-        if (iterator)
-        {
-          for (; iterator->exists(); iterator->next())
-          {
-            size_t variableIndex;
-            Variable subVariable = iterator->getCurrentVariable(variableIndex);
-            if (subVariable.exists())
-              addSubVariable(type->getMemberVariableName(variableIndex), subVariable);
-          }
-          delete iterator;
-        }
-        else
-        {
-          subVariables.reserve(subVariables.size() + type->getNumMemberVariables());
-          for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
-          {
-            Variable value = object->getVariable(i);
-            if (value.exists())
-              addSubVariable(type->getMemberVariableName(i), value);
-          }
-        }
-      }
-      mightContainSubItemsFlag = (subVariables.size() > 0);
+      subObjects.reserve(subObjects.size() + type->getNumMemberVariables());
+      for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+        addSubObject(type->getMemberVariableName(i), object->getVariable(i));
     }
-
-    SparseDoubleVectorPtr sparseVector = variable.dynamicCast<SparseDoubleVector>();
+    else
+    {
+      subObjects.reserve(subObjects.size() + type->getNumMemberVariables());
+      for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+      {
+        ObjectPtr value = object->getVariable(i);
+        if (value)
+          addSubObject(type->getMemberVariableName(i), value);
+      }
+    }
+    mightContainSubItemsFlag = (subObjects.size() > 0);
+  
+    SparseDoubleVectorPtr sparseVector = object.dynamicCast<SparseDoubleVector>();
     if (sparseVector && !options.showMissingVariables) // otherwise use the default Container implementation
     {
       TypePtr elementsType = sparseVector->getElementsType();
       for (size_t i = 0; i < sparseVector->getNumValues(); ++i)
       {
         const std::pair<size_t, double>& value = sparseVector->getValue(i);
-        addSubVariable(sparseVector->getElementName(value.first), Variable(value.second, elementsType));
+        addSubObject(sparseVector->getElementName(value.first), NewDouble::create(elementsType, value.second));
       }
       mightContainSubItemsFlag = true;
       return;
     }
     
-    CompositeDoubleVectorPtr compositeVector = variable.dynamicCast<CompositeDoubleVector>();
+    CompositeDoubleVectorPtr compositeVector = object.dynamicCast<CompositeDoubleVector>();
     if (compositeVector)
     {
       EnumerationPtr elementsEnumeration = compositeVector->getElementsEnumeration();
@@ -120,13 +100,13 @@ public:
         int j = parentName.indexOf(childName);
         if (j >= 0)
           name = parentName.substring(0, j - 1);
-        addSubVariable(name, subVector);
+        addSubObject(name, subVector);
       }
       mightContainSubItemsFlag = true;
       return;
     }
 
-    ContainerPtr container = variable.dynamicCast<Container>();
+    ContainerPtr container = object.dynamicCast<Container>();
     if (container)
     {
       static const size_t maxCount = 1000;
@@ -136,7 +116,7 @@ public:
         numUndisplayedChildElements = count - maxCount;
         count = maxCount;
       }
-      subVariables.reserve(subVariables.size() + count);
+      subObjects.reserve(subObjects.size() + count);
       bool isDoubleVector = container.dynamicCast<DoubleVector>();
     
       if (isDoubleVector && !options.showMissingVariables)
@@ -147,28 +127,28 @@ public:
           ObjectPtr elt = container->getElement(i);
           jassert(elt.dynamicCast<NewDouble>());
           if (NewDouble::get(elt) != 0.0)
-            addSubVariable(container->getElementName(i), container->getElement(i));
+            addSubObject(container->getElementName(i), container->getElement(i));
         }
       }
       else
         for (size_t i = 0; i < count; ++i)
-          addSubVariable(container->getElementName(i), container->getElement(i));
+          addSubObject(container->getElementName(i), container->getElement(i));
 
       mightContainSubItemsFlag = true;
       return;
     }
 
-    if (variable.isObject() && variable.getObject().dynamicCast<NewFile>())
+    if (object.dynamicCast<NewFile>())
     {
-      File file = NewFile::get(variable.getObject());
+      File file = NewFile::get(object);
       if (file.isDirectory())
       {
         juce::OwnedArray<File> files;
         file.findChildFiles(files, File::findFilesAndDirectories, false);
-        subVariables.reserve(subVariables.size() + files.size());
+        subObjects.reserve(subObjects.size() + files.size());
    
         for (int i = 0; i < files.size(); ++i)
-          addSubVariable(files[i]->getFileName(), NewFile::create(*files[i]));
+          addSubObject(files[i]->getFileName(), NewFile::create(*files[i]));
         mightContainSubItemsFlag = true;
       }
       else
@@ -179,21 +159,21 @@ public:
 
   virtual void itemSelectionChanged(bool isNowSelected)
   {
-    VariableTreeView* owner = dynamic_cast<VariableTreeView* >(getOwnerView());
+    ObjectTreeView* owner = dynamic_cast<ObjectTreeView* >(getOwnerView());
     jassert(owner);
     owner->invalidateSelection();
   }
   
   virtual void createSubItems()
   {
-    for (size_t i = 0; i < subVariables.size(); ++i)
-      addSubItem(new VariableTreeViewItem(subVariables[i].first, subVariables[i].second, options));
+    for (size_t i = 0; i < subObjects.size(); ++i)
+      addSubItem(new ObjectTreeViewItem(subObjects[i].first, subObjects[i].second, options));
     if (numUndisplayedChildElements > 0)
       addSubItem(new SimpleTreeViewItem(String((int)numUndisplayedChildElements) + T(" other elements...")));
   }
 
-  Variable getVariable() const
-    {return variable;}
+  const ObjectPtr& getObject() const
+    {return object;}
      
   virtual const String getTooltip()
   {
@@ -249,24 +229,24 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  Variable variable;
-  const VariableTreeOptions& options;
+  ObjectPtr object;
+  const ObjectTreeOptions& options;
   String typeName;
   String shortSummary;
   Component* component;
   size_t numUndisplayedChildElements;
 
-  std::vector< std::pair<String, Variable> > subVariables;
+  std::vector< std::pair<String, ObjectPtr> > subObjects;
 
-  void addSubVariable(const String& name, const Variable& variable)
-    {subVariables.push_back(std::make_pair(name, variable));}
+  void addSubObject(const String& name, const ObjectPtr& variable)
+    {subObjects.push_back(std::make_pair(name, variable));}
 };
 
 /*
-** VariableTreeView
+** ObjectTreeView
 */
-VariableTreeView::VariableTreeView(const Variable& variable, const String& name, const VariableTreeOptions& options)
-  : variable(variable), name(name), options(options), root(NULL), isSelectionUpToDate(false)
+ObjectTreeView::ObjectTreeView(const ObjectPtr& object, const String& name, const ObjectTreeOptions& options)
+  : object(object), name(name), options(options), root(NULL), isSelectionUpToDate(false)
 {
   setRootItemVisible(options.makeRootNodeVisible);
   setWantsKeyboardFocus(true);
@@ -276,10 +256,10 @@ VariableTreeView::VariableTreeView(const Variable& variable, const String& name,
   startTimer(100);  
 }
 
-VariableTreeView::~VariableTreeView()
+ObjectTreeView::~ObjectTreeView()
   {clearTree();}
 
-bool VariableTreeView::keyPressed(const juce::KeyPress& key)
+bool ObjectTreeView::keyPressed(const juce::KeyPress& key)
 {
   if (key.getKeyCode() == juce::KeyPress::F5Key)
   {
@@ -289,7 +269,7 @@ bool VariableTreeView::keyPressed(const juce::KeyPress& key)
   return juce::TreeView::keyPressed(key);
 }
 
-void VariableTreeView::clearTree()
+void ObjectTreeView::clearTree()
 {
   if (root)
   {
@@ -298,20 +278,20 @@ void VariableTreeView::clearTree()
   }    
 }
 
-void VariableTreeView::buildTree()
+void ObjectTreeView::buildTree()
 {
-  root = new VariableTreeViewItem(name, variable, options);
+  root = new ObjectTreeViewItem(name, object, options);
   setRootItem(root);
   root->setOpen(true);
 }
 
-void VariableTreeView::paint(Graphics& g)
+void ObjectTreeView::paint(Graphics& g)
 {
   g.fillAll(Colours::white);
   juce::TreeView::paint(g);
 }
 
-void VariableTreeView::timerCallback()
+void ObjectTreeView::timerCallback()
 {
   if (!isSelectionUpToDate)
   {
@@ -320,10 +300,10 @@ void VariableTreeView::timerCallback()
     String selectionName;
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
-      VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
-      if (item && item->getVariable().exists() && item != root)
+      ObjectTreeViewItem* item = dynamic_cast<ObjectTreeViewItem* >(getSelectedItem(i));
+      if (item && item->getObject() && item != root)
       {
-        selectedObjects.push_back(item->getVariable().getObject());
+        selectedObjects.push_back(item->getObject());
         if (!selectionName.isEmpty())
           selectionName += T(", ");
         selectionName += item->getUniqueName();
@@ -334,10 +314,10 @@ void VariableTreeView::timerCallback()
   }
 }
 
-void VariableTreeView::invalidateSelection()
+void ObjectTreeView::invalidateSelection()
   {isSelectionUpToDate = false;}
 
-int VariableTreeView::getDefaultWidth() const
+int ObjectTreeView::getDefaultWidth() const
 {
   return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 5;
   /*

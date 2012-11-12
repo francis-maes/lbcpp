@@ -135,7 +135,7 @@ public:
     if (tabName == T("Table"))
       return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, table, "Table");
     else if (tabName == T("Results"))
-      return userInterfaceManager().createVariableTreeView(context, object, tabName, true, true, false, false);
+      return userInterfaceManager().createObjectTreeView(context, object, tabName, true, true, false, false);
     else
       return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getTabSubObject(object, tabName), tabName);
   }
@@ -152,7 +152,7 @@ juce::Component* ExecutionTraceTreeView::createComponentForObject(ExecutionConte
   PairPtr pair = object.dynamicCast<Pair>();
   if (pair)
     return new TabbedExecutionTraceResultsSelectorComponent(pair);
-  return userInterfaceManager().createVariableTreeView(context, object, name, true, true, false, false);
+  return userInterfaceManager().createObjectTreeView(context, object, name, true, true, false, false);
 }
 
 void ExecutionTraceTreeView::timerCallback()

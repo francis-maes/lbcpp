@@ -32,7 +32,7 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
 
     // if it is a directory, display another tree view
     if (file.isDirectory())
-      return userInterfaceManager().createVariableTreeView(context, object, name, false, false);
+      return userInterfaceManager().createObjectTreeView(context, object, name, false, false);
 
     // if it is a file, try to open it
     ObjectPtr object = Object::createFromFile(context, file);
@@ -54,7 +54,7 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
   else
   {
     // generic component for objects
-    return userInterfaceManager().createVariableTreeView(context, object, name, true, true, false); 
+    return userInterfaceManager().createObjectTreeView(context, object, name, true, true, false); 
   }
 }
 

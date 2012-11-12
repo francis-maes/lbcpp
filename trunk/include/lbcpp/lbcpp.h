@@ -29,15 +29,7 @@
 
 # include "library.h"
 
-# include "Core/Utilities.h"
-# include "Core/Object.h"
-# include "Core/TypeManager.h"
-# include "Core/Type.h"
-# include "Core/Variable.h"
-# include "Core/Pair.h"
-# include "Core/Library.h"
-# include "Core/XmlSerialisation.h"
-# include "Core/Vector.h"
+# include "Core.h"
 
 # include "Data/Stream.h"
 # include "Data/RandomGenerator.h"

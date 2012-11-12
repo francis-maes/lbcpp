@@ -128,26 +128,15 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
     ObjectPtr object = variable.getObject();
     if (object)
     {
-      Object::VariableIterator* iterator = object->createVariablesIterator();
-      if (displayMissingValues || !iterator)
-        for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+      for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+      {
+        ObjectPtr subVariable = object->getVariable(i);
+        if (displayMissingValues || subVariable)
         {
-          Variable subVariable = object->getVariable(i);
-          if (displayMissingValues || subVariable.exists())
-          {
-            printVariableLine(subVariable, ostr, i, type->getMemberVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
-            printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
-          }
-        }
-      else
-        for (; iterator->exists(); iterator->next())
-        {
-          size_t i;
-          Variable subVariable = iterator->getCurrentVariable(i);
           printVariableLine(subVariable, ostr, i, type->getMemberVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
           printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
         }
-      delete iterator;
+      }
     }
   }
 

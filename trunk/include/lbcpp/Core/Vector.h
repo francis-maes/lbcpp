@@ -11,6 +11,9 @@
 
 # include "Container.h"
 # include "Pair.h"
+# include "Boolean.h"
+# include "Integer.h"
+# include "Double.h"
 
 namespace lbcpp
 {
@@ -46,9 +49,6 @@ public:
   static int append(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
-
-protected:
-  bool checkType(const Variable& value) const;
 };
 
 class BooleanVector : public Vector
@@ -218,87 +218,6 @@ extern VectorPtr vector(TypePtr elementsType, size_t initialSize = 0);
 extern VectorPtr booleanVector(size_t initialSize);
 extern VectorPtr integerVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
-
-template<class TT>
-inline void objectToNative(ExecutionContext& context, std::vector<TT>& dest, const ObjectPtr& source)
-{
-  const VectorPtr& sourceVector = source.staticCast<Vector>();
-  if (sourceVector)
-  {
-    dest.resize(sourceVector->getNumElements());
-    for (size_t i = 0; i < dest.size(); ++i)
-      lbcpp::objectToNative(context, dest[i], sourceVector->getElement(i));
-  }
-  else
-    dest.clear();
-}
-// I duplicated function for bool case because xcode convert bool to std::_Bit_reference Grrrr
-inline void objectToNative(ExecutionContext& context, std::vector<bool>& dest, const ObjectPtr& source)
-{
-  const VectorPtr& sourceVector = source.staticCast<Vector>();
-  if (sourceVector)
-  {
-    dest.resize(sourceVector->getNumElements());
-    for (size_t i = 0; i < dest.size(); ++i)
-    {
-      ObjectPtr elt = sourceVector->getElement(i);
-      dest[i] = elt && NewBoolean::get(elt);
-    }
-  }
-  else
-    dest.clear();
-}
-
-template<class TT>
-inline ObjectPtr nativeToObject(const std::vector<TT>& source, const TypePtr& expectedType)
-{
-  VectorPtr res = Vector::create(expectedType.staticCast<Class>()).staticCast<Vector>();
-
-  res->resize(source.size());
-  TypePtr elementsType = res->getElementsType();
-  for (size_t i = 0; i < source.size(); ++i)
-  {
-    ObjectPtr variable = nativeToObject(source[i], elementsType);
-    if (variable)
-      res->setElement(i, variable);
-  }
-  return res;
-}
-
-template<class TT>
-inline void objectToNative(ExecutionContext& context, std::set<TT>& dest, const ObjectPtr& source)
-{
-  dest.clear();
-  const ContainerPtr& sourceContainer = source.staticCast<Container>(context);
-  if (sourceContainer)
-  {
-    size_t n = sourceContainer->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      TT value;
-      lbcpp::objectToNative(context, value, sourceContainer->getElement(i));
-      dest.insert(value);
-    }
-  }
-}
-
-template<class TT>
-inline ObjectPtr nativeToObject(const std::set<TT>& source, const TypePtr& expectedType)
-{
-  VectorPtr res = Vector::create(expectedType.staticCast<Class>()).staticCast<Vector>();
-
-  res->resize(source.size());
-  TypePtr elementsType = res->getElementsType();
-  size_t i = 0;
-  typedef typename std::set<TT>::const_iterator iterator;
-  for (iterator it = source.begin(); it != source.end(); ++it, ++i)
-  {
-    ObjectPtr variable = nativeToObject(*it, elementsType);
-    if (variable)
-      res->setElement(i, variable);
-  }
-  return res;
-}
 
 }; /* namespace lbcpp */
 

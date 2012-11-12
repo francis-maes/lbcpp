@@ -44,13 +44,13 @@ Image* UserInterfaceManager::getImage(const String& fileName, int width, int hei
   return res;
 }
 
-#include "Component/VariableTreeView.h"
+#include "Component/ObjectTreeView.h"
 #include "Component/ExecutionTraceTreeView.h"
 
-juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name,
+juce::TreeView* UserInterfaceManager::createObjectTreeView(ExecutionContext& context, const ObjectPtr& object, const String& name,
                                                               bool showTypes, bool showShortSummaries, bool showMissingVariables, bool makeRootNodeVisible) const
 {
-  return new VariableTreeView(variable, name, VariableTreeOptions(showTypes, showShortSummaries, showMissingVariables, makeRootNodeVisible));
+  return new ObjectTreeView(object, name, ObjectTreeOptions(showTypes, showShortSummaries, showMissingVariables, makeRootNodeVisible));
 }
 
 juce::TreeView* UserInterfaceManager::createExecutionTraceInteractiveTreeView(ExecutionContext& context, ExecutionTracePtr trace, ExecutionContextPtr traceContext) const

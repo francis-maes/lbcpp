@@ -11,6 +11,7 @@
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/String.h>
+#include <lbcpp/Core/NativeToObject.h>
 #include <lbcpp/Data/Table.h>
 using namespace lbcpp;
 

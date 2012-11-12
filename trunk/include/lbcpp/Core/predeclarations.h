@@ -41,7 +41,6 @@ typedef int (*LuaCFunction)(lua_State* L);
 
 struct ApplicationContext;
 
-class Variable;
 class XmlExporter;
 class XmlImporter;
 

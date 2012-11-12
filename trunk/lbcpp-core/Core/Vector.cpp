@@ -15,9 +15,6 @@ using namespace lbcpp;
 /*
 ** Vector
 */
-bool Vector::checkType(const Variable& value) const
-  {return checkInheritance(value, getElementsType());}
-
 String Vector::toString() const
 {
   TypePtr type = getElementsType();

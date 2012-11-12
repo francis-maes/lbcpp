@@ -10,8 +10,7 @@
 # define LBCPP_ML_FUNCTION_H_
 
 # include "predeclarations.h"
-# include <lbcpp/Core/Variable.h>
-# include <lbcpp/Core/Vector.h>
+# include <lbcpp/Core.h>
 
 namespace lbcpp
 {

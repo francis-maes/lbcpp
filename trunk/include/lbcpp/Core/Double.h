@@ -112,6 +112,9 @@ public:
 
   virtual String toShortString() const
     {return String(value * 100, 1) + T("%");}
+
+  virtual bool toBoolean() const
+    {return value > 0.5;}
 };
 
 extern ClassPtr newProbabilityClass;

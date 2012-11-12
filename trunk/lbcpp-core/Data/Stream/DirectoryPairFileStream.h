@@ -32,14 +32,14 @@ public:
   virtual bool isExhausted() const
     {return nextFilePosition >= (int)files.size();}
 
-  virtual Variable next()
+  virtual ObjectPtr next()
   {
     if (isExhausted())
-      return Variable();
+      return ObjectPtr();
     jassert(nextFilePosition < (int)files.size());
     std::pair<File, File> res = files[nextFilePosition];
     ++nextFilePosition;
-    return Variable::pair(NewFile::create(res.first), NewFile::create(res.second));
+    return new Pair(NewFile::create(res.first), NewFile::create(res.second));
   }
 
   virtual ProgressionStatePtr getCurrentPosition() const

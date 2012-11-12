@@ -10,7 +10,7 @@
 # define LBCPP_USER_INTERFACE_OBJECT_COMPONENT_H_
 
 # include "../common.h"
-# include "../Core/Variable.h"
+# include "../Core.h"
 
 namespace lbcpp
 {

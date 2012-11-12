@@ -63,6 +63,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Loader.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
+  ../include/lbcpp/Core/NativeToObject.h
+  ../include/lbcpp/Core/ObjectToNative.h
   Core/CoreLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLibrary.cpp
 )
@@ -225,8 +227,8 @@ IF(LBCPP_USER_INTERFACE)
   )
 
   SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
-    UserInterface/Component/VariableTreeView.h
-    UserInterface/Component/VariableTreeView.cpp
+    UserInterface/Component/ObjectTreeView.h
+    UserInterface/Component/ObjectTreeView.cpp
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
     UserInterface/Component/SimpleTreeViewItem.h
@@ -269,6 +271,7 @@ SET(LBCPP_MAIN_SOURCES
   precompiled.cpp
   ../include/lbcpp/lbcpp.h
   ../include/lbcpp/library.h
+  ../include/lbcpp/Core.h
   library.cpp
   LBCppLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LBCppLibrary.cpp
