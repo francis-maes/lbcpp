@@ -99,18 +99,15 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 --  scoresOfInterest["1 - Sensitivity (Bias form test)"] = {index = 3, getScore = getBestSensitivity}
 --  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
-  scoresOfInterest["CBS"] = {index = 1, getScore = getScoreToMaximize}
---  scoresOfInterest["CBS S&S"] = {index = 3, getScore = getScoreToMaximize}
-  scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
---  scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
-  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
---  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
+  scoresOfInterest["Q2"] = {index = 1, getScore = getScoreToMaximize}
+--  scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
+--  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
     -- Load traces
     local traces = {}
     for fold = 0, numFolds do
-      local fileName = filePrefix .. varValues[i] .. filePostfix .. "_Fold" .. fold .. ".trace"
+      local fileName = filePrefix .. varValues[i] .. filePostfix .. fold .. ".trace"
       traces[fold] = lbcpp.Object.fromFile(fileName)
       if traces[fold] == nil then
         context:warning("Missing file: " .. fileName)
@@ -145,10 +142,38 @@ local numFolds = 9
 
 --local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
 
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
+main("CBS", {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}, dir .. "x3_", "_K0_1000T_NMIN1_CBS_Fold", numFolds)
 
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120619-CBSBasedDSB/"
-main("ODSB", {""}, dir .. "x3_pssm15_csp17_K0_1000T_NMIN1_Baseline", "", numFolds)
 
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBP/"
+--main("CBP", {"hgpssm", "hgpssm_hgaa"}, dir .. "FeatureEvaluation-Kmax/", ".param.x3.Kmax.fold", numFolds)
+--main("CBS", {"wpssm11", "wpssm11_hgpssm", "wpssm11_hgpssm_nc", "wpssm11_hgpssm_nc_hgaa"}, dir, ".param.x3.fold", numFolds)
+
+
+--main("CBP > K", {1,2,5,10,20,25}, dir .. "K/hgpssm_nc.K", ".x3.fold", numFolds)
+--main("CBP > Nmin", {1,3,5,7,11,15,21,51,101,155,201}, dir .. "Nmin/hgpssm_nc.Nmin", ".x3.fold", numFolds)
+--main("CBP > Trees", {1,2,5,10,20,50,100,200,500,1000,2000,5000,10000}, dir .. "Trees/hgpssm_nc.T", ".x3.fold", numFolds)
+
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBS/"
+--main("CBS > K", {1,2,5,10,20,50,100,200,256}, dir .. "K/wpssm11_hgpssm_nc.K", ".x3.fold", numFolds)
+--main("CBP > Nmin", {1,3,5,7,11,15,21,51,101,155,201}, dir .. "Nmin/wpssm11_hgpssm_nc.Nmin", ".x3.fold", numFolds)
+--main("CBP > Trees", {1,2,5,10,20,50,100,200,500,1000,2000,5000,10000}, dir .. "Trees/wpssm11_hgpssm_nc.T", ".x3.fold", numFolds)
+
+
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBP/"
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBS/"
+
+local C = {0, 5, 10, 15}
+local G = {-14, -7, 0, 7, 14}
+
+--for i = 1, #C do
+--  context:enter("C" .. C[i])
+--  main("CBP > C" .. C[i] .. " G", G, dir .. "SVM/hgpssm_nc.C" .. C[i] .. ".G", ".SVM.fold", numFolds)
+--  main("CBS > C" .. C[i] .. " G", G, dir .. "SVM/wpssm11_hgpssm_nc.C" .. C[i] .. ".G", ".SVM.fold", numFolds)
+
+--  context:leave()
+--end
 
 -- ----- SP39 ----- --
 

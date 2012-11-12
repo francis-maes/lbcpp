@@ -396,6 +396,11 @@ public:
     if (!iteration->train(context, train, test, T("Training")))
       return DBL_MAX;
 
+    if (outputDirectory != File::nonexistent)
+    {
+      iteration->evaluate(context, test, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("test")), T(".xml")), T("Saving test predictions to directory"));
+    }
+
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
@@ -406,6 +411,7 @@ protected:
 
   File inputDirectory;
   File supervisionDirectory;
+  File outputDirectory;
   File parametersFile;
   
   String learningMachineName;

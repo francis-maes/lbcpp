@@ -31,6 +31,8 @@ public:
     ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train/")), context.getFile(supervisionDirectory).getChildFile(T("train/")), 0, T("Loading proteins"));
     
     LargeProteinParametersPtr parameter = input.getObjectAndCast<LargeProteinParameters>(context);
+    context.resultCallback(T("Parameter"), parameter);
+
     ProteinPredictorParametersPtr predictor = createAutoTunedPredictor(context, trainingProteins, machineLearning, parameter);
 
     ScalarVariableMeanAndVariancePtr res = new ScalarVariableMeanAndVariance();
@@ -51,7 +53,8 @@ public:
   double computeFold(ExecutionContext& context, const ProteinPredictorParametersPtr& predictor,
                      const ContainerPtr& trainingProteins, const ContainerPtr& testingProteins) const
   {
-    ProteinPredictorPtr iteration = new ProteinPredictor(predictor->cloneAndCast<ProteinPredictorParameters>(context));
+    ProteinPredictorParametersPtr clone = predictor->cloneAndCast<ProteinPredictorParameters>(context);
+    ProteinPredictorPtr iteration = new ProteinPredictor(clone);
     iteration->addTarget(target);
 
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
