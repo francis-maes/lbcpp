@@ -9,7 +9,7 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Core/Loader.h>
-#include <lbcpp/Core/Class.h>
+#include <lbcpp/Core/DefaultClass.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
@@ -17,7 +17,7 @@ Library::Library(const String& name) : NameableObject(name)
 {
 }
 
-bool Library::declareType(ExecutionContext& context, TypePtr type)
+bool Library::declareType(ExecutionContext& context, ClassPtr type)
 {
   if (!typeManager().declare(context, type))
     return false;
@@ -49,14 +49,14 @@ bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary
 #ifdef LBCPP_USER_INTERFACE
 bool Library::declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor)
 {
-  TypePtr type = typeManager().getType(context, typeName);
+  ClassPtr type = typeManager().getType(context, typeName);
   if (!type)
     return false;
   uiComponents.push_back(std::make_pair(type, constructor));
   return true;
 }
 
-bool Library::hasUIComponent(TypePtr type) const
+bool Library::hasUIComponent(ClassPtr type) const
 {
   for (size_t i = 0; i < uiComponents.size(); ++i)
     if (type->inheritsFrom(uiComponents[i].first))
@@ -83,7 +83,7 @@ juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, c
 }
 #endif // LBCPP_USER_INTERFACE
 
-void Library::getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const
+void Library::getTypesInheritingFrom(ClassPtr baseType, std::vector<ClassPtr>& res) const
 {
   for (size_t i = 0; i < types.size(); ++i)
     if (types[i]->inheritsFrom(baseType))
@@ -93,9 +93,9 @@ void Library::getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res
     subLibraries[i]->getTypesInheritingFrom(baseType, res);
 }
 
-std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
+std::vector<ClassPtr> Library::getTypesInheritingFrom(ClassPtr baseType) const
 {
-  std::vector<TypePtr> res;
+  std::vector<ClassPtr> res;
   getTypesInheritingFrom(baseType, res);
   return res;
 }

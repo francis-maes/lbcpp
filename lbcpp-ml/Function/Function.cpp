@@ -24,7 +24,7 @@ String Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
   return res + T(")");
 }
 
-DataVectorPtr Function::compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+DataVectorPtr Function::compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
 {
   jassert(inputs.size() && inputs.size() == getNumInputs());
 

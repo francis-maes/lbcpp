@@ -29,10 +29,10 @@ public:
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(newDoubleClass) || type->inheritsFrom(newIntegerClass);}
   
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return newBooleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
@@ -45,7 +45,7 @@ public:
     return new NewBoolean(NewDouble::get(inputs[0]) >= threshold);
   }
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     const DataVectorPtr& scalars = inputs[0];
     jassert(scalars->size());
@@ -67,7 +67,7 @@ public:
       return Function::compute(context, inputs, outputType);
   }
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     /*
     DenseDoubleVectorPtr res = new DenseDoubleVector(0, 0.0);
@@ -118,10 +118,10 @@ public:
   virtual size_t getNumInputs() const
     {return 2;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(newDoubleClass);}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return newBooleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
@@ -144,7 +144,7 @@ public:
   NormalizerFunction()
     {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newProbabilityClass);}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return newProbabilityClass;}
 
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)

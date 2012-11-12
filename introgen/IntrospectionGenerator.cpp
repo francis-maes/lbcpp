@@ -187,7 +187,7 @@ protected:
       implementation = typeName + suffix;
       openClass(implementation, T("Type"));
       
-      writeLine(implementation + T("(const String& name, TypePtr baseType)"));
+      writeLine(implementation + T("(const String& name, ClassPtr baseType)"));
       writeLine(T(": Type(name, baseType) {}"), 1);
       
       forEachXmlChildElementWithTagName(*xml, elt, T("code"))
@@ -215,7 +215,7 @@ protected:
 
     // Type declarator
     if (xml->getTagName() == T("type"))
-      writeLine(T("TypePtr ") + declaration.cacheVariableName + T(";"));
+      writeLine(T("ClassPtr ") + declaration.cacheVariableName + T(";"));
   }
 
   /*
@@ -292,7 +292,7 @@ protected:
     std::vector<XmlElement* > variables;
     std::vector<XmlElement* > functions;
     if (isTemplate)
-      openScope(declaration.implementationClassName + T("(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
+      openScope(declaration.implementationClassName + T("(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)")
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
     {
@@ -326,7 +326,7 @@ protected:
     // create() function
     if (classBaseClass == T("DefaultClass"))
     {
-      openScope(T("virtual lbcpp::ObjectPtr create(ExecutionContext& context) const"));
+      openScope(T("virtual lbcpp::ObjectPtr createObject(ExecutionContext& context) const"));
       if (isAbstract)
       {
         writeLine(T("context.errorCallback(\"Cannot instantiate abstract class ") + className + T("\");"));
@@ -355,7 +355,7 @@ protected:
           writeLine(T("__index__ -= numBaseMemberVariables;"));
         }
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
-        //writeLine(T("const TypePtr& expectedType = variables[__index__]->getType();"));
+        //writeLine(T("const ClassPtr& expectedType = variables[__index__]->getType();"));
         newLine();
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
@@ -556,7 +556,7 @@ protected:
     newLine();
 
     // instantiate
-    openScope(T("virtual TypePtr instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments, TypePtr baseType) const"));
+    openScope(T("virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments, ClassPtr baseType) const"));
       writeLine(T("return new ") + className + metaClass + T("(refCountedPointerFromThis(this), arguments, baseType);"));
     closeScope();
     newLine();
@@ -573,14 +573,14 @@ protected:
       String initialization;
       for (size_t i = 0; i < parameters.size(); ++i)
       {
-        arguments += T("TypePtr type") + String((int)i + 1);
+        arguments += T("ClassPtr type") + String((int)i + 1);
         initialization += T("types[") + String((int)i) + T("] = type") + String((int)i + 1) + T("; ");
 
         if (i < parameters.size() - 1)
           arguments += T(", ");
       }
       writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
-        T("std::vector<TypePtr> types(") + String((int)parameters.size()) + T("); ") + initialization + T("return lbcpp::getType(T(") + className.quoted() + T("), types);")); 
+        T("std::vector<ClassPtr> types(") + String((int)parameters.size()) + T("); ") + initialization + T("return lbcpp::getType(T(") + className.quoted() + T("), types);")); 
     }
 
     // class constructors

@@ -78,9 +78,9 @@ ObjectPtr lbcpp::createSelectionObject(const std::vector<ObjectPtr>& objects)
     return ObjectPtr();
   if (objects.size() == 1)
     return objects[0];
-  TypePtr baseType = objects[0]->getClass();
+  ClassPtr baseType = objects[0]->getClass();
   for (size_t i = 0; i < objects.size(); ++i)
-    baseType = Type::findCommonBaseType(baseType, objects[i]->getClass());
+    baseType = Class::findCommonBaseClass(baseType, objects[i]->getClass());
   VectorPtr res = vector(baseType);
   res->reserve(objects.size());
   for (size_t i = 0; i < objects.size(); ++i)

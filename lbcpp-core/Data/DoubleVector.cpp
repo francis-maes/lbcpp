@@ -243,20 +243,20 @@ inline double defaultGetExtremumValue(const VectorType& vector, bool lookForMaxi
 /*
 ** DoubleVector
 */
-EnumerationPtr DoubleVector::getElementsEnumeration(TypePtr doubleVectorType)
+EnumerationPtr DoubleVector::getElementsEnumeration(ClassPtr doubleVectorType)
 {
-  TypePtr dvType = doubleVectorType->findBaseTypeFromTemplateName(T("DoubleVector"));
+  ClassPtr dvType = doubleVectorType->findBaseTypeFromTemplateName(T("DoubleVector"));
   if (!dvType)
     return EnumerationPtr();
   jassert(dvType->getNumTemplateArguments() == 2);
-  TypePtr res = dvType->getTemplateArgument(0);
+  ClassPtr res = dvType->getTemplateArgument(0);
   jassert(res);
   return res;
 }
 
-bool DoubleVector::getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType)
+bool DoubleVector::getTemplateParameters(ExecutionContext& context, ClassPtr type, EnumerationPtr& elementsEnumeration, ClassPtr& elementsType)
 {
-  TypePtr dvType = type->findBaseTypeFromTemplateName(T("DoubleVector"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("DoubleVector"));
   if (!dvType)
   {
     context.errorCallback(type->getName() + T(" is not a DoubleVector"));
@@ -504,7 +504,7 @@ int DoubleVector::__div(LuaState& state)
 /*
 ** SparseDoubleVector
 */
-SparseDoubleVector::SparseDoubleVector(EnumerationPtr elementsEnumeration, TypePtr elementsType)
+SparseDoubleVector::SparseDoubleVector(EnumerationPtr elementsEnumeration, ClassPtr elementsType)
   : DoubleVector(sparseDoubleVectorClass(elementsEnumeration, elementsType)), lastIndex(-1)  {}
 
 SparseDoubleVector::SparseDoubleVector(ClassPtr thisClass)
@@ -536,7 +536,7 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
     return false;
   StringArray tokens;
   tokens.addTokens(importer.getAllSubText(), true);
-  TypePtr elementType = getElementsType();
+  ClassPtr elementType = getElementsType();
   for (size_t i = 0; i < (size_t)tokens.size(); ++i)
   {
     int e = tokens[i].indexOfChar(T(':'));
@@ -886,7 +886,7 @@ DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, dou
   values = new std::vector<double>(initialSize, initialValue);
 }
 
-DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr elementsType, size_t initialSize, double initialValue)
+DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, ClassPtr elementsType, size_t initialSize, double initialValue)
   : DoubleVector(denseDoubleVectorClass(enumeration, elementsType)), ownValues(true)
 {
   jassert(enumeration);
@@ -915,7 +915,7 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
 {
   Object::saveToXml(exporter);
   size_t n = values->size();
-  TypePtr elementsType = getElementsType();
+  ClassPtr elementsType = getElementsType();
   String res;
   for (size_t i = 0; i < n; ++i)
   {
@@ -951,7 +951,7 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
     }
   }
 
-  TypePtr elementsType = getElementsType();
+  ClassPtr elementsType = getElementsType();
   ensureSize(n);
   for (size_t i = 0; i < n; ++i)
   {

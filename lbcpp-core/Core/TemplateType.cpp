@@ -76,7 +76,7 @@ bool TemplateType::parseInstanciatedTypeName(ExecutionContext& context, const St
   return true;
 }
 
-bool TemplateType::parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments)
+bool TemplateType::parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<ClassPtr>& templateArguments)
 {
   std::vector<String> arguments; 
   if (!parseInstanciatedTypeName(context, typeName, templateName, arguments))
@@ -92,13 +92,13 @@ bool TemplateType::parseInstanciatedTypeName(ExecutionContext& context, const St
   return true;
 }
   
-String TemplateType::makeInstanciatedTypeName(const String& typeName, const std::vector<TypePtr>& arguments)
+String TemplateType::makeInstanciatedTypeName(const String& typeName, const std::vector<ClassPtr>& arguments)
 {
   jassert(typeName.isNotEmpty() && arguments.size());
   String res;
   for (size_t i = 0; i < arguments.size(); ++i)
   {
-    TypePtr arg = arguments[i];
+    ClassPtr arg = arguments[i];
     jassert(arg);
     if (i == 0)
       res = typeName + T("<");
@@ -122,15 +122,15 @@ size_t DefaultTemplateType::getNumParameters() const
 String DefaultTemplateType::getParameterName(size_t index) const
   {return parameters[index].first;}
 
-TypePtr DefaultTemplateType::getParameterBaseType(size_t index) const
+ClassPtr DefaultTemplateType::getParameterBaseType(size_t index) const
   {return parameters[index].second;}
 
-void DefaultTemplateType::addParameter(const String& name, TypePtr baseType)
+void DefaultTemplateType::addParameter(const String& name, ClassPtr baseType)
   {parameters.push_back(std::make_pair(name, baseType));}
 
 void DefaultTemplateType::addParameter(ExecutionContext& context, const String& name, const String& baseTypeName)
 {
-  TypePtr baseType = typeManager().getType(context, baseTypeName);
+  ClassPtr baseType = typeManager().getType(context, baseTypeName);
   if (baseType)
     addParameter(name, baseType);
 }
@@ -143,21 +143,21 @@ int DefaultTemplateType::findParameter(const String& name) const
   return -1;
 }
 
-TypePtr DefaultTemplateType::instantiateTypeName(ExecutionContext& context, const String& typeExpr, const std::vector<TypePtr>& arguments) const
+ClassPtr DefaultTemplateType::instantiateTypeName(ExecutionContext& context, const String& typeExpr, const std::vector<ClassPtr>& arguments) const
 {
   if (isInstanciatedTypeName(typeExpr))
   {
     String templateType;
     std::vector<String> templateArguments;
     if (!parseInstanciatedTypeName(context, typeExpr, templateType, templateArguments))
-      return TypePtr();
+      return ClassPtr();
 
-    std::vector<TypePtr> templateArgumentTypes(templateArguments.size());
+    std::vector<ClassPtr> templateArgumentTypes(templateArguments.size());
     for (size_t i = 0; i < templateArgumentTypes.size(); ++i)
     {
       templateArgumentTypes[i] = instantiateTypeName(context, templateArguments[i], arguments);
       if (!templateArgumentTypes[i])
-        return TypePtr();
+        return ClassPtr();
     }
     return typeManager().getType(context, templateType, templateArgumentTypes);
   }
@@ -170,10 +170,10 @@ TypePtr DefaultTemplateType::instantiateTypeName(ExecutionContext& context, cons
   }
 }
 
-TypePtr DefaultTemplateType::instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments) const
+ClassPtr DefaultTemplateType::instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments) const
 {
   if (!initialized && !const_cast<DefaultTemplateType* >(this)->initialize(context))
-    return TypePtr();
-  TypePtr baseType = instantiateTypeName(context, baseTypeExpr, arguments);
-  return baseType ? instantiate(context, arguments, baseType) : TypePtr();
+    return ClassPtr();
+  ClassPtr baseType = instantiateTypeName(context, baseTypeExpr, arguments);
+  return baseType ? instantiate(context, arguments, baseType) : ClassPtr();
 }

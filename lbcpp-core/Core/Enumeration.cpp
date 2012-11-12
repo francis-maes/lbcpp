@@ -38,41 +38,8 @@ Enumeration::Enumeration(const String& name, const String& baseTypeName)
 ClassPtr Enumeration::getClass() const
   {return enumerationClass;}
 
-ObjectPtr Enumeration::create(ExecutionContext& context) const
+ObjectPtr Enumeration::createObject(ExecutionContext& context) const
   {return new NewEnumValue(refCountedPointerFromThis(this), 0);}
-
-ObjectPtr Enumeration::createFromXml(XmlImporter& importer) const
-  {return createFromString(importer.getContext(), importer.getAllSubText());}
- 
-ObjectPtr Enumeration::createFromString(ExecutionContext& context, const String& value) const
-{
-  String str = value.trim();
-  size_t n = getNumElements();
-  size_t res = n;
-
-  // try element names
-  for (size_t i = 0; i < n; ++i)
-    if (str == getElementName(i))
-    {
-      res = i;
-      break;
-    }
-
-  // try element short names
-  if (res == n)
-  {
-    for (size_t i = 0; i < n; ++i)
-      if (str == getElement(i)->getShortName())
-      {
-        res = i;
-        break;
-      }
-  }
-
-  if (res == n)
-    context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
-  return new NewEnumValue(refCountedPointerFromThis(this), res);
-}
 
 bool Enumeration::hasOneLetterCodes() const
 {

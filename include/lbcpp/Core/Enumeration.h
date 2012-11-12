@@ -27,7 +27,7 @@
 #ifndef LBCPP_CORE_ENUMERATION_H_
 # define LBCPP_CORE_ENUMERATION_H_
 
-# include "Class.h"
+# include "DefaultClass.h"
 
 namespace lbcpp
 {
@@ -69,14 +69,12 @@ class Enumeration : public Class
 {
 public:
   Enumeration(const String& name, const String& baseTypeName = T("NewEnumValue"));
-  Enumeration(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+  Enumeration(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
     : Class(templateType, templateArguments, baseClass) {}
 
   virtual ClassPtr getClass() const;
 
-  virtual ObjectPtr create(ExecutionContext& context) const;
-  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
-  virtual ObjectPtr createFromXml(XmlImporter& importer) const;
+  virtual ObjectPtr createObject(ExecutionContext& context) const;
 
   // elements
   virtual size_t getNumElements() const = 0;
@@ -94,16 +92,16 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-extern EnumerationPtr addMissingToEnumerationEnumeration(TypePtr type);
-extern EnumerationPtr addEntropyToEnumerationEnumeration(TypePtr type);
+extern EnumerationPtr addMissingToEnumerationEnumeration(ClassPtr type);
+extern EnumerationPtr addEntropyToEnumerationEnumeration(ClassPtr type);
 extern EnumerationPtr singletonEnumeration;
 extern EnumerationPtr existOrMissingEnumeration;
 extern EnumerationPtr falseOrTrueEnumeration;
 extern EnumerationPtr falseTrueOrMissingEnumeration;
-extern EnumerationPtr variablesEnumerationEnumeration(TypePtr type);
+extern EnumerationPtr variablesEnumerationEnumeration(ClassPtr type);
 extern EnumerationPtr positiveIntegerEnumerationEnumeration;
 
-extern EnumerationPtr cartesianProductEnumerationEnumeration(TypePtr firstType, TypePtr secondType);
+extern EnumerationPtr cartesianProductEnumerationEnumeration(ClassPtr firstType, ClassPtr secondType);
 
 class DefaultEnumeration : public Enumeration
 {

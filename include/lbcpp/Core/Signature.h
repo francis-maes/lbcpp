@@ -64,7 +64,7 @@ protected:
 class VariableSignature : public Signature
 {
 public:
-  VariableSignature(TypePtr type,
+  VariableSignature(ClassPtr type,
                     const String& name,
                     const String& shortName = String::empty,
                     const String& description = String::empty)
@@ -73,10 +73,10 @@ public:
     : Signature(other.name, other.shortName, other.description) {}
   VariableSignature() {}
 
-  const TypePtr& getType() const
+  const ClassPtr& getType() const
     {return type;}
 
-  void setType(TypePtr t)
+  void setType(ClassPtr t)
     {type = t;}
 
   lbcpp_UseDebuggingNewOperator
@@ -84,7 +84,7 @@ public:
 protected:
   friend class VariableSignatureClass;
 
-  TypePtr type;
+  ClassPtr type;
 };
 
 class FunctionSignature : public Signature

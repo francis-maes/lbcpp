@@ -21,8 +21,8 @@ public:
   Table(size_t numSamples);
   Table() {}
 
-  void addColumn(const ObjectPtr& key, const TypePtr& type);
-  void addColumn(const String& name, const TypePtr& type);
+  void addColumn(const ObjectPtr& key, const ClassPtr& type);
+  void addColumn(const String& name, const ClassPtr& type);
   void addRow(const std::vector<ObjectPtr>& elements);
   void resize(size_t numRows);
 
@@ -37,7 +37,7 @@ public:
   ObjectPtr getKey(size_t index) const
     {jassert(index < columns.size()); return columns[index].key;}
 
-  TypePtr getType(size_t index) const
+  ClassPtr getType(size_t index) const
     {jassert(index < columns.size()); return columns[index].type;}
 
   VectorPtr getData(size_t index) const
@@ -60,7 +60,7 @@ private:
   struct Column
   {
     ObjectPtr key;
-    TypePtr type;
+    ClassPtr type;
     VectorPtr data;
     SparseDoubleVectorPtr sortedDoubleValues;
   };

@@ -11,100 +11,9 @@
 using namespace lbcpp;
 
 /*
-** Class
-*/
-String Class::toString() const
-{
-  String res = getName();
-  res += T(" = {");
-  if (baseType)
-  {
-    size_t n = getNumMemberVariables();
-    for (size_t i = 0; i < n; ++i)
-    {
-      res += getMemberVariableType(i)->getName() + T(" ") + getMemberVariableName(i);
-      if (i < n - 1)
-        res += T(", ");
-    }
-  }
-  else
-    res += T("!!missing base type!!");
-  res += T("}");
-  return res;
-}
-
-inline ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const String& nameOrShortName)
-{
-  if (nameOrShortName == T("Missing"))
-    return ObjectPtr();
-  TypePtr type = typeManager().getTypeByShortName(context, nameOrShortName);
-  if (!type)
-    type = typeManager().getType(context, nameOrShortName);
-  if (!type)
-    return ObjectPtr();
-  if (!context.checkInheritance(type, baseClass))
-    return ObjectPtr();
-  return Object::create(type);
-}
-
-inline ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& context, ClassPtr baseClass, const String& value)
-{
-  int n = value.indexOfChar('(');
-  if (n >= 0)
-  {
-    ObjectPtr res = createObjectFromShortNameOrName(context, baseClass, value.substring(0, n));
-    if (!res)
-      return ObjectPtr();
-
-    int e = value.lastIndexOfChar(')');
-    if (e <= n)
-    {
-      context.errorCallback(T("Unmatched parenthesis in ") + value.quoted());
-      return ObjectPtr();
-    }
-    String arguments = value.substring(n + 1, e).trim();
-    if (arguments.isNotEmpty() && !res->loadFromString(context, arguments))
-      res = ObjectPtr();
-    return res;
-  }
-  else
-    return createObjectFromShortNameOrName(context, baseClass, value);
-}
-
-ObjectPtr Class::createFromString(ExecutionContext& context, const String& value) const
-{
-  ObjectPtr object;
-
-  if (isAbstract())
-    object = createObjectFromStringWithAbstractClass(context, refCountedPointerFromThis(this), value);
-  else
-  {
-    object = create(context);
-    if (!object)
-      context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
-    else if (!object->loadFromString(context, value))
-      object = ObjectPtr();
-  }
-  return object;
-}
-
-ObjectPtr Class::createFromXml(XmlImporter& importer) const
-{
-  ObjectPtr object = create(importer.getContext());
-  if (!object)
-    importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
-  else if (!object->loadFromXml(importer))
-    object = ObjectPtr();
-  return object;
-}
-
-ClassPtr Class::getClass() const
-  {return classClass;}
-
-/*
 ** DefaultClass
 */
-DefaultClass::DefaultClass(const String& name, TypePtr baseClass)
+DefaultClass::DefaultClass(const String& name, ClassPtr baseClass)
   : Class(name, baseClass), abstractClass(false)
 {
 }
@@ -114,7 +23,7 @@ DefaultClass::DefaultClass(const String& name, const String& baseClass)
 {
 }
 
-DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
   : Class(templateType, templateArguments, baseClass), abstractClass(false) {}
 
 namespace lbcpp {extern ClassPtr defaultClassClass;};
@@ -124,7 +33,7 @@ ClassPtr DefaultClass::getClass() const
 
 size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description, bool isGenerated)
 {
-  TypePtr type;
+  ClassPtr type;
   if (templateType)
     type = templateType->instantiateTypeName(context, typeName, templateArguments);
   else
@@ -138,7 +47,7 @@ size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& 
 class GeneratedVariableSignature : public VariableSignature
 {
 public:
-  GeneratedVariableSignature(TypePtr type,
+  GeneratedVariableSignature(ClassPtr type,
                     const String& name,
                     const String& shortName = String::empty,
                     const String& description = String::empty)
@@ -147,7 +56,7 @@ public:
   GeneratedVariableSignature() {thisClass = variableSignatureClass;}
 };
 
-size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description, bool isGenerated)
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, ClassPtr type, const String& name, const String& shortName, const String& description, bool isGenerated)
 {
   if (!type || name.isEmpty())
   {
@@ -211,7 +120,7 @@ int DefaultClass::findMemberVariable(const String& name) const
   return baseType->findMemberVariable(name);
 }
 
-size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const String& name, TypePtr type)
+size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const String& name, ClassPtr type)
 {
   int idx = findMemberVariable(name);
   if (idx >= 0)
@@ -248,13 +157,7 @@ size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaCFunction f
     context.errorCallback(T("Class::addMemberFunction"), T("Invalid function or name"));
     return (size_t)-1;
   }
-  /*int index = findMemberFunction(name);
-  if (index >= 0)
-  {
-    // override
-    context.errorCallback(T("Class::addMemberFunction"), T("Another function with name '") + name + T("' already exists"));
-    return (size_t)-1;
-  }*/
+
   FunctionSignaturePtr signature = new LuaFunctionSignature(function, name, shortName, description, isStatic);
  
   size_t res = functions.size();

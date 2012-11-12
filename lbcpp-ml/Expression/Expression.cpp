@@ -15,7 +15,7 @@ using namespace lbcpp;
 /*
 ** DataVector
 */
-DataVector::DataVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType)
+DataVector::DataVector(Implementation implementation, const IndexSetPtr& indices, const ClassPtr& elementsType)
   : implementation(implementation), indices(indices), elementsType(elementsType), constantRawBoolean(2) {}
 
 DataVector::DataVector(const IndexSetPtr& indices, const VectorPtr& ownedVector)
@@ -58,7 +58,7 @@ static size_t makeExpressionAllocationIndex()
   return res++; // warning: not safe for multi-threading ...
 }
 
-Expression::Expression(const TypePtr& type)
+Expression::Expression(const ClassPtr& type)
   : type(type), allocationIndex(makeExpressionAllocationIndex()), importance(0.0)
 {
 }
@@ -212,7 +212,7 @@ DataVectorPtr Expression::compute(ExecutionContext& context, const TablePtr& dat
 /*
 ** VariableExpression
 */
-VariableExpression::VariableExpression(const TypePtr& type, const String& name, size_t inputIndex)
+VariableExpression::VariableExpression(const ClassPtr& type, const String& name, size_t inputIndex)
   : Expression(type), name(name), inputIndex(inputIndex)
 {
 }
@@ -280,7 +280,7 @@ void FunctionExpression::initialize()
 {
   size_t numInputs = function->getNumInputs();
   jassert(arguments.size() == numInputs);
-  TypePtr* inputTypes = new TypePtr[numInputs];
+  ClassPtr* inputTypes = new ClassPtr[numInputs];
   for (size_t i = 0; i < numInputs; ++i)
   {
     jassert(arguments[i]);
@@ -339,7 +339,7 @@ TestExpression::TestExpression(const ExpressionPtr& conditionNode, const Express
 {
 }
 
-TestExpression::TestExpression(const ExpressionPtr& conditionNode, TypePtr outputType)
+TestExpression::TestExpression(const ExpressionPtr& conditionNode, ClassPtr outputType)
   : Expression(outputType), conditionNode(conditionNode)
 {
 }
@@ -442,7 +442,7 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
     subValues[1] = getSubSamples(context, successNode, data, successIndices);
     subValues[2] = getSubSamples(context, missingNode, data, missingIndices);
     
-    TypePtr elementsType = subValues[0]->getElementsType();
+    ClassPtr elementsType = subValues[0]->getElementsType();
     jassert(subValues[1]->getElementsType() == elementsType);
     jassert(subValues[2]->getElementsType() == elementsType);
 
@@ -486,7 +486,7 @@ DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const Exp
 /*
 ** SequenceExpression
 */
-SequenceExpression::SequenceExpression(TypePtr type, const std::vector<ExpressionPtr>& nodes)
+SequenceExpression::SequenceExpression(ClassPtr type, const std::vector<ExpressionPtr>& nodes)
   : Expression(type), nodes(nodes)
 {
 }

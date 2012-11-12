@@ -333,7 +333,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
     for (size_t j = 0; j < childResults.size(); ++j)
     {
       String name = childResults[j].first;
-      TypePtr type = childResults[j].second->getClass();
+      ClassPtr type = childResults[j].second->getClass();
 
       ColumnsMap::iterator it = mapping.find(name);
       if (it == mapping.end())
@@ -342,14 +342,14 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
         mapping[name] = std::make_pair(index, type);
       }
       else
-        it->second.second = Type::findCommonBaseType(type, it->second.second);
+        it->second.second = Class::findCommonBaseClass(type, it->second.second);
     }
   }
 
   /*
   ** Create table
   */
-  std::vector< std::pair<String, TypePtr> > columns(mapping.size());
+  std::vector< std::pair<String, ClassPtr> > columns(mapping.size());
   for (ColumnsMap::const_iterator it = mapping.begin(); it != mapping.end(); ++it)
     columns[it->second.first] = std::make_pair(it->first, it->second.second);
   TablePtr res = new Table(numChildNodes);

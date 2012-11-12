@@ -102,7 +102,7 @@ public:
   void setTableField(const char *name, double value);
 
   // Object
-  ObjectPtr& checkObject(int index, TypePtr expectedType);
+  ObjectPtr& checkObject(int index, ClassPtr expectedType);
   ObjectPtr& checkObject(int index);
   void pushObject(ObjectPtr object);
 
@@ -110,7 +110,7 @@ public:
   File checkFile(int index);
 
   // Type
-  TypePtr checkType(int index);
+  ClassPtr checkType(int index);
 
   // References
   int toReference(int index);

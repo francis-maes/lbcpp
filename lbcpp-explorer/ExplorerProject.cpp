@@ -157,7 +157,7 @@ bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& work
   recentWorkUnits->addRecent(workUnitName, arguments);
   save(context);
 
-  TypePtr workUnitType = typeManager().getType(context, workUnitName);
+  ClassPtr workUnitType = typeManager().getType(context, workUnitName);
   if (!workUnitType)
     return false;
 

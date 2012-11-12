@@ -95,6 +95,9 @@ void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
   {ostr << "No RefCount Debug Info." << std::endl;}
 #endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
+/*
+** Object Class
+*/
 void Object::setThisClass(ClassPtr thisClass)
   {this->thisClass = thisClass;}
 
@@ -120,14 +123,94 @@ ClassPtr Object::getClass() const
 }
 
 ObjectPtr Object::create(ClassPtr type)
-  {return type->create(defaultExecutionContext());}
+  {return type->createObject(defaultExecutionContext());}
+
+/*
+** Create Object From String
+*/
+static ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const String& nameOrShortName)
+{
+  if (nameOrShortName == T("Missing"))
+    return ObjectPtr();
+  ClassPtr type = typeManager().getTypeByShortName(context, nameOrShortName);
+  if (!type)
+    type = typeManager().getType(context, nameOrShortName);
+  if (!type)
+    return ObjectPtr();
+  if (!context.checkInheritance(type, baseClass))
+    return ObjectPtr();
+  return Object::create(type);
+}
+
+static ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& context, ClassPtr baseClass, const String& value)
+{
+  int n = value.indexOfChar('(');
+  if (n >= 0)
+  {
+    ObjectPtr res = createObjectFromShortNameOrName(context, baseClass, value.substring(0, n));
+    if (!res)
+      return ObjectPtr();
+
+    int e = value.lastIndexOfChar(')');
+    if (e <= n)
+    {
+      context.errorCallback(T("Unmatched parenthesis in ") + value.quoted());
+      return ObjectPtr();
+    }
+    String arguments = value.substring(n + 1, e).trim();
+    if (arguments.isNotEmpty() && !res->loadFromString(context, arguments))
+      res = ObjectPtr();
+    return res;
+  }
+  else
+    return createObjectFromShortNameOrName(context, baseClass, value);
+}
 
 ObjectPtr Object::createFromString(ExecutionContext& context, ClassPtr type, const String& value)
-  {return type->createFromString(context, value);}
+{
+  if (type->inheritsFrom(classClass))
+    return typeManager().getType(context, value);
 
+  if (type->isAbstract())
+    return createObjectFromStringWithAbstractClass(context, type, value);
+  else
+  {
+    ObjectPtr res = type->createObject(context);
+    if (!res)
+      context.errorCallback(T("Object::createFromString"), T("Could not create instance of ") + type->getName().quoted());
+    else if (!res->loadFromString(context, value))
+      res = ObjectPtr();
+    return res;
+  }
+}
+
+/*
+** Create Object From Xml
+*/
 ObjectPtr Object::createFromXml(XmlImporter& importer, ClassPtr type)
-  {return type->createFromXml(importer);}
+{
+  if (type->inheritsFrom(classClass))
+  {
+    String text = importer.getAllSubText().trim();
+    if (text.isNotEmpty())
+      return typeManager().getType(importer.getContext(), importer.getAllSubText());
+    else
+      return importer.loadUnnamedType();
+  }
+  else
+  {
+    ObjectPtr res = type->createObject(importer.getContext());
+    if (!res)
+      importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + type->getName().quoted());
+    else if (!res->loadFromXml(importer))
+      res = ObjectPtr();
+    return res;
+  }
+}
 
+/*
+** Create Object from File / Save Object to File
+*/
 ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
 {
   LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
@@ -137,14 +220,14 @@ ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
 bool Object::saveToFile(ExecutionContext& context, const File& file) const
 {
   XmlExporter exporter(context);
-  exporter.saveObject(String::empty, refCountedPointerFromThis(this), TypePtr());
+  exporter.saveObject(String::empty, refCountedPointerFromThis(this), ClassPtr());
   return exporter.saveToFile(file);
 }
 
 size_t Object::getNumVariables() const
   {return getClass()->getNumMemberVariables();}
 
-TypePtr Object::getVariableType(size_t index) const
+ClassPtr Object::getVariableType(size_t index) const
   {return getClass()->getMemberVariableType(index);}
 
 String Object::getVariableName(size_t index) const
@@ -302,8 +385,8 @@ ObjectPtr Object::deepClone(ExecutionContext& context) const
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    TypePtr variableType = thisClass->getMemberVariableType(i);
-    if (variableType->inheritsFrom(objectClass) && !variableType->inheritsFrom(typeClass))
+    ClassPtr variableType = thisClass->getMemberVariableType(i);
+    if (variableType->inheritsFrom(objectClass) && !variableType->inheritsFrom(classClass))
     {
       ObjectPtr object = res->getVariable(i);
       if (object)
@@ -329,7 +412,7 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
       ObjectPtr object = getVariable((size_t)sourceIndex);
       if (object)
       {
-        TypePtr newVariableType = newType->getMemberVariableType(i);
+        ClassPtr newVariableType = newType->getMemberVariableType(i);
         res->setVariable(i, object->cloneToNewType(context, newVariableType));
       }
     }
@@ -385,7 +468,7 @@ bool Object::loadFromXml(XmlImporter& importer)
       importer.unknownVariableWarning(thisClass, name);
       continue;
     }
-    TypePtr expectedType = thisClass->getMemberVariableType((size_t)variableNumber);
+    ClassPtr expectedType = thisClass->getMemberVariableType((size_t)variableNumber);
     jassert(expectedType);
     
     ObjectPtr value;
@@ -406,7 +489,7 @@ bool Object::loadFromXml(XmlImporter& importer)
       
     if (value)
     {
-      if (!importer.getContext().checkInheritance((TypePtr)value->getClass(), expectedType))
+      if (!importer.getContext().checkInheritance((ClassPtr)value->getClass(), expectedType))
       {
         ok = false;
         continue;
@@ -484,7 +567,7 @@ int Object::create(LuaState& state)
   int numArguments = state.getTop();
 
   const char* className = state.checkString(1);
-  TypePtr type = typeManager().getType(state.getContext(), className);
+  ClassPtr type = typeManager().getType(state.getContext(), className);
   if (!type)
     return 0;
 
@@ -500,8 +583,8 @@ int Object::create(LuaState& state)
     ObjectPtr v = state.checkObject(i);
     if (!v)
       continue; // ignore null values
-    TypePtr targetType = type->getMemberVariableType(i - 2);
-    TypePtr sourceType = v->getClass();
+    ClassPtr targetType = type->getMemberVariableType(i - 2);
+    ClassPtr sourceType = v->getClass();
     if (targetType->inheritsFrom(newIntegerClass) && sourceType->inheritsFrom(newDoubleClass))
       res->setVariable(i - 2, new NewInteger((int)NewDouble::get(v))); // a la rache cast from double to int
     else
@@ -568,7 +651,7 @@ int Object::__index(LuaState& state) const
     }
 
     // check if it is a variable
-    TypePtr type = getClass();
+    ClassPtr type = getClass();
     int index = type->findMemberVariable(string);
     if (index >= 0)
     {
@@ -613,7 +696,7 @@ int Object::__newIndex(LuaState& state)
     String string = state.checkString(1);
 
     // check if it is a variable
-    TypePtr type = getClass();
+    ClassPtr type = getClass();
     int index = type->findMemberVariable(string);
     if (index >= 0)
     {

@@ -97,7 +97,7 @@ bool NewEnumValue::loadFromString(ExecutionContext& context, const String& value
 
   if (res == n)
   {
-    context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
+    context.errorCallback(T("NewEnumValue::createFromString"), T("Could not find enumeration value ") + value.quoted());
     return false;
   }
   this->value = (size_t)res;

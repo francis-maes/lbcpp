@@ -55,7 +55,7 @@ String ExpressionDomain::toShortString() const
   return res;
 }
 
-VariableExpressionPtr ExpressionDomain::addInput(const TypePtr& type, const String& name)
+VariableExpressionPtr ExpressionDomain::addInput(const ClassPtr& type, const String& name)
 {
   size_t index = inputs.size();
   VariableExpressionPtr res(new VariableExpression(type, name, index));
@@ -63,7 +63,7 @@ VariableExpressionPtr ExpressionDomain::addInput(const TypePtr& type, const Stri
   return res;
 }
 
-VariableExpressionPtr ExpressionDomain::createSupervision(const TypePtr& type, const String& name)
+VariableExpressionPtr ExpressionDomain::createSupervision(const ClassPtr& type, const String& name)
 {
   supervision = new VariableExpression(type, name, inputs.size());
   return supervision;
@@ -78,10 +78,10 @@ ExpressionPtr ExpressionDomain::getActiveVariable(size_t index) const
   return *it;
 }
 
-bool ExpressionDomain::isTargetTypeAccepted(TypePtr type)
+bool ExpressionDomain::isTargetTypeAccepted(ClassPtr type)
 {
   jassert(targetTypes.size());
-  for (std::set<TypePtr>::const_iterator it = targetTypes.begin(); it != targetTypes.end(); ++it)
+  for (std::set<ClassPtr>::const_iterator it = targetTypes.begin(); it != targetTypes.end(); ++it)
     if (type->inheritsFrom(*it))
       return true;
   return false;
@@ -110,10 +110,10 @@ PostfixExpressionTypeSpacePtr ExpressionDomain::getSearchSpace(ExecutionContext&
   if (typeSearchSpaces[complexity])
     return typeSearchSpaces[complexity];
 
-  return (pthis->typeSearchSpaces[complexity] = createTypeSearchSpace(context, std::vector<TypePtr>(), complexity, verbose));
+  return (pthis->typeSearchSpaces[complexity] = createTypeSearchSpace(context, std::vector<ClassPtr>(), complexity, verbose));
 }
 
-PostfixExpressionTypeSpacePtr ExpressionDomain::createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const
+PostfixExpressionTypeSpacePtr ExpressionDomain::createTypeSearchSpace(ExecutionContext& context, const std::vector<ClassPtr>& initialState, size_t complexity, bool verbose) const
 {
   PostfixExpressionTypeSpacePtr res = new PostfixExpressionTypeSpace(refCountedPointerFromThis(this), initialState, complexity);
   res->pruneStates(context, verbose);

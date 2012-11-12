@@ -33,14 +33,14 @@ public:
     noImpl
   };
 
-  DataVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType);
+  DataVector(Implementation implementation, const IndexSetPtr& indices, const ClassPtr& elementsType);
   DataVector(const IndexSetPtr& indices, const VectorPtr& ownedVector);
   DataVector();
 
   static DataVectorPtr createConstant(IndexSetPtr indices, const ObjectPtr& constantValue);
   static DataVectorPtr createCached(IndexSetPtr indices, const VectorPtr& cachedVector);
   
-  const TypePtr& getElementsType() const
+  const ClassPtr& getElementsType() const
     {return elementsType;}
 
   struct const_iterator
@@ -156,7 +156,7 @@ public:
 protected:
   Implementation implementation;
   IndexSetPtr indices;
-  TypePtr elementsType;
+  ClassPtr elementsType;
 
   unsigned char constantRawBoolean;
   double constantRawDouble;
@@ -170,12 +170,12 @@ typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
 class Expression : public Object
 {
 public:
-  Expression(const TypePtr& type = objectClass);
+  Expression(const ClassPtr& type = objectClass);
 
-  const TypePtr& getType() const
+  const ClassPtr& getType() const
     {return type;}
 
-  void setType(const TypePtr& type)
+  void setType(const ClassPtr& type)
     {this->type = type;}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
@@ -216,7 +216,7 @@ public:
 protected:
   friend class ExpressionClass;
 
-  TypePtr type;
+  ClassPtr type;
   size_t allocationIndex;
   double importance;
 
@@ -231,7 +231,7 @@ extern ClassPtr expressionClass;
 class VariableExpression : public Expression
 {
 public:
-  VariableExpression(const TypePtr& type, const String& name, size_t inputIndex);
+  VariableExpression(const ClassPtr& type, const String& name, size_t inputIndex);
   VariableExpression();
 
   virtual String toShortString() const;
@@ -331,7 +331,7 @@ class TestExpression : public Expression
 {
 public:
   TestExpression(const ExpressionPtr& conditionNode, const ExpressionPtr& failureNode, const ExpressionPtr& successNode, const ExpressionPtr& missingNode);
-  TestExpression(const ExpressionPtr& conditionNode, TypePtr outputType);
+  TestExpression(const ExpressionPtr& conditionNode, ClassPtr outputType);
   TestExpression() {}
 
   virtual String toShortString() const;
@@ -384,8 +384,8 @@ protected:
 class SequenceExpression : public Expression
 {
 public:
-  SequenceExpression(TypePtr type, const std::vector<ExpressionPtr>& nodes);
-  SequenceExpression(TypePtr type) : Expression(type) {}
+  SequenceExpression(ClassPtr type, const std::vector<ExpressionPtr>& nodes);
+  SequenceExpression(ClassPtr type) : Expression(type) {}
   SequenceExpression() {}
 
   virtual String toShortString() const;

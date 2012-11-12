@@ -22,13 +22,13 @@ public:
   GetDoubleVectorElementFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0)
     : UnaryObjectFunction<GetDoubleVectorElementFunction>(doubleVectorClass()), enumeration(enumeration), index(index) {}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(type);
     return enumeration ? enumeration == features : features && features->getNumElements() > 0;
   }
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
   {
     EnumerationPtr features;
     DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, outputType);
@@ -48,7 +48,7 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(inputTypes[0]);
     if (!features || features->getNumElements() == 0)
@@ -75,7 +75,7 @@ protected:
   EnumerationPtr enumeration;
   size_t index;
 
-  TypePtr outputType;
+  ClassPtr outputType;
 };
 
 class ScalarVariableStatisticsPerception : public Object
@@ -104,7 +104,7 @@ public:
   virtual String toShortString() const
     {return "stats(.)";}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return scalarVariableStatisticsPerceptionClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
@@ -156,16 +156,16 @@ public:
   GetDoubleVectorExtremumsFunction(EnumerationPtr enumeration = EnumerationPtr())
     : UnaryObjectFunction<GetDoubleVectorExtremumsFunction>(doubleVectorClass()), enumeration(enumeration) {}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(type);
     return enumeration ? enumeration == features : features != EnumerationPtr();
   }
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
   {
     EnumerationPtr features;
-    TypePtr elementsType;
+    ClassPtr elementsType;
     DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, elementsType);
     jassert(features == enumeration);
     outputClass = pairClass(features, features);
@@ -192,7 +192,7 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(inputTypes[0]);
     if (!features || features->getNumElements() == 0)

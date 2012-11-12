@@ -16,18 +16,18 @@
 #include <algorithm>
 using namespace lbcpp;
 
-TypePtr Container::getTemplateParameter(TypePtr type)
+ClassPtr Container::getTemplateParameter(ClassPtr type)
 {
-  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
   jassert(dvType && dvType->getNumTemplateArguments() == 1);
-  TypePtr res = dvType->getTemplateArgument(0);
+  ClassPtr res = dvType->getTemplateArgument(0);
   jassert(res);
   return res;
 }
 
-bool Container::getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res)
+bool Container::getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res)
 {
-  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
   if (!dvType)
   {
     context.errorCallback(type->getName() + T(" is not a Container"));
@@ -123,15 +123,15 @@ int Container::findElement(const ObjectPtr& value) const
   return -1;
 }
 
-TypePtr Container::computeElementsCommonBaseType() const
+ClassPtr Container::computeElementsCommonBaseType() const
 {
   size_t n = getNumElements();
   if (n == 0)
     return topLevelType;
-  TypePtr type = getElement(0)->getClass();
+  ClassPtr type = getElement(0)->getClass();
   for (size_t i = 1; i < n; ++i)
   {
-    type = Type::findCommonBaseType(type, getElement(i)->getClass());
+    type = Class::findCommonBaseClass(type, getElement(i)->getClass());
     if (type == topLevelType)
       break;
   }
@@ -143,10 +143,10 @@ void Container::saveToXml(XmlExporter& exporter) const
   Object::saveToXml(exporter);
   size_t n = getNumElements();
   exporter.setAttribute(T("size"), (int)n);
-  TypePtr elementsType = getElementsType();
+  ClassPtr elementsType = getElementsType();
   if (n > 1)
   {
-    TypePtr actualType = computeElementsCommonBaseType();
+    ClassPtr actualType = computeElementsCommonBaseType();
     if (elementsType != actualType)
     {
       exporter.enter(T("elementsActualType"));
@@ -169,12 +169,12 @@ bool Container::loadFromXml(XmlImporter& importer)
   if (!Object::loadFromXml(importer))
     return false;
 
-  TypePtr elementsType = getElementsType();
+  ClassPtr elementsType = getElementsType();
   juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(T("elementsActualType"));
   if (elementsActualType)
   {
     importer.enter(elementsActualType);
-    elementsType = importer.loadType(TypePtr());
+    elementsType = importer.loadType(ClassPtr());
     importer.leave();
     if (!elementsType)
       return false;

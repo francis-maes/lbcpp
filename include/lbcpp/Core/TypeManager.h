@@ -20,22 +20,22 @@ public:
   TypeManager();
   ~TypeManager();
 
-  bool declare(ExecutionContext& context, TypePtr type);
+  bool declare(ExecutionContext& context, ClassPtr type);
   bool declare(ExecutionContext& context, TemplateTypePtr templateType);
 
   void finishDeclarations(ExecutionContext& context);
 
-  TypePtr getType(ExecutionContext& context, const String& typeName, const std::vector<TypePtr>& arguments) const;
-  TypePtr getType(ExecutionContext& context, const String& name) const;
-  TypePtr getTypeByShortName(ExecutionContext& context, const String& shortName) const;
+  ClassPtr getType(ExecutionContext& context, const String& typeName, const std::vector<ClassPtr>& arguments) const;
+  ClassPtr getType(ExecutionContext& context, const String& name) const;
+  ClassPtr getTypeByShortName(ExecutionContext& context, const String& shortName) const;
 
-  TypePtr findType(const String& name) const;
+  ClassPtr findType(const String& name) const;
   bool doTypeExists(const String& type) const;
 
   void shutdown();
 
 private:
-  typedef std::map<String, TypePtr> TypeMap;
+  typedef std::map<String, ClassPtr> TypeMap;
   typedef std::map<String, TemplateTypeCache> TemplateTypeMap;
 
   CriticalSection typesLock;
@@ -51,10 +51,10 @@ private:
 
 extern TypeManager& typeManager();
 
-extern TypePtr getType(const String& typeName);
-extern TypePtr getType(const String& name, const std::vector<TypePtr>& arguments);
+extern ClassPtr getType(const String& typeName);
+extern ClassPtr getType(const String& name, const std::vector<ClassPtr>& arguments);
 extern bool doTypeExists(const String& typeName);
-extern bool declareType(TypePtr type);
+extern bool declareType(ClassPtr type);
 
 }; /* namespace lbcpp */
 

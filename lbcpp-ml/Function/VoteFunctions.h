@@ -18,17 +18,17 @@ namespace lbcpp
 class VoteFunction : public Function
 {
 public:
-  VoteFunction(TypePtr outputType)
+  VoteFunction(ClassPtr outputType)
     : outputType(outputType) {}
   VoteFunction() {}
 
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type == newBooleanClass || type == newProbabilityClass;}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return outputType;}
 
   virtual ObjectPtr computeVote(double input) const = 0;
@@ -40,7 +40,7 @@ public:
     return computeVote(NewDouble::get(inputs[0]));
   }
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVectorPtr weakPredictions = inputs[0];
     if (weakPredictions->getElementsType() == newBooleanClass)
@@ -77,7 +77,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  TypePtr outputType;
+  ClassPtr outputType;
 };
 
 class ScalarVoteFunction : public VoteFunction

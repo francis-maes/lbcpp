@@ -336,7 +336,7 @@ ObjectPtr LuaState::getTableVariable(int index, const char* key)
 /*
 ** Object
 */
-ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
+ObjectPtr& LuaState::checkObject(int index, ClassPtr expectedType)
 {
   ObjectPtr* p = (ObjectPtr* )luaL_checkudata(L, index, "LBCppObject");
   if (p)
@@ -345,7 +345,7 @@ ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
       luaL_error(L, "object is nil");
     else
     {
-      TypePtr type = (*p)->getClass();
+      ClassPtr type = (*p)->getClass();
       if (type->inheritsFrom(expectedType))
         return *p;
       else
@@ -412,12 +412,12 @@ File LuaState::checkFile(int index)
   return getContext().getFile(name);
 }
 
-TypePtr LuaState::checkType(int index)
+ClassPtr LuaState::checkType(int index)
 {
   const char* name = checkString(index);
   if (!name)
-    return TypePtr();
-  TypePtr res = typeManager().getType(getContext(), name);
+    return ClassPtr();
+  ClassPtr res = typeManager().getType(getContext(), name);
   if (!res)
     error(String("could not find type ") + name);
   return res;
@@ -473,7 +473,7 @@ void LuaState::pushValueFrom(const LuaState& source, int index)
   lua_xmove(source.L, L, 1);
 }
 
-void Type::luaRegister(LuaState& state) const
+void Class::luaRegister(LuaState& state) const
 {
   std::vector<luaL_Reg> functions;
   size_t n = getNumMemberFunctions();

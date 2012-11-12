@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Type.cpp                       | The class interface for         |
+| Filename: Class.cpp                      | The class interface for         |
 | Author  : Francis Maes                   |  introspection                  |
 | Started : 24/06/2010 11:31               |                                 |
 `------------------------------------------/                                 |
@@ -10,43 +10,57 @@
 #include <map>
 using namespace lbcpp;
 
-TypePtr lbcpp::topLevelType;
-TypePtr lbcpp::anyType;
+ClassPtr lbcpp::topLevelType;
+ClassPtr lbcpp::anyType;
 
 int lbcpp::integerMissingValue = 0;
 double lbcpp::doubleMissingValue = 0.0;
 
-/*
-** Type
-*/
-Type::Type(const String& className, TypePtr baseType)
+Class::Class(const String& className, ClassPtr baseType)
   : NameableObject(className), initialized(false), baseType(baseType), namedType(false) {}
 
-Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+Class::Class(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType)
   : NameableObject(templateType->makeTypeName(templateArguments)), initialized(false),
       baseType(baseType), templateType(templateType), templateArguments(templateArguments), namedType(false)
  {}
 
-Type::~Type() {}
+Class::~Class() {}
 
-bool Type::initialize(ExecutionContext& context)
+bool Class::initialize(ExecutionContext& context)
   {return (initialized = true);}
 
-void Type::deinitialize()
+void Class::deinitialize()
 {
-  baseType = TypePtr();
+  baseType = ClassPtr();
   templateType = TemplateTypePtr();
   templateArguments.clear();
   initialized = false;
 }
 
-ClassPtr Type::getClass() const
-  {return typeClass;}
+ClassPtr Class::getClass() const
+  {return classClass;}
 
-/*
-** Xml Serialisation
-*/
-void Type::saveToXml(XmlExporter& exporter) const
+String Class::toString() const
+{
+  String res = getName();
+  res += T(" = {");
+  if (baseType)
+  {
+    size_t n = getNumMemberVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      res += getMemberVariableType(i)->getName() + T(" ") + getMemberVariableName(i);
+      if (i < n - 1)
+        res += T(", ");
+    }
+  }
+  else
+    res += T("!!missing base type!!");
+  res += T("}");
+  return res;
+}
+
+void Class::saveToXml(XmlExporter& exporter) const
 {
   jassert(!namedType);
   if (templateType)
@@ -64,38 +78,7 @@ void Type::saveToXml(XmlExporter& exporter) const
     exporter.setAttribute(T("typeName"), name);
 }
 
-TypePtr Type::loadUnnamedTypeFromXml(XmlImporter& importer)
-{
-  // load unnamed type from xml
-  if (importer.hasAttribute(T("templateType")))
-  {
-    String templateType = importer.getStringAttribute(T("templateType"));
-    std::vector<TypePtr> templateArguments;
-    forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("templateArgument"))
-    {
-      importer.enter(elt);
-      int index = importer.getIntAttribute(T("index"));
-      if (index < 0)
-      {
-        importer.errorMessage(T("Type::loadTypeFromXml"), T("Invalid template argument index"));
-        return TypePtr();
-      }
-      templateArguments.resize(index + 1);
-      templateArguments[index] = importer.loadType(TypePtr());
-      if (!templateArguments[index])
-        return TypePtr();
-      importer.leave();
-    }
-    return typeManager().getType(importer.getContext(), templateType, templateArguments);
-  }
-  else
-    return typeManager().getType(importer.getContext(), importer.getStringAttribute(T("typeName")));
-}
-
-/*
-** Type Operations
-*/
-TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
+ClassPtr Class::findCommonBaseClass(ClassPtr type1, ClassPtr type2)
 {
   if (type1->inheritsFrom(type2))
     return type2;
@@ -103,15 +86,15 @@ TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
     return type1;
   if (type1 == topLevelType || type2 == topLevelType)
     return topLevelType;
-  TypePtr baseType1 = type1->getBaseType();
-  TypePtr baseType2 = type2->getBaseType();
+  ClassPtr baseType1 = type1->getBaseType();
+  ClassPtr baseType2 = type2->getBaseType();
   jassert(baseType1 && baseType2);
-  baseType1 = findCommonBaseType(baseType1, type2);
-  baseType2 = findCommonBaseType(type1, baseType2);
+  baseType1 = findCommonBaseClass(baseType1, type2);
+  baseType2 = findCommonBaseClass(type1, baseType2);
   return baseType1->inheritsFrom(baseType2) ? baseType1 : baseType2;
 }
 
-bool Type::inheritsFrom(TypePtr baseType) const
+bool Class::inheritsFrom(ClassPtr baseType) const
 {
   jassert(this && baseType.get());
 
@@ -133,58 +116,46 @@ bool Type::inheritsFrom(TypePtr baseType) const
   return this->baseType->inheritsFrom(baseType);
 }
 
-TypePtr Type::findBaseTypeFromTemplateName(const String& templateName) const
+ClassPtr Class::findBaseTypeFromTemplateName(const String& templateName) const
 {
-  TypePtr res = refCountedPointerFromThis(this);
+  ClassPtr res = refCountedPointerFromThis(this);
   while (res)
   {
     if (res->templateType && res->templateType->getName() == templateName)
       return res;
     res = res->getBaseType();
   }
-  return TypePtr();
+  return ClassPtr();
 }
 
-bool Type::canBeCastedTo(TypePtr targetType) const
+bool Class::canBeCastedTo(ClassPtr targetType) const
   {return inheritsFrom(targetType);}
 
-/*
-** Instance basic operations
-*/
-ObjectPtr Type::create(ExecutionContext& context) const
-  {jassert(baseType); return baseType->create(context);}
+ObjectPtr Class::createObject(ExecutionContext& context) const
+  {jassert(baseType); return baseType->createObject(context);}
 
-ObjectPtr Type::createFromString(ExecutionContext& context, const String& value) const
-  {jassert(baseType); return baseType->createFromString(context, value);}
-
-ObjectPtr Type::createFromXml(XmlImporter& importer) const
-  {jassert(baseType); return baseType->createFromXml(importer);}
-
-bool Type::isConvertibleToBoolean() const
+bool Class::isConvertibleToBoolean() const
   {jassert(baseType); return baseType->isConvertibleToBoolean();}
 
-bool Type::isConvertibleToDouble() const
+bool Class::isConvertibleToDouble() const
   {jassert(baseType); return baseType->isConvertibleToDouble();}
 
-/*
-** Member Variables
-*/
-size_t Type::getNumMemberVariables() const
+size_t Class::getNumMemberVariables() const
   {jassert(baseType); return baseType->getNumMemberVariables();}
 
-VariableSignaturePtr Type::getMemberVariable(size_t index) const
+VariableSignaturePtr Class::getMemberVariable(size_t index) const
   {jassert(baseType); return baseType->getMemberVariable(index);}
 
-int Type::findMemberVariable(const String& name) const
+int Class::findMemberVariable(const String& name) const
   {jassert(baseType); return baseType->findMemberVariable(name);}
   
-ObjectPtr Type::getMemberVariableValue(const Object* pthis, size_t index) const
+ObjectPtr Class::getMemberVariableValue(const Object* pthis, size_t index) const
   {jassert(baseType); return baseType->getMemberVariableValue(pthis, index);}
 
-void Type::setMemberVariableValue(Object* pthis, size_t index, const ObjectPtr& subValue) const
+void Class::setMemberVariableValue(Object* pthis, size_t index, const ObjectPtr& subValue) const
   {if (baseType) baseType->setMemberVariableValue(pthis, index, subValue);}
 
-String Type::makeUniqueMemberVariableName(const String& name) const
+String Class::makeUniqueMemberVariableName(const String& name) const
 {
   if (findMemberVariable(name) < 0)
     return name;
@@ -197,45 +168,42 @@ String Type::makeUniqueMemberVariableName(const String& name) const
   return String::empty;
 }
 
-VariableSignaturePtr Type::getLastMemberVariable() const
+VariableSignaturePtr Class::getLastMemberVariable() const
 {
   size_t n = getNumMemberVariables();
   jassert(n);
   return getMemberVariable(n - 1);
 }
 
-TypePtr Type::getMemberVariableType(size_t index) const
+ClassPtr Class::getMemberVariableType(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
-  return signature ? signature->getType() : TypePtr();
+  return signature ? signature->getType() : ClassPtr();
 }
 
-String Type::getMemberVariableName(size_t index) const
+String Class::getMemberVariableName(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
   return signature ? signature->getName() : String::empty;
 }
 
-String Type::getMemberVariableShortName(size_t index) const
+String Class::getMemberVariableShortName(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
   return signature ? signature->getShortName() : String::empty;
 }
 
-String Type::getMemberVariableDescription(size_t index) const
+String Class::getMemberVariableDescription(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
   return signature ? signature->getDescription() : String::empty;
 }
 
-/*
-** Member Functions
-*/
-size_t Type::getNumMemberFunctions() const
+size_t Class::getNumMemberFunctions() const
   {jassert(baseType); return baseType->getNumMemberFunctions();}
 
-FunctionSignaturePtr Type::getMemberFunction(size_t index) const
+FunctionSignaturePtr Class::getMemberFunction(size_t index) const
   {jassert(baseType); return baseType->getMemberFunction(index);}
 
-int Type::findMemberFunction(const String& name) const
+int Class::findMemberFunction(const String& name) const
   {jassert(baseType); return baseType->findMemberFunction(name);}

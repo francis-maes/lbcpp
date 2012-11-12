@@ -27,9 +27,9 @@ public:
     : TextParser(context, file), data(data) {}
   TestingSetParser() {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
   {
-    TypePtr exampleType = data->getElementsType();
+    ClassPtr exampleType = data->getElementsType();
     return pairClass(containerClass(exampleType), containerClass(exampleType));
   }
 
@@ -67,7 +67,7 @@ public:
     std::cout << std::endl;
     */
 
-    TypePtr exampleType = data->getElementsType();
+    ClassPtr exampleType = data->getElementsType();
     VectorPtr learningData = vector(exampleType, 0);
     learningData->reserve(n - testingIndices.size());
     VectorPtr testingData = vector(exampleType, 0);
@@ -131,7 +131,7 @@ public:
     }
     ContainerPtr trainingData = splits[foldNumber].first;
     ContainerPtr testingData = splits[foldNumber].second;
-    TypePtr inputDoubleVectorType = trainingData->getElementsType()->getTemplateArgument(0);*/
+    ClassPtr inputDoubleVectorType = trainingData->getElementsType()->getTemplateArgument(0);*/
 
     // todo:
 
@@ -195,7 +195,7 @@ private:
     PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
     
     ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), newDoubleClass);
-    TypePtr supType = p->getSecond().getType();
+    ClassPtr supType = p->getSecond().getType();
     ClassPtr exampleType = pairClass(dvClass, supType);
 
     size_t n = examples->getNumElements();

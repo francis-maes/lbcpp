@@ -21,7 +21,7 @@ public:
   BinaryIntegerFunction()
     : HomogeneousBinaryFunction(newIntegerClass) {}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(newIntegerClass) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const = 0;

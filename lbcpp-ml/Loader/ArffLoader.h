@@ -109,7 +109,7 @@ protected:
       ++tokenNumber;
 
     String attributeTypeName = tokens[tokenNumber].toLowerCase();
-    TypePtr attributeType;
+    ClassPtr attributeType;
     if (attributeTypeName == T("float")
         || attributeTypeName == T("real")
         || attributeTypeName == T("numeric"))
@@ -181,7 +181,7 @@ protected:
     for (size_t i = 0; i < (size_t)tokens.size(); ++i)
       tokens.set(i, tokens[i].trim().unquoted());
     
-    TypePtr attributeType;
+    ClassPtr attributeType;
     // It can be a newBooleanClass ?
     if (shouldBeABooleanType(tokens))
     {

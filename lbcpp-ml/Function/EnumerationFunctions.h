@@ -27,10 +27,10 @@ public:
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return enumeration ? type == enumeration : type.isInstanceOf<Enumeration>();}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return newBooleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
@@ -43,7 +43,7 @@ public:
     return new NewBoolean(NewInteger::get(inputs[0]) == (juce::int64)value);
   }
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     if (index == 0)
     {

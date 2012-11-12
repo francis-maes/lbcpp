@@ -50,8 +50,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Type.cpp
   ../include/lbcpp/Core/Enumeration.h
   Core/Enumeration.cpp
-  ../include/lbcpp/Core/Class.h
-  Core/Class.cpp
+  ../include/lbcpp/Core/DefaultClass.h
+  Core/DefaultClass.cpp
   ../include/lbcpp/Core/TemplateType.h
   Core/TemplateType.cpp
   ../include/lbcpp/Core/Library.h

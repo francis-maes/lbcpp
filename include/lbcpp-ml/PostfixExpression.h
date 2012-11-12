@@ -40,7 +40,7 @@ public:
 
   virtual String toShortString() const;
 
-  std::vector<TypePtr> computeTypeState(const std::vector<TypePtr>& initialState = std::vector<TypePtr>()) const;
+  std::vector<ClassPtr> computeTypeState(const std::vector<ClassPtr>& initialState = std::vector<ClassPtr>()) const;
 
 private:
   friend class PostfixExpressionSequenceClass;
@@ -51,7 +51,7 @@ private:
 class PostfixExpressionTypeState : public Object
 {
 public:
-  PostfixExpressionTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable);
+  PostfixExpressionTypeState(size_t depth, const std::vector<ClassPtr>& stack, bool yieldable);
   PostfixExpressionTypeState();
 
   virtual String toShortString() const;
@@ -59,7 +59,7 @@ public:
   size_t getDepth() const
     {return depth;}
 
-  const std::vector<TypePtr>& getStack() const
+  const std::vector<ClassPtr>& getStack() const
     {return stack;}
 
   size_t getStackSize() const
@@ -68,11 +68,11 @@ public:
   bool hasPushActions() const
     {return push.size() > 0;}
 
-  const std::vector<std::pair<TypePtr, PostfixExpressionTypeStatePtr> >& getPushActions() const
+  const std::vector<std::pair<ClassPtr, PostfixExpressionTypeStatePtr> >& getPushActions() const
     {return push;}
 
-  bool hasPushAction(const TypePtr& type) const;
-  PostfixExpressionTypeStatePtr getPushTransition(const TypePtr& type) const;
+  bool hasPushAction(const ClassPtr& type) const;
+  PostfixExpressionTypeStatePtr getPushTransition(const ClassPtr& type) const;
 
   bool hasApplyActions() const
     {return apply.size() > 0;}
@@ -96,8 +96,8 @@ private:
   friend class PostfixExpressionTypeSpace;
 
   size_t depth;
-  std::vector<TypePtr> stack;
-  std::vector<std::pair<TypePtr, PostfixExpressionTypeStatePtr> > push;
+  std::vector<ClassPtr> stack;
+  std::vector<std::pair<ClassPtr, PostfixExpressionTypeStatePtr> > push;
   std::vector<std::pair<FunctionPtr, PostfixExpressionTypeStatePtr> > apply;
   bool yieldable;
   size_t stateIndex;
@@ -106,14 +106,14 @@ private:
   bool canBePruned;
   bool canBePrunedComputed;
   
-  void setPushTransition(const TypePtr& type, const PostfixExpressionTypeStatePtr& nextState);
+  void setPushTransition(const ClassPtr& type, const PostfixExpressionTypeStatePtr& nextState);
   void setApplyTransition(const FunctionPtr& function, const PostfixExpressionTypeStatePtr& nextState);
 };
 
 class PostfixExpressionTypeSpace : public Object
 {
 public:
-  PostfixExpressionTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth);
+  PostfixExpressionTypeSpace(const ExpressionDomainPtr& domain, const std::vector<ClassPtr>& initialState, size_t maxDepth);
   PostfixExpressionTypeSpace() {}
 
   void pruneStates(ExecutionContext& context, bool verbose);
@@ -125,9 +125,9 @@ public:
   size_t getNumStates() const
     {return states.size();}
 
-  PostfixExpressionTypeStatePtr getState(size_t depth, const std::vector<TypePtr>& stack) const;
+  PostfixExpressionTypeStatePtr getState(size_t depth, const std::vector<ClassPtr>& stack) const;
 
-  typedef std::pair<size_t, std::vector<TypePtr> > StateKey;
+  typedef std::pair<size_t, std::vector<ClassPtr> > StateKey;
   typedef std::map<StateKey, PostfixExpressionTypeStatePtr> StateMap;
 
   const StateMap& getStates() const
@@ -137,13 +137,13 @@ private:
   PostfixExpressionTypeStatePtr initialState;
   StateMap states;
 
-  PostfixExpressionTypeStatePtr getOrCreateState(const ExpressionDomainPtr& problem, size_t depth, const std::vector<TypePtr>& stack);
-  static void insertType(std::vector<TypePtr>& types, const TypePtr& type);
+  PostfixExpressionTypeStatePtr getOrCreateState(const ExpressionDomainPtr& problem, size_t depth, const std::vector<ClassPtr>& stack);
+  static void insertType(std::vector<ClassPtr>& types, const ClassPtr& type);
 
-  void buildSuccessors(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
-  void enumerateFunctionVariables(const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res);
-  void applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth);
-  bool acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const;
+  void buildSuccessors(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, std::vector<ClassPtr>& nodeTypes, size_t maxDepth);
+  void enumerateFunctionVariables(const FunctionPtr& function, const std::vector<ClassPtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res);
+  void applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& problem, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<ClassPtr>& nodeTypes, size_t maxDepth);
+  bool acceptInputTypes(const FunctionPtr& function, const std::vector<ClassPtr>& stack) const;
   bool prune(PostfixExpressionTypeStatePtr state); // return true if state is prunable
 };
 

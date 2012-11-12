@@ -63,7 +63,7 @@ public:
   **
   ** @return the type of elements contained by this stream
   */
-  virtual TypePtr getElementsType() const = 0;
+  virtual ClassPtr getElementsType() const = 0;
 
   /**
   ** Rewind the stream.
@@ -125,11 +125,11 @@ protected:
 
 extern ClassPtr streamClass;
 
-extern StreamPtr doubleStream(TypePtr elementsType, const std::vector<double>& values);
-extern StreamPtr integerStream(TypePtr elementsType, const std::vector<int>& values);
+extern StreamPtr doubleStream(ClassPtr elementsType, const std::vector<double>& values);
+extern StreamPtr integerStream(ClassPtr elementsType, const std::vector<int>& values);
 extern StreamPtr booleanStream(const std::vector<bool>& values);
 extern StreamPtr booleanStream(bool value);
-extern StreamPtr objectStream(TypePtr elementsType, const std::vector<ObjectPtr>& values);
+extern StreamPtr objectStream(ClassPtr elementsType, const std::vector<ObjectPtr>& values);
 
 StreamPtr directoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 StreamPtr directoryPairFileStream(ExecutionContext& context, const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);

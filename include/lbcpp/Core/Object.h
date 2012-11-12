@@ -157,7 +157,7 @@ public:
   ** Introspection: Variables
   */
   size_t getNumVariables() const;
-  TypePtr getVariableType(size_t index) const;
+  ClassPtr getVariableType(size_t index) const;
   String getVariableName(size_t index) const;
   ObjectPtr getVariable(size_t index) const;
   void setVariable(size_t index, const ObjectPtr& value);

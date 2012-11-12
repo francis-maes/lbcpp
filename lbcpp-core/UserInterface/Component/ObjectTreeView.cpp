@@ -20,7 +20,7 @@ using juce::Graphics;
 using juce::Component;
 using juce::Colours;
 
-static String getIconForType(const TypePtr& type)
+static String getIconForType(const ClassPtr& type)
 {
   String res = type->getName() + "-32.png";
   if (UserInterfaceManager().hasImage(res))
@@ -53,7 +53,7 @@ public:
   {
     mightContainSubItemsFlag = false;
     shortSummary = object->toShortString();
-    TypePtr type = object->getClass();
+    ClassPtr type = object->getClass();
     if (options.showMissingVariables)
     {
       subObjects.reserve(subObjects.size() + type->getNumMemberVariables());
@@ -75,7 +75,7 @@ public:
     SparseDoubleVectorPtr sparseVector = object.dynamicCast<SparseDoubleVector>();
     if (sparseVector && !options.showMissingVariables) // otherwise use the default Container implementation
     {
-      TypePtr elementsType = sparseVector->getElementsType();
+      ClassPtr elementsType = sparseVector->getElementsType();
       for (size_t i = 0; i < sparseVector->getNumValues(); ++i)
       {
         const std::pair<size_t, double>& value = sparseVector->getValue(i);
