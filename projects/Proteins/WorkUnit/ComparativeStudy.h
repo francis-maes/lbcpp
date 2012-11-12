@@ -436,6 +436,12 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    
+    // Use target == cbsTarget and use a cbpTarget predictor to classify chains
+    // from the classification of their cysteines.
+    evaluator->addEvaluator(cbpTarget, binaryClassificationEvaluator(binaryClassificationAccuracyScore), T("CBP"), true);
+    return evaluator;
+
 
     if (target == ss3Target || target == ss8Target || target == stalTarget)
       evaluator->addEvaluator(target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
