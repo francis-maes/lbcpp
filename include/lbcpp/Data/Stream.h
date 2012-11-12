@@ -131,8 +131,8 @@ extern StreamPtr booleanStream(const std::vector<bool>& values);
 extern StreamPtr booleanStream(bool value);
 extern StreamPtr objectStream(ClassPtr elementsType, const std::vector<ObjectPtr>& values);
 
-StreamPtr directoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
-StreamPtr directoryPairFileStream(ExecutionContext& context, const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+StreamPtr directoryFileStream(ExecutionContext& context, const juce::File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+StreamPtr directoryPairFileStream(ExecutionContext& context, const juce::File& mainDirectory, const juce::File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 
 /**
  ** @class TextObjectParser
@@ -150,7 +150,7 @@ public:
    **
    ** @return a TextObjectParser.
    */
-  TextParser(ExecutionContext& context, const File& file);
+  TextParser(ExecutionContext& context, const juce::File& file);
   TextParser() {}
 
   /**
@@ -262,12 +262,12 @@ private:
 typedef ReferenceCountedObjectPtr<TextParser> TextParserPtr;
 
 /* LibSVM Data Parser */
-extern TextParserPtr regressionLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features);
-extern TextParserPtr binaryClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features);
-extern TextParserPtr classificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
-extern TextParserPtr multiLabelClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
+extern TextParserPtr regressionLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features);
+extern TextParserPtr binaryClassificationLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features);
+extern TextParserPtr classificationLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
+extern TextParserPtr multiLabelClassificationLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
 
-extern StreamPtr binaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features);
+extern StreamPtr binaryClassificationLibSVMFastParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features);
 
 }; /* namespace lbcpp */
 

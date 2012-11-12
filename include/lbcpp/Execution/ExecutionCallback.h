@@ -96,7 +96,7 @@ protected:
 
 extern ExecutionCallbackPtr consoleExecutionCallback();
 extern ExecutionCallbackPtr makeTraceExecutionCallback(ExecutionTracePtr trace);
-extern ExecutionCallbackPtr makeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File& file);
+extern ExecutionCallbackPtr makeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const juce::File& file);
 
 class CompositeExecutionCallback : public ExecutionCallback
 {

@@ -56,7 +56,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<ColoDomain> ColoDomainPtr;
 
-extern void* createColoJavaWrapper(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory);
+extern void* createColoJavaWrapper(ExecutionContext& context, const juce::File& javaDirectory, const juce::File& modelDirectory);
 extern std::vector<double> evaluateColoJavaWrapper(void* wrapper, const ColoObjectPtr& colo);
 extern void freeColoJavaWrapper(void* wrapper);
 
@@ -87,7 +87,7 @@ protected:
 class ColoProblem : public Problem
 {
 public:
-  ColoProblem(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
+  ColoProblem(ExecutionContext& context, const juce::File& javaDirectory, const juce::File& modelDirectory)
     : javaDirectory(javaDirectory), modelDirectory(modelDirectory)
     {initialize(context);}
   ColoProblem() {}
@@ -109,8 +109,8 @@ public:
 protected:
   friend class ColoProblemClass;
 
-  File javaDirectory;
-  File modelDirectory;
+  juce::File javaDirectory;
+  juce::File modelDirectory;
   void* wrapper;
 };
 
@@ -297,8 +297,8 @@ public:
 protected:
   friend class ColoSandBoxClass;
 
-  File javaDirectory;
-  File modelDirectory;
+  juce::File javaDirectory;
+  juce::File modelDirectory;
   size_t numEvaluations;
 };
 

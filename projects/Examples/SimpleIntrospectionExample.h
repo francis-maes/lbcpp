@@ -44,7 +44,7 @@ public:
     context.resultCallback(T("Default Object as string"), defaultObject->toString());
     context.resultCallback(T("Some Object"), someObject);
     
-    File file = File::createTempFile(T("object"));
+    juce::File file = juce::File::createTempFile(T("object"));
     someObject->saveToFile(context, file); 
 
     SimpleClassPtr loadedObject = Object::createFromFile(context, file).staticCast<SimpleClass>();

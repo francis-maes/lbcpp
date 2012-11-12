@@ -111,7 +111,7 @@ void Library::luaRegister(LuaState& state) const
     subLibraries[i]->luaRegister(state);
 }
 
-LoaderPtr Library::findLoaderForFile(ExecutionContext& context, const File& file) const
+LoaderPtr Library::findLoaderForFile(ExecutionContext& context, const juce::File& file) const
 {
   String ext = file.getFileExtension();
   if (ext.startsWithChar('.'))

@@ -26,9 +26,9 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
   if (!object)
     return NULL;
   
-  if (object.isInstanceOf<NewFile>())
+  if (object.isInstanceOf<File>())
   {
-    File file = NewFile::get(object);
+    juce::File file = File::get(object);
 
     // if it is a directory, display another tree view
     if (file.isDirectory())

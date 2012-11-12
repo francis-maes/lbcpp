@@ -12,9 +12,9 @@ using namespace lbcpp;
 /*
 ** RecentFileVector
 */
-void RecentFileVector::addRecentFile(const File& file)
+void RecentFileVector::addRecentFile(const juce::File& file)
 {
-  recentFiles->prepend(NewFile::create(file));
+  recentFiles->prepend(File::create(file));
   for (size_t i = 1; i < recentFiles->getNumElements(); ++i)
     if (getRecentFile(i) == file)
     {
@@ -28,19 +28,19 @@ void RecentFileVector::addRecentFile(const File& file)
 /*
 ** ExplorerConfiguration
 */
-File ExplorerConfiguration::getApplicationDataDirectory(ExecutionContext& context)
+juce::File ExplorerConfiguration::getApplicationDataDirectory(ExecutionContext& context)
 {
   //return File(T("C:\\temp"));
-  File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
+  juce::File directory = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory).getChildFile(T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
     context.errorCallback(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
-    return File::nonexistent;
+    return juce::File::nonexistent;
   }
   return directory;
 }
 
-File ExplorerConfiguration::getConfigurationFile(ExecutionContext& context)
+juce::File ExplorerConfiguration::getConfigurationFile(ExecutionContext& context)
   {return getApplicationDataDirectory(context).getChildFile(T("config.xml"));}
 
 ExplorerConfigurationPtr& ExplorerConfiguration::getInstancePtr()
@@ -54,7 +54,7 @@ ExplorerConfigurationPtr ExplorerConfiguration::getInstance()
   ExplorerConfigurationPtr& configuration = getInstancePtr();
   if (!configuration)
   {
-    File configurationFile = getConfigurationFile(defaultExecutionContext());
+    juce::File configurationFile = getConfigurationFile(defaultExecutionContext());
     if (configurationFile.exists())
       configuration = ExplorerConfiguration::createFromFile(defaultExecutionContext(), configurationFile);
     if (!configuration)

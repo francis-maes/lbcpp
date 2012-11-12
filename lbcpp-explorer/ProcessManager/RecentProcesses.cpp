@@ -9,7 +9,7 @@
 #include "RecentProcesses.h"
 using namespace lbcpp;
 
-void RecentProcesses::addRecentExecutable(const File& file)
+void RecentProcesses::addRecentExecutable(const juce::File& file)
 {
   int index = findRecentExecutable(file);
   if (index >= 0)
@@ -23,7 +23,7 @@ void RecentProcesses::addRecentExecutable(const File& file)
   ExplorerConfiguration::save(defaultExecutionContext());
 }
 
-std::vector<String> RecentProcesses::getRecentArguments(const File& executable) const
+std::vector<String> RecentProcesses::getRecentArguments(const juce::File& executable) const
 {
   if (!executable.exists())
     return std::vector<String>();
@@ -32,23 +32,23 @@ std::vector<String> RecentProcesses::getRecentArguments(const File& executable) 
   return index >= 0? v[index].arguments : std::vector<String>();
 }
 
-std::vector<File> RecentProcesses::getRecentWorkingDirectories(const File& executable) const
+std::vector<juce::File> RecentProcesses::getRecentWorkingDirectories(const juce::File& executable) const
 {
   if (!executable.exists())
-    return std::vector<File>();
+    return std::vector<juce::File>();
   int index = findRecentExecutable(executable);
   jassert(index >= 0);
-  return index >= 0? v[index].workingDirectories : std::vector<File>();
+  return index >= 0? v[index].workingDirectories : std::vector<juce::File>();
 }
 
-ProcessConsoleSettingsPtr RecentProcesses::getExecutableConsoleSettings(const File& executable) const
+ProcessConsoleSettingsPtr RecentProcesses::getExecutableConsoleSettings(const juce::File& executable) const
 {
   int index = findRecentExecutable(executable);
   jassert(index >= 0);
   return index >= 0? v[index].consoleSettings : ProcessConsoleSettingsPtr();
 }
 
-void RecentProcesses::addRecent(const File& executable, const String& arguments, const File& workingDirectory)
+void RecentProcesses::addRecent(const juce::File& executable, const String& arguments, const juce::File& workingDirectory)
 {
   addRecentExecutable(executable);
   v[0].addRecentArguments(arguments);
@@ -57,7 +57,7 @@ void RecentProcesses::addRecent(const File& executable, const String& arguments,
   ExplorerConfiguration::save(defaultExecutionContext());
 }
 
-RecentProcesses::RecentExecutable::RecentExecutable(const File& executable)
+RecentProcesses::RecentExecutable::RecentExecutable(const juce::File& executable)
   : executable(executable), consoleSettings(new ProcessConsoleSettings)
 {
   arguments.push_back(T(" "));
@@ -80,7 +80,7 @@ void RecentProcesses::RecentExecutable::addRecentArguments(const String& args)
   arguments.insert(arguments.begin(), args);
 }
 
-void RecentProcesses::RecentExecutable::addRecentWorkingDirectory(const File& workingDirectory)
+void RecentProcesses::RecentExecutable::addRecentWorkingDirectory(const juce::File& workingDirectory)
 {
   size_t i;
   for (i = 0; i < workingDirectories.size(); ++i)
@@ -91,7 +91,7 @@ void RecentProcesses::RecentExecutable::addRecentWorkingDirectory(const File& wo
   workingDirectories.insert(workingDirectories.begin(), workingDirectory);
 }
 
-int RecentProcesses::findRecentExecutable(const File& file) const
+int RecentProcesses::findRecentExecutable(const juce::File& file) const
 {
   for (size_t i = 0; i < v.size(); ++i)
     if (v[i].executable == file)

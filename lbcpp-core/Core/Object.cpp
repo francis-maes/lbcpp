@@ -211,13 +211,13 @@ ObjectPtr Object::createFromXml(XmlImporter& importer, ClassPtr type)
 /*
 ** Create Object from File / Save Object to File
 */
-ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
+ObjectPtr Object::createFromFile(ExecutionContext& context, const juce::File& file)
 {
   LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
   return loader ? loader->loadFromFile(context, file) : ObjectPtr();
 }
 
-bool Object::saveToFile(ExecutionContext& context, const File& file) const
+bool Object::saveToFile(ExecutionContext& context, const juce::File& file) const
 {
   XmlExporter exporter(context);
   exporter.saveObject(String::empty, refCountedPointerFromThis(this), ClassPtr());
@@ -598,7 +598,7 @@ int Object::create(LuaState& state)
 
 int Object::fromFile(LuaState& state)
 {
-  File file = state.checkFile(1);
+  juce::File file = state.checkFile(1);
   ObjectPtr res = createFromFile(state.getContext(), file);
   if (!res)
     return 0;
@@ -633,7 +633,7 @@ int Object::clone(LuaState& state)
 int Object::save(LuaState& state)
 {
   ObjectPtr object = state.checkObject(1);
-  File file = state.checkFile(2);
+  juce::File file = state.checkFile(2);
   object->saveToFile(state.getContext(), file);
   return 0;
 }
@@ -642,9 +642,9 @@ int Object::__index(LuaState& state) const
 {
   if (state.isString(1)) // indiced by a string
   {
-    String string = state.checkString(1);
+    String str = state.checkString(1);
 
-    if (string == T("className"))
+    if (str == T("className"))
     {
       state.pushString(getClassName());
       return 1;
@@ -652,7 +652,7 @@ int Object::__index(LuaState& state) const
 
     // check if it is a variable
     ClassPtr type = getClass();
-    int index = type->findMemberVariable(string);
+    int index = type->findMemberVariable(str);
     if (index >= 0)
     {
       state.pushObject(getVariable(index));
@@ -660,7 +660,7 @@ int Object::__index(LuaState& state) const
     }
 
     // check if it is a function
-    index = type->findMemberFunction(string);
+    index = type->findMemberFunction(str);
     if (index >= 0)
     {
       LuaFunctionSignaturePtr signature = type->getMemberFunction(index).dynamicCast<LuaFunctionSignature>();
@@ -674,7 +674,7 @@ int Object::__index(LuaState& state) const
       return 1;
     }
 
-    state.error("Could not find identifier " + string.quoted() + " in class " + type->getName());
+    state.error("Could not find identifier " + str.quoted() + " in class " + type->getName());
     return 0;
   }
   else if (state.isInteger(1))
@@ -693,11 +693,11 @@ int Object::__newIndex(LuaState& state)
 {
   if (state.isString(1))
   {
-    String string = state.checkString(1);
+    String str = state.checkString(1);
 
     // check if it is a variable
     ClassPtr type = getClass();
-    int index = type->findMemberVariable(string);
+    int index = type->findMemberVariable(str);
     if (index >= 0)
     {
       ObjectPtr object = state.checkObject(2);

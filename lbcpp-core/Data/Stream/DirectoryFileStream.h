@@ -17,14 +17,14 @@ namespace lbcpp
 class DirectoryFileStream : public Stream
 {
 public:
-  DirectoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
+  DirectoryFileStream(ExecutionContext& context, const juce::File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
     : Stream(context), directory(directory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
     {initialize();}
 
   DirectoryFileStream() {}
 
   virtual ClassPtr getElementsType() const
-    {return newFileClass;}
+    {return fileClass;}
 
   virtual bool rewind()
     {nextFileIterator = files.begin(); return true;}
@@ -36,16 +36,16 @@ public:
   {
     if (isExhausted())
       return ObjectPtr();
-    File file(*nextFileIterator);
+    juce::File file(*nextFileIterator);
     ++nextFileIterator;
     ++position;
-    return NewFile::create(file);
+    return File::create(file);
   }
 
-  static void findChildFiles(const File& directory, const String& wildCardPattern, bool searchRecursively, std::set<String>& res)
+  static void findChildFiles(const juce::File& directory, const String& wildCardPattern, bool searchRecursively, std::set<String>& res)
   {
-    juce::OwnedArray<File> files;
-    directory.findChildFiles(files, File::findFiles, searchRecursively, wildCardPattern);
+    juce::OwnedArray<juce::File> files;
+    directory.findChildFiles(files, juce::File::findFiles, searchRecursively, wildCardPattern);
     for (int i = 0; i < files.size(); ++i)
       res.insert(files[i]->getFullPathName());
   }
@@ -54,7 +54,7 @@ public:
     {return new ProgressionState((double)this->position, (double)files.size(), T("Files"));}
 
 private:
-  File directory;
+  juce::File directory;
   String wildCardPattern;
   bool searchFilesRecursively;
 

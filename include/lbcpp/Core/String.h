@@ -48,18 +48,18 @@ protected:
 
 extern ClassPtr newStringClass;
 
-class NewFile : public NewString
+class File : public NewString
 {
 public:
-  NewFile(ClassPtr thisClass, const File& file)
+  File(ClassPtr thisClass, const juce::File& file)
     : NewString(thisClass, file.getFullPathName()) {}
-  NewFile(const File& file)
+  File(const juce::File& file)
     : NewString(file.getFullPathName()) {}
-  NewFile() {}
+  File() {}
 
-  static NewFilePtr create(const File& file);
+  static FilePtr create(const juce::File& file);
   static juce::File get(const ObjectPtr& object)
-    {return object.staticCast<NewFile>()->get();}
+    {return object.staticCast<File>()->get();}
 
   void set(const juce::File& value)
     {this->value = value.getFullPathName();}
@@ -75,13 +75,13 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
 };
 
-extern ClassPtr newFileClass;
+extern ClassPtr fileClass;
 
-class Directory : public NewFile
+class Directory : public File
 {
 public:
-  Directory(const File& file)
-    : NewFile(file.getFullPathName()) {}
+  Directory(const juce::File& file)
+    : File(file.getFullPathName()) {}
   Directory() {}
 };
 

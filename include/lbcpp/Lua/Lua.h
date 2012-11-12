@@ -51,7 +51,7 @@ public:
   // Code interpretation
   bool loadBuffer(const char* code, const char* chunkName);
   bool execute(const char* code, const char* codeName = "code", bool verbose = false);
-  bool execute(const File& luaFile);
+  bool execute(const juce::File& luaFile);
 
   // General stack operations
   int getTop() const;
@@ -107,7 +107,7 @@ public:
   void pushObject(ObjectPtr object);
 
   // File
-  File checkFile(int index);
+  juce::File checkFile(int index);
 
   // Type
   ClassPtr checkType(int index);

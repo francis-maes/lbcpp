@@ -14,12 +14,12 @@ using namespace lbcpp;
 /*
 ** NewString
 */
-NewFilePtr NewFile::create(const File& file)
+FilePtr File::create(const juce::File& file)
 {
   if (file.isDirectory())
     return new Directory(file);
   else
-    return new NewFile(file);
+    return new File(file);
 }
 
 juce::String NewString::toShortString() const
@@ -57,21 +57,21 @@ void NewString::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
 /*
-** NewFile
+** File
 */
-juce::String NewFile::toShortString() const
+juce::String File::toShortString() const
   {return get().getFileName();}
 
-juce::String NewFile::toString() const
+juce::String File::toString() const
   {return defaultExecutionContext().getFilePath(get());}
 
-void NewFile::saveToXml(XmlExporter& exporter) const
+void File::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
-bool NewFile::loadFromString(ExecutionContext& context, const String& str)
+bool File::loadFromString(ExecutionContext& context, const String& str)
 {
   juce::File file = context.getFile(str);
-  if (file == File::nonexistent)
+  if (file == juce::File::nonexistent)
   {
     context.errorCallback(T("Could not find file ") + str);
     return false;

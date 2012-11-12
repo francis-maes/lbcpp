@@ -23,7 +23,7 @@ namespace lbcpp
 class TestingSetParser : public TextParser
 {
 public:
-  TestingSetParser(ExecutionContext& context, const File& file, ContainerPtr data)
+  TestingSetParser(ExecutionContext& context, const juce::File& file, ContainerPtr data)
     : TextParser(context, file), data(data) {}
   TestingSetParser() {}
 
@@ -141,11 +141,11 @@ public:
 private:
   friend class ClassificationSandBoxClass;
 
-  File dataFile;
+  juce::File dataFile;
   size_t maxExamples;
   size_t verbosity;
 
-  TablePtr loadDataFile(ExecutionContext& context, const File& file, std::vector<VariableExpressionPtr>& inputs, VariableExpressionPtr& supervision)
+  TablePtr loadDataFile(ExecutionContext& context, const juce::File& file, std::vector<VariableExpressionPtr>& inputs, VariableExpressionPtr& supervision)
   {
     context.enterScope(T("Loading ") + file.getFileName());
     TablePtr res = Object::createFromFile(context, file);
@@ -156,7 +156,7 @@ private:
   }
 
   /*
-  bool makeSplits(ExecutionContext& context, const File& tsFile, DynamicClassPtr inputClass, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
+  bool makeSplits(ExecutionContext& context, const juce::File& tsFile, DynamicClassPtr inputClass, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
   {
     if (tsFile.existsAsFile())
     {

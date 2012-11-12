@@ -30,7 +30,7 @@ public:
     return firstLine.isNotEmpty() && firstLine[0] == '<';
   }
 
-  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const
   {
     juce::XmlDocument document(file);
     juce::XmlElement* root = document.getDocumentElement();

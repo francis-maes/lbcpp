@@ -39,14 +39,14 @@ namespace lbcpp
   extern void initialize(const char* executableName);
   extern void deinitialize();
 
-  extern bool importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory);
-  extern LibraryPtr importLibraryFromFile(ExecutionContext& executionContext, const File& file);
+  extern bool importLibrariesFromDirectory(ExecutionContext& executionContext, const juce::File& directory);
+  extern LibraryPtr importLibraryFromFile(ExecutionContext& executionContext, const juce::File& file);
   extern bool importLibrary(ExecutionContext& executionContext, LibraryPtr library, void* dynamicLibraryHandle = NULL);
 
-  inline bool importLibrariesFromDirectory(const File& directory)
+  inline bool importLibrariesFromDirectory(const juce::File& directory)
     {return importLibrariesFromDirectory(defaultExecutionContext(), directory);}
 
-  inline LibraryPtr importLibraryFromFile(const File& file)
+  inline LibraryPtr importLibraryFromFile(const juce::File& file)
     {return importLibraryFromFile(defaultExecutionContext(), file);}
 
   inline bool importLibrary(LibraryPtr library, void* dynamicLibraryHandle = NULL)

@@ -745,7 +745,7 @@ protected:
   size_t numEvaluations;
   size_t numRuns;
   size_t maxExpressionSize;
-  File outputDirectory;
+  juce::File outputDirectory;
   bool verbose;
 
   struct SolverInfo
@@ -793,14 +793,14 @@ protected:
     OutputStream* evalsOutput = NULL;
     OutputStream* timesOutput = NULL;
 
-    if (outputDirectory != File::nonexistent)
+    if (outputDirectory != juce::File::nonexistent)
     {
       outputDirectory.createDirectory();
-      File evalsFile = outputDirectory.getChildFile(description + "-evals.txt");
+      juce::File evalsFile = outputDirectory.getChildFile(description + "-evals.txt");
       if (evalsFile.exists()) evalsFile.deleteFile();
       evalsOutput = evalsFile.createOutputStream();
 
-      File timesFile = outputDirectory.getChildFile(description + "-times.txt");
+      juce::File timesFile = outputDirectory.getChildFile(description + "-times.txt");
       if (timesFile.exists()) timesFile.deleteFile();
       timesOutput = timesFile.createOutputStream();
     }

@@ -18,24 +18,24 @@ typedef ReferenceCountedObjectPtr<RecentFileVector> RecentFileVectorPtr;
 class RecentFileVector : public Object
 {
 public:
-  RecentFileVector() : recentFiles(vector(newFileClass)) {}
+  RecentFileVector() : recentFiles(vector(fileClass)) {}
 
   virtual String toShortString() const
     {return T("RecentFileVector");}
 
-  File getRecentDirectory() const
+  juce::File getRecentDirectory() const
     {return recentDirectory;}
 
-  void setRecentDirectory(const File& directory)
+  void setRecentDirectory(const juce::File& directory)
     {recentDirectory = directory;}
 
   size_t getNumRecentFiles() const
     {return recentFiles->getNumElements();}
 
-  File getRecentFile(size_t index) const
-    {jassert(index < recentFiles->getNumElements()); return NewFile::get(recentFiles->getElement(index));}
+  juce::File getRecentFile(size_t index) const
+    {jassert(index < recentFiles->getNumElements()); return File::get(recentFiles->getElement(index));}
 
-  void addRecentFile(const File& file);
+  void addRecentFile(const juce::File& file);
   
   void clearRecentFiles()
     {recentFiles->clear();}
@@ -44,7 +44,7 @@ private:
   friend class RecentFileVectorClass;
 
   enum {maxRecentFiles = 8};
-  File recentDirectory;
+  juce::File recentDirectory;
   VectorPtr recentFiles;
 };
 
@@ -56,8 +56,8 @@ class ExplorerConfiguration : public Object
 public:
   ExplorerConfiguration() : recentProjects(new RecentFileVector()) {}
 
-  static File getApplicationDataDirectory(ExecutionContext& context);
-  static File getConfigurationFile(ExecutionContext& context);
+  static juce::File getApplicationDataDirectory(ExecutionContext& context);
+  static juce::File getConfigurationFile(ExecutionContext& context);
 
   static ExplorerConfigurationPtr& getInstancePtr();
   static ExplorerConfigurationPtr getInstance();

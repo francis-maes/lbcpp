@@ -244,7 +244,7 @@ public:
     closeCurrentProject();
     jassert(project);
 
-    File directory = project->getRootDirectory();
+    juce::File directory = project->getRootDirectory();
     defaultExecutionContext().setProjectDirectory(directory);
     jassert(project->workUnitContext->getProjectDirectory() == directory);
 
@@ -268,13 +268,13 @@ public:
       {
       case newProjectMenu:
         {
-          File directory = configuration->getRecentProjects()->getRecentDirectory();
+          juce::File directory = configuration->getRecentProjects()->getRecentDirectory();
           if (!directory.exists())
-            File::getSpecialLocation(File::userHomeDirectory);
+            directory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
           FileChooser chooser("Please select the root directory of your project", directory, "*.*");
           if (chooser.browseForFileToSave(true))
           {
-            File directory = chooser.getResult();
+            juce::File directory = chooser.getResult();
             ExplorerProjectPtr project = ExplorerProject::createProject(context, directory);
             if (project)
               setCurrentProject(project);
@@ -284,13 +284,13 @@ public:
 
       case openProjectMenu:
         {
-          File directory = configuration->getRecentProjects()->getRecentDirectory();
+          juce::File directory = configuration->getRecentProjects()->getRecentDirectory();
           if (!directory.exists())
-            File::getSpecialLocation(File::userHomeDirectory);
+            directory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
           FileChooser chooser("Please choose the project to open", directory, "*.*");
           if (chooser.browseForDirectory())
           {
-            File directory = chooser.getResult();
+            juce::File directory = chooser.getResult();
             ExplorerProjectPtr project = ExplorerProject::openProject(context, directory);
             if (project)
               setCurrentProject(project);
@@ -305,9 +305,9 @@ public:
       case openFileMenu:
       case openDirectoryMenu:
         {
-          File directory = ExplorerProject::currentProject->getRecentDirectory();
+          juce::File directory = ExplorerProject::currentProject->getRecentDirectory();
           if (!directory.exists())
-            directory = File::getSpecialLocation(File::userHomeDirectory);
+            directory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
 
           FileChooser chooser("Please select the file you want to load...",
                                    directory,
@@ -316,7 +316,7 @@ public:
           if ((menuItemID == openFileMenu && chooser.browseForFileToOpen()) ||
               (menuItemID == openDirectoryMenu && chooser.browseForDirectory()))
           {
-            File result = chooser.getResult();
+            juce::File result = chooser.getResult();
             currentProject->setRecentDirectory(result.getParentDirectory());
             loadObjectFromFile(result);
           }
@@ -369,14 +369,14 @@ public:
     }
   }
 
-  void loadObjectFromFile(const File& file)
+  void loadObjectFromFile(const juce::File& file)
   {
     //RecentFileVector::getInstance(context)->addRecentFile(file);
     // FIXME: save project ?
     ExplorerConfiguration::save(context);
     ObjectPtr object;
     if (file.isDirectory())
-      object = NewFile::create(file);
+      object = File::create(file);
     else
     {
       object = Object::createFromFile(context, file);
@@ -413,7 +413,7 @@ public:
     defaultExecutionContext().appendCallback(consoleExecutionCallback());
     defaultExecutionContext().appendCallback(explorerExecutionCallback = new ExplorerExecutionCallback());
 
-    File currentExecutableDirectory = File::getSpecialLocation(File::currentExecutableFile).getParentDirectory();
+    juce::File currentExecutableDirectory = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory();
 #ifdef JUCE_MAC
     currentExecutableDirectory = currentExecutableDirectory.getChildFile("../../..");
 #endif // JUCE_MAC

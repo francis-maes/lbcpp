@@ -121,7 +121,7 @@ public:
 /*
 ** LuaCodeEditor
 */
-LuaCodeEditor::LuaCodeEditor(const File& luaFile)
+LuaCodeEditor::LuaCodeEditor(const juce::File& luaFile)
   : luaFile(luaFile), name(luaFile.getFileName()), context(ExplorerProject::currentProject->workUnitContext)
 {
   InputStream* istr = luaFile.createInputStream();

@@ -18,7 +18,7 @@ namespace lbcpp
 class SingleThreadedExecutionContext : public ExecutionContext
 {
 public:
-  SingleThreadedExecutionContext(const File& projectDirectory)
+  SingleThreadedExecutionContext(const juce::File& projectDirectory)
     : ExecutionContext(projectDirectory) {}
   SingleThreadedExecutionContext() {}
 

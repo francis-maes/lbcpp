@@ -16,7 +16,7 @@ public:
   JavaJVM() : jvm(NULL) {}
   ~JavaJVM()  {if (jvm) jvm->DestroyJavaVM();}
 
-  bool initialize(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
+  bool initialize(ExecutionContext& context, const juce::File& javaDirectory, const juce::File& modelDirectory)
   {
     JavaVMInitArgs args;
     args.version = JNI_VERSION_1_6;
@@ -83,7 +83,7 @@ public:
   jobject instance;
 } jvm;
 
-void* lbcpp::createColoJavaWrapper(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
+void* lbcpp::createColoJavaWrapper(ExecutionContext& context, const juce::File& javaDirectory, const juce::File& modelDirectory)
 {
   if (!jvm.jvm && !jvm.initialize(context, javaDirectory, modelDirectory))
     return NULL;

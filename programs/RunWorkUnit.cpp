@@ -23,7 +23,7 @@ void usage()
 }
 
 bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments,
-                            size_t& numThreads, File& traceOutputFile, double& traceAutoSave, File& projectDirectory)
+                            size_t& numThreads, juce::File& traceOutputFile, double& traceAutoSave, juce::File& projectDirectory)
 {
   numThreads = 1;//(size_t)juce::SystemStats::getNumCpus();
   traceAutoSave = 0.0; // no auto save
@@ -56,7 +56,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         context.errorCallback(T("Invalid Syntax"));
         return false;
       }
-      File dynamicLibraryFile = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
+      juce::File dynamicLibraryFile = juce::File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (!lbcpp::importLibraryFromFile(defaultExecutionContext(), dynamicLibraryFile))
         return false;
     }
@@ -68,7 +68,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         context.errorCallback(T("Invalid Syntax"));
         return false;
       }
-      traceOutputFile = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
+      traceOutputFile = juce::File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (traceOutputFile.exists())
         traceOutputFile.deleteFile();
     }
@@ -90,7 +90,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         context.errorCallback(T("Invalid Syntax"));
         return false;
       }
-      projectDirectory = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
+      projectDirectory = juce::File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (!projectDirectory.isDirectory())
       {
         context.errorCallback(T("Invalid Project Directory"));
@@ -125,7 +125,7 @@ bool runWorkUnit(ExecutionContext& context, WorkUnitPtr workUnit)
   return !result || result->get();
 }
 
-bool runWorkUnitFromFile(ExecutionContext& context, const File& file)
+bool runWorkUnitFromFile(ExecutionContext& context, const juce::File& file)
 {
   ObjectPtr object = Object::createFromFile(context, file);
   return object && checkIsAWorkUnit(context, object) && runWorkUnit(context, object.staticCast<WorkUnit>());
@@ -165,20 +165,20 @@ int mainImpl(int argc, char** argv)
   }
 
   // load dynamic libraries
-  lbcpp::importLibrariesFromDirectory(File::getCurrentWorkingDirectory());
-  if (File::isAbsolutePath(argv[0]))
+  lbcpp::importLibrariesFromDirectory(juce::File::getCurrentWorkingDirectory());
+  if (juce::File::isAbsolutePath(argv[0]))
   {
-    File executablePath = File(argv[0]).getParentDirectory();
-    if (executablePath != File::getCurrentWorkingDirectory())
+    juce::File executablePath = juce::File(argv[0]).getParentDirectory();
+    if (executablePath != juce::File::getCurrentWorkingDirectory())
       lbcpp::importLibrariesFromDirectory(executablePath);
   }
 
   // parse top level arguments
   std::vector<String> arguments;
   size_t numThreads;
-  File traceOutputFile;
+  juce::File traceOutputFile;
   double traceAutoSave;
-  File projectDirectory;
+  juce::File projectDirectory;
   if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile, traceAutoSave, projectDirectory))
   {
     std::cerr << "Could not parse top level arguments." << std::endl;
@@ -187,15 +187,15 @@ int mainImpl(int argc, char** argv)
   }
 
   // replace default context
-  if (projectDirectory == File::nonexistent)
-    projectDirectory = File::getCurrentWorkingDirectory();
+  if (projectDirectory == juce::File::nonexistent)
+    projectDirectory = juce::File::getCurrentWorkingDirectory();
   ExecutionContextPtr context = (numThreads == 1 ? singleThreadedExecutionContext(projectDirectory) : multiThreadedExecutionContext(numThreads, projectDirectory));
   setDefaultExecutionContext(context);
   context->appendCallback(consoleExecutionCallback());
   // add "make trace" callback
   ExecutionCallbackPtr makeTraceCallback;
   ExecutionTracePtr trace;
-  if (traceOutputFile != File::nonexistent)
+  if (traceOutputFile != juce::File::nonexistent)
   {
     trace = new ExecutionTrace(context->toString());
     if (traceAutoSave == 0.0)
@@ -208,7 +208,7 @@ int mainImpl(int argc, char** argv)
   // run work unit either from file or from arguments
   int result = 0;
   jassert(arguments.size());
-  File firstArgumentAsFile = File::getCurrentWorkingDirectory().getChildFile(arguments[0]);
+  juce::File firstArgumentAsFile = juce::File::getCurrentWorkingDirectory().getChildFile(arguments[0]);
   if (arguments.size() == 1 && firstArgumentAsFile.existsAsFile())
     result = runWorkUnitFromFile(*context, firstArgumentAsFile) ? 0 : 1;
   else

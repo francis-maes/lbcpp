@@ -97,8 +97,8 @@ public:
   /*
   ** Create / Open / Save / Close
   */
-  static ExplorerProjectPtr createProject(ExecutionContext& context, const File& rootDirectory);
-  static ExplorerProjectPtr openProject(ExecutionContext& context, const File& rootDirectory);
+  static ExplorerProjectPtr createProject(ExecutionContext& context, const juce::File& rootDirectory);
+  static ExplorerProjectPtr openProject(ExecutionContext& context, const juce::File& rootDirectory);
 
   void save(ExecutionContext& context);
   void close(ExecutionContext& context);
@@ -109,19 +109,19 @@ public:
   /*
   ** Directories
   */
-  void setRootDirectory(const File& rootDirectory)
+  void setRootDirectory(const juce::File& rootDirectory)
   {
     this->rootDirectory = rootDirectory;
     workUnitContext->setProjectDirectory(rootDirectory);
   }
 
-  const File& getRootDirectory() const
+  const juce::File& getRootDirectory() const
     {return rootDirectory;}
 
-  const File& getRecentDirectory() const
+  const juce::File& getRecentDirectory() const
     {return recentDirectory;}
 
-  void setRecentDirectory(const File& recentDirectory)
+  void setRecentDirectory(const juce::File& recentDirectory)
     {this->recentDirectory = recentDirectory;}
 
   /*
@@ -139,8 +139,8 @@ public:
 protected:
   friend class ExplorerProjectClass;
 
-  File rootDirectory;
-  File recentDirectory;
+  juce::File rootDirectory;
+  juce::File recentDirectory;
   RecentWorkUnitsConfigurationPtr recentWorkUnits;
 };
 

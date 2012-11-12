@@ -24,10 +24,10 @@ public:
   virtual ClassPtr getTargetClass() const
     {return directoryClass;}
 
-  virtual bool canUnderstand(ExecutionContext& context, const File& file) const
+  virtual bool canUnderstand(ExecutionContext& context, const juce::File& file) const
     {return file.isDirectory();}
 
-  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const
     {return new Directory(file);}
 };
 

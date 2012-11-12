@@ -71,10 +71,10 @@ bool Stream::iterate(size_t maximumCount)
 /*
 ** TextParser
 */
-TextParser::TextParser(ExecutionContext& context, const File& file)
+TextParser::TextParser(ExecutionContext& context, const juce::File& file)
   : Stream(context), f(NULL), maxLineLength(1024), lineNumber(0)
 {
-  if (file == File::nonexistent)
+  if (file == juce::File::nonexistent)
   {
     context.errorCallback(T("TextParser::parseFile"), T("No filename specified"));
     return;

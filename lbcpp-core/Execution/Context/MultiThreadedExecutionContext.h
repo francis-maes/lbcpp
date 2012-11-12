@@ -470,7 +470,7 @@ typedef ReferenceCountedObjectPtr<WorkUnitThreadPool> WorkUnitThreadPoolPtr;
 class MultiThreadedExecutionContext : public ExecutionContext
 {
 public:
-  MultiThreadedExecutionContext(size_t numThreads, const File& projectDirectory)
+  MultiThreadedExecutionContext(size_t numThreads, const juce::File& projectDirectory)
     : ExecutionContext(projectDirectory)
     {
       threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));

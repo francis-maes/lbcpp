@@ -22,7 +22,7 @@ typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
 class ExecutionContext : public CompositeExecutionCallback
 {
 public:
-  ExecutionContext(const File& projectDirectory = File::nonexistent);
+  ExecutionContext(const juce::File& projectDirectory = juce::File::nonexistent);
   virtual ~ExecutionContext();
   
   virtual bool isMultiThread() const = 0;
@@ -78,13 +78,13 @@ public:
   /*
   ** Access to files
   */
-  File getFile(const String& path);
-  String getFilePath(const File& file) const;
+  juce::File getFile(const String& path);
+  String getFilePath(const juce::File& file) const;
 
-  virtual File getProjectDirectory() const
+  virtual juce::File getProjectDirectory() const
     {return projectDirectory;}
 
-  void setProjectDirectory(const File& projectDirectory)
+  void setProjectDirectory(const juce::File& projectDirectory)
     {this->projectDirectory = projectDirectory;}
 
   /*
@@ -117,7 +117,7 @@ protected:
   friend class ExecutionContextClass;
 
   ExecutionStackPtr stack;
-  File projectDirectory;
+  juce::File projectDirectory;
   RandomGeneratorPtr randomGenerator;
 };
 
@@ -126,8 +126,8 @@ extern ClassPtr executionContextClass;
 extern ExecutionContext& defaultExecutionContext();
 extern void setDefaultExecutionContext(ExecutionContextPtr defaultContext);
 
-extern ExecutionContextPtr singleThreadedExecutionContext(const File& projectDirectory = File::nonexistent);
-extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads, const File& projectDirectory = File::nonexistent);
+extern ExecutionContextPtr singleThreadedExecutionContext(const juce::File& projectDirectory = juce::File::nonexistent);
+extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads, const juce::File& projectDirectory = juce::File::nonexistent);
 
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 

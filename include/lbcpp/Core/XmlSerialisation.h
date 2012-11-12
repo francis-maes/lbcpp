@@ -152,7 +152,7 @@ public:
   XmlExporter(ExecutionContext& context, const String& rootTag = T("lbcpp"), int version = 200);
   XmlExporter(ExecutionContext& context, XmlElementPtr target);
 
-  bool saveToFile(const File& file);
+  bool saveToFile(const juce::File& file);
   String toString();
 
   XmlElementPtr getCurrentElement();
@@ -205,7 +205,7 @@ private:
 class XmlImporter
 {
 public:
-  XmlImporter(ExecutionContext& context, const File& file);
+  XmlImporter(ExecutionContext& context, const juce::File& file);
   XmlImporter(ExecutionContext& context, juce::XmlDocument& document);
   XmlImporter(ExecutionContext& context, juce::XmlElement* newRoot);
   ~XmlImporter()

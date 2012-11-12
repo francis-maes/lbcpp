@@ -14,9 +14,9 @@
   </class>
 
   <class name="MakeAndAutoSaveTraceExecutionCallback" base="MakeTraceExecutionCallback">
-    <constructor arguments="ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File&amp; file" returnType="ExecutionCallback"/>
+    <constructor arguments="ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const juce::File&amp; file" returnType="ExecutionCallback"/>
     <variable type="Time" name="saveInterval"/>
-    <variable type="NewFile" name="file"/>
+    <variable type="File" name="file"/>
   </class>
 
   <!-- NotifierExecutionCallback -->

@@ -34,9 +34,9 @@ static String getIconForType(const ClassPtr& type)
 
 static String getIconForObject(const ObjectPtr& object)
 {
-  if (object.isInstanceOf<NewFile>())
+  if (object.isInstanceOf<File>())
   {
-    File file = NewFile::get(object);
+    juce::File file = File::get(object);
     LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(defaultExecutionContext(), file);
     if (loader)
       return getIconForType(loader->getTargetClass());
@@ -138,17 +138,17 @@ public:
       return;
     }
 
-    if (object.dynamicCast<NewFile>())
+    if (object.dynamicCast<File>())
     {
-      File file = NewFile::get(object);
+      juce::File file = File::get(object);
       if (file.isDirectory())
       {
-        juce::OwnedArray<File> files;
-        file.findChildFiles(files, File::findFilesAndDirectories, false);
+        juce::OwnedArray<juce::File> files;
+        file.findChildFiles(files, juce::File::findFilesAndDirectories, false);
         subObjects.reserve(subObjects.size() + files.size());
    
         for (int i = 0; i < files.size(); ++i)
-          addSubObject(files[i]->getFileName(), NewFile::create(*files[i]));
+          addSubObject(files[i]->getFileName(), File::create(*files[i]));
         mightContainSubItemsFlag = true;
       }
       else

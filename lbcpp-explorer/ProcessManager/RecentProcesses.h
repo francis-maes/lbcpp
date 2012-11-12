@@ -30,15 +30,15 @@ public:
   size_t getNumRecentExecutables() const
     {return v.size();}
 
-  File getRecentExecutable(size_t index) const
+  juce::File getRecentExecutable(size_t index) const
     {jassert(index < v.size()); return v[index].executable;}
 
-  std::vector<String> getRecentArguments(const File& executable) const;
-  std::vector<File> getRecentWorkingDirectories(const File& executable) const;
-  ProcessConsoleSettingsPtr getExecutableConsoleSettings(const File& executable) const;
+  std::vector<String> getRecentArguments(const juce::File& executable) const;
+  std::vector<juce::File> getRecentWorkingDirectories(const juce::File& executable) const;
+  ProcessConsoleSettingsPtr getExecutableConsoleSettings(const juce::File& executable) const;
 
-  void addRecentExecutable(const File& file);
-  void addRecent(const File& executable, const String& arguments, const File& workingDirectory);
+  void addRecentExecutable(const juce::File& file);
+  void addRecent(const juce::File& executable, const String& arguments, const juce::File& workingDirectory);
 
   void clear()
     {v.clear();}
@@ -47,20 +47,20 @@ protected:
   struct RecentExecutable
   {
     RecentExecutable() {}
-    RecentExecutable(const File& executable);
+    RecentExecutable(const juce::File& executable);
 
-    File executable;
+    juce::File executable;
     std::vector<String> arguments;
-    std::vector<File> workingDirectories;
+    std::vector<juce::File> workingDirectories;
     ProcessConsoleSettingsPtr consoleSettings;
 
     void addRecentArguments(const String& args);
-    void addRecentWorkingDirectory(const File& workingDirectory);
+    void addRecentWorkingDirectory(const juce::File& workingDirectory);
   };
 
   std::vector<RecentExecutable> v;
 
-  int findRecentExecutable(const File& file) const;
+  int findRecentExecutable(const juce::File& file) const;
 };
 
 }; /* namespace lbcpp */

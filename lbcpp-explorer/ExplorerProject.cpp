@@ -88,7 +88,7 @@ ExplorerProject::ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfigur
 //  workUnitContext->appendCallback(consoleExecutionCallback());
 }
 
-ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, const File& rootDirectory)
+ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, const juce::File& rootDirectory)
 {
   ExplorerProjectPtr res(new ExplorerProject());
   if (rootDirectory.existsAsFile())
@@ -105,7 +105,7 @@ ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, con
   return res;
 }
 
-ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const File& rootDirectory)
+ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const juce::File& rootDirectory)
 {
   if (rootDirectory.existsAsFile())
   {
@@ -120,7 +120,7 @@ ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const
 
   ExplorerProjectPtr res;
 
-  File xmlFile = rootDirectory.getChildFile(T("project.xml"));
+  juce::File xmlFile = rootDirectory.getChildFile(T("project.xml"));
   if (xmlFile.existsAsFile())
     res = ExplorerProject::createFromFile(context, xmlFile);
   else

@@ -59,7 +59,7 @@ public:
   
   void luaRegister(LuaState& state) const;
 
-  LoaderPtr findLoaderForFile(ExecutionContext& context, const File& file) const;
+  LoaderPtr findLoaderForFile(ExecutionContext& context, const juce::File& file) const;
   LoaderPtr findLoaderForStream(ExecutionContext& context, juce::InputStream& istr) const;
 
   lbcpp_UseDebuggingNewOperator

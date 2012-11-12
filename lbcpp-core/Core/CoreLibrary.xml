@@ -148,8 +148,8 @@
   </class>
   <class name="Time" base="Double"/>
   <class name="NewString"/>
-  <class name="NewFile" base="NewString"/>
-  <class name="Directory" base="NewFile"/>
+  <class name="File" base="NewString"/>
+  <class name="Directory" base="File"/>
   
   <!-- Pair -->
   <template name="Pair" base="Object">
