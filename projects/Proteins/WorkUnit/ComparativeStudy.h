@@ -398,7 +398,10 @@ public:
       // In order to predict bridges for cysteines predicted as bonded,
       // we have to copy cysteine state predictions into the supervised
       // proteins.
-      copyCysteineBondingStatePredictions(context, test);
+      //copyCysteineBondingStatePredictions(context, test);
+      
+      // Use actual value of CBS
+      copyCysteineBondingStateSupervisons(context, test);
     }
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
@@ -453,6 +456,12 @@ protected:
     for (size_t i = 0; i < proteins->getNumElements(); ++i)
       proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
   }
+
+  void copyCysteineBondingStateSupervisons(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+      proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
+  }  
 };
 
 };
