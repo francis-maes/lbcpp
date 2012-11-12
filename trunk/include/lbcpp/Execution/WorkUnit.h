@@ -10,12 +10,7 @@
 # define LBCPP_EXECUTION_WORK_UNIT_H_
 
 # include "predeclarations.h"
-# include "../Core/Variable.h"
-# include "../Core/Boolean.h"
-# include "../Core/Integer.h"
-# include "../Core/Double.h"
-# include "../Core/String.h"
-# include "../Core/Vector.h"
+# include "../Core.h"
 
 namespace lbcpp
 {

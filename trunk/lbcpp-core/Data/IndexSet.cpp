@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core.h>
 #include <lbcpp/Data/IndexSet.h>
 #include <algorithm>
 using namespace lbcpp;

@@ -40,9 +40,9 @@ public:
   Pair(ClassPtr thisClass, const ObjectPtr& first, const ObjectPtr& second)
     : Object(thisClass), first(first), second(second) {}
   Pair(const ObjectPtr& first, const ObjectPtr& second)
-    : Object(pairClass(first->getClass(), second->getClass())), first(first), second(second) {}
+    : Object(pairClass(first ? first->getClass() : objectClass, second ? second->getClass() : objectClass)), first(first), second(second) {}
   Pair(const std::pair<ObjectPtr, ObjectPtr>& pair)
-    : Object(pairClass(pair.first->getClass(), pair.second->getClass())), first(pair.first), second(pair.second) {}
+    : Object(pairClass(pair.first ? pair.first->getClass() : objectClass, pair.second ? pair.second->getClass() : objectClass)), first(pair.first), second(pair.second) {}
   Pair() {}
   
   virtual String toString() const

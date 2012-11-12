@@ -9,6 +9,7 @@
 #include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/Core/Double.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 #include "FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
 
@@ -263,7 +264,7 @@ bool DoubleVector::getTemplateParameters(ExecutionContext& context, TypePtr type
   }
   jassert(dvType->getNumTemplateArguments() == 2);
   elementsEnumeration = dvType->getTemplateArgument(0);
-  if (elementsEnumeration->getName() == T("EnumValue"))
+  if (elementsEnumeration->getName() == T("NewEnumValue"))
   {
     context.errorCallback(T("No elements enumeration in DoubleVector"));
     return false;
@@ -919,7 +920,7 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
   for (size_t i = 0; i < n; ++i)
   {
     double value = (*values)[i];
-    if (elementsType->isMissingValue(VariableValue(value)))
+    if (value == doubleMissingValue)
       res += T("_ ");
     else
       res += String(value) + T(" ");
@@ -956,8 +957,8 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   {
     String token = tokens[i];
     double& value = getValueReference(i);
-    if (token == T("_") || token == T("6.23902437e-232")) // Compatibility w.r.t. an old serialisation bug on missing values
-      value = elementsType->getMissingValue().getDouble();
+    if (token == T("_"))
+      value = doubleMissingValue;
     else
       value = tokens[i].getDoubleValue();
   }

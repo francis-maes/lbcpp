@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Data/RandomVariable.h>
-#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core.h>
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
@@ -30,7 +30,7 @@ String ScalarVariableMean::toString() const
 }
 
 String ScalarVariableMean::toShortString() const
-  {return Variable(getMean()).toShortString();}
+  {return ObjectPtr(new NewDouble(getMean()))->toShortString();}
 
 int ScalarVariableMean::clear(LuaState& state)
 {
@@ -89,7 +89,7 @@ String ScalarVariableMeanAndVariance::toShortString() const
   String res = ScalarVariableMean::toShortString();
   double stddev = getStandardDeviation();
   if (stddev)
-    res += T(" +/- ") + Variable(stddev).toShortString();
+    res += T(" +/- ") + ObjectPtr(new NewDouble(stddev))->toShortString();
   return res;
 }
 

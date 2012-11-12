@@ -78,17 +78,17 @@
     <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
   </template>
 
-  <class name="BooleanVector" base="Vector[Boolean]">
+  <class name="BooleanVector" base="Vector[NewBoolean]">
     <constructor arguments="size_t initialSize"/>
   </class>
 
-  <template name="IntegerVector" base="Vector[Integer]">
+  <template name="IntegerVector" base="Vector[NewInteger]">
     <parameter name="elementsType"/>
     <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
   </class>
 
   <template name="AddMissingToEnumeration" metaclass="Enumeration">
-    <parameter name="enumeration" type="EnumValue"/>
+    <parameter name="enumeration" type="NewEnumValue"/>
     <code>
       EnumerationPtr getEnumeration() const
         {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
@@ -108,7 +108,7 @@
   </template>
 
   <template name="AddEntropyToEnumeration" metaclass="Enumeration">
-    <parameter name="enumeration" type="EnumValue"/>
+    <parameter name="enumeration" type="NewEnumValue"/>
     <code>
       EnumerationPtr getEnumeration() const
         {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
@@ -172,16 +172,12 @@
         {String str((int)index); return new EnumerationElement(str, String::empty, str);}
       virtual int findElementByName(const String&amp; name) const
         {return name.getIntValue();}
-      virtual String toString(const VariableValue&amp; value) const
-        {return String(value.getInteger());}
-      virtual VariableValue getMissingValue() const
-        {return VariableValue(-1);}
     </code>
   </class>
   
   <template name="CartesianProductEnumeration" metaclass="Enumeration">
-    <parameter name="firstEnumeration" type="EnumValue"/>
-    <parameter name="secondEnumeration" type="EnumValue"/>
+    <parameter name="firstEnumeration" type="NewEnumValue"/>
+    <parameter name="secondEnumeration" type="NewEnumValue"/>
     <code>
       EnumerationPtr getFirstEnumeration() const
         {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}

@@ -47,26 +47,11 @@ public:
   virtual ObjectPtr createFromXml(XmlImporter& importer) const
     {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return ObjectPtr();}
 
-  virtual void destroy(VariableValue& value) const
-    {jassert(false);}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {jassert(false);}
-
-  virtual String toString(const VariableValue& value) const
-    {jassert(false); return String::empty;}
-
   virtual bool isConvertibleToBoolean() const
     {return false;}
 
   virtual bool isConvertibleToDouble() const
     {return false;}
-
-  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
-    {exporter.getContext().errorCallback(T("Type::saveToXml()"), T("Not implemented"));}
-
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {jassert(false); return 0;}
 
   virtual size_t getNumMemberVariables() const
     {return 0;}
@@ -86,7 +71,7 @@ public:
   virtual int findMemberVariable(const String& name) const
     {return -1;}
 
-  virtual ObjectPtr getMemberVariableValue(const VariableValue& value, size_t index) const
+  virtual ObjectPtr getMemberVariableValue(const Object* pthis, size_t index) const
     {jassert(false); return ObjectPtr();}
 
   virtual size_t getNumMemberFunctions() const

@@ -8,12 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Execution/ExecutionStack.h>
-#include <lbcpp/Core/TypeManager.h>
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/Boolean.h>
-#include <lbcpp/Core/Integer.h>
-#include <lbcpp/Core/Double.h>
-#include <lbcpp/Core/String.h>
+#include <lbcpp/Core.h>
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/library.h>
@@ -101,10 +96,10 @@ static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const
   size_t n = object->getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    Variable v = object->getVariable(i);
-    if (v.exists() && v.isObject())
+    ObjectPtr v = object->getVariable(i);
+    if (v)
     {
-      if (!checkSharedPointerCyclesRecursively(context, v.getObject(), currentStack))
+      if (!checkSharedPointerCyclesRecursively(context, v, currentStack))
         return false;
     }
   }

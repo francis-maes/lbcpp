@@ -47,28 +47,8 @@ public:
   virtual String toString() const;
   virtual ClassPtr getClass() const;
 
-  virtual bool isMissingValue(const VariableValue& value) const
-    {return !value.getObject();}
-    
-  virtual VariableValue getMissingValue() const
-    {return VariableValue();}
-
   virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
   virtual ObjectPtr createFromXml(XmlImporter& importer) const;
-  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
-
-  virtual void destroy(VariableValue& value) const
-    {value.clearObject();}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setObject(source.getObjectPointer());}
-
-  virtual String toString(const VariableValue& value) const
-    {return value.getObject()->toString();}
-  virtual String toShortString(const VariableValue& value) const
-    {return value.getObject()->toShortString();}
-
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
   lbcpp_UseDebuggingNewOperator
 };

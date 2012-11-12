@@ -41,9 +41,6 @@ ClassPtr Enumeration::getClass() const
 ObjectPtr Enumeration::create(ExecutionContext& context) const
   {return new NewEnumValue(refCountedPointerFromThis(this), 0);}
 
-VariableValue Enumeration::getMissingValue() const
-  {return VariableValue((juce::int64)getNumElements());}
-
 ObjectPtr Enumeration::createFromXml(XmlImporter& importer) const
   {return createFromString(importer.getContext(), importer.getAllSubText());}
  
@@ -75,17 +72,6 @@ ObjectPtr Enumeration::createFromString(ExecutionContext& context, const String&
   if (res == n)
     context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
   return new NewEnumValue(refCountedPointerFromThis(this), res);
-}
-
-void Enumeration::saveToXml(XmlExporter& exporter, const VariableValue& value) const
-{
-  exporter.addTextElement(toString(value));
-}
-
-String Enumeration::toString(const VariableValue& value) const
-{
-  juce::int64 val = value.getInteger();
-  return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Missing");
 }
 
 bool Enumeration::hasOneLetterCodes() const
@@ -148,7 +134,7 @@ DefaultEnumeration::DefaultEnumeration(const String& name, const String& baseTyp
 }
 
 DefaultEnumeration::DefaultEnumeration()
- : Enumeration(T("UnnamedEnumeration"), T("EnumValue"))
+ : Enumeration(T("UnnamedEnumeration"), T("NewEnumValue"))
 {
 }
 

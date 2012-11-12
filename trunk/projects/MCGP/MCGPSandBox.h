@@ -11,8 +11,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/RandomVariable.h>
-# include <lbcpp/Luape/LuapeCache.h>
-# include <lbcpp/Luape/ExpressionBuilder.h>
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
 # include <lbcpp-ml/SolutionContainer.h>
@@ -639,8 +637,8 @@ public:
     }
     else if (problem->getClassName() == T("QuarticSymbolicRegressionProblem"))
     {
-      treeGP1 = TreeGPOperationsSolver::createDefault(100, 1 + numEvaluations / 100, 7, 0.8, 0.05, 0.05, 0.5);
-      treeGP2 = TreeGPSamplersSolver::createDefault(100, 1 + numEvaluations / 100, 7, 0.8, 0.05, 0.05, 0.5);
+      treeGP1 = TreeGPOperationsSolver::createDefault(100, 1 + numEvaluations / 100, 7, 0.8, 0.05, 0.05, 0.05);
+      treeGP2 = TreeGPSamplersSolver::createDefault(100, 1 + numEvaluations / 100, 7, 0.8, 0.05, 0.05, 0.05);
     }
     else
       jassertfalse;

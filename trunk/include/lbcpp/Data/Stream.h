@@ -28,6 +28,7 @@
 
 # include "predeclarations.h"
 # include "DoubleVector.h"
+# include "../Execution/ExecutionCallback.h"
 
 namespace lbcpp
 {

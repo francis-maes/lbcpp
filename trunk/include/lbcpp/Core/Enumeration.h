@@ -77,11 +77,6 @@ public:
   virtual ObjectPtr create(ExecutionContext& context) const;
   virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
   virtual ObjectPtr createFromXml(XmlImporter& importer) const;
-  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
-
-  virtual VariableValue getMissingValue() const;
-
-  virtual String toString(const VariableValue& value) const;
 
   // elements
   virtual size_t getNumElements() const = 0;
@@ -115,7 +110,7 @@ class DefaultEnumeration : public Enumeration
 public:
   //DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
   //DefaultEnumeration(const String& name, const String& oneLetterCodes);
-  DefaultEnumeration(const String& name, const String& baseTypeName = T("EnumValue"));
+  DefaultEnumeration(const String& name, const String& baseTypeName = T("NewEnumValue"));
   DefaultEnumeration();
 
   virtual size_t getNumElements() const

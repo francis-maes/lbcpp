@@ -50,7 +50,7 @@ public:
     {return node;}
   void setRootNode(ExecutionContext& context, const ExpressionPtr& node);
   void clearRootNode(ExecutionContext& context);
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+  virtual ObjectPtr computeFunction(ExecutionContext& context, const ObjectPtr* inputs) const;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
     {jassert(false); return 0.0;}
 //void setLearner(const LuapeLearnerPtr& learner, bool verbose = false);

@@ -33,17 +33,6 @@ String Class::toString() const
   return res;
 }
 
-int Class::compare(const VariableValue& value1, const VariableValue& value2) const
-{
-  ObjectPtr object1 = value1.getObject();
-  ObjectPtr object2 = value2.getObject();
-  if (!object1)
-    return object2 ? -1 : 0;
-  if (!object2)
-    return 1;
-  return object1->compare(object2);
-}
-
 inline ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const String& nameOrShortName)
 {
   if (nameOrShortName == T("Missing"))
@@ -107,13 +96,6 @@ ObjectPtr Class::createFromXml(XmlImporter& importer) const
   else if (!object->loadFromXml(importer))
     object = ObjectPtr();
   return object;
-}
-
-void Class::saveToXml(XmlExporter& exporter, const VariableValue& value) const
-{
-  ObjectPtr object = value.getObject();
-  jassert(object);
-  object->saveToXml(exporter);
 }
 
 ClassPtr Class::getClass() const

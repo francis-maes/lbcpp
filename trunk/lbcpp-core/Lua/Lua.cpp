@@ -7,8 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Lua/Lua.h>
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/Library.h>
+#include <lbcpp/Core.h>
 #include <lbcpp/library.h>
 #include "../../lua/lua.h"
 using namespace lbcpp;

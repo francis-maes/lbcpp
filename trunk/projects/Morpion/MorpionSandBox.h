@@ -20,7 +20,7 @@ namespace lbcpp
 class CompareSolversWorkUnit : public WorkUnit
 {
 public:
-  CompareSolversWorkUnit() : numEvaluations(1000), verbosity(1) {}
+  CompareSolversWorkUnit() : numEvaluations(1000), numRuns(10), verbosity(1) {}
 
   virtual ProblemPtr createProblem(ExecutionContext& context) = 0;
   virtual void initializeSolvers(ExecutionContext& context, ProblemPtr problem) = 0;
