@@ -17,7 +17,7 @@ namespace lbcpp
 class MakeAndAutoSaveTraceExecutionCallback : public MakeTraceExecutionCallback
 {
 public:
-  MakeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File& file)
+  MakeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const juce::File& file)
     : MakeTraceExecutionCallback(trace), saveInterval((juce::int64)(autoSaveIntervalInSeconds * 1000.0)), file(file)
   {
     lastSaveTime = juce::Time::currentTimeMillis() - 9 * saveInterval / 10; // the first time, we save after saveInterval/10 ms.
@@ -50,7 +50,7 @@ protected:
 
   CriticalSection autoSaveLock;
   juce::int64 saveInterval;
-  File file;
+  juce::File file;
 
   juce::int64 lastSaveTime;
 

@@ -191,7 +191,7 @@ bool LuaState::execute(const char* code, const char* chunkName, bool verbose)
   return ok;
 }
 
-bool LuaState::execute(const File& luaFile)
+bool LuaState::execute(const juce::File& luaFile)
 {
   return processExecuteError(luaL_loadfile(L, luaFile.getFullPathName())) && call(0, 0);
 }
@@ -404,11 +404,11 @@ void LuaState::setTop(int size)
 LuaType LuaState::getType(int index) const
   {return (LuaType)lua_type(L, index);}
 
-File LuaState::checkFile(int index)
+juce::File LuaState::checkFile(int index)
 {
   const char* name = checkString(index);
   if (!name)
-    return File::nonexistent;
+    return juce::File::nonexistent;
   return getContext().getFile(name);
 }
 

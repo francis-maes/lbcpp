@@ -380,16 +380,16 @@ size_t lbcpp::getNumLibraries()
 LibraryPtr lbcpp::getLibrary(size_t index)
   {jassert(applicationContext); return applicationContext->topLevelLibrary->getSubLibraries()[index];}
 
-bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory)
+bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const juce::File& directory)
 {
-  juce::OwnedArray<File> files;
-  directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dll"));
-  directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.so"));
-  directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dylib"));
+  juce::OwnedArray<juce::File> files;
+  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, T("*.dll"));
+  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, T("*.so"));
+  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, T("*.dylib"));
   ProgressionStatePtr progression(new ProgressionState(0.0, (double)files.size(), T("Dynamic Libraries")));
   for (int i = 0; i < files.size(); ++i)
   {
-    File file = *files[i];
+    juce::File file = *files[i];
     progression->setValue((double)i);
     executionContext.informationCallback(T("Loading dynamic library ") + file.getFullPathName());
     executionContext.progressCallback(progression);
@@ -398,7 +398,7 @@ bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, con
   return true;
 }
 
-LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& file)
+LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const juce::File& file)
 {
   if (!file.existsAsFile())
   {

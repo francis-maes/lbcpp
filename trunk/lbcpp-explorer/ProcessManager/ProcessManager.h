@@ -18,7 +18,7 @@ typedef ReferenceCountedObjectPtr<ProcessConsoleSettings> ProcessConsoleSettings
 class Process : public NameableObject
 {
 public:
-  Process(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
+  Process(const juce::File& executableFile, const String& arguments, const juce::File& workingDirectory, const String& name = String::empty)
     : NameableObject(name.isEmpty() ? executableFile.getFileNameWithoutExtension() + T(" ") + arguments : name),
       executableFile(executableFile), arguments(arguments), workingDirectory(workingDirectory) {}
 
@@ -34,13 +34,13 @@ public:
   const std::vector<String>& getProcessOutput() const
     {return processOutput;}
 
-  File getExecutableFile() const
+  juce::File getExecutableFile() const
     {return executableFile;}
 
   String getArguments() const
     {return arguments;}
 
-  File getWorkingDirectory() const
+  juce::File getWorkingDirectory() const
     {return workingDirectory;}
 
   virtual juce::Component* createComponent() const;
@@ -49,9 +49,9 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  File executableFile;
+  juce::File executableFile;
   String arguments;
-  File workingDirectory;
+  juce::File workingDirectory;
 
   std::vector<String> processOutput;
 };
@@ -168,7 +168,7 @@ public:
 
   virtual juce::Component* createComponent() const;
 
-  virtual ProcessPtr addNewProcess(const File& executable, const String& arguments, const File& workingDirectory) = 0;
+  virtual ProcessPtr addNewProcess(const juce::File& executable, const String& arguments, const juce::File& workingDirectory) = 0;
   virtual size_t getNumberOfCpus() const = 0;
 
   ProcessListPtr getRunningProcesses() const

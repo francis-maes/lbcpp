@@ -87,7 +87,7 @@ public:
   HexadecimalFileComponent(const ObjectPtr& file, const String& name)
     : ViewportComponent(NULL, true, false)
   {
-    NewFile::get(file).loadFileAsData(data);
+    File::get(file).loadFileAsData(data);
     setViewedComponent(new HexadecimalMemoryViewer(data));
   }
 

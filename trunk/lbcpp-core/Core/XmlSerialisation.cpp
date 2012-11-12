@@ -166,7 +166,7 @@ XmlExporter::XmlExporter(ExecutionContext& context, XmlElementPtr target)
   currentStack.push_back(root);
 }
 
-bool XmlExporter::saveToFile(const File& file)
+bool XmlExporter::saveToFile(const juce::File& file)
 {
   if (file.exists())
   {
@@ -351,7 +351,7 @@ String XmlExporter::makeSharedObjectIdentifier(ObjectPtr object)
 /*
 ** XmlImporter
 */
-XmlImporter::XmlImporter(ExecutionContext& context, const File& file)
+XmlImporter::XmlImporter(ExecutionContext& context, const juce::File& file)
   : context(context), root(NULL)
 {
   if (file.isDirectory())

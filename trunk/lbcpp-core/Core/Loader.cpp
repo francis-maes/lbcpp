@@ -19,7 +19,7 @@ bool Loader::canUnderstand(ExecutionContext& context, juce::InputStream& istr) c
   return false;
 }
 
-bool Loader::canUnderstand(ExecutionContext& context, const File& file) const
+bool Loader::canUnderstand(ExecutionContext& context, const juce::File& file) const
 {
   String failureReason;
   
@@ -39,7 +39,7 @@ ObjectPtr Loader::loadFromStream(ExecutionContext& context, juce::InputStream& i
   return ObjectPtr();
 }
 
-ObjectPtr Loader::loadFromFile(ExecutionContext& context, const File& file) const
+ObjectPtr Loader::loadFromFile(ExecutionContext& context, const juce::File& file) const
 {
   juce::InputStream* stream = openFile(context, file);
   if (!stream)
@@ -49,7 +49,7 @@ ObjectPtr Loader::loadFromFile(ExecutionContext& context, const File& file) cons
   return res;
 }
 
-juce::InputStream* Loader::openFile(ExecutionContext& context, const File& file, bool doErrorMessages)
+juce::InputStream* Loader::openFile(ExecutionContext& context, const juce::File& file, bool doErrorMessages)
 {
   if (!file.existsAsFile())
   {
@@ -112,7 +112,7 @@ bool TextLoader::canUnderstand(ExecutionContext& context, juce::InputStream& ist
 #  pragma warning(disable:4996) // microsoft visual does not like fopen()/fclose()
 # endif // JUCE_WIN32
 
-ObjectPtr TextLoader::loadFromFile(ExecutionContext& context, const File& file) const
+ObjectPtr TextLoader::loadFromFile(ExecutionContext& context, const juce::File& file) const
 {
   FILE* f = fopen(file.getFullPathName(), "r");
   if (!f)

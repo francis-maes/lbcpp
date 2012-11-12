@@ -76,7 +76,7 @@ void ProcessManager::killAllRunningProcesses()
 class LocalProcess : public Process
 {
 public:
-  LocalProcess(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
+  LocalProcess(const juce::File& executableFile, const String& arguments, const juce::File& workingDirectory, const String& name = String::empty)
     : Process(executableFile, arguments, workingDirectory, name), process(NULL) {}
   virtual ~LocalProcess()
   {
@@ -89,7 +89,7 @@ public:
     ExecutionContextPtr context = defaultConsoleExecutionContext();
 
     jassert(!process);
-    File exe = getCopyFile(*context, executableFile);
+    juce::File exe = getCopyFile(*context, executableFile);
     if (!exe.exists())
       executableFile.copyFileTo(exe);
     if (!exe.exists())
@@ -148,10 +148,10 @@ public:
 private:
   juce::ConsoleProcess* process;
 
-  File getCopyFile(ExecutionContext& context, const File& executable)
+  juce::File getCopyFile(ExecutionContext& context, const juce::File& executable)
   {
     juce::Time lastModificationTime = executable.getLastModificationTime();
-    File applicationData = ExplorerConfiguration::getApplicationDataDirectory(context);
+    juce::File applicationData = ExplorerConfiguration::getApplicationDataDirectory(context);
     String name = executable.getFileNameWithoutExtension();
     String date = lastModificationTime.toString(true, true, true, true);
     name += T("_");
@@ -167,7 +167,7 @@ public:
   virtual size_t getNumberOfCpus() const
     {return juce::SystemStats::getNumCpus();}
 
-  virtual ProcessPtr addNewProcess(const File& executable, const String& arguments, const File& workingDirectory)
+  virtual ProcessPtr addNewProcess(const juce::File& executable, const String& arguments, const juce::File& workingDirectory)
   {
     ProcessPtr res = new LocalProcess(executable, arguments, workingDirectory);
     waitingProcesses->append(res);
@@ -181,7 +181,7 @@ ProcessManagerPtr lbcpp::localProcessManager()
 #if 1
 class SshSgeProcess : public Process
 {
-  SshSgeProcess(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
+  SshSgeProcess(const juce::File& executableFile, const String& arguments, const juce::File& workingDirectory, const String& name = String::empty)
   : Process(executableFile, arguments, workingDirectory, name), process(0) {}
   
   virtual bool start()

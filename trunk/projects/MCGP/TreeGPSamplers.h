@@ -211,7 +211,7 @@ public:
     }
     else
     {
-      File examplesFile = context.getFile("iteration" + String((int)iter) + ".txt");
+      juce::File examplesFile = context.getFile("iteration" + String((int)iter) + ".txt");
       if (examplesFile.existsAsFile())
         examplesFile.deleteFile();
       juce::OutputStream* ostr = examplesFile.createOutputStream();

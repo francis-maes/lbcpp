@@ -114,9 +114,9 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   {
   case 1:
     {
-      File executable;
+      juce::File executable;
       String arguments;
-      File workingDirectory;
+      juce::File workingDirectory;
       if (NewProcessDialogWindow::run(executable, arguments, workingDirectory))
       {
         ProcessPtr process = processManager->addNewProcess(executable, arguments, workingDirectory);

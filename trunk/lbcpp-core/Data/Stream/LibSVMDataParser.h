@@ -24,7 +24,7 @@ namespace lbcpp
 class LibSVMDataParser : public TextParser
 {
 public:
-  LibSVMDataParser(ExecutionContext& context, const File& file)
+  LibSVMDataParser(ExecutionContext& context, const juce::File& file)
     : TextParser(context, file) {}
   LibSVMDataParser() {}
   
@@ -136,7 +136,7 @@ protected:
 class RegressionLibSVMDataParser : public LibSVMDataParser
 {
 public:
-  RegressionLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+  RegressionLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features)
     : LibSVMDataParser(context, file), features(features)
     {elementsType = pairClass(sparseDoubleVectorClass(features), doubleClass);}
 
@@ -162,7 +162,7 @@ private:
 class BinaryClassificationLibSVMDataParser : public LibSVMDataParser
 {
 public:
-  BinaryClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+  BinaryClassificationLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features)
     : LibSVMDataParser(context, file), features(features), numPositives(0), numNegatives(0)
     {elementsType = pairClass(sparseDoubleVectorClass(features), booleanClass);}
 
@@ -204,7 +204,7 @@ private:
 class ClassificationLibSVMDataParser : public LibSVMDataParser
 {
 public:
-  ClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
+  ClassificationLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
     : LibSVMDataParser(context, file), features(features), labels(labels)
     {elementsType = pairClass(sparseDoubleVectorClass(features), labels);}
 
@@ -232,7 +232,7 @@ private:
 class MultiLabelClassificationLibSVMDataParser : public LibSVMDataParser
 {
 public:
-  MultiLabelClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
+  MultiLabelClassificationLibSVMDataParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
     : LibSVMDataParser(context, file), features(features), labels(labels)
     {elementsType = pairClass(sparseDoubleVectorClass(features), sparseDoubleVectorClass(labels, probabilityClass));}
 
@@ -277,7 +277,7 @@ private:
 class BinaryClassificationLibSVMFastParser : public TextParser
 {
 public:
-  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const juce::File& file, DefaultEnumerationPtr features)
     : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanClass)) {}
   BinaryClassificationLibSVMFastParser() {}
 

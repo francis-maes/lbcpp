@@ -38,8 +38,8 @@ inline void objectToNative(ExecutionContext& context, double& dest, const Object
 inline void objectToNative(ExecutionContext& context, String& dest, const ObjectPtr& source)
   {dest = NewString::get(source);}
 
-inline void objectToNative(ExecutionContext& context, File& dest, const ObjectPtr& source)
-  {dest = NewFile::get(source);}
+inline void objectToNative(ExecutionContext& context, juce::File& dest, const ObjectPtr& source)
+  {dest = File::get(source);}
 
 inline void objectToNative(ExecutionContext& context, ObjectPtr& dest, const ObjectPtr& source)
   {dest = source;}

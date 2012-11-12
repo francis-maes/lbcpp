@@ -1,6 +1,6 @@
 
  * Renommer Double en Double, Integer en Integer, Boolean en Boolean
- * Gerer les noms de NewString et NewFile 
+ * Gerer les noms de NewString et File 
 
 Vector:
  * DoubleVector sans math

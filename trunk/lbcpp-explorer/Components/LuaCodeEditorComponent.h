@@ -26,7 +26,7 @@ namespace lbcpp
 class LuaCodeEditor : public Component, public ComponentWithPreferedSize, public ObjectSelector
 {
 public:
-  LuaCodeEditor(const File& luaFile);
+  LuaCodeEditor(const juce::File& luaFile);
   virtual ~LuaCodeEditor();
 
   virtual int getDefaultWidth() const
@@ -41,7 +41,7 @@ public:
   void updateStatus();
 
 protected:
-  File luaFile;
+  juce::File luaFile;
   String name;
   ExecutionContextPtr context;  
   juce::CodeEditorComponent* codeEditor;

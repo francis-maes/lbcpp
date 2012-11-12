@@ -425,8 +425,8 @@ public:
 
       if (typeValue == booleanClass)
         continue;
-      else if (typeValue == newFileClass)
-        res += T(" ") + context.getFilePath(NewFile::get(value));
+      else if (typeValue == fileClass)
+        res += T(" ") + context.getFilePath(File::get(value));
       else
       {
         String stringValue = value->toString();

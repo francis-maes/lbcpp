@@ -47,7 +47,6 @@
 # include "../juce/juce_amalgamated.h"
 using juce::String;
 using juce::StringArray;
-using juce::File;
 using juce::InputStream;
 using juce::OutputStream;
 using juce::Logger;

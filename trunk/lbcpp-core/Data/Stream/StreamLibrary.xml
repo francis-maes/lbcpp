@@ -10,32 +10,32 @@
   <class name="LibSVMDataParser" base="TextParser" abstract="yes"/>
   
   <class name="RegressionLibSVMDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; file, DefaultEnumerationPtr features"/>
   </class>
 
   <class name="BinaryClassificationLibSVMDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; file, DefaultEnumerationPtr features"/>
   </class>
 
   <class name="ClassificationLibSVMDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
   </class>
 
   <class name="MultiLabelClassificationLibSVMDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
   </class>
 
   <class name="BinaryClassificationLibSVMFastParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features" returnType="Stream"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; file, DefaultEnumerationPtr features" returnType="Stream"/>
   </class>
 
   <!-- Directory iterators -->
   <class name="DirectoryFileStream" base="Stream">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
   </class>
 
   <class name="DirectoryPairFileStream" base="Stream">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+    <constructor arguments="ExecutionContext&amp; context, const juce::File&amp; mainDirectory, const juce::File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
   </class>
 
 </library>

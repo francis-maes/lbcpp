@@ -38,8 +38,8 @@ inline ObjectPtr nativeToObject(const double& source, const ClassPtr& expectedTy
 inline ObjectPtr nativeToObject(const juce::String& source, const ClassPtr& expectedType)
   {return new NewString(expectedType, source);}
 
-inline ObjectPtr nativeToObject(const File& source, const ClassPtr& expectedType)
-  {return new NewFile(expectedType, source);}
+inline ObjectPtr nativeToObject(const juce::File& source, const ClassPtr& expectedType)
+  {return new File(expectedType, source);}
 
 template<class TT>
 inline ObjectPtr nativeToObject(const ReferenceCountedObjectPtr<TT>& source, const ClassPtr& expectedType)

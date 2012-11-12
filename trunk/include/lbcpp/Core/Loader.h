@@ -21,13 +21,13 @@ public:
   virtual String getFileExtensions() const = 0; // separated by semi colons, e.g. "jpg;tga;bmp"
   virtual ClassPtr getTargetClass() const = 0; // returns the type of the loaded object
 
-  virtual bool canUnderstand(ExecutionContext& context, const File& file) const;
+  virtual bool canUnderstand(ExecutionContext& context, const juce::File& file) const;
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const;
 
-  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const;
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const;
   virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const;
 
-  static juce::InputStream* openFile(ExecutionContext& context, const File& file, bool doErrorMessages = true);
+  static juce::InputStream* openFile(ExecutionContext& context, const juce::File& file, bool doErrorMessages = true);
   static String readFirstLine(juce::InputStream& istr, size_t maxLength = 256);
   static bool guessIfIsText(juce::InputStream& istr);
 };
@@ -38,7 +38,7 @@ class TextLoader : public Loader
 {
 public:
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const;
-  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const;
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const;
   virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const;
 
 protected:

@@ -51,7 +51,7 @@ public:
   static ObjectPtr create(ClassPtr type);
   static ObjectPtr createFromString(ExecutionContext& context, ClassPtr type, const String& value);
   static ObjectPtr createFromXml(XmlImporter& importer, ClassPtr type);
-  static ObjectPtr createFromFile(ExecutionContext& context, const File& file);
+  static ObjectPtr createFromFile(ExecutionContext& context, const juce::File& file);
 
   /**
   ** Saves variable to a file
@@ -62,7 +62,7 @@ public:
   ** @return false if any error occurs.
   ** @see createFromFile
   */
-  bool saveToFile(ExecutionContext& context, const File& file) const;
+  bool saveToFile(ExecutionContext& context, const juce::File& file) const;
 
   static void displayObjectAllocationInfo(std::ostream& ostr);
 
@@ -231,7 +231,7 @@ public:
   NameableObject(const String& name = T("Unnamed"))
     : name(name) {}
 
-  virtual String toString() const
+  virtual juce::String toString() const
     {return getClassName() + T(" ") + name;}
 
   virtual String toShortString() const

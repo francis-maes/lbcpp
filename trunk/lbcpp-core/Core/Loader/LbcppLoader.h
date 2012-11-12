@@ -31,7 +31,7 @@ public:
     return firstLine.startsWith(String(xmlBegin));
   }
 
-  virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
+  virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const
   {
     XmlImporter importer(context, file);
     return importer.isOpened() ? importer.load() : ObjectPtr();

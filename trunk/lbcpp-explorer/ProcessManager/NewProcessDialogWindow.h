@@ -20,10 +20,10 @@ class NewProcessDialogWindow : public AlertWindow
 public:
   struct FileSelector : public Component, public juce::ButtonListener, public juce::ComboBoxListener
   {
-    FileSelector(File& file, bool selectDirectories)
+    FileSelector(juce::File& file, bool selectDirectories)
       : file(file), selectDirectories(selectDirectories)
     {
-      startingDirectory = File::getSpecialLocation(File::userHomeDirectory);
+      startingDirectory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
       wildCardPattern = T("*");
       addAndMakeVisible(comboBox = new juce::ComboBox(T("TOTO")));
       comboBox->setEditableText(false);
@@ -59,7 +59,7 @@ public:
       }
     }
 
-    virtual void setFile(const File& file)
+    virtual void setFile(const juce::File& file)
     {
       this->file = file;
       comboBox->setText(file.getFullPathName());
@@ -71,7 +71,7 @@ public:
     virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)
     {
       if (comboBoxThatHasChanged == comboBox)
-        file = File(comboBox->getText());
+        file = juce::File(comboBox->getText());
     }
 
     juce::ComboBox* getComboBox() const
@@ -80,19 +80,19 @@ public:
     juce_UseDebuggingNewOperator
 
   protected:
-    File& file;
+    juce::File& file;
     bool selectDirectories;
 
     juce::ComboBox* comboBox;
     juce::Button* browseButton;
 
-    File startingDirectory;
+    juce::File startingDirectory;
     String wildCardPattern;
   };
 
   struct ExecutableSelector : public FileSelector
   {
-    ExecutableSelector(File& executable) : FileSelector(executable, false)
+    ExecutableSelector(juce::File& executable) : FileSelector(executable, false)
     {
       RecentProcessesPtr recent = RecentProcesses::getInstance();
       size_t numRecents = recent->getNumRecentExecutables();
@@ -110,7 +110,7 @@ public:
       comboBox->setName(T("Executable"));
     }
 
-    virtual void setFile(const File& file)
+    virtual void setFile(const juce::File& file)
     {
       FileSelector::setFile(file);
       comboBox->addItem(file.getFullPathName(), comboBox->getNumItems() + 1);
@@ -152,7 +152,7 @@ public:
 
   struct WorkingDirectorySelector : public FileSelector
   {
-    WorkingDirectorySelector(File& workingDirectory) : FileSelector(workingDirectory, true) {}
+    WorkingDirectorySelector(juce::File& workingDirectory) : FileSelector(workingDirectory, true) {}
 
     virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)
     {
@@ -160,7 +160,7 @@ public:
       {
         comboBox->clear();
         RecentProcessesPtr recent = RecentProcesses::getInstance();
-        std::vector<File> arguments = recent->getRecentWorkingDirectories(comboBoxThatHasChanged->getText());
+        std::vector<juce::File> arguments = recent->getRecentWorkingDirectories(comboBoxThatHasChanged->getText());
         for (size_t i = 0; i < arguments.size(); ++i)
           comboBox->addItem(arguments[i].getFullPathName(), (int)i + 1);
         comboBox->setSelectedItemIndex(0);
@@ -176,7 +176,7 @@ public:
   ArgumentsSelector argumentsSelector;
   WorkingDirectorySelector workingDirectorySelector;
 
-  NewProcessDialogWindow(File& executable, String& arguments, File& workingDirectory)
+  NewProcessDialogWindow(juce::File& executable, String& arguments, juce::File& workingDirectory)
     : AlertWindow(T("New Process"), T("Select a program and its arguments"), QuestionIcon),
       executableSelector(executable), argumentsSelector(arguments), workingDirectorySelector(workingDirectory)
   {
@@ -195,7 +195,7 @@ public:
       executableSelector.getComboBox()->setSelectedItemIndex(0);
   }
 
-  static bool run(File& executable, String& arguments, File& workingDirectory)
+  static bool run(juce::File& executable, String& arguments, juce::File& workingDirectory)
   {
     NewProcessDialogWindow* window = new NewProcessDialogWindow(executable, arguments, workingDirectory);
     const int result = window->runModalLoop();

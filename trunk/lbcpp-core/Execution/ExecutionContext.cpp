@@ -17,7 +17,7 @@ using namespace lbcpp;
 /*
 ** ExecutionContext
 */
-ExecutionContext::ExecutionContext(const File& projectDirectory)
+ExecutionContext::ExecutionContext(const juce::File& projectDirectory)
   : stack(new ExecutionStack()), projectDirectory(projectDirectory), randomGenerator(new RandomGenerator())
 {
   initialize(*this);
@@ -113,24 +113,24 @@ bool ExecutionContext::checkSharedPointerCycles(const ObjectPtr& object)
   return checkSharedPointerCyclesRecursively(*this, object, currentStack);
 }
 
-File ExecutionContext::getFile(const String& path)
+juce::File ExecutionContext::getFile(const String& path)
 {
   if (path.isEmpty())
-    return File::nonexistent;
-  if (File::isAbsolutePath(path))
-    return File(path);
-  File dir = getProjectDirectory();
+    return juce::File::nonexistent;
+  if (juce::File::isAbsolutePath(path))
+    return juce::File(path);
+  juce::File dir = getProjectDirectory();
   if (!dir.exists())
   {
     errorCallback(T("Project directory is not specified. Could not find path ") + path);
-    return File::nonexistent;
+    return juce::File::nonexistent;
   }
   return dir.getChildFile(path);
 }
 
-String ExecutionContext::getFilePath(const File& file) const
+String ExecutionContext::getFilePath(const juce::File& file) const
 {
-  File dir = getProjectDirectory();
+  juce::File dir = getProjectDirectory();
   if (dir.exists() && file.isAChildOf(dir))
     return file.getRelativePathFrom(dir).replaceCharacter('\\', '/');
   else

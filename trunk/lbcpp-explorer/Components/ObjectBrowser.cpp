@@ -70,19 +70,19 @@ struct ObjectRelatedCommand
   {
     if (command.name == T("Save"))
     {
-      File outputFile = selectFileToSave(T("*.*"));
-      if (outputFile != File::nonexistent)
+      juce::File outputFile = selectFileToSave(T("*.*"));
+      if (outputFile != juce::File::nonexistent)
         object->saveToFile(defaultExecutionContext(), outputFile);
     }
     else if (command.name == T("Save as gnuplot"))
     {
-      File outputFile = selectFileToSave(T("*.data"));
-      if (outputFile != File::nonexistent)
+      juce::File outputFile = selectFileToSave(T("*.data"));
+      if (outputFile != juce::File::nonexistent)
         saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Container>(), outputFile);
     }
   }
 
-  static bool saveContainerAsGnuplotData(ExecutionContext& context, const ContainerPtr& container, const File& outputFile)
+  static bool saveContainerAsGnuplotData(ExecutionContext& context, const ContainerPtr& container, const juce::File& outputFile)
   {
     size_t numRows = container->getNumElements();
     ClassPtr rowType = container->getElementsType();
@@ -124,9 +124,9 @@ struct ObjectRelatedCommand
     return true;
   }
 
-  static File selectFileToSave(const String& extension)
+  static juce::File selectFileToSave(const String& extension)
   {
-    File defaultDirectory = File::getSpecialLocation(File::userHomeDirectory);
+    juce::File defaultDirectory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
     ExplorerProjectPtr project = ExplorerProject::getCurrentProject();
     if (project)
       defaultDirectory = project->getRootDirectory();
@@ -135,7 +135,7 @@ struct ObjectRelatedCommand
     if (chooser.browseForFileToSave(true))
       return chooser.getResult();
     else
-      return File::nonexistent;
+      return juce::File::nonexistent;
   }
 };
 
