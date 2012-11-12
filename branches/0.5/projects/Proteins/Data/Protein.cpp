@@ -240,7 +240,13 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
 Variable Protein::getCysteinBondingProperty(ExecutionContext& context) const
 {
   if (!cysteinIndices.size())
-    return Variable::missingValue(probabilityType);
+    return probability(0.f);
+
+  const size_t numCysteins = cysteinBondingStates->getNumElements();
+  for (size_t i = 0; i < numCysteins; ++i)
+    if (cysteinBondingStates->getElement(i).getDouble() > 0.5)
+      return probability(1.f);
+  return probability(0.f);
 
   return Variable(cysteinBondingProperty, probabilityType);
 
@@ -257,7 +263,6 @@ Variable Protein::getCysteinBondingProperty(ExecutionContext& context) const
   return cysteinBondingProperty;
 */
 }
-
 
 ContainerPtr Protein::getSecondaryStructure() const
 {
