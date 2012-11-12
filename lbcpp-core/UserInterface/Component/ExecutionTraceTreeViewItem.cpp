@@ -107,14 +107,12 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
       String text = returnValue.exists() ? returnValue.toShortString() : String::empty;
       g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
-    //else
-    //  text = Variable(trace->getTime(), timeType).toShortString()
 
     ExecutionTraceNodePtr workUnitTrace = trace.dynamicCast<ExecutionTraceNode>();
     if (workUnitTrace)
     {
       double timeLength = workUnitTrace->getTimeLength();
-      String timeLengthString = timeLength ? Variable(timeLength, timeType).toShortString() : T("...");
+      String timeLengthString = timeLength ? ObjectPtr(new NewTime(timeLength))->toShortString() : T("...");
       g.drawText(timeLengthString, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
   }

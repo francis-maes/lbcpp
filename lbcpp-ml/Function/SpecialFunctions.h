@@ -30,10 +30,10 @@ public:
     {return 1;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type->inheritsFrom(doubleType) || type->inheritsFrom(integerType);}
+    {return type->inheritsFrom(newDoubleClass) || type->inheritsFrom(newIntegerClass);}
   
   virtual TypePtr initialize(const TypePtr* inputTypes)
-    {return booleanType;}
+    {return newBooleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + " >= " + String(threshold);}
@@ -49,7 +49,7 @@ public:
   {
     const DataVectorPtr& scalars = inputs[0];
     jassert(scalars->size());
-    if (scalars->getElementsType() == doubleType)
+    if (scalars->getElementsType() == newDoubleClass)
     {
       BooleanVectorPtr res = new BooleanVector(scalars->size());
       unsigned char* dest = res->getData();
@@ -119,10 +119,10 @@ public:
     {return 2;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type->inheritsFrom(doubleType);}
+    {return type->inheritsFrom(newDoubleClass);}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
-    {return booleanType;}
+    {return newBooleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
@@ -142,10 +142,10 @@ class NormalizerFunction : public UnaryDoubleFunction
 {
 public:
   NormalizerFunction()
-    {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityType);}
+    {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newProbabilityClass);}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
-    {return probabilityType;}
+    {return newProbabilityClass;}
 
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)
     {computePercentiles(inputValues, numPercentiles, percentiles);}
@@ -157,7 +157,7 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    return new NewDouble(computeDouble(NewDouble::get(inputs[0]))); // probabilityType
+    return new NewProbability(computeDouble(NewDouble::get(inputs[0])));
   }
 
   virtual double computeDouble(double value) const

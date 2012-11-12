@@ -26,7 +26,7 @@ public:
     {return 1;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type == booleanType || type == probabilityType;}
+    {return type == newBooleanClass || type == newProbabilityClass;}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return outputType;}
@@ -43,7 +43,7 @@ public:
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
   {
     DataVectorPtr weakPredictions = inputs[0];
-    if (weakPredictions->getElementsType() == booleanType)
+    if (weakPredictions->getElementsType() == newBooleanClass)
     {
       ObjectPtr negativeVote = computeVote(0.0);
       ObjectPtr positiveVote = computeVote(1.0);
@@ -60,7 +60,7 @@ public:
     }
     else
     {
-      jassert(weakPredictions->getElementsType() == probabilityType);
+      jassert(weakPredictions->getElementsType() == newProbabilityClass);
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
       for (DataVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
@@ -84,7 +84,7 @@ class ScalarVoteFunction : public VoteFunction
 {
 public:
   ScalarVoteFunction(double vote = 0.0)
-    : VoteFunction(doubleType), vote(vote) {}
+    : VoteFunction(newDoubleClass), vote(vote) {}
 
   virtual ObjectPtr computeVote(double input) const
     {return new NewDouble((input * 2 - 1) * vote);}

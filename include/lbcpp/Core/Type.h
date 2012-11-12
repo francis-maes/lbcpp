@@ -177,21 +177,12 @@ extern TypePtr nilType;
 extern TypePtr booleanType;
 extern TypePtr integerType;
   extern TypePtr positiveIntegerType;
-    extern TypePtr variableIndexType;
+    
   extern TypePtr enumValueType;
 
 extern TypePtr doubleType;
-  extern TypePtr positiveDoubleType;
-    extern TypePtr negativeLogProbabilityType;
-  extern TypePtr probabilityType;
-  extern TypePtr timeType;  
-
+  
 extern TypePtr stringType;
-
-extern TypePtr sumType(TypePtr type1, TypePtr type2);
-extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3);
-extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3, TypePtr type4);
-extern TypePtr sumType(const std::vector<TypePtr>& types);
 
 extern ClassPtr objectClass;
 

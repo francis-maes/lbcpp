@@ -31,7 +31,7 @@ public:
     {return enumeration ? type == enumeration : type.isInstanceOf<Enumeration>();}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
-    {return booleanType;}
+    {return newBooleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" == ") + ObjectPtr(new NewInteger(enumeration, value))->toShortString();}

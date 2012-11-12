@@ -304,7 +304,7 @@ VectorPtr ExecutionTraceNode::getResultsVector(ExecutionContext& context) const
   std::vector< std::pair<String, ObjectPtr> > results = getResults();
   if (results.empty())
     return VectorPtr();
-  ClassPtr elementsType = objectVectorClass(pairClass(stringType, objectClass));
+  ClassPtr elementsType = objectVectorClass(pairClass(newStringClass, objectClass));
   return lbcpp::nativeToObject(results, elementsType);
 }
 

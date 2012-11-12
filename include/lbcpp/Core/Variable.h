@@ -215,9 +215,6 @@ private:
 #endif 
 };
 
-inline Variable probability(double p)
-  {return Variable(p, probabilityType);}
-
 // conversion utilities
 extern bool convertSupervisionVariableToBoolean(const Variable& supervision, bool& result);
 extern bool convertSupervisionVariableToEnumValue(const Variable& supervision, size_t& result);

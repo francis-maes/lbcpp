@@ -87,7 +87,7 @@
     -- ExecutionTrace
     -->
   <class name="ExecutionTraceItem" base="Object" abstract="yes">
-    <variable type="Time" name="time"/>
+    <variable type="NewTime" name="time"/>
   </class>
 
   <class name="MessageExecutionTraceItem" base="ExecutionTraceItem">
@@ -102,7 +102,7 @@
     <variable type="Object" name="returnValue"/>
     <variable type="ObjectVector[Pair[NewString,Object]]" name="results"/>
     <variable type="ProgressionState" name="progression"/>
-    <variable type="Time" name="timeLength"/>
+    <variable type="NewTime" name="timeLength"/>
   </class>
 
   <class name="ExecutionTrace" base="Object">

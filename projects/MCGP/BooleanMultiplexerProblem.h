@@ -37,7 +37,7 @@ public:
     domain->addFunction(notBooleanFunction());
     domain->addFunction(ifThenElseBooleanFunction());
 
-    domain->addTargetType(booleanType);
+    domain->addTargetType(newBooleanClass);
     setDomain(domain);
 
     // data

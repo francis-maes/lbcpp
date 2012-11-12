@@ -12,7 +12,7 @@
     <constructor arguments="SamplerPtr sampler1, SamplerPtr sampler2, double probability"/>
     <variable type="Sampler" name="sampler1"/>
     <variable type="Sampler" name="sampler2"/>
-    <variable type="Probability" name="probability"/>
+    <variable type="NewProbability" name="probability"/>
   </class>
 
   <!-- Continuous Samplers -->

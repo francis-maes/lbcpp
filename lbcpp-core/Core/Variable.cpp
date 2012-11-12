@@ -268,7 +268,7 @@ bool lbcpp::convertSupervisionVariableToBoolean(const Variable& supervision, boo
     result = supervision.getBoolean();
     return true;
   }
-  if (supervision.getType() == probabilityType)
+  if (supervision.getType() == newProbabilityClass)
   {
     result = supervision.getDouble() > 0.5;
     return true;
@@ -291,7 +291,7 @@ bool lbcpp::convertSupervisionVariableToEnumValue(const Variable& supervision, s
   if (scores)
   {
     // either probabilities or costs
-    int res = scores->getElementsType() == probabilityType ? scores->getIndexOfMaximumValue() : scores->getIndexOfMinimumValue();
+    int res = scores->getElementsType() == newProbabilityClass ? scores->getIndexOfMaximumValue() : scores->getIndexOfMinimumValue();
     if (res >= 0)
     {
       result = (size_t)res;
