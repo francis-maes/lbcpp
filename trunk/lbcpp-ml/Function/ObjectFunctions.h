@@ -50,7 +50,7 @@ public:
       }
       return new DataVector(objects->getIndices(), res);
     }
-    else if (outputType->inheritsFrom(doubleType))
+    else if (outputType->inheritsFrom(newDoubleClass))
     {
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, outputType, n, doubleMissingValue);
       size_t i = 0;
@@ -62,7 +62,7 @@ public:
       }
       return new DataVector(objects->getIndices(), res);
     }
-    else if (outputType->inheritsFrom(booleanType))
+    else if (outputType->inheritsFrom(newBooleanClass))
     {
       BooleanVectorPtr res = new BooleanVector(n);
       size_t i = 0;
@@ -174,7 +174,7 @@ public:
     {return "length(.)";}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
-    {return positiveIntegerType;}
+    {return newPositiveIntegerClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}

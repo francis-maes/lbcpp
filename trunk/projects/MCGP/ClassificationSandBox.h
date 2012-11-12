@@ -194,7 +194,7 @@ private:
   {
     PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
     
-    ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), doubleType);
+    ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), newDoubleClass);
     TypePtr supType = p->getSecond().getType();
     ClassPtr exampleType = pairClass(dvClass, supType);
 

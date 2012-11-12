@@ -43,7 +43,7 @@ public:
     const size_t numSamples = 20;
     
     TablePtr data = new Table(numSamples);
-    VariableExpressionPtr supervision = domain->createSupervision(doubleType, "y");
+    VariableExpressionPtr supervision = domain->createSupervision(newDoubleClass, "y");
     data->addColumn(domain->getInput(0), newDoubleClass);
     data->addColumn(supervision, newDoubleClass);
 
@@ -81,7 +81,7 @@ public:
   {
     jassert(functionIndex >= 0 && functionIndex < 8);
     ExpressionDomainPtr domain = new ExpressionDomain();
-    domain->addInput(doubleType, "x");
+    domain->addInput(newDoubleClass, "x");
 
 		domain->addConstant(1.0);
 
@@ -102,7 +102,7 @@ public:
     // data
     const size_t numSamples = 20;
     TablePtr data = new Table(numSamples);
-    VariableExpressionPtr supervision = domain->createSupervision(doubleType, "y");
+    VariableExpressionPtr supervision = domain->createSupervision(newDoubleClass, "y");
     data->addColumn(domain->getInput(0));
     data->addColumn(supervision);
 

@@ -540,7 +540,7 @@ int Object::create(LuaState& state)
       continue; // ignore null values
     TypePtr targetType = type->getMemberVariableType(i - 2);
     TypePtr sourceType = v->getClass();
-    if (targetType->inheritsFrom(integerType) && sourceType->inheritsFrom(doubleType))
+    if (targetType->inheritsFrom(newIntegerClass) && sourceType->inheritsFrom(newDoubleClass))
       res->setVariable(i - 2, new NewInteger((int)NewDouble::get(v))); // a la rache cast from double to int
     else
       res->setVariable(i - 2, v);
@@ -656,7 +656,7 @@ int Object::__newIndex(LuaState& state)
     if (index >= 0)
     {
       ObjectPtr object = state.checkObject(2);
-      if (type->getMemberVariableType(index)->inheritsFrom(integerType))
+      if (type->getMemberVariableType(index)->inheritsFrom(newIntegerClass))
         setVariable(index, new NewInteger(juce::roundDoubleToInt(NewDouble::get(object))));
       else
         setVariable(index, object);

@@ -91,13 +91,13 @@
   <class name="MutationOperator" base="SolutionsOperator">
     <constructor arguments="PerturbatorPtr perturbator, double probability"/>
     <variable type="Perturbator" name="perturbator"/>
-    <variable type="Probability" name="probability"/>
+    <variable type="NewProbability" name="probability"/>
   </class>
 
   <class name="CrossOverOperator" base="SolutionsOperator">
     <constructor arguments="BinaryPerturbatorPtr perturbator, double probability"/>
     <variable type="BinaryPerturbator" name="perturbator"/>
-    <variable type="Probability" name="probability"/>
+    <variable type="NewProbability" name="probability"/>
   </class>
   
   <class name="TreeGPOperationsSolver" base="PopulationBasedSolver">
@@ -115,13 +115,13 @@
   <class name="PerturbatorSampler" base="DecoratorSampler">
     <constructor arguments="SamplerPtr inputSampler, PerturbatorPtr perturbator, double probability"/>
     <variable type="Perturbator" name="perturbator"/>
-    <variable type="Probability" name="probability"/>
+    <variable type="NewProbability" name="probability"/>
   </class>
 
   <class name="BinaryPerturbatorSampler" base="DecoratorSampler">
     <constructor arguments="SamplerPtr inputSampler, BinaryPerturbatorPtr perturbator, double probability"/>
     <variable type="BinaryPerturbator" name="perturbator"/>
-    <variable type="Probability" name="probability"/>
+    <variable type="NewProbability" name="probability"/>
   </class>
 
   <class name="TreeGPSamplersSolver" base="PopulationBasedSolver">

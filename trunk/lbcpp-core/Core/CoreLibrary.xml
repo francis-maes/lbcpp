@@ -39,6 +39,8 @@
         {return true;}
     </code>
   </class>
+  <class name="NewProbability" base="NewDouble"/>
+  <class name="NewTime" base="NewDouble"/>
   <class name="NewString"/>
   <class name="NewFile" base="NewString"/>
   <class name="Directory" base="NewFile"/>

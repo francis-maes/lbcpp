@@ -72,9 +72,8 @@ public:
     return true;
   }
 
-private:
+protected:
   double value;
-
 
   static String positiveNumberToShortString(double d)
   {
@@ -103,8 +102,90 @@ private:
 
 extern ClassPtr newDoubleClass;
 
+class NewProbability : public NewDouble
+{
+public:
+  NewProbability(ClassPtr thisClass, double value = 0.0)
+    : NewDouble(thisClass, value) {}
+  NewProbability(double value = 0.0)
+    : NewDouble(value) {}
+
+  virtual String toShortString() const
+    {return String(value * 100, 1) + T("%");}
+};
+
+extern ClassPtr newProbabilityClass;
+
+class NewTime : public NewDouble
+{
+public:
+  NewTime(ClassPtr thisClass, double value = 0.0)
+    : NewDouble(thisClass, value) {}
+  NewTime(double value = 0.0)
+    : NewDouble(value) {}
+
+  virtual String toShortString() const
+  {
+    double timeInSeconds = value;
+    if (timeInSeconds == 0.0)
+      return T("0 s");
+
+    String sign;
+    if (timeInSeconds > 0)
+      sign = String::empty;
+    else
+    {
+      timeInSeconds = -timeInSeconds;
+      sign = T("-");
+    }
+
+    if (timeInSeconds < 1e-5)
+      return sign + String((int)(timeInSeconds / 1e-9)) + T(" nanos");
+    if (timeInSeconds < 1e-2)
+      return sign + String((int)(timeInSeconds / 1e-6)) + T(" micros");
+
+    int numSeconds = (int)timeInSeconds;
+    if (timeInSeconds < 10)
+      return sign + (numSeconds ? String(numSeconds) + T(" s ") : String::empty) + String((int)(timeInSeconds * 1000) % 1000) + T(" ms");
+
+    String res = sign;
+    if (numSeconds > 3600)
+    {
+      int numHours = numSeconds / 3600;
+      if (numHours > 24)
+      {
+        int numDays = numHours / 24;
+        res += numDays == 1 ? T("1 day") : String(numDays) + T(" days");
+      }
+      if (res.isNotEmpty())
+        res += T(" ");
+      res += String(numHours % 24) + T(" hours");
+    }
+    if (numSeconds >= 60)
+    {
+      if (res.isNotEmpty())
+        res += T(" ");
+      res += String((numSeconds / 60) % 60) + T(" min");
+    }
+    if (res.isNotEmpty())
+      res += T(" ");
+    res += String(numSeconds % 60) + T(" s");
+    return res;
+  }
+};
+
+extern ClassPtr newTimeClass;
+
+
 inline NewDoublePtr NewDouble::create(TypePtr type, double value)
-  {return new NewDouble(type, value);}
+{
+  if (type == newProbabilityClass)
+    return new NewProbability(type, value);
+  else if (type == newTimeClass)
+    return new NewTime(type, value);
+  else
+    return new NewDouble(type, value);
+}
 
 }; /* namespace lbcpp */
 

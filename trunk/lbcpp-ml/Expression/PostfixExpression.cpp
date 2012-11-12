@@ -202,7 +202,6 @@ PostfixExpressionTypeSpace::PostfixExpressionTypeSpace(const ExpressionDomainPtr
     insertType(nodeTypes, domain->getInput(i)->getType());
   for (size_t i = 0; i < domain->getNumConstants(); ++i)
     insertType(nodeTypes, domain->getConstant(i)->getType());
-  //insertType(nodeTypes, booleanType); // automatically included since boosting methods may create stump nodes that output booleans
 
   this->initialState = getOrCreateState(domain, 0, initialState);
   size_t numTypes = nodeTypes.size();

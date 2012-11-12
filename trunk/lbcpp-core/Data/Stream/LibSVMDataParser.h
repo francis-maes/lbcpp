@@ -137,7 +137,7 @@ class RegressionLibSVMDataParser : public LibSVMDataParser
 public:
   RegressionLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
     : LibSVMDataParser(context, file), features(features)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), doubleType);}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), newDoubleClass);}
 
   RegressionLibSVMDataParser() {}
 
@@ -163,7 +163,7 @@ class BinaryClassificationLibSVMDataParser : public LibSVMDataParser
 public:
   BinaryClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
     : LibSVMDataParser(context, file), features(features), numPositives(0), numNegatives(0)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), booleanType);}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), newBooleanClass);}
 
   BinaryClassificationLibSVMDataParser() : numPositives(0), numNegatives(0) {}
 
@@ -233,7 +233,7 @@ class MultiLabelClassificationLibSVMDataParser : public LibSVMDataParser
 public:
   MultiLabelClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
     : LibSVMDataParser(context, file), features(features), labels(labels)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), sparseDoubleVectorClass(labels, probabilityType));}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), sparseDoubleVectorClass(labels, newProbabilityClass));}
 
   MultiLabelClassificationLibSVMDataParser() {}
 
@@ -244,7 +244,7 @@ public:
   {
     StringArray tokens;
     tokens.addTokens(text, T(","), NULL);
-    SparseDoubleVectorPtr res = new SparseDoubleVector(labels, probabilityType);
+    SparseDoubleVectorPtr res = new SparseDoubleVector(labels, newProbabilityClass);
     for (int i = 0; i < tokens.size(); ++i)
     {
       size_t label = labels->findOrAddElement(context, tokens[i]);
@@ -277,7 +277,7 @@ class BinaryClassificationLibSVMFastParser : public TextParser
 {
 public:
   BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
-    : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanType)) {}
+    : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), newBooleanClass)) {}
   BinaryClassificationLibSVMFastParser() {}
 
   virtual TypePtr getElementsType() const
@@ -296,7 +296,7 @@ public:
     if (firstLetter >= 'A' && firstLetter <= 'Z') firstLetter += 'a' - 'A';
     bool supervision = (firstLetter == 'y' || firstLetter == 't' || firstLetter == '+' || firstLetter == '1');
 
-    SparseDoubleVectorPtr features = new SparseDoubleVector(this->features, doubleType);   
+    SparseDoubleVectorPtr features = new SparseDoubleVector(this->features, newDoubleClass);   
 		while (true)
 		{
 			char* idx = strtok(NULL, ":");

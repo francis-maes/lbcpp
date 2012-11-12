@@ -33,7 +33,7 @@ bool LibSVMDataParser::parseLine(const String& line)
 
 SparseDoubleVectorPtr LibSVMDataParser::parseFeatureList(DefaultEnumerationPtr features, const std::vector<String>& columns, size_t firstColumn) const
 {
-  SparseDoubleVectorPtr res = new SparseDoubleVector(features, doubleType);
+  SparseDoubleVectorPtr res = new SparseDoubleVector(features, newDoubleClass);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
     String identifier;

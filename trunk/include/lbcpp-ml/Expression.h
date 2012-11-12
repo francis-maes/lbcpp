@@ -68,16 +68,16 @@ public:
       if (owner->implementation == constantValueImpl)
         return owner->constantRawBoolean;
       size_t index = (owner->implementation == ownedVectorImpl ? position : *it);
-      if (owner->elementsType == booleanType)
+      if (owner->elementsType == newBooleanClass)
         return owner->vector.staticCast<BooleanVector>()->getData()[index];
-      else if (owner->elementsType == probabilityType)
+      else if (owner->elementsType == newProbabilityClass)
       {
         double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
         return value == doubleMissingValue ? 2 : (value > 0.5 ? 1 : 0);
       }
       else
       {
-        jassert(owner->elementsType == doubleType);
+        jassert(owner->elementsType == newDoubleClass);
         double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
         return value == doubleMissingValue ? 2 : (value > 0 ? 1 : 0);
       }
@@ -170,7 +170,7 @@ typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
 class Expression : public Object
 {
 public:
-  Expression(const TypePtr& type = nilType);
+  Expression(const TypePtr& type = objectClass);
 
   const TypePtr& getType() const
     {return type;}

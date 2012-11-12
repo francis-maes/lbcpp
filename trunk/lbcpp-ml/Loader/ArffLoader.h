@@ -182,7 +182,7 @@ protected:
       tokens.set(i, tokens[i].trim().unquoted());
     
     TypePtr attributeType;
-    // It can be a booleanType ?
+    // It can be a newBooleanClass ?
     if (shouldBeABooleanType(tokens))
     {
       attributeType = newBooleanClass;
@@ -257,7 +257,7 @@ protected:
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
         return false;
       }
-      ObjectPtr v = Object::createFromString(context, positiveIntegerType, tokens[i].substring(0, e));
+      ObjectPtr v = Object::createFromString(context, newPositiveIntegerClass, tokens[i].substring(0, e));
       if (!v)
       {
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());

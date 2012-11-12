@@ -113,6 +113,8 @@ public:
     {return getEnumerationElement()->getName();}
 };
 
+extern ClassPtr newEnumValueClass;
+
 inline NewIntegerPtr NewInteger::create(ClassPtr type, juce::int64 value)
 {
   if (type.isInstanceOf<Enumeration>())

@@ -268,36 +268,3 @@ FunctionSignaturePtr Type::getMemberFunction(size_t index) const
 
 int Type::findMemberFunction(const String& name) const
   {jassert(baseType); return baseType->findMemberFunction(name);}
-
-TypePtr lbcpp::sumType(TypePtr type1, TypePtr type2)
-{
-  std::vector<TypePtr> types(2);
-  types[0] = type1;
-  types[1] = type2;
-  return sumType(types);
-}
-
-TypePtr lbcpp::sumType(TypePtr type1, TypePtr type2, TypePtr type3)
-{
-  std::vector<TypePtr> types(3);
-  types[0] = type1;
-  types[1] = type2;
-  types[2] = type3;
-  return sumType(types);
-}
-
-TypePtr lbcpp::sumType(TypePtr type1, TypePtr type2, TypePtr type3, TypePtr type4)
-{
-  std::vector<TypePtr> types(4);
-  types[0] = type1;
-  types[1] = type2;
-  types[2] = type3;
-  types[3] = type4;
-  return sumType(types);
-}
-
-TypePtr lbcpp::sumType(const std::vector<TypePtr>& types)
-{
-  // TODO !
-  return topLevelType;
-}

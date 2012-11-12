@@ -20,7 +20,7 @@
   <class name="ColoSandBox" base="WorkUnit">
     <variable type="NewFile" name="javaDirectory"/>
     <variable type="NewFile" name="modelDirectory"/>
-    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="NewPositiveInteger" name="numEvaluations"/>
   </class>
   
 </library>

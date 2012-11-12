@@ -31,7 +31,7 @@ public:
   virtual void setValue(const ObjectPtr& value) = 0;
   virtual ObjectPtr getValue() const = 0;
 
-  static ObjectEditorComponent* create(ExecutionContext& context, const ObjectPtr& value);
+  static ObjectEditorComponent* create(ExecutionContext& context, const ClassPtr& type, const ObjectPtr& value);
 
 protected:
   ExecutionContext& context;
@@ -41,8 +41,8 @@ protected:
 class StringObjectEditorComponent : public ObjectEditorComponent, public juce::TextEditorListener
 {
 public:
-  StringObjectEditorComponent(ExecutionContext& context, const ObjectPtr& object)
-    : ObjectEditorComponent(context, object->getClass()), hasChanged(false)
+  StringObjectEditorComponent(ExecutionContext& context, const ClassPtr& type, const ObjectPtr& object)
+    : ObjectEditorComponent(context, type), hasChanged(false)
   {
     addAndMakeVisible(editor = new TextEditor());
     editor->addListener(this);
@@ -82,13 +82,12 @@ protected:
 class EnumValueEditorComponent : public ObjectEditorComponent, public juce::ComboBoxListener
 {
 public:
-  EnumValueEditorComponent(ExecutionContext& context, const NewEnumValuePtr& value)
-    : ObjectEditorComponent(context, value->getEnumeration())
+  EnumValueEditorComponent(ExecutionContext& context, const EnumerationPtr& enumeration, const NewEnumValuePtr& value)
+    : ObjectEditorComponent(context, enumeration)
   {
     addAndMakeVisible(comboBox = new ComboBox(T("enum")));
     comboBox->addListener(this);
 
-    EnumerationPtr enumeration = value->getEnumeration();
     jassert(enumeration);
     for (size_t i = 0; i < enumeration->getNumElements(); ++i)
       comboBox->addItem(enumeration->getElementName(i), i + 1);
@@ -118,13 +117,13 @@ protected:
   ComboBox* comboBox;
 };
 
-ObjectEditorComponent* ObjectEditorComponent::create(ExecutionContext& context, const ObjectPtr& value)
+ObjectEditorComponent* ObjectEditorComponent::create(ExecutionContext& context, const ClassPtr& type, const ObjectPtr& value)
 {
   NewEnumValuePtr enumValue = value.dynamicCast<NewEnumValue>();
   if (enumValue)
-    return new EnumValueEditorComponent(context, enumValue);
+    return new EnumValueEditorComponent(context, type.staticCast<Enumeration>(), enumValue);
 
-  return new StringObjectEditorComponent(context, value);
+  return new StringObjectEditorComponent(context, type, value);
 }
 
 ////////////
@@ -215,7 +214,7 @@ public:
       desiredHeight += descriptionHeightPerLine; // todo: * numLines
     }
 
-    addAndMakeVisible(value = ObjectEditorComponent::create(context, ObjectPtr()));
+    addAndMakeVisible(value = ObjectEditorComponent::create(context, typeValue, ObjectPtr()));
     value->addChangeListener(this);
     desiredHeight += 2 + (value->getHeight() ? value->getHeight() : defaultValueHeight);
 

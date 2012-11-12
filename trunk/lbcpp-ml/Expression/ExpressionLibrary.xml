@@ -64,7 +64,7 @@
   </class>
   <class name="SwapExpressionPerturbator" base="ExpressionPerturbator">
     <constructor arguments="double functionSelectionProbability"/>
-    <variable type="Probability" name="functionSelectionProbability"/>
+    <variable type="NewProbability" name="functionSelectionProbability"/>
   </class>
   <class name="InsertExpressionPerturbator" base="ExpressionPerturbator">
     <constructor arguments="size_t maxDepth"/>
@@ -78,7 +78,7 @@
   </class>
   <class name="SubTreeCrossOverExpressionPerturbator" base="BinaryPerturbator">
     <constructor arguments="double functionSelectionProbability, size_t maxDepth"/>
-    <variable type="Probability" name="functionSelectionProbability"/>
+    <variable type="NewProbability" name="functionSelectionProbability"/>
     <variable type="NewPositiveInteger" name="maxDepth"/>
   </class>
 
