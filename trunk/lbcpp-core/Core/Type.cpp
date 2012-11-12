@@ -171,10 +171,10 @@ bool Type::isMissingValue(const VariableValue& value) const
 ObjectPtr Type::create(ExecutionContext& context) const
   {jassert(baseType); return baseType->create(context);}
 
-Variable Type::createFromString(ExecutionContext& context, const String& value) const
+ObjectPtr Type::createFromString(ExecutionContext& context, const String& value) const
   {jassert(baseType); return baseType->createFromString(context, value);}
 
-Variable Type::createFromXml(XmlImporter& importer) const
+ObjectPtr Type::createFromXml(XmlImporter& importer) const
   {jassert(baseType); return baseType->createFromXml(importer);}
 
 String Type::toString(const VariableValue& value) const
@@ -182,9 +182,6 @@ String Type::toString(const VariableValue& value) const
 
 bool Type::isConvertibleToDouble() const
   {jassert(baseType); return baseType->isConvertibleToDouble();}
-
-double Type::toDouble(const VariableValue& value) const
-  {jassert(baseType); return baseType->toDouble(value);}
 
 void Type::destroy(VariableValue& value) const
   {jassert(baseType); baseType->destroy(value);}

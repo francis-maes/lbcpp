@@ -97,8 +97,8 @@ public:
   virtual bool isMissingValue(const VariableValue& value) const;
 
   virtual ObjectPtr create(ExecutionContext& context) const;
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const;
-  virtual Variable createFromXml(XmlImporter& importer) const;
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
+  virtual ObjectPtr createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const;
@@ -109,7 +109,6 @@ public:
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
   virtual bool isConvertibleToDouble() const;
-  virtual double toDouble(const VariableValue& value) const;
 
   /*
   ** Member Variables

@@ -42,14 +42,18 @@ public:
   virtual ObjectPtr create(ExecutionContext& context) const
     {jassertfalse; return ObjectPtr();} // broken
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
   {
+    jassertfalse;
+    return ObjectPtr();
+    /*
     if (!value.trim().containsOnly(T("-+e0123456789")))
     {
       context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
       return Variable::missingValue(refCountedPointerFromThis(this));
     }
     return Variable(value.getIntValue(), refCountedPointerFromThis(this));
+    */
   }
 
   virtual void destroy(VariableValue& value) const
@@ -64,9 +68,6 @@ public:
   virtual bool isConvertibleToDouble() const
     {return true;}
 
-  virtual double toDouble(const VariableValue& value) const
-    {return (double)value.getInteger();}
-
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return (int)(value1.getInteger() - value2.getInteger());}
 
@@ -80,8 +81,11 @@ public:
     : IntegerType(typeName, baseType) {}
   PositiveIntegerType() : IntegerType(T("PositiveInteger"), integerType) {}
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
   {
+    jassertfalse;
+    return ObjectPtr();
+    /*
     if (!value.trim().containsOnly(T("+e0123456789")))
     {
       context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
@@ -93,7 +97,7 @@ public:
       context.errorCallback(T("A positive integer cannot be negative"));
       return Variable::missingValue(refCountedPointerFromThis(this));
     }
-    return Variable(intValue, refCountedPointerFromThis(this));
+    return Variable(intValue, refCountedPointerFromThis(this));*/
   }
 
   virtual bool isMissingValue(const VariableValue& value) const

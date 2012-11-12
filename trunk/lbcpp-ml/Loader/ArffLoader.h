@@ -224,7 +224,7 @@ protected:
         break;
       }
       if (strcmp(token, "?"))
-        row[i] = table->getType(i)->createFromString(context, String(token).unquoted()).getObject();
+        row[i] = Object::createFromString(context, table->getType(i), String(token).unquoted());
     }
     table->addRow(row);
     delete [] str;
@@ -247,7 +247,7 @@ protected:
     // broken
     jassertfalse;
   #if 0
-    Variable supervision;
+    ObjectPtr supervision;
     DenseGenericObjectPtr inputs = new DenseGenericObject(features);
     for (size_t i = 0; i < numTokens; ++i)
     {
@@ -257,8 +257,8 @@ protected:
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
         return false;
       }
-      Variable v = Variable::createFromString(context, positiveIntegerType, tokens[i].substring(0, e));
-      if (!v.exists())
+      ObjectPtr v = Object::createFromString(context, positiveIntegerType, tokens[i].substring(0, e));
+      if (!v)
       {
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
         return false;
@@ -276,7 +276,7 @@ protected:
         inputs->setVariable(index, createFromString(context, attributesType[index], tokens[i].substring(e).trim()));
       }
     }
-    setResult(finalizeData(Variable::pair(inputs, supervision, getElementsType())));
+    setResult(finalizeData(new Pair(getElementsType(), inputs, supervision)));
   #endif // 0
     return true;
   }

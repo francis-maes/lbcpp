@@ -45,10 +45,12 @@ public:
   virtual ObjectPtr create(ExecutionContext& context) const
     {jassertfalse; return ObjectPtr();} // broken
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
   {
-    String v = value.trim();
-    return Variable(v.startsWithChar('"') ? v.unquoted() : v, refCountedPointerFromThis(this));
+    //String v = value.trim();
+    //return Variable(v.startsWithChar('"') ? v.unquoted() : v, refCountedPointerFromThis(this));
+    jassertfalse;
+    return ObjectPtr();
   }
 
   virtual void destroy(VariableValue& value) const
@@ -70,8 +72,8 @@ public:
     return value.getString();
   }
 
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getString().compare(value2.getString());}
+  //virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+  //  {return value1.getString().compare(value2.getString());}
 };
 
 }; /* namespace lbcpp */

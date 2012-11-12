@@ -2,6 +2,7 @@
 A penser:
  * Probability
  * Time
+ * LuaCodeEditor/StringComponent/LuaCodeEditor
 
 Explorer:
  * TextEditor

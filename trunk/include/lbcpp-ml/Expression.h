@@ -63,17 +63,6 @@ public:
       return *this;
     }
 
-    inline Variable operator *() const
-    {
-      switch (owner->implementation)
-      {
-      case constantValueImpl: return owner->constantRawObject;
-      case ownedVectorImpl: return owner->vector->getElement(position);
-      case cachedVectorImpl: return owner->vector->getElement(*it);
-      default: jassert(false); return Variable();
-      }
-    }
-
     inline unsigned char getRawBoolean() const
     {
       if (owner->implementation == constantValueImpl)
@@ -162,7 +151,7 @@ public:
   const VectorPtr& getVector() const
     {return vector;}
 
-  Variable sampleElement(RandomGeneratorPtr random) const;
+  ObjectPtr sampleElement(RandomGeneratorPtr random) const;
 
 protected:
   Implementation implementation;

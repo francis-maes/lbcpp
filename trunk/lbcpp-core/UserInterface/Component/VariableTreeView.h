@@ -28,7 +28,7 @@ struct VariableTreeOptions
   bool makeRootNodeVisible;
 };
 
-class VariableTreeView : public juce::TreeView, public VariableSelector, public juce::Timer, public ComponentWithPreferedSize
+class VariableTreeView : public juce::TreeView, public ObjectSelector, public juce::Timer, public ComponentWithPreferedSize
 {
 public:
   VariableTreeView(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions());

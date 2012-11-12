@@ -33,7 +33,7 @@ protected:
   ExecutionCallbackPtr target;
 };
  
-class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback, public VariableSelector, public ComponentWithPreferedSize
+class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback, public ObjectSelector, public ComponentWithPreferedSize
 {
 public:
   ExecutionTraceTreeView(ExecutionTracePtr trace, const String& name, ExecutionContextPtr context = ExecutionContextPtr());
@@ -51,7 +51,7 @@ public:
   const ExecutionTracePtr& getTrace() const
     {return trace;}
 
-  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name);
+  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name);
 
   lbcpp_UseDebuggingNewOperator
 

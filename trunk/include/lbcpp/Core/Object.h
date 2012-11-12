@@ -48,7 +48,21 @@ public:
   Object(ClassPtr thisClass = ClassPtr());
   virtual ~Object();
   
-  static ObjectPtr create(ClassPtr objectClass);
+  static ObjectPtr create(ClassPtr type);
+  static ObjectPtr createFromString(ExecutionContext& context, ClassPtr type, const String& value);
+  static ObjectPtr createFromXml(XmlImporter& importer, ClassPtr type);
+  static ObjectPtr createFromFile(ExecutionContext& context, const File& file);
+
+  /**
+  ** Saves variable to a file
+  **
+  ** @param file : output file
+  ** @param callback : A callback that can receive errors and warnings
+  **
+  ** @return false if any error occurs.
+  ** @see createFromFile
+  */
+  bool saveToFile(ExecutionContext& context, const File& file) const;
 
   static void displayObjectAllocationInfo(std::ostream& ostr);
 
@@ -59,6 +73,9 @@ public:
   */
   virtual String toString() const;
   virtual String toShortString() const;
+
+  virtual double toDouble() const
+    {jassertfalse; return 0.0;}
 
   /**
   ** Clones the current object.
@@ -124,12 +141,6 @@ public:
   ** load() is responsible for declaring an error to the callback.
   */
   virtual bool loadFromString(ExecutionContext& context, const String& str);
-
-  /*
-  ** High level serialisation
-  */
-  void saveToFile(ExecutionContext& context, const File& file) const;
-  static ObjectPtr createFromFile(ExecutionContext& context, const File& file);
 
   /*
   ** Introspection: Class

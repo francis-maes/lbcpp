@@ -1,12 +1,12 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VariableBrowser.cpp            | The Variable Browser            |
+| Filename: ObjectBrowser.cpp              | The Object Browser              |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/08/2010 15:36               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "VariableBrowser.h"
+#include "ObjectBrowser.h"
 #include "../ExplorerProject.h"
 #include <lbcpp/Data/Table.h>
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
@@ -14,10 +14,10 @@ using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
 
-class VariableBrowserResizerBar : public Component
+class ObjectBrowserResizerBar : public Component
 {
 public:
-  VariableBrowserResizerBar()
+  ObjectBrowserResizerBar()
   {
     setRepaintsOnMouseActivity(true);
     setMouseCursor(juce::MouseCursor(juce::MouseCursor::LeftRightResizeCursor));
@@ -49,37 +49,36 @@ private:
   int mouseDownWidth;
 };
 
-struct VariableRelatedCommand
+struct ObjectRelatedCommand
 {
-  VariableRelatedCommand(const String& name, const String& iconToUse)
+  ObjectRelatedCommand(const String& name, const String& iconToUse)
     : name(name), iconToUse(iconToUse) {}
 
   String name;
   String iconToUse;
 
-  static std::vector<VariableRelatedCommand> getVariableCommands(const Variable& variable)
+  static std::vector<ObjectRelatedCommand> getObjectCommands(const ObjectPtr& object)
   {
-    std::vector<VariableRelatedCommand> res;
-    if (variable.isObject())
-      res.push_back(VariableRelatedCommand(T("Save"), T("Save-32.png")));
-    if (variable.inheritsFrom(tableClass))
-      res.push_back(VariableRelatedCommand(T("Save as gnuplot"), T("Save-32.png")));
+    std::vector<ObjectRelatedCommand> res;
+    res.push_back(ObjectRelatedCommand(T("Save"), T("Save-32.png")));
+    if (object.isInstanceOf<Table>())
+      res.push_back(ObjectRelatedCommand(T("Save as gnuplot"), T("Save-32.png")));
     return res;
   }
 
-  static void execute(const Variable& variable, const VariableRelatedCommand& command)
+  static void execute(const ObjectPtr& object, const ObjectRelatedCommand& command)
   {
     if (command.name == T("Save"))
     {
       File outputFile = selectFileToSave(T("*.*"));
       if (outputFile != File::nonexistent)
-        variable.saveToFile(defaultExecutionContext(), outputFile);
+        object->saveToFile(defaultExecutionContext(), outputFile);
     }
     else if (command.name == T("Save as gnuplot"))
     {
       File outputFile = selectFileToSave(T("*.data"));
       if (outputFile != File::nonexistent)
-        saveContainerAsGnuplotData(defaultExecutionContext(), variable.getObjectAndCast<Container>(), outputFile);
+        saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Container>(), outputFile);
     }
   }
 
@@ -102,7 +101,7 @@ struct VariableRelatedCommand
     std::vector<size_t> columns;
     columns.reserve(rowType->getNumMemberVariables());
     for (size_t i = 0; i < rowType->getNumMemberVariables(); ++i)
-      if (Variable::missingValue(rowType->getMemberVariableType(i)).isConvertibleToDouble())
+      if (rowType->getMemberVariableType(i)->isConvertibleToDouble())
         columns.push_back(i);
 
     // write header
@@ -117,7 +116,7 @@ struct VariableRelatedCommand
     {
       ObjectPtr object = container->getElement(i);
       for (size_t j = 0; j < columns.size(); ++j)
-        *ostr << String(Variable(object->getVariable(columns[j])).toDouble()) << " ";
+        *ostr << String(object->getVariable(columns[j])->toDouble()) << " ";
       *ostr << "\n";
     }
     ostr->flush();
@@ -141,28 +140,28 @@ struct VariableRelatedCommand
 };
 
 
-class VariableBrowserRowHeaderComponent : public Component, public juce::ButtonListener
+class ObjectBrowserRowHeaderComponent : public Component, public juce::ButtonListener
 {
 public:
-  VariableBrowserRowHeaderComponent(const Variable& variable, Component* selector)
-    : variable(variable)
+  ObjectBrowserRowHeaderComponent(const ObjectPtr& object, Component* selector)
+    : object(object)
   {
     addAndMakeVisible(properties = new PropertyListDisplayComponent(40));
-    bool isTabbedSelector = (dynamic_cast<TabbedVariableSelectorComponent* >(selector) != NULL);
+    bool isTabbedSelector = (dynamic_cast<ObjectSelectorTabbedButtonBar* >(selector) != NULL);
     if (isTabbedSelector)
       return;
 
     // properties
-    properties->addProperty(T("Type"), variable.getTypeName());
-    String str = variable.toShortString();
+    properties->addProperty(T("Type"), object->getClassName());
+    String str = object->toShortString();
     if (str.isNotEmpty())
       properties->addProperty(T("Desc"), str);
-    ContainerPtr container = variable.dynamicCast<Container>();
+    ContainerPtr container = object.dynamicCast<Container>();
     if (container)
       properties->addProperty(T("Size"), String((int)container->getNumElements()));
     
     // command buttons
-    commands = VariableRelatedCommand::getVariableCommands(variable);
+    commands = ObjectRelatedCommand::getObjectCommands(object);
     buttons.resize(commands.size());
     for (size_t i = 0; i < buttons.size(); ++i)
     {
@@ -174,7 +173,7 @@ public:
     }
   }
 
-  virtual ~VariableBrowserRowHeaderComponent()
+  virtual ~ObjectBrowserRowHeaderComponent()
     {deleteAllChildren();}
 
   virtual void resized()
@@ -194,7 +193,7 @@ public:
     for (size_t i = 0; i < buttons.size(); ++i)
       if (buttons[i] == button)
       {
-        VariableRelatedCommand::execute(variable, commands[i]);
+        ObjectRelatedCommand::execute(object, commands[i]);
         break;
       }
   }
@@ -203,27 +202,27 @@ public:
     {g.fillAll(Colour(240, 245, 250));}
 
 private:
-  Variable variable;
+  ObjectPtr object;
   PropertyListDisplayComponent* properties;
   std::vector<juce::Button* > buttons;
-  std::vector<VariableRelatedCommand> commands;
+  std::vector<ObjectRelatedCommand> commands;
 };
 
-class VariableBrowserRowComponent : public Component, public ComponentWithPreferedSize
+class ObjectBrowserRowComponent : public Component, public ComponentWithPreferedSize
 {
 public:
-  VariableBrowserRowComponent(const Variable& variable, Component* selector)
-    : variable(variable), selector(selector), resizer(NULL)
+  ObjectBrowserRowComponent(const ObjectPtr& object, Component* selector)
+    : object(object), selector(selector), resizer(NULL)
   {
-    bool isResizeable = (dynamic_cast<TabbedVariableSelectorComponent* >(selector) == NULL);
+    bool isResizeable = (dynamic_cast<ObjectSelectorTabbedButtonBar* >(selector) == NULL);
 
-    addAndMakeVisible(header = new VariableBrowserRowHeaderComponent(variable, selector));
+    addAndMakeVisible(header = new ObjectBrowserRowHeaderComponent(object, selector));
     addAndMakeVisible(selector);
     if (isResizeable)
-      addAndMakeVisible(resizer = new VariableBrowserResizerBar());
+      addAndMakeVisible(resizer = new ObjectBrowserResizerBar());
   }
 
-  virtual ~VariableBrowserRowComponent()
+  virtual ~ObjectBrowserRowComponent()
     {deleteAllChildren();}
 
   enum
@@ -252,8 +251,8 @@ public:
   Component* getSelectorComponent() const
     {return selector;}
 
-  VariableSelector* getSelector() const
-    {return dynamic_cast<VariableSelector* >(selector);}
+  ObjectSelector* getSelector() const
+    {return dynamic_cast<ObjectSelector* >(selector);}
 
   virtual int getDefaultWidth() const
   {
@@ -274,24 +273,24 @@ public:
     return res;
   }
 
-  Variable getVariable() const
-    {return variable;}
+  ObjectPtr getObject() const
+    {return object;}
 
 private:
-  Variable variable;
-  VariableBrowserRowHeaderComponent* header;
+  ObjectPtr object;
+  ObjectBrowserRowHeaderComponent* header;
   Component* selector;
-  VariableBrowserResizerBar* resizer;
+  ObjectBrowserResizerBar* resizer;
 };
 
-class VariableBrowserContent : public Component, public ComponentWithPreferedSize, public VariableSelectorCallback
+class ObjectBrowserContent : public Component, public ComponentWithPreferedSize, public ObjectSelectorCallback
 {
 public:
-  VariableBrowserContent()
+  ObjectBrowserContent()
   {
   }
 
-  virtual ~VariableBrowserContent()
+  virtual ~ObjectBrowserContent()
     {clear();}
 
   void clear()
@@ -301,15 +300,15 @@ public:
     repaint();
   }
 
-  void setRootVariable(const Variable& variable, Component* selector)
-    {clear(); appendVariable(variable, selector);}
+  void setRootObject(const ObjectPtr& object, Component* selector)
+    {clear(); appendObject(object, selector);}
 
-  void appendVariable(const Variable& variable, Component* selector)
+  void appendObject(const ObjectPtr& object, Component* selector)
   {
-    VariableSelector* s = dynamic_cast<VariableSelector* >(selector);
+    ObjectSelector* s = dynamic_cast<ObjectSelector* >(selector);
     if (s)
       s->addCallback(*this);
-    VariableBrowserRowComponent* rowComponent = new VariableBrowserRowComponent(variable, selector);
+    ObjectBrowserRowComponent* rowComponent = new ObjectBrowserRowComponent(object, selector);
     rowComponent->setBounds(getPreferedWidth(), 0, rowComponent->getDefaultWidth(), getHeight());
     addAndMakeVisible(rowComponent);
     rows.push_back(std::make_pair(rowComponent, getPreferedWidth()));
@@ -346,7 +345,7 @@ public:
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
     {int w = getPreferedWidth(); return w ? w : availableWidth;}
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
+  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedObjects, const String& selectionName)
   {
     int rowNumber = findRowNumber(selector);
     jassert(rowNumber >= 0);
@@ -356,14 +355,14 @@ public:
       delete rows[i].first;
       rows.erase(rows.begin() + i);
     }
-    if (selectedVariables.size())
+    if (selectedObjects.size())
     {
-      Variable variable = lbcpp::createMultiSelectionVariable(selectedVariables);
-      Component* component = selector->createComponentForVariable(defaultExecutionContext(), variable, selectionName);
+      ObjectPtr object = lbcpp::createSelectionObject(selectedObjects);
+      Component* component = selector->createComponentForObject(defaultExecutionContext(), object, selectionName);
       if (!component)
-        component = lbcpp::createComponentForVariable(defaultExecutionContext(), variable, selectionName);
+        component = lbcpp::createComponentForObject(defaultExecutionContext(), object, selectionName);
       if (component)
-        appendVariable(variable, component);
+        appendObject(object, component);
 
       //setSize(getPreferedWidth(), getHeight());
       Viewport* viewport = findParentComponentOfClass<Viewport>();
@@ -378,9 +377,9 @@ public:
   }
 
 private:
-  std::vector<std::pair<VariableBrowserRowComponent*, int> > rows;
+  std::vector<std::pair<ObjectBrowserRowComponent*, int> > rows;
 
-  int findRowNumber(VariableSelector* selector) const
+  int findRowNumber(ObjectSelector* selector) const
   {
     for (size_t i = 0; i < rows.size(); ++i)
       if (rows[i].first->getSelector() == selector)
@@ -390,17 +389,17 @@ private:
 };
 
 /*
-** VariableBrowser
+** ObjectBrowser
 */
-VariableBrowser::VariableBrowser(const Variable& variable, Component* selector)
-  : ViewportComponent(new VariableBrowserContent(), false, true)
+ObjectBrowser::ObjectBrowser(const ObjectPtr& object, Component* selector)
+  : ViewportComponent(new ObjectBrowserContent(), false, true)
 {
-  getContent()->setRootVariable(variable, selector);
+  getContent()->setRootObject(object, selector);
 }
 
-void VariableBrowser::resized()
+void ObjectBrowser::resized()
 {
-  VariableBrowserContent* content = getContent();
+  ObjectBrowserContent* content = getContent();
 
   if (content->getWidth() > getWidth())
     content->setSize(content->getWidth(), getHeight() - getScrollBarThickness());
@@ -408,5 +407,5 @@ void VariableBrowser::resized()
     content->setSize(getWidth(), getHeight());
 }
 
-VariableBrowserContent* VariableBrowser::getContent() const
-  {return (VariableBrowserContent* )getViewedComponent();}
+ObjectBrowserContent* ObjectBrowser::getContent() const
+  {return (ObjectBrowserContent* )getViewedComponent();}

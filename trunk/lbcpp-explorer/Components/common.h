@@ -36,8 +36,8 @@ using juce::FileChooser;
 
 namespace lbcpp
 {
-  extern Variable createMultiSelectionVariable(const std::vector<Variable>& variables);
-  extern Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name = String::empty, bool topLevelComponent = false);
+  extern ObjectPtr createSelectionObject(const std::vector<ObjectPtr>& objects);
+  extern Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty, bool topLevelComponent = false);
 
 }; /* namespace lbcpp */
 

@@ -19,7 +19,7 @@ namespace lbcpp
 # pragma warning(disable:4355)
 #endif // JUCE_WIN32
 
-class ContainerSelectorComponent : public juce::ListBox, public VariableSelector
+class ContainerSelectorComponent : public juce::ListBox, public ObjectSelector
 {
 public:
   ContainerSelectorComponent(ContainerPtr container)
@@ -31,22 +31,22 @@ public:
 
   void selectedRowsChanged()
   {
-    std::vector<Variable> selectedVariables;
-    selectedVariables.reserve(getNumSelectedRows());
+    std::vector<ObjectPtr> selectedObjects;
+    selectedObjects.reserve(getNumSelectedRows());
     String selectionName;
     for (int i = 0; i < getNumSelectedRows(); ++i)
     {
       int rowNumber = getSelectedRow(i);
-      Variable variable = container->getElement(rowNumber);
-      if (variable.exists())
+      ObjectPtr element = container->getElement(rowNumber);
+      if (element)
       {
-        selectedVariables.push_back(variable);
+        selectedObjects.push_back(element);
         if (selectionName.isNotEmpty())
           selectionName += T(", ");
         selectionName += container->getElementName(i);
       }
     }
-    sendSelectionChanged(selectedVariables, selectionName);
+    sendSelectionChanged(selectedObjects, selectionName);
   }
 
   struct Model : public juce::ListBoxModel
@@ -67,8 +67,8 @@ public:
       f.setHorizontalScale(0.9f);
       g.setFont(f);
 
-      Variable element = container->getElement(rowNumber);
-      g.drawText(container->getElementName(rowNumber) + T(" = ") + element.toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
+      ObjectPtr element = container->getElement(rowNumber);
+      g.drawText(container->getElementName(rowNumber) + T(" = ") + element->toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
     }
 
     virtual void selectedRowsChanged(int lastRowSelected)

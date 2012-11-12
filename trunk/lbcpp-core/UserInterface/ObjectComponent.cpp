@@ -36,75 +36,23 @@ void ViewportComponent::resized()
 }  
 
 /*
-** TabbedVariableSelectorComponent
+** ObjectSelectorTabbedButtonBar
 */
-TabbedVariableSelectorComponent::TabbedVariableSelectorComponent(const Variable& variable)
-  : TabbedButtonBar(TabsAtLeft), variable(variable)
+ObjectSelectorTabbedButtonBar::ObjectSelectorTabbedButtonBar(const ObjectPtr& object)
+  : TabbedButtonBar(TabsAtLeft), object(object)
   {addChangeListener(this);}
 
-Variable TabbedVariableSelectorComponent::getSubVariable(const Variable& variable, const String& tabName) const
-  {return variable;}
+ObjectPtr ObjectSelectorTabbedButtonBar::getTabSubObject(const ObjectPtr& object, const String& tabName) const
+  {return object;}
 
-void TabbedVariableSelectorComponent::changeListenerCallback(void* objectThatHasChanged)
+void ObjectSelectorTabbedButtonBar::changeListenerCallback(void* objectThatHasChanged)
 {
   String tabName = getCurrentTabName();
-  sendSelectionChanged(getSubVariable(variable, tabName), tabName);
+  sendSelectionChanged(getTabSubObject(object, tabName), tabName);
 }
 
-int TabbedVariableSelectorComponent::getDefaultWidth() const
+int ObjectSelectorTabbedButtonBar::getDefaultWidth() const
   {return 27;}
 
-int TabbedVariableSelectorComponent::getPreferedWidth(int availableWidth, int availableHeight) const
+int ObjectSelectorTabbedButtonBar::getPreferedWidth(int availableWidth, int availableHeight) const
   {return 27;}
-
-/*
-** BooleanButtonsComponent
-*/
-BooleanButtonsComponent::~BooleanButtonsComponent()
-  {deleteAllChildren();}
-
-void BooleanButtonsComponent::buttonClicked(juce::Button* button)
-{
-  ((ConfigurationButton* )button)->value = button->getToggleState();
-  sendChangeMessage(this);
-}
-
-void BooleanButtonsComponent::paint(Graphics& g)
-  {g.fillAll(juce::Colour(240, 245, 250));}
-
-void BooleanButtonsComponent::initialize()
-{
-  for (size_t i = 0; i < buttons.size(); ++i)
-    for (size_t j = 0; j < buttons[i].size(); ++j)
-    {
-      ConfigurationButton* button = buttons[i][j];
-      button->addButtonListener(this);
-      addAndMakeVisible(button);
-    }
-}
-
-void BooleanButtonsComponent::resized()
-{
-  for (size_t i = 0; i < buttons.size(); ++i)
-  {
-    int x = (int)i * buttonWidth;
-    for (size_t j = 0; j < buttons[i].size(); ++j)
-      buttons[i][j]->setBounds(x, (int)j * buttonHeight, buttonWidth, buttonHeight);
-  }
-}
-
-void BooleanButtonsComponent::addToggleButton(std::vector<ConfigurationButton* >& buttonsColumn, const String& name, bool& state, size_t columnsHeight, const juce::Colour& colour)
-{
-  buttonsColumn.push_back(new ConfigurationButton(name, state, colour));
-  if (buttonsColumn.size() >= columnsHeight)
-    flushButtons(buttonsColumn);
-}
-
-void BooleanButtonsComponent::flushButtons(std::vector<ConfigurationButton* >& buttonsColumn)
-{
-  if (buttonsColumn.size())
-  {
-    buttons.push_back(buttonsColumn);
-    buttonsColumn.clear();
-  }
-}

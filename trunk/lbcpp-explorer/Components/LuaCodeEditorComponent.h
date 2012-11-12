@@ -23,7 +23,7 @@ class LuaCodeEditorStatusBar;
 namespace lbcpp
 {
 
-class LuaCodeEditor : public Component, public ComponentWithPreferedSize, public VariableSelector
+class LuaCodeEditor : public Component, public ComponentWithPreferedSize, public ObjectSelector
 {
 public:
   LuaCodeEditor(const File& luaFile);
@@ -35,7 +35,7 @@ public:
   virtual void resized();
   virtual bool keyPressed(const juce::KeyPress& key);
  
-  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)
     {return userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, this->context);}
 
   void updateStatus();

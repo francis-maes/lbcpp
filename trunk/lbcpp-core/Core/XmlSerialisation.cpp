@@ -14,7 +14,7 @@ using namespace lbcpp;
 /*
 ** XmlElement
 */
-XmlElementPtr XmlElement::createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted)
+XmlElementPtr XmlElement::createFromJuceXml(juce::XmlElement* element, bool deleteElementOnceConverted)
 {
   XmlElementPtr res(new XmlElement(element->getTagName()));
   res->attributes.resize(element->getNumAttributes());
@@ -24,7 +24,7 @@ XmlElementPtr XmlElement::createFromXml(juce::XmlElement* element, bool deleteEl
     res->text = element->getText();
   res->childElements.reserve(element->getNumChildElements());
   forEachXmlChildElement(*element, child)
-    res->childElements.push_back(XmlElement::createFromXml(child, false));
+    res->childElements.push_back(XmlElement::createFromJuceXml(child, false));
   if (deleteElementOnceConverted)
     delete element;
   return res;
@@ -58,7 +58,7 @@ void XmlElement::saveVariable(ExecutionContext& context, const Variable& variabl
   XmlExporter exporter(context, refCountedPointerFromThis(this));
   exporter.writeVariable(variable, variableType);
 }
-
+/*
 ObjectPtr XmlElement::createObject(ExecutionContext& context) const
 {
   XmlImporter importer(context, createJuceXmlElement());
@@ -72,6 +72,7 @@ Variable XmlElement::createVariable(ExecutionContext& context) const
   XmlImporter importer(context, createJuceXmlElement());
   return importer.isOpened() ? importer.load() : Variable();
 }
+*/
 
 XmlElementPtr XmlElement::getChildByName(const String& name) const
 {
@@ -149,7 +150,7 @@ bool XmlElement::loadFromJuceXmlElement(juce::XmlElement* element)
   childElements.clear();
   childElements.reserve(element->getNumChildElements());
   forEachXmlChildElement(*element, child)
-    childElements.push_back(XmlElement::createFromXml(child, false));
+    childElements.push_back(XmlElement::createFromJuceXml(child, false));
   return true;
 }
 
@@ -409,13 +410,13 @@ XmlImporter::XmlImporter(ExecutionContext& context, const File& file)
 {
   if (file.isDirectory())
   {
-    context.errorCallback(T("Variable::createFromFile"), file.getFullPathName() + T(" is a directory"));
+    context.errorCallback(T("Object::createFromFile"), file.getFullPathName() + T(" is a directory"));
     return;
   }
   
   if (!file.existsAsFile())
   {
-    context.errorCallback(T("Variable::createFromFile"), file.getFullPathName() + T(" does not exists"));
+    context.errorCallback(T("Object::createFromFile"), file.getFullPathName() + T(" does not exists"));
     return;
   }
 
@@ -425,7 +426,7 @@ XmlImporter::XmlImporter(ExecutionContext& context, const File& file)
   String lastParseError = document.getLastParseError();
   if (!root)
   {
-    context.errorCallback(T("Variable::createFromFile"),
+    context.errorCallback(T("Object::createFromFile"),
       lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
     return;
   }
@@ -433,7 +434,7 @@ XmlImporter::XmlImporter(ExecutionContext& context, const File& file)
     enter(root);
 
   if (lastParseError.isNotEmpty())
-    context.warningCallback(T("Variable::createFromFile"), lastParseError);
+    context.warningCallback(T("Object::createFromFile"), lastParseError);
 }
 
 XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlDocument& document)
@@ -526,9 +527,9 @@ Variable XmlImporter::loadVariable(TypePtr expectedType)
     if (getStringAttribute(T("missing")) == T("true"))
       return Variable::missingValue(type);
 
-    Variable res = Variable::createFromXml(type, *this);
-    if (res.isObject() && res.exists())
-      linkCurrentElementToObject(res.getObject());
+    ObjectPtr res = Object::createFromXml(*this, type);
+    if (res)
+      linkCurrentElementToObject(res);
     return res;
   }
 }

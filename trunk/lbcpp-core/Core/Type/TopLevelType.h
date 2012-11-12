@@ -41,11 +41,11 @@ public:
   virtual ObjectPtr create(ExecutionContext& context) const
     {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return ObjectPtr();}
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
-    {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return Variable();}
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
+    {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return ObjectPtr();}
 
-  virtual Variable createFromXml(XmlImporter& importer) const
-    {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return Variable();}
+  virtual ObjectPtr createFromXml(XmlImporter& importer) const
+    {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return ObjectPtr();}
 
   virtual void destroy(VariableValue& value) const
     {jassert(false);}
@@ -58,9 +58,6 @@ public:
 
   virtual bool isConvertibleToDouble() const
     {return false;}
-
-  virtual double toDouble(const VariableValue& value) const
-    {jassert(false); return 0.0;}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
     {exporter.getContext().errorCallback(T("Type::saveToXml()"), T("Not implemented"));}

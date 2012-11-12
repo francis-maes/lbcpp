@@ -17,9 +17,9 @@ namespace lbcpp
 class StringComponent : public Viewport
 {
 public:
-  StringComponent(const Variable& variable)
+  StringComponent(const ObjectPtr& object)
   {
-    setViewedComponent(label = new juce::Label("toto", variable.toString()));
+    setViewedComponent(label = new juce::Label("toto", object->toString()));
     label->setJustificationType(Justification::topLeft);
     label->setSize(5000, 5000); // bouh ! 
   }

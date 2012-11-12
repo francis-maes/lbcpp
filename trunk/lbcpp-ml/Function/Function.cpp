@@ -40,7 +40,7 @@ DataVectorPtr Function::compute(ExecutionContext& context, const std::vector<Dat
     std::vector<ObjectPtr> inputValues(inputs.size());
     for (size_t j = 0; j < inputValues.size(); ++j)
     {
-      inputValues[j] = (*it[j]).toObject();
+      inputValues[j] = it[j].getRawObject();
       ++(it[j]);
     }
     res->setElement(i, compute(context, &inputValues[0]));

@@ -53,8 +53,8 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const;
-  virtual Variable createFromXml(XmlImporter& importer) const;
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
+  virtual ObjectPtr createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const

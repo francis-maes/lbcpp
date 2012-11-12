@@ -23,16 +23,12 @@
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
-      virtual double toDouble(const VariableValue&amp; value) const
-        {return NewBoolean::get(value.getObject()) ? 1.0 : 0.0;}
     </code>
   </class>
   <class name="NewInteger">
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
-      virtual double toDouble(const VariableValue&amp; value) const
-        {return (double)NewInteger::get(value.getObject());}
     </code>
   </class>
   <class name="NewPositiveInteger" base="NewInteger"/>
@@ -41,8 +37,6 @@
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
-      virtual double toDouble(const VariableValue&amp; value) const
-        {return NewDouble::get(value.getObject());}
     </code>
   </class>
   <class name="NewString"/>

@@ -178,7 +178,7 @@ int ExecutionContext::run(LuaState& state)
   ObjectPtr res = pthis->run(workUnit, true);
   if (!res)
     return 0;
-  state.pushVariable(res);
+  state.pushObject(res);
   return 1;
 }
 

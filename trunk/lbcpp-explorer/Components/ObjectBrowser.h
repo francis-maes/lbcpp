@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VariableBrowser.h              | The Variable Browser            |
+| Filename: ObjectBrowser.h                | The Object Browser              |
 | Author  : Francis Maes                   |                                 |
 | Started : 14/06/2010 15:55               |                                 |
 `------------------------------------------/                                 |
@@ -9,24 +9,23 @@
 #ifndef EXPLORER_COMPONENTS_VARIABLE_BROWSER_H_
 # define EXPLORER_COMPONENTS_VARIABLE_BROWSER_H_
 
-# include "VariableProxyComponent.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
 # include <lbcpp/UserInterface/ObjectComponent.h>
 
-class VariableBrowserContent;
+class ObjectBrowserContent;
 
 namespace lbcpp
 {
 
-class VariableBrowser : public ViewportComponent
+class ObjectBrowser : public ViewportComponent
 {
 public:
-  VariableBrowser(const Variable& variable, Component* selector);
+  ObjectBrowser(const ObjectPtr& object, Component* selector);
 
   virtual void resized();
 
 private:
-  VariableBrowserContent* getContent() const;
+  ObjectBrowserContent* getContent() const;
 };
 
 }; /* namespace lbcpp */

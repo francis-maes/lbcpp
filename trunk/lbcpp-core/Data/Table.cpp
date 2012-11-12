@@ -109,8 +109,8 @@ struct OrderContainerFunction
 
     if (convertToDoubles)
     {
-      double da = Variable(a).toDouble();
-      double db = Variable(b).toDouble();
+      double da = a->toDouble();
+      double db = b->toDouble();
       if (da == db)
         return first < second;
       return increasingOrder ? (da > db) : (da < db);

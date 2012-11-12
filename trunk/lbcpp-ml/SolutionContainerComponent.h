@@ -155,7 +155,7 @@ protected:
   }
 };
 
-class SolutionVectorComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
+class SolutionVectorComponent : public juce::Component, public ComponentWithPreferedSize, public ObjectSelector
 {
 public:
   SolutionVectorComponent(SolutionVectorPtr solutions, const String& name)
@@ -249,7 +249,7 @@ protected:
     if (index >= 0)
       sendSelectionChanged(solutions->getSolution(index), T("solution"));
     else
-      sendSelectionChanged(std::vector<Variable>(), String::empty);
+      sendSelectionChanged(std::vector<ObjectPtr>(), String::empty);
 
     selectedIndex = index;
     if (drawable)

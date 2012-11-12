@@ -8,20 +8,18 @@ GENERATE_INTROSPECTION_CODE(WorkUnitManager/WorkUnitManagerLibrary.xml WorkUnitM
 
 SET(EXPLORER_UTILITIES_SOURCES
   Utilities/PropertyListDisplayComponent.h
-  Utilities/FileType.h
 )
 
 SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
   Components/StringComponent.h
   Components/ContainerSelectorComponent.h
-  Components/VariableProxyComponent.h
-  Components/VariableBrowser.h
-  Components/VariableBrowser.cpp
+  Components/ObjectBrowser.h
+  Components/ObjectBrowser.cpp
   Components/HexadecimalFileComponent.h
   Components/LuaCodeEditorComponent.h
   Components/LuaCodeEditorComponent.cpp
-  Components/VariableComponents.cpp
+  Components/ObjectComponents.cpp
 )
 
 SET(EXPLORER_PROCESS_MANAGER_SOURCES

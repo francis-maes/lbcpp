@@ -75,8 +75,8 @@ public:
   virtual ClassPtr getClass() const;
 
   virtual ObjectPtr create(ExecutionContext& context) const;
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const;
-  virtual Variable createFromXml(XmlImporter& importer) const;
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
+  virtual ObjectPtr createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual VariableValue getMissingValue() const;

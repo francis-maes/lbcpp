@@ -42,8 +42,8 @@ public:
   virtual ObjectPtr create(ExecutionContext& context) const
     {return ObjectPtr();}
 
-  virtual Variable createFromXml(XmlImporter& importer) const
-    {return Variable();}
+  virtual ObjectPtr createFromXml(XmlImporter& importer) const
+    {return ObjectPtr();}
 
   virtual void destroy(VariableValue& value) const
     {}

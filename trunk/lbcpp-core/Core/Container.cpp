@@ -295,6 +295,6 @@ int Container::__index(LuaState& state) const
     return 0;
   }
 
-  state.pushVariable(getElement(index - 1));
+  state.pushObject(getElement(index - 1));
   return 1;
 }

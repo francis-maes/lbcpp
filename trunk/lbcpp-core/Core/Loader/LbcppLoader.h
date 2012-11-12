@@ -32,7 +32,10 @@ public:
   }
 
   virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
-    {return Variable::createFromFile(context, file).getObject();}
+  {
+    XmlImporter importer(context, file);
+    return importer.isOpened() ? importer.load().getObject() : ObjectPtr();
+  }
 };
 
 class TraceLoader : public LbcppLoader

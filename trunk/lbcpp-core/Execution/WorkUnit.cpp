@@ -118,7 +118,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
       value = new NewBoolean(true); // particular case for boolean arguments: if no value has been given, we take true by default
     else
     {
-      value = Variable::createFromString(context, argumentType, argumentValue).getObject();
+      value = Object::createFromString(context, argumentType, argumentValue);
       if (!value)
       {
         context.errorCallback(T("WorkUnit::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);

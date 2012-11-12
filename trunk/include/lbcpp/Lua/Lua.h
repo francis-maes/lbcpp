@@ -98,7 +98,7 @@ public:
 
   // Table
   bool isTable(int index) const;
-  Variable getTableVariable(int index, const char* key);
+  ObjectPtr getTableVariable(int index, const char* key);
   void setTableField(const char *name, double value);
 
   // Object
@@ -111,10 +111,6 @@ public:
 
   // Type
   TypePtr checkType(int index);
-
-  // Variable
-  Variable checkVariable(int index);
-  void pushVariable(const Variable& variable);
 
   // References
   int toReference(int index);

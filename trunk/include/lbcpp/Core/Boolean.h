@@ -37,6 +37,9 @@ public:
   virtual String toString() const
     {return value ? "true" : "false";}
 
+  virtual double toDouble() const
+    {return value ? 1.0 : 0.0;}
+
   virtual int compare(const ObjectPtr& otherObject) const
   {
     const NewBooleanPtr& other = otherObject.staticCast<NewBoolean>();
