@@ -151,19 +151,6 @@ bool Type::canBeCastedTo(TypePtr targetType) const
 /*
 ** Instance basic operations
 */
-VariableValue Type::getMissingValue() const
-{
-  jassert(sizeof (VariableValue) == 8);
-  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
-  return VariableValue(missing);
-}
-
-bool Type::isMissingValue(const VariableValue& value) const
-{
-  VariableValue missing = getMissingValue();
-  return value.getInteger() == missing.getInteger();
-}
-
 ObjectPtr Type::create(ExecutionContext& context) const
   {jassert(baseType); return baseType->create(context);}
 
@@ -173,26 +160,11 @@ ObjectPtr Type::createFromString(ExecutionContext& context, const String& value)
 ObjectPtr Type::createFromXml(XmlImporter& importer) const
   {jassert(baseType); return baseType->createFromXml(importer);}
 
-String Type::toString(const VariableValue& value) const
-  {jassert(baseType); return baseType->toString(value);}
-
 bool Type::isConvertibleToBoolean() const
   {jassert(baseType); return baseType->isConvertibleToBoolean();}
 
 bool Type::isConvertibleToDouble() const
   {jassert(baseType); return baseType->isConvertibleToDouble();}
-
-void Type::destroy(VariableValue& value) const
-  {jassert(baseType); baseType->destroy(value);}
-
-void Type::copy(VariableValue& dest, const VariableValue& source) const
-  {jassert(baseType); baseType->copy(dest, source);}
-
-int Type::compare(const VariableValue& value1, const VariableValue& value2) const
-  {jassert(baseType); return baseType->compare(value1, value2);}
-
-void Type::saveToXml(XmlExporter& exporter, const VariableValue& value) const
-  {jassert(baseType); return baseType->saveToXml(exporter, value);}
 
 /*
 ** Member Variables

@@ -24,9 +24,6 @@ public:
 
   ConstantExpressionPtr makeConstantNode(const ObjectPtr& constantValue);
 
-  ConstantExpressionPtr makeConstantNode(const Variable& constantValue) // compatibility
-    {return makeConstantNode(constantValue.toObject());}
-
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const std::vector<ExpressionPtr>& inputs);
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input);
   ExpressionPtr makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input1, const ExpressionPtr& input2);

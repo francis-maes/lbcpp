@@ -31,31 +31,20 @@ public:
   static bool get(ObjectPtr object)
     {return object.staticCast<NewBoolean>()->get();}
 
-  virtual String toShortString() const
-    {return value ? "true" : "false";}
-
-  virtual String toString() const
-    {return value ? "true" : "false";}
-
-  virtual double toDouble() const
-    {return value ? 1.0 : 0.0;}
+  virtual String toShortString() const;
   
-  virtual bool toBoolean() const
-    {return value;}
+  virtual double toDouble() const;
+  virtual bool toBoolean() const;
+  virtual int compare(const ObjectPtr& otherObject) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  virtual int compare(const ObjectPtr& otherObject) const
-  {
-    const NewBooleanPtr& other = otherObject.staticCast<NewBoolean>();
-    return (value ? 1 : 0) - (other->value ? 1 : 0);
-  }
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
+  virtual String toString() const;
+  
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual void saveToXml(XmlExporter& exporter) const;
 
-  virtual ObjectPtr clone(ExecutionContext& context) const
-    {return new NewBoolean(value);}
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-    {target.staticCast<NewBoolean>()->value = value;}
-
-private:
+protected:
   bool value;
 };
 

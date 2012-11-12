@@ -11,7 +11,6 @@
 
 # include "Object.h"
 # include "Enumeration.h"
-# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -35,34 +34,17 @@ public:
   juce::int64 get() const
     {return value;}
   
-  virtual String toShortString() const
-    {return String(value);}
+  virtual String toShortString() const;
 
-  virtual String toString() const
-    {return String(value);}
-  
-  virtual double toDouble() const
-    {return (double)value;}
+  virtual double toDouble() const;
+  virtual int compare(const ObjectPtr& otherObject) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  virtual int compare(const ObjectPtr& otherObject) const
-  {
-    const NewIntegerPtr& other = otherObject.staticCast<NewInteger>();
-    return (int)(value - other->get());
-  }
+  virtual bool loadFromString(ExecutionContext& context, const String& value);
+  virtual String toString() const;
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-    {target.staticCast<NewInteger>()->value = value;}
-
-  virtual bool loadFromString(ExecutionContext& context, const String& value)
-  {
-    if (!value.trim().containsOnly(T("-+e0123456789")))
-    {
-      context.errorCallback(T("IntegerType::loadFromString"), value.quoted() + T(" is not a valid integer"));
-      return false;
-    }
-    this->value = value.getLargeIntValue();
-    return true;
-  }
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual void saveToXml(XmlExporter& exporter) const;
 
 protected:
   juce::int64 value;
@@ -103,27 +85,13 @@ public:
   EnumerationElementPtr getEnumerationElement() const
     {return getEnumeration()->getElement((int)value);}
 
-  virtual String toShortString() const
-  {
-    EnumerationElementPtr element = getEnumerationElement();
-    return element->getShortName().isNotEmpty() ? element->getShortName() : element->getName();
-  }
+  virtual String toShortString() const;
 
-  virtual String toString() const
-    {return getEnumerationElement()->getName();}
+  virtual bool loadFromString(ExecutionContext& context, const String& value);
+  virtual String toString() const;
 };
 
 extern ClassPtr newEnumValueClass;
-
-inline NewIntegerPtr NewInteger::create(ClassPtr type, juce::int64 value)
-{
-  if (type.isInstanceOf<Enumeration>())
-    return new NewEnumValue(type.staticCast<Enumeration>(), (size_t)value);
-  else if (type == newPositiveIntegerClass)
-    return new NewPositiveInteger(type, (size_t)value);
-  else
-    return new NewInteger(type, value);
-}
 
 }; /* namespace lbcpp */
 

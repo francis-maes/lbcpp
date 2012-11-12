@@ -10,8 +10,6 @@
 # define LBCPP_CORE_STRING_H_
 
 # include "Object.h"
-# include "XmlSerialisation.h"
-# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -33,40 +31,17 @@ public:
   static juce::String get(const ObjectPtr& object)
     {return object.staticCast<NewString>()->get();}
 
-  virtual juce::String toShortString() const
-    {return value;}
+  virtual juce::String toShortString() const;
 
-  virtual String toString() const
-    {return value.quoted();}
-
-  virtual int compare(const ObjectPtr& otherObject) const
-  {
-    const NewStringPtr& other = otherObject.staticCast<NewString>();
-    if (value < other->get())
-      return -1;
-    else if (value > other->get())
-      return 1;
-    else
-      return 0;
-  }
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-    {target.staticCast<NewString>()->value = value;}
+  virtual int compare(const ObjectPtr& otherObject) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   
-  virtual bool loadFromString(ExecutionContext& context, const String& str)
-  {
-    value = str.trim();
-    if (value.startsWithChar('"'))
-      value = value.unquoted();
-    return true;
-  }
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
+  virtual String toString() const;
 
-  virtual bool loadFromXml(XmlImporter& importer)
-  {
-    String text = importer.getAllSubText().trim();
-    return loadFromString(importer.getContext(), text);
-  }
-  
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual void saveToXml(XmlExporter& exporter) const;
+
 protected:
   juce::String value;
 };
@@ -92,26 +67,12 @@ public:
   juce::File get() const
     {return juce::File(value);}
 
-  virtual juce::String toShortString() const
-    {return get().getFileName();}
+  virtual juce::String toShortString() const;
 
-  virtual juce::String toString() const
-    {return defaultExecutionContext().getFilePath(get());}
+  virtual juce::String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
 
-  virtual void saveToXml(XmlExporter& exporter) const
-    {exporter.addTextElement(toString());}
-
-  virtual bool loadFromString(ExecutionContext& context, const String& str)
-  {
-    juce::File file = context.getFile(str);
-    if (file == File::nonexistent)
-    {
-      context.errorCallback(T("Could not find file ") + str);
-      return false;
-    }
-    set(file);
-    return true;
-  }
+  virtual void saveToXml(XmlExporter& exporter) const;
 };
 
 extern ClassPtr newFileClass;
@@ -125,14 +86,6 @@ public:
 };
 
 extern ClassPtr directoryClass;
-
-inline NewFilePtr NewFile::create(const File& file)
-{
-  if (file.isDirectory())
-    return new Directory(file);
-  else
-    return new NewFile(file);
-}
 
 }; /* namespace lbcpp */
 

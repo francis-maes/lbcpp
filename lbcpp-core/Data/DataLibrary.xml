@@ -54,8 +54,8 @@
 
   <!-- DoubleVector -->
   <template name="DoubleVector" base="Vector[elementsType]" abstract="yes">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
+    <parameter name="elementsEnumeration" type="NewEnumValue"/>
+    <parameter name="elementsType" type="NewDouble"/>
 
     <function lang="lua" name="add"/>
     <function lang="lua" name="mul"/>
@@ -68,20 +68,20 @@
   </template>
 
   <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
+    <parameter name="elementsEnumeration" type="NewEnumValue"/>
+    <parameter name="elementsType" type="NewDouble"/>
     <function lang="lua" name="append"/>
     <function lang="lua" name="increment"/>
   </template>
 
   <template name="DenseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
+    <parameter name="elementsEnumeration" type="NewEnumValue"/>
+    <parameter name="elementsType" type="NewDouble"/>
   </template>
 
   <template name="CompositeDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
+    <parameter name="elementsEnumeration" type="NewEnumValue"/>
+    <parameter name="elementsType" type="NewDouble"/>
   </template>
 
   <!-- IndexSet -->

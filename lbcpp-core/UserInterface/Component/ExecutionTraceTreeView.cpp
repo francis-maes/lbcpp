@@ -99,7 +99,9 @@ public:
     table = pair->getSecond().staticCast<Table>();
     if (table)
     {
-      addTab(T("Curves"), Colours::white);
+      plot = new Plot(table);
+      if (plot->getNumPlotVariables() > 0)
+        addTab(T("Plot"), Colours::white);
       addTab(T("Table"), Colours::white);
     }
 
@@ -117,8 +119,8 @@ public:
   {
     if (tabName == T("Results"))
       return results;
-    else if (tabName == T("Curves"))
-      return new Plot(table);
+    else if (tabName == T("Plot"))
+      return plot;
     else if (tabName == T("Table"))
       return table;
     else
@@ -132,9 +134,7 @@ public:
 
   virtual Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& tabName)
   {
-    if (tabName == T("Table"))
-      return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, table, "Table");
-    else if (tabName == T("Results"))
+    if (tabName == T("Results"))
       return userInterfaceManager().createObjectTreeView(context, object, tabName, true, true, false, false);
     else
       return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getTabSubObject(object, tabName), tabName);
@@ -143,6 +143,7 @@ public:
 protected:
   TablePtr table;
   ObjectPtr results;
+  PlotPtr plot;
 };
 
 juce::Component* ExecutionTraceTreeView::createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)

@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Data/Stream.h>
 #include <lbcpp/Core/Vector.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
 # ifdef JUCE_WIN32

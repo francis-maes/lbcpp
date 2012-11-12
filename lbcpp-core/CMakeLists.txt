@@ -36,9 +36,13 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/Object.h
   Core/Object.cpp
   ../include/lbcpp/Core/Boolean.h
+  Core/Boolean.cpp
   ../include/lbcpp/Core/Integer.h
+  Core/Integer.cpp
   ../include/lbcpp/Core/Double.h
+  Core/Double.cpp
   ../include/lbcpp/Core/String.h
+  Core/String.cpp
   ../include/lbcpp/Core/TypeManager.h
   Core/TypeManager.cpp
   ../include/lbcpp/Core/Signature.h
@@ -52,8 +56,6 @@ SET(LBCPP_CORE_SOURCES
   Core/TemplateType.cpp
   ../include/lbcpp/Core/Library.h
   Core/Library.cpp
-  ../include/lbcpp/Core/Variable.h
-  Core/Variable.cpp
   ../include/lbcpp/Core/Pair.h
   ../include/lbcpp/Core/Container.h
   Core/Container.cpp
@@ -69,19 +71,8 @@ SET(LBCPP_CORE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLibrary.cpp
 )
 
-SET(LBCPP_CORE_IMPL_HEADERS
-  ../include/lbcpp/Core/impl/VariableValue.hpp
-  ../include/lbcpp/Core/impl/Variable.hpp
-)
-
 SET(LBCPP_CORE_TYPE_SOURCES
   Core/Type/TopLevelType.h
-  Core/Type/NilType.h
-  Core/Type/BuiltinType.h
-  Core/Type/BooleanType.h
-  Core/Type/IntegerType.h
-  Core/Type/DoubleType.h
-  Core/Type/StringType.h
   Core/Type/CoreTypeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreTypeLibrary.cpp
 )
@@ -282,7 +273,6 @@ SET(LBCPP_SOURCES
 
   # Core
   ${LBCPP_CORE_SOURCES}
-    ${LBCPP_CORE_IMPL_HEADERS}
     ${LBCPP_CORE_TYPE_SOURCES}
 	${LBCPP_CORE_LOADER_SOURCES}
 
@@ -320,7 +310,6 @@ SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 
 ## Core
 SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
-SOURCE_SUB_GROUP(Core impl FILES ${LBCPP_CORE_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 

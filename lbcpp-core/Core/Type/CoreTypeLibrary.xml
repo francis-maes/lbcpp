@@ -6,24 +6,6 @@
   
   <type name="Variable" base="" implementation="TopLevelType"/>
 
-  <!-- Builtin Types -->
-  <type name="Nil" base="Variable" implementation="NilType"/>
-  <type name="Boolean" base="Variable" implementation="BooleanType"/>
-  <type name="Integer" base="Variable" implementation="IntegerType"/>
-    <type name="PositiveInteger" base="Integer" implementation="PositiveIntegerType"/>
-      <type name="VariableIndex" base="PositiveInteger"/>
-
-  <type name="EnumValue" base="Integer" implementation="IntegerType"/>
-
-  <type name="Double" base="Variable" implementation="DoubleType"/>
-  <!--
-    <type name="PositiveDouble" base="Double"/>
-      <type name="NegativeLogProbability" base="PositiveDouble"/>
-         <type name="Probability" base="Double" implementation="ProbabilityType"/>
-    <type name="Time" base="Double" implementation="TimeType"/>-->
-
-  <type name="String" base="Variable" implementation="StringType"/>
-
   <!-- Object -->
   <class name="Object" base="Variable" abstract="yes">
     <function lang="lua" name="create" static="yes"/>
@@ -105,7 +87,7 @@
   </class>
   
   <class name="ConcatenateEnumeration" base="Enumeration">
-    <variable type="ObjectVector[Pair[String,Enumeration]]" name="subEnumerations"/>
+    <variable type="ObjectVector[Pair[NewString,Enumeration]]" name="subEnumerations"/>
   </class>
 
   <class name="DefaultClass" base="Class">

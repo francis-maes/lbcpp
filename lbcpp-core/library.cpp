@@ -299,6 +299,16 @@ extern lbcpp::LibraryPtr lbCppLibrary();
 
 }; /* namespace lbcpp */ 
 
+static void lbcppInitializeGlobals()
+{
+  topLevelType = anyType = variableType;
+  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
+  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
+  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
+  doubleMissingValue = *(const double* )&missing;
+  integerMissingValue = (int)missing;
+}
+
 void lbcpp::initialize(const char* executableName)
 {
   //_crtBreakAlloc = 13146;
@@ -318,11 +328,9 @@ void lbcpp::initialize(const char* executableName)
   // types
   importLibrary(coreLibrary());
   importLibrary(lbCppLibrary());
-  topLevelType = anyType = variableType;
-  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
-  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
-  doubleMissingValue = doubleType->getMissingValue().getDouble();
-  integerMissingValue = (int)integerType->getMissingValue().getInteger();
+
+  // globals
+  lbcppInitializeGlobals();
 }
 
 void lbcpp::deinitialize()
@@ -457,14 +465,8 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
 
   coreLibraryCacheTypes(context);
   lbCppLibraryCacheTypes(context);
-  topLevelType = anyType = variableType;
-  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
-  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
-  
-  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
 
-  doubleMissingValue = *(const double* )&missing;
-  integerMissingValue = (int)missing;
+  lbcppInitializeGlobals();
 #else
   jassert(lbcpp::applicationContext == &applicationContext);
 #endif

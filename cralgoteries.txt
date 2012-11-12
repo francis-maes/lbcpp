@@ -1,20 +1,30 @@
-
-A penser:
- * Probability
- * Time
- * LuaCodeEditor/StringComponent/LuaCodeEditor
+Suite:
+ * Fusionner Type et Class
+ * Gerer le TopLevelType
+ * Finir de cleaner les classes de bases de Class
+ * Renommer le TypeManager en ClassManager
+ * Renommer le TemplateType en TemplateClass
+ * Renommer NewDouble en Double, NewInteger en Integer, NewBoolean en Boolean
+ * Gerer les noms de NewString et NewFile 
+ * IntroGen: Enlever la balise <type>
+ * IntroGen: Nouvelle balise <flag> pour isAbstract, isConvertibleTo{Boolean|Double}
+ * Cleaner les integerMissingValue et doubleMissingValue
 
 Explorer:
+ * Cassé: LuaCodeEditor/StringComponent/LuaCodeEditor
+
  * TextEditor
    * class Text et TextComponent
    * Cas particulier pour Lua
 
  * Classe de base pour faire des arbres
     => FileTree
-	=> ObjectTree
-	=> XmlTree
+	  => ObjectTree
+	  => XmlTree
+    => ResultsTree (pour les container(pair(string,object)))
 
  * Cleaner
    * Bouger StringComponent dans lbcpp-core
    * Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
    * Enlever le repertoire "Components"
+   

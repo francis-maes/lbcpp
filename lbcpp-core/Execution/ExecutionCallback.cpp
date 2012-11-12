@@ -7,10 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Execution/ExecutionCallback.h>
-#include <lbcpp/Core/Boolean.h>
-#include <lbcpp/Core/Integer.h>
-#include <lbcpp/Core/Double.h>
-#include <lbcpp/Core/String.h>
+#include <lbcpp/Core.h>
 #include <lbcpp/Lua/Lua.h>
 #include "Callback/ExecutionNotifications.h"
 using namespace lbcpp;

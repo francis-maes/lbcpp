@@ -28,7 +28,6 @@
 # define LBCPP_CORE_TYPE_H_
 
 # include "Signature.h"
-# include "impl/VariableValue.hpp"
 
 namespace lbcpp
 {
@@ -93,20 +92,9 @@ public:
   /*
   ** Operations
   */
-  virtual VariableValue getMissingValue() const;
-  virtual bool isMissingValue(const VariableValue& value) const;
-
   virtual ObjectPtr create(ExecutionContext& context) const;
   virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
   virtual ObjectPtr createFromXml(XmlImporter& importer) const;
-  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
-
-  virtual void destroy(VariableValue& value) const;
-  virtual void copy(VariableValue& dest, const VariableValue& source) const;
-  virtual String toString(const VariableValue& value) const;
-  virtual String toShortString(const VariableValue& value) const
-    {return toString(value);}
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
   virtual bool isConvertibleToBoolean() const;
   virtual bool isConvertibleToDouble() const;
@@ -168,22 +156,9 @@ protected:
 };
 
 extern TypePtr variableType;
-
 // synonims of variableType
 extern TypePtr topLevelType;
 extern TypePtr anyType;
-
-extern TypePtr nilType;
-
-extern TypePtr booleanType;
-extern TypePtr integerType;
-  extern TypePtr positiveIntegerType;
-    
-  extern TypePtr enumValueType;
-
-extern TypePtr doubleType;
-  
-extern TypePtr stringType;
 
 extern ClassPtr objectClass;
 
