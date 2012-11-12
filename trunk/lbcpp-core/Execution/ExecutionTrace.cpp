@@ -178,10 +178,10 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
   }
 
   // return value
-  if (returnValue.exists())
+  if (returnValue)
   {
     exporter.enter(T("return"));
-    exporter.writeVariable(returnValue, variableType);
+    exporter.writeObject(returnValue, variableType);
     exporter.leave();
   }
 
@@ -189,11 +189,11 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
   {
     ScopedLock _(resultsLock);
     for (size_t i = 0; i < results.size(); ++i)
-      if (results[i].second.exists())
+      if (results[i].second)
       {
         exporter.enter(T("result"));
         exporter.setAttribute(T("resultName"), results[i].first);
-        exporter.writeVariable(results[i].second, variableType);
+        exporter.writeObject(results[i].second, variableType);
         exporter.leave();
       }
   }
@@ -252,11 +252,11 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       res &= progression->loadFromXml(importer);
     }
     else if (tagName == T("return"))
-      returnValue = importer.loadVariable(variableType).toObject();
+      returnValue = importer.loadObject(variableType);
     else if (tagName == T("result"))
     {
       String name = importer.getStringAttribute(T("resultName"));
-      ObjectPtr value = importer.loadVariable(variableType).toObject();
+      ObjectPtr value = importer.loadObject(variableType);
       if (value.exists())
         results.push_back(std::make_pair(name, value));
     }

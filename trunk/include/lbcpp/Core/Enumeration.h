@@ -68,7 +68,7 @@ typedef ReferenceCountedObjectPtr<EnumerationElement> EnumerationElementPtr;
 class Enumeration : public Class
 {
 public:
-  Enumeration(const String& name, const String& baseTypeName = T("EnumValue"));
+  Enumeration(const String& name, const String& baseTypeName = T("NewEnumValue"));
   Enumeration(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
     : Class(templateType, templateArguments, baseClass) {}
 

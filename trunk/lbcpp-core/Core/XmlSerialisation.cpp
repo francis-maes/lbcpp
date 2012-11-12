@@ -45,35 +45,6 @@ juce::XmlElement* XmlElement::createJuceXmlElement() const
   }
 }
 
-void XmlElement::saveObject(ExecutionContext& context, const ObjectPtr& object, const String& tagName)
-{
-  setTagName(tagName);
-  XmlExporter exporter(context, refCountedPointerFromThis(this));
-  exporter.writeVariable(object, objectClass);
-}
-
-void XmlElement::saveVariable(ExecutionContext& context, const Variable& variable, const String& tagName)
-{
-  setTagName(tagName);
-  XmlExporter exporter(context, refCountedPointerFromThis(this));
-  exporter.writeVariable(variable, variableType);
-}
-/*
-ObjectPtr XmlElement::createObject(ExecutionContext& context) const
-{
-  XmlImporter importer(context, createJuceXmlElement());
-  Variable v = importer.isOpened() ? importer.load() : Variable();
-  jassert(v.isObject());
-  return v.getObject();
-}
-
-Variable XmlElement::createVariable(ExecutionContext& context) const
-{
-  XmlImporter importer(context, createJuceXmlElement());
-  return importer.isOpened() ? importer.load() : Variable();
-}
-*/
-
 XmlElementPtr XmlElement::getChildByName(const String& name) const
 {
   for (size_t i = 0; i < childElements.size(); ++i)
@@ -238,14 +209,14 @@ void XmlExporter::enter(const String& tagName, const String& name)
   writeName(name);
 }
 
-void XmlExporter::saveVariable(const String& name, const Variable& variable, TypePtr expectedType)
+void XmlExporter::saveObject(const String& name, const ObjectPtr& object, TypePtr expectedType)
 {
   enter(T("variable"), name);
-  writeVariable(variable, expectedType);
+  writeObject(object, expectedType);
   leave();
 }
 
-void XmlExporter::saveGeneratedVariable(const String& name, const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::saveGeneratedObject(const String& name, const ObjectPtr& object, TypePtr expectedType)
 {
   enter(T("variable"), name);
   writeType(expectedType);
@@ -254,11 +225,11 @@ void XmlExporter::saveGeneratedVariable(const String& name, const ObjectPtr& obj
   leave();
 }
 
-void XmlExporter::saveElement(size_t index, const Variable& variable, TypePtr expectedType)
+void XmlExporter::saveElement(size_t index, const ObjectPtr& object, TypePtr expectedType)
 {
   enter(T("element"));
   setAttribute(T("index"), String((int)index));
-  writeVariable(variable, expectedType);
+  writeObject(object, expectedType);
   leave();
 }
 
@@ -271,26 +242,7 @@ void XmlExporter::leave()
 }
 
 void XmlExporter::addTextElement(const String& text)
-{
-#if 0
-  enum {lineLength = 60};
-  int n = text.length();
-  int b = 0;
-  while (b < n)
-  {
-    int e = -1;
-    if (b + lineLength < n)
-      e = text.indexOfAnyOf(T(" \t\n\r"), b + lineLength);
-    if (e < 0)
-      e = n;
-    getCurrentElement()->addTextElement(text.substring(b, e));
-    b = e;
-    if (b < n)
-      getCurrentElement()->addTextElement(T("\n"));
-  }
-#endif
-  getCurrentElement()->addTextElement(text);
-}
+  {getCurrentElement()->addTextElement(text);}
 
 void XmlExporter::writeName(const String& name)
 {
@@ -311,40 +263,32 @@ void XmlExporter::writeType(TypePtr type)
   else
   {
     enter(T("type"));
-    writeVariable(type, TypePtr());
+    writeObject(type, TypePtr());
     leave();
   }
 }
 
-void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
+void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
 {
   XmlElementPtr elt = getCurrentElement();
   
-  if (variable.isMissingValue())
+  if (object)
   {
-    writeType(variable.getType());
-    elt->setAttribute(T("missing"), T("true"));
-  }
-  else if (variable.isObject())
-  {
-    const ObjectPtr& object = variable.getObject();
     TypePtr typeValue = object.dynamicCast<Type>();
     if (typeValue && typeValue->isNamedType())
       addTextElement(typeValue->getName()); // named type
     else
-      writeObject(object, expectedType); // traditional object
+      writeObjectImpl(object, expectedType); // traditional object
   }
   else
   {
-    TypePtr type = variable.getType();
-    if (type != expectedType)
-      writeType(type);
-    if (!type->isMissingValue(variable.value))
-      type->saveToXml(*this, variable.value);
+    // warning: we do not write the type anymore since Variable quake
+    //writeType(object->getType());
+    elt->setAttribute(T("missing"), T("true"));
   }
 }
 
-void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::writeObjectImpl(const ObjectPtr& object, TypePtr expectedType)
 {
   jassert(object->getReferenceCount());
   ObjectXmlElementsMap::iterator it = objectXmlElements.find(object);
@@ -476,12 +420,12 @@ void XmlImporter::unknownVariableWarning(ClassPtr type, const String& variableNa
   }
 }
 
-Variable XmlImporter::load()
+ObjectPtr XmlImporter::load()
 {
   if (root->getTagName() == T("lbcpp"))
-    return loadVariable(root->getChildByName(T("variable")), TypePtr());
+    return loadObject(root->getChildByName(T("variable")), TypePtr());
   else
-    return loadVariable(root, TypePtr());
+    return loadObject(root, TypePtr());
 }
 
 TypePtr XmlImporter::loadType(TypePtr expectedType)
@@ -514,7 +458,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
   }
 }
 
-Variable XmlImporter::loadVariable(TypePtr expectedType)
+ObjectPtr XmlImporter::loadObject(TypePtr expectedType)
 {
   if (hasAttribute(T("ref")))
     return getSharedObject(getStringAttribute(T("ref")));
@@ -522,10 +466,10 @@ Variable XmlImporter::loadVariable(TypePtr expectedType)
   {
     TypePtr type = loadType(expectedType);
     if (!type || !type->getBaseType())
-      return Variable();
+      return ObjectPtr();
     
     if (getStringAttribute(T("missing")) == T("true"))
-      return Variable::missingValue(type);
+      return ObjectPtr();
 
     ObjectPtr res = Object::createFromXml(*this, type);
     if (res)
@@ -540,10 +484,10 @@ void XmlImporter::linkCurrentElementToObject(ObjectPtr object)
     addSharedObject(getStringAttribute(T("id")), object);
 }
 
-Variable XmlImporter::loadVariable(juce::XmlElement* elt, TypePtr expectedType)
+ObjectPtr XmlImporter::loadObject(juce::XmlElement* elt, TypePtr expectedType)
 {
   enter(elt);
-  Variable res = loadVariable(expectedType);
+  ObjectPtr res = loadObject(expectedType);
   leave();
   return res;
 }

@@ -34,7 +34,7 @@ public:
   virtual ObjectPtr loadFromFile(ExecutionContext& context, const File& file) const
   {
     XmlImporter importer(context, file);
-    return importer.isOpened() ? importer.load().getObject() : ObjectPtr();
+    return importer.isOpened() ? importer.load() : ObjectPtr();
   }
 };
 

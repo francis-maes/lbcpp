@@ -49,19 +49,6 @@ public:
   static XmlElementPtr createFromJuceXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
   bool loadFromJuceXmlElement(juce::XmlElement* element);
   juce::XmlElement* createJuceXmlElement() const;
-  
-  void saveObject(ExecutionContext& context, const ObjectPtr& object, const String& tagName = T("object"));
-  void saveVariable(ExecutionContext& context, const Variable& variable, const String& tagName = T("variable"));
-
-  //ObjectPtr createObject(ExecutionContext& context) const;
-  //Variable createVariable(ExecutionContext& context) const;
-
-  template<class O>
-  ReferenceCountedObjectPtr<O> createObjectAndCast(ExecutionContext& context) const
-  {
-    ObjectPtr res = createObject(context);
-    return res.staticCast<O>();
-  }
 
   /*
   ** Tag
@@ -170,15 +157,14 @@ public:
 
   XmlElementPtr getCurrentElement();
 
-  void saveVariable(const String& name, const Variable& variable, TypePtr expectedType);
-  void saveGeneratedVariable(const String& name, const ObjectPtr& object, TypePtr expectedType);
+  void saveObject(const String& name, const ObjectPtr& object, TypePtr expectedType);
+  void saveGeneratedObject(const String& name, const ObjectPtr& object, TypePtr expectedType);
 
-  void saveElement(size_t index, const Variable& variable, TypePtr expectedType);
+  void saveElement(size_t index, const ObjectPtr& object, TypePtr expectedType);
   
   void enter(const String& tagName, const String& name = String::empty);
   void writeType(TypePtr type);
   void writeName(const String& name);
-  void writeVariable(const Variable& variable, TypePtr expectedType);
   void writeObject(const ObjectPtr& object, TypePtr expectedType);
   void leave();
 
@@ -209,6 +195,8 @@ private:
 
   void linkObjectToCurrentElement(const ObjectPtr& object);
   String makeSharedObjectIdentifier(ObjectPtr object);
+
+  void writeObjectImpl(const ObjectPtr& object, TypePtr expectedType);
 };
 
 /*
@@ -232,7 +220,7 @@ public:
 
   typedef std::map<String, ObjectPtr> SharedObjectMap;
 
-  Variable load();
+  ObjectPtr load();
 
   juce::XmlElement* getCurrentElement() const
     {return stack.back();}
@@ -258,12 +246,12 @@ public:
   String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
     {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
 
-  Variable loadVariable(juce::XmlElement* child, TypePtr expectedType);
+  ObjectPtr loadObject(juce::XmlElement* child, TypePtr expectedType);
 
   void enter(juce::XmlElement* child);
   bool enter(const String& childTagName);
   TypePtr loadType(TypePtr expectedType);
-  Variable loadVariable(TypePtr expectedType);
+  ObjectPtr loadObject(TypePtr expectedType);
   void leave();
 
   void linkCurrentElementToObject(ObjectPtr object);

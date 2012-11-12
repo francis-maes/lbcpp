@@ -1436,13 +1436,13 @@ bool CompositeDoubleVector::loadFromXml(XmlImporter& importer)
   {
     importer.enter(elt);
     int offset = importer.getIntAttribute(T("offset"), -1);
-    Variable variable = importer.loadVariable(doubleVectorClass());
-    if (offset < 0 || !variable.exists())
+    ObjectPtr variable = importer.loadObject(doubleVectorClass());
+    if (offset < 0 || !variable)
     {
       importer.getContext().errorCallback(T("Could not read sub vector"));
       return false;
     }
-    vectors.push_back(std::make_pair((size_t)offset, variable.getObjectAndCast<DoubleVector>()));
+    vectors.push_back(std::make_pair((size_t)offset, variable.staticCast<DoubleVector>()));
     importer.leave();
   }
   if (vectors.size() != (size_t)size)
@@ -1460,7 +1460,7 @@ void CompositeDoubleVector::saveToXml(XmlExporter& exporter) const
   {
     exporter.enter(T("vector"));
     exporter.setAttribute(T("offset"), vectors[i].first);
-    exporter.writeVariable(vectors[i].second, doubleVectorClass());
+    exporter.writeObject(vectors[i].second, doubleVectorClass());
     exporter.leave();
   }
 }
