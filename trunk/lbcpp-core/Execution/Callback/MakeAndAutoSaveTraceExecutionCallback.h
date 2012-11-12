@@ -20,7 +20,7 @@ public:
   MakeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File& file)
     : MakeTraceExecutionCallback(trace), saveInterval((juce::int64)(autoSaveIntervalInSeconds * 1000.0)), file(file)
   {
-    lastSaveTime = Time::currentTimeMillis() - 9 * saveInterval / 10; // the first time, we save after saveInterval/10 ms.
+    lastSaveTime = juce::Time::currentTimeMillis() - 9 * saveInterval / 10; // the first time, we save after saveInterval/10 ms.
   }
   MakeAndAutoSaveTraceExecutionCallback() : saveInterval(0), lastSaveTime(0) {}
 
@@ -36,7 +36,7 @@ public:
     MakeTraceExecutionCallback::notificationCallback(notification);
     {
       ScopedLock _(autoSaveLock);
-      juce::int64 time = Time::currentTimeMillis();
+      juce::int64 time = juce::Time::currentTimeMillis();
       if (saveInterval > 0.0 && (time - lastSaveTime > saveInterval))
       {
         lastSaveTime = time;

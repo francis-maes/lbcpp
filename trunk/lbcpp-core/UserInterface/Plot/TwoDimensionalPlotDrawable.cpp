@@ -128,7 +128,7 @@ void TwoDimensionalPlotDrawable::drawFrameMarker(Graphics& g, const AffineTransf
   if (isMainMarker)
   {
     g.setFont(11);
-    String str = ObjectPtr(new NewDouble(value))->toShortString();
+    String str = ObjectPtr(new Double(value))->toShortString();
     if (isHorizontal)
       g.drawText(str, (int)(x - 40), (int)(y + 5), 80, bottomValuesSize - 5, Justification::centred, false);
     else

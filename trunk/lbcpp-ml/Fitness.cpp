@@ -129,7 +129,7 @@ String Fitness::toShortString() const
   String res = "(";
   for (size_t i = 0; i < values.size(); ++i)
   {
-    res += ObjectPtr(new NewDouble(values[i]))->toShortString();
+    res += ObjectPtr(new Double(values[i]))->toShortString();
     if (i < values.size() - 1)
       res += ", ";
   }

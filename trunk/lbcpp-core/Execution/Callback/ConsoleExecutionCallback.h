@@ -127,7 +127,7 @@ public:
 
   virtual void progressCallback(const ProgressionStatePtr& progression)
   {
-    juce::uint32 time = Time::getApproximateMillisecondCounter();
+    juce::uint32 time = juce::Time::getApproximateMillisecondCounter();
     if (!lastMessageTime || time > lastMessageTime + 250)
       print(T("progress"), progression->toString(), false);
   }
@@ -157,7 +157,7 @@ private:
 
   void print(const String& type, const String& text, bool isError)
   {
-    lastMessageTime = Time::getApproximateMillisecondCounter();
+    lastMessageTime = juce::Time::getApproximateMillisecondCounter();
     output.print(threadNumber, depth, type, text, isError);
   }
 };

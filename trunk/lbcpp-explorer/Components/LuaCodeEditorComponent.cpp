@@ -208,7 +208,7 @@ void LuaCodeEditor::executeCode(bool verbose)
     WorkUnitPtr workUnit = WorkUnit::create(workUnitClass);
     workUnit->setVariable(0, new NewString(code));
     workUnit->setVariable(1, new NewString(name));
-    workUnit->setVariable(2, new NewBoolean(verbose));
+    workUnit->setVariable(2, new Boolean(verbose));
     context->pushWorkUnit(workUnit);
   }
 }

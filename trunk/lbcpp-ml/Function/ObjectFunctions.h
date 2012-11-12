@@ -50,7 +50,7 @@ public:
       }
       return new DataVector(objects->getIndices(), res);
     }
-    else if (outputType->inheritsFrom(newDoubleClass))
+    else if (outputType->inheritsFrom(doubleClass))
     {
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, outputType, n, doubleMissingValue);
       size_t i = 0;
@@ -58,11 +58,11 @@ public:
       {
         const ObjectPtr& object = it.getRawObject();
         if (object)
-          res->setValue(i, NewDouble::get(pthis().computeObject(object)));
+          res->setValue(i, Double::get(pthis().computeObject(object)));
       }
       return new DataVector(objects->getIndices(), res);
     }
-    else if (outputType->inheritsFrom(newBooleanClass))
+    else if (outputType->inheritsFrom(booleanClass))
     {
       BooleanVectorPtr res = new BooleanVector(n);
       size_t i = 0;
@@ -72,7 +72,7 @@ public:
         if (object)
         {
           ObjectPtr v = pthis().computeObject(object);
-          res->getData()[i] = v ? 2 : (NewBoolean::get(v) ? 1 : 0);
+          res->getData()[i] = v ? 2 : (Boolean::get(v) ? 1 : 0);
         }
       }
       return new DataVector(objects->getIndices(), res);
@@ -144,9 +144,9 @@ public:
     {
       ClassPtr objectClass = inputTypes[0];
       size_t n = objectClass->getNumMemberVariables();
-      VectorPtr res = vector(newPositiveIntegerClass, n);
+      VectorPtr res = vector(positiveIntegerClass, n);
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, new NewPositiveInteger(i));
+        res->setElement(i, new PositiveInteger(i));
       return res;
     }
   }
@@ -174,13 +174,13 @@ public:
     {return "length(.)";}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
-    {return newPositiveIntegerClass;}
+    {return positiveIntegerClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
   ObjectPtr computeObject(const ObjectPtr& object) const
-    {return new NewInteger(object.staticCast<Container>()->getNumElements());} // positiveInteger
+    {return new Integer(object.staticCast<Container>()->getNumElements());} // positiveInteger
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}

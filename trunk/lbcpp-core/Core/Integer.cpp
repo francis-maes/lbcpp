@@ -12,37 +12,37 @@
 using namespace lbcpp;
 
 /*
-** NewInteger
+** Integer
 */
-NewIntegerPtr NewInteger::create(ClassPtr type, juce::int64 value)
+IntegerPtr Integer::create(ClassPtr type, juce::int64 value)
 {
   if (type.isInstanceOf<Enumeration>())
-    return new NewEnumValue(type.staticCast<Enumeration>(), (size_t)value);
-  else if (type == newPositiveIntegerClass)
-    return new NewPositiveInteger(type, (size_t)value);
+    return new EnumValue(type.staticCast<Enumeration>(), (size_t)value);
+  else if (type == positiveIntegerClass)
+    return new PositiveInteger(type, (size_t)value);
   else
-    return new NewInteger(type, value);
+    return new Integer(type, value);
 }
 
-String NewInteger::toShortString() const
+String Integer::toShortString() const
   {return String(value);}
 
-String NewInteger::toString() const
+String Integer::toString() const
   {return String(value);}
   
-double NewInteger::toDouble() const
+double Integer::toDouble() const
   {return (double)value;}
 
-int NewInteger::compare(const ObjectPtr& otherObject) const
+int Integer::compare(const ObjectPtr& otherObject) const
 {
-  const NewIntegerPtr& other = otherObject.staticCast<NewInteger>();
+  const IntegerPtr& other = otherObject.staticCast<Integer>();
   return (int)(value - other->get());
 }
 
-void NewInteger::clone(ExecutionContext& context, const ObjectPtr& target) const
-  {target.staticCast<NewInteger>()->value = value;}
+void Integer::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<Integer>()->value = value;}
 
-bool NewInteger::loadFromString(ExecutionContext& context, const String& value)
+bool Integer::loadFromString(ExecutionContext& context, const String& value)
 {
   if (!value.trim().containsOnly(T("-+e0123456789")))
   {
@@ -53,22 +53,22 @@ bool NewInteger::loadFromString(ExecutionContext& context, const String& value)
   return true;
 }
 
-bool NewInteger::loadFromXml(XmlImporter& importer)
+bool Integer::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
-void NewInteger::saveToXml(XmlExporter& exporter) const
+void Integer::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
 /*
-** NewEnumValue
+** EnumValue
 */
-String NewEnumValue::toShortString() const
+String EnumValue::toShortString() const
 {
   EnumerationElementPtr element = getEnumerationElement();
   return element->getShortName().isNotEmpty() ? element->getShortName() : element->getName();
 }
 
-bool NewEnumValue::loadFromString(ExecutionContext& context, const String& value)
+bool EnumValue::loadFromString(ExecutionContext& context, const String& value)
 {
   EnumerationPtr enumeration = getEnumeration();
 
@@ -97,12 +97,12 @@ bool NewEnumValue::loadFromString(ExecutionContext& context, const String& value
 
   if (res == n)
   {
-    context.errorCallback(T("NewEnumValue::createFromString"), T("Could not find enumeration value ") + value.quoted());
+    context.errorCallback(T("EnumValue::createFromString"), T("Could not find enumeration value ") + value.quoted());
     return false;
   }
   this->value = (size_t)res;
   return true;
 }
 
-String NewEnumValue::toString() const
+String EnumValue::toString() const
   {return getEnumerationElement()->getName();}

@@ -112,16 +112,16 @@ void CompositeExecutionCallback::resultCallback(const String& name, const Object
   {notificationCallback(new ExecutionResultNotification(name, value));}
 
 void CompositeExecutionCallback::resultCallback(const String& name, bool value)
-  {resultCallback(name, ObjectPtr(new NewBoolean(value)));}
+  {resultCallback(name, ObjectPtr(new Boolean(value)));}
 
 void CompositeExecutionCallback::resultCallback(const String& name, juce::int64 value)
-  {resultCallback(name, ObjectPtr(new NewInteger(value)));}
+  {resultCallback(name, ObjectPtr(new Integer(value)));}
 
 void CompositeExecutionCallback::resultCallback(const String& name, size_t value)
-  {resultCallback(name, ObjectPtr(new NewPositiveInteger(value)));}
+  {resultCallback(name, ObjectPtr(new PositiveInteger(value)));}
 
 void CompositeExecutionCallback::resultCallback(const String& name, double value)
-  {resultCallback(name, ObjectPtr(new NewDouble(value)));}
+  {resultCallback(name, ObjectPtr(new Double(value)));}
 
 void CompositeExecutionCallback::resultCallback(const String& name, const String& value)
   {resultCallback(name, ObjectPtr(new NewString(value)));}

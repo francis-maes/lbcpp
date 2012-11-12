@@ -11,28 +11,28 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
-String NewBoolean::toShortString() const
+String Boolean::toShortString() const
   {return value ? "true" : "false";}
 
-String NewBoolean::toString() const
+String Boolean::toString() const
   {return value ? "true" : "false";}
 
-double NewBoolean::toDouble() const
+double Boolean::toDouble() const
   {return value ? 1.0 : 0.0;}
   
-bool NewBoolean::toBoolean() const
+bool Boolean::toBoolean() const
   {return value;}
 
-int NewBoolean::compare(const ObjectPtr& otherObject) const
+int Boolean::compare(const ObjectPtr& otherObject) const
 {
-  const NewBooleanPtr& other = otherObject.staticCast<NewBoolean>();
+  const BooleanPtr& other = otherObject.staticCast<Boolean>();
   return (value ? 1 : 0) - (other->value ? 1 : 0);
 }
 
-void NewBoolean::clone(ExecutionContext& context, const ObjectPtr& target) const
-  {target.staticCast<NewBoolean>()->value = value;}
+void Boolean::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<Boolean>()->value = value;}
 
-bool NewBoolean::loadFromString(ExecutionContext& context, const String& str)
+bool Boolean::loadFromString(ExecutionContext& context, const String& str)
 {
   String v = str.trim().toLowerCase();
   if (v == T("true"))
@@ -47,13 +47,13 @@ bool NewBoolean::loadFromString(ExecutionContext& context, const String& str)
   }
   else
   {
-    context.errorCallback(T("NewBooleanClass::loadFromString"), T("Could not read boolean value ") + str.quoted());
+    context.errorCallback(T("BooleanClass::loadFromString"), T("Could not read boolean value ") + str.quoted());
     return false;
   }
 }
 
-bool NewBoolean::loadFromXml(XmlImporter& importer)
+bool Boolean::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
-void NewBoolean::saveToXml(XmlExporter& exporter) const
+void Boolean::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}

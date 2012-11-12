@@ -22,7 +22,7 @@ public:
 
   virtual void notify(const ObjectPtr& target) = 0;
 
-  const Time& getConstructionTime() const
+  const juce::Time& getConstructionTime() const
     {return constructionTime;}
 
   Thread::ThreadID getSourceThreadId() const
@@ -30,7 +30,7 @@ public:
 
 private:
   Thread::ThreadID sourceThreadId;
-  Time constructionTime;
+  juce::Time constructionTime;
 };
 
 typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;

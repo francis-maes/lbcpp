@@ -82,7 +82,7 @@ protected:
 class EnumValueEditorComponent : public ObjectEditorComponent, public juce::ComboBoxListener
 {
 public:
-  EnumValueEditorComponent(ExecutionContext& context, const EnumerationPtr& enumeration, const NewEnumValuePtr& value)
+  EnumValueEditorComponent(ExecutionContext& context, const EnumerationPtr& enumeration, const EnumValuePtr& value)
     : ObjectEditorComponent(context, enumeration)
   {
     addAndMakeVisible(comboBox = new ComboBox(T("enum")));
@@ -105,7 +105,7 @@ public:
   virtual void setValue(const ObjectPtr& value)
   {
     if (value)
-      comboBox->setSelectedId(NewEnumValue::get(value) + 1, true);
+      comboBox->setSelectedId(EnumValue::get(value) + 1, true);
     else
       comboBox->setSelectedId(0, true);      
   }
@@ -119,7 +119,7 @@ protected:
 
 ObjectEditorComponent* ObjectEditorComponent::create(ExecutionContext& context, const ClassPtr& type, const ObjectPtr& value)
 {
-  NewEnumValuePtr enumValue = value.dynamicCast<NewEnumValue>();
+  EnumValuePtr enumValue = value.dynamicCast<EnumValue>();
   if (enumValue)
     return new EnumValueEditorComponent(context, type.staticCast<Enumeration>(), enumValue);
 
@@ -411,7 +411,7 @@ public:
     {
       size_t variableIndex = args[i].first;
       const ObjectPtr& value = args[i].second;
-      if (!value || (value.isInstanceOf<NewBoolean>() && !NewBoolean::get(value)))
+      if (!value || (value.isInstanceOf<Boolean>() && !Boolean::get(value)))
         continue;
 
       ClassPtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
@@ -423,7 +423,7 @@ public:
       else
         res += T(" --") + name;
 
-      if (typeValue == newBooleanClass)
+      if (typeValue == booleanClass)
         continue;
       else if (typeValue == newFileClass)
         res += T(" ") + context.getFilePath(NewFile::get(value));

@@ -472,7 +472,7 @@ protected:
   }
 
   static String getDefaultBaseType(const String& metaClass) 
-    {if (metaClass == T("Enumeration")) return T("NewEnumValue"); else return T("Object");}
+    {if (metaClass == T("Enumeration")) return T("EnumValue"); else return T("Object");}
 
 
   /*

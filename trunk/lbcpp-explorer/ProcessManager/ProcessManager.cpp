@@ -150,7 +150,7 @@ private:
 
   File getCopyFile(ExecutionContext& context, const File& executable)
   {
-    Time lastModificationTime = executable.getLastModificationTime();
+    juce::Time lastModificationTime = executable.getLastModificationTime();
     File applicationData = ExplorerConfiguration::getApplicationDataDirectory(context);
     String name = executable.getFileNameWithoutExtension();
     String date = lastModificationTime.toString(true, true, true, true);

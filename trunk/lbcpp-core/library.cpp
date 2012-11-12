@@ -301,11 +301,10 @@ extern lbcpp::LibraryPtr lbCppLibrary();
 
 static void lbcppInitializeGlobals()
 {
-  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
-  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
+  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass);
+  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass);
   static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
   doubleMissingValue = *(const double* )&missing;
-  integerMissingValue = (int)missing;
 }
 
 void lbcpp::initialize(const char* executableName)

@@ -58,7 +58,7 @@ public:
 
     context.resultCallback(T("toto"), T("tata"));//TMP
     context.informationCallback(T("Finished."));
-    return new NewDouble(0.85);  // return fictive score
+    return new Double(0.85);  // return fictive score
   }
 };
 

@@ -40,7 +40,7 @@ public:
         ObjectPtr res = context.run(workUnits->getWorkUnit(i), pushIntoStack);
         results->setElement(i, res);
       }
-      return new NewBoolean(true);
+      return new Boolean(true);
     }
     
   private:

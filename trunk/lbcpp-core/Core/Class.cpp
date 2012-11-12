@@ -10,7 +10,6 @@
 #include <map>
 using namespace lbcpp;
 
-int lbcpp::integerMissingValue = 0;
 double lbcpp::doubleMissingValue = 0.0;
 
 Class::Class(const String& className, ClassPtr baseType)

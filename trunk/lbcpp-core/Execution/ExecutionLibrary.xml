@@ -23,7 +23,7 @@
   <class name="CompositeWorkUnit" base="WorkUnit">
     <variable type="ObjectVector[WorkUnit]" name="workUnits"/>
     <variable type="NewString" name="progressionUnit"/>
-    <variable type="NewBoolean" name="pushChildrenIntoStack"/>
+    <variable type="Boolean" name="pushChildrenIntoStack"/>
     <variable type="NewString" name="description"/>
   </class>
 
@@ -48,8 +48,8 @@
 
   <!-- ProgressionState -->
   <class name="ProgressionState">
-    <variable type="NewDouble" name="value"/>
-    <variable type="NewDouble" name="total"/>
+    <variable type="Double" name="value"/>
+    <variable type="Double" name="total"/>
     <variable type="NewString" name="unit"/>
   </class>
 
@@ -87,7 +87,7 @@
     -- ExecutionTrace
     -->
   <class name="ExecutionTraceItem" base="Object" abstract="yes">
-    <variable type="NewTime" name="time"/>
+    <variable type="Time" name="time"/>
   </class>
 
   <class name="MessageExecutionTraceItem" base="ExecutionTraceItem">
@@ -102,15 +102,15 @@
     <variable type="Object" name="returnValue"/>
     <variable type="ObjectVector[Pair[NewString,Object]]" name="results"/>
     <variable type="ProgressionState" name="progression"/>
-    <variable type="NewTime" name="timeLength"/>
+    <variable type="Time" name="timeLength"/>
   </class>
 
   <class name="ExecutionTrace" base="Object">
     <variable type="NewString" name="operatingSystem" shortName="os"/>
-    <variable type="NewBoolean" name="is64BitOs" shortName="x64"/>
-    <variable type="NewPositiveInteger" name="numCpus" shortName="cpus"/>
-    <variable type="NewInteger" name="cpuSpeedInMegaherz" shortName="freq"/>
-    <variable type="NewInteger" name="memoryInMegabytes" shortName="mem"/>
+    <variable type="Boolean" name="is64BitOs" shortName="x64"/>
+    <variable type="PositiveInteger" name="numCpus" shortName="cpus"/>
+    <variable type="Integer" name="cpuSpeedInMegaherz" shortName="freq"/>
+    <variable type="Integer" name="memoryInMegabytes" shortName="mem"/>
     <variable type="NewString" name="context" shortName="ctx"/>
 
     <variable type="ExecutionTraceNode" name="root"/>

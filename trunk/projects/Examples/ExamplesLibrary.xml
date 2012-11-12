@@ -8,9 +8,9 @@
  
   <!-- Simple Introspection Example -->
   <class name="SimpleClass">
-    <variable type="NewBoolean" name="myBool"/>
-    <variable type="NewInteger" name="myInt"/>
-    <variable type="NewDouble" name="myDouble"/>
+    <variable type="Boolean" name="myBool"/>
+    <variable type="Integer" name="myInt"/>
+    <variable type="Double" name="myDouble"/>
     <variable type="NewString" name="myString"/>
     <variable type="Object" name="myObject"/>
   </class>

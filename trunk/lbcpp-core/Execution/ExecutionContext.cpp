@@ -41,13 +41,13 @@ void ExecutionContext::leaveScope(const ObjectPtr& result)
 }
 
 void ExecutionContext::leaveScope(bool result)
-  {leaveScope(ObjectPtr(new NewBoolean(result)));}
+  {leaveScope(ObjectPtr(new Boolean(result)));}
 
 void ExecutionContext::leaveScope(size_t result)
-  {leaveScope(ObjectPtr(new NewPositiveInteger(result)));}
+  {leaveScope(ObjectPtr(new PositiveInteger(result)));}
 
 void ExecutionContext::leaveScope(double result)
-  {leaveScope(ObjectPtr(new NewDouble(result)));}
+  {leaveScope(ObjectPtr(new Double(result)));}
 
 void ExecutionContext::leaveScope(const String& result)
   {leaveScope(ObjectPtr(new NewString(result)));}
@@ -148,7 +148,7 @@ int ExecutionContext::enter(LuaState& state)
 int ExecutionContext::leave(LuaState& state)
 {
   ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
-  ObjectPtr res = new NewBoolean(true);
+  ObjectPtr res = new Boolean(true);
   if (state.getTop() >= 2)
     res = state.checkObject(2);
   pthis->leaveScope(res);
@@ -279,14 +279,14 @@ TimedScope::TimedScope(ExecutionContext& context, const String& name, bool enabl
   if (enable)
   {
     this->name = name;
-    startTime = juce::Time::getMillisecondCounterHiRes();
+    startTime = Time::getHighResolutionCounter();
   }
 }
 
 TimedScope::~TimedScope()
 {
   if (name.isNotEmpty())
-    context.resultCallback(name + T(" time"), (juce::Time::getMillisecondCounterHiRes() - startTime) / 1000.0);
+    context.resultCallback(name + T(" time"), Time::getHighResolutionCounter() - startTime);
 }
 
 /*

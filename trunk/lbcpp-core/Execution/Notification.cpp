@@ -15,7 +15,7 @@ using namespace lbcpp;
 Notification::Notification()
 {
   sourceThreadId = Thread::getCurrentThreadId();
-  constructionTime = Time::getCurrentTime();
+  constructionTime = juce::Time::getCurrentTime();
 }
 
 /*

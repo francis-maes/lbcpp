@@ -246,7 +246,7 @@ public:
     if (!problem)
     {
       context.errorCallback("No problem defined");
-      return new NewBoolean(false);
+      return new Boolean(false);
     }
     ExpressionDomainPtr domain = problem->getDomain();
 
@@ -264,7 +264,7 @@ public:
     //sampleTrajectories(context, "typed-postfix", typedPostfixExpressionState(domain, maxExpressionSize));
 
 
-    return new NewBoolean(true);
+    return new Boolean(true);
   }
 
 protected:

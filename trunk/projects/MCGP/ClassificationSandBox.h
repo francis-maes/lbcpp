@@ -98,7 +98,7 @@ public:
     VariableExpressionPtr supervision;
     TablePtr dataset = loadDataFile(context, dataFile, inputs, supervision);
     if (!dataset || !supervision)
-      return new NewBoolean(false);
+      return new Boolean(false);
 
     size_t numVariables = inputs.size();
     size_t numExamples = dataset->getNumRows();
@@ -135,7 +135,7 @@ public:
 
     // todo:
 
-    return new NewBoolean(true);
+    return new Boolean(true);
   }
   
 private:
@@ -194,7 +194,7 @@ private:
   {
     PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
     
-    ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), newDoubleClass);
+    ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), doubleClass);
     ClassPtr supType = p->getSecond().getType();
     ClassPtr exampleType = pairClass(dvClass, supType);
 

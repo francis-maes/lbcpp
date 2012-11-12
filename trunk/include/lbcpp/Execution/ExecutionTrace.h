@@ -177,7 +177,7 @@ public:
     {ScopedLock _(lock); return root;}
   ExecutionTraceNodePtr findNode(const ExecutionStackPtr& stack) const;
 
-  Time getStartTime() const
+  juce::Time getStartTime() const
     {ScopedLock _(lock); return startTime;}
 
   virtual void saveToXml(XmlExporter& exporter) const;
@@ -197,8 +197,8 @@ protected:
 
   ExecutionTraceNodePtr root;
 
-  Time startTime;
-  Time saveTime;
+  juce::Time startTime;
+  juce::Time saveTime;
 };
 extern ClassPtr executionTraceClass;  
 

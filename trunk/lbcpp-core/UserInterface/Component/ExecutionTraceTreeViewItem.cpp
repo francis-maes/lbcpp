@@ -112,7 +112,7 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     if (workUnitTrace)
     {
       double timeLength = workUnitTrace->getTimeLength();
-      String timeLengthString = timeLength ? ObjectPtr(new NewTime(timeLength))->toShortString() : T("...");
+      String timeLengthString = timeLength ? ObjectPtr(new Time(timeLength))->toShortString() : T("...");
       g.drawText(timeLengthString, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
   }

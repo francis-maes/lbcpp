@@ -1,15 +1,10 @@
-Suite:
- ok Fusionner Type et Class
- ok Gerer le TopLevelType
- ok Finir de cleaner les classes de bases de Class
- ok Renommer le TypeManager en ClassManager
- ok Renommer le TemplateType en TemplateClass
- ok IntroGen: Enlever la balise <type>
 
- * Renommer NewDouble en Double, NewInteger en Integer, NewBoolean en Boolean
+ * Renommer Double en Double, Integer en Integer, Boolean en Boolean
  * Gerer les noms de NewString et NewFile 
- * IntroGen: Nouvelle balise <flag> pour isAbstract, isConvertibleTo{Boolean|Double}
- * Cleaner les integerMissingValue et doubleMissingValue
+
+Vector:
+ * DoubleVector sans math
+ * Cleaner doubleMissingValue
 
 Explorer:
  * Cassé: LuaCodeEditor/StringComponent/LuaCodeEditor

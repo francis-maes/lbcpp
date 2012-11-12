@@ -78,7 +78,7 @@ protected:
       isFirst = false;
       ClassPtr attributeClass;
       if (!strcmp(kind, "numerical") || !strcmp(kind, "NUMERICAL"))
-        attributeClass = newDoubleClass;
+        attributeClass = doubleClass;
       else if (!strcmp(kind, "symbolic") || !strcmp(kind, "SYMBOLIC"))
         attributeClass = new DefaultEnumeration();
       else if (!strcmp(kind, "name") || !strcmp(kind, "NAME"))
@@ -107,9 +107,9 @@ protected:
       ClassPtr attributeClass = table->getType(i);
       DefaultEnumerationPtr enumeration = attributeClass.dynamicCast<DefaultEnumeration>();
       if (enumeration)
-        value = new NewEnumValue(enumeration, enumeration->findOrAddElement(context, token));
-      else if (attributeClass == newDoubleClass)
-        value = new NewDouble(strtod(token, NULL));
+        value = new EnumValue(enumeration, enumeration->findOrAddElement(context, token));
+      else if (attributeClass == doubleClass)
+        value = new Double(strtod(token, NULL));
       else if (attributeClass == newStringClass)
         value = new NewString(token);
       else

@@ -12,7 +12,7 @@
     <constructor arguments="SamplerPtr sampler1, SamplerPtr sampler2, double probability"/>
     <variable type="Sampler" name="sampler1"/>
     <variable type="Sampler" name="sampler2"/>
-    <variable type="NewProbability" name="probability"/>
+    <variable type="Probability" name="probability"/>
   </class>
 
   <!-- Continuous Samplers -->
@@ -22,9 +22,9 @@
   
   <class name="DiagonalGaussianSampler" base="Sampler">
     <constructor/>
-    <variable type="NewDouble" name="learningRate"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="mean"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="stddev"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
   </class>
   <class name="DiagonalGaussianDistributionSampler" base="DiagonalGaussianSampler">
     <constructor returnType="Sampler"/>
@@ -40,9 +40,9 @@
   <class name="LogLinearActionCodeSearchSampler" base="SearchSampler">
     <constructor arguments="SearchActionCodeGeneratorPtr codeGenerator, double regularizer, double learningRate"/>
     <variable type="SearchActionCodeGenerator" name="codeGenerator"/>
-    <variable type="NewDouble" name="regularizer"/>
-    <variable type="NewDouble" name="learningRate"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="parameters"/>
+    <variable type="Double" name="regularizer"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="parameters"/>
   </class>
 
 </library>

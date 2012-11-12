@@ -29,12 +29,12 @@ String Vector::toString() const
       if (!element)
         value += '_';
       else
-        value += enumeration->getElement(NewEnumValue::get(element))->getOneLetterCode();
+        value += enumeration->getElement(EnumValue::get(element))->getOneLetterCode();
     }
     return value;
   }
 
-  if (type->inheritsFrom(newDoubleClass))
+  if (type->inheritsFrom(doubleClass))
   {
     String value;
     for (size_t i = 0; i < n; ++i)
@@ -43,7 +43,7 @@ String Vector::toString() const
       if (!element)
         value += '_';
       else
-        value += String(NewDouble::get(element));
+        value += String(Double::get(element));
       if (i < n - 1)
         value += " ";
     }
@@ -144,7 +144,7 @@ size_t BooleanVector::getNumElements() const
   {return v.size();}
 
 static inline unsigned char booleanObjectToByte(const ObjectPtr& value)
-  {return (value ? (NewBoolean::get(value) ? 1 : 0) : 2);}
+  {return (value ? (Boolean::get(value) ? 1 : 0) : 2);}
 
 ObjectPtr BooleanVector::getElement(size_t index) const
 {
@@ -153,7 +153,7 @@ ObjectPtr BooleanVector::getElement(size_t index) const
   if (b == 2)
     return ObjectPtr();
   else
-    return new NewBoolean(b == 1);
+    return new Boolean(b == 1);
 }
 
 void BooleanVector::setElement(size_t index, const ObjectPtr& value)
@@ -201,11 +201,11 @@ ObjectPtr IntegerVector::getElement(size_t index) const
   if (v[index] == missingValue)
     return ObjectPtr();
   else
-    return NewInteger::create(getElementsType(), v[index]);
+    return Integer::create(getElementsType(), v[index]);
 }
 
 static inline juce::int64 integerObjectToInt(const ObjectPtr& value)
-  {return (value ? NewInteger::get(value) : IntegerVector::missingValue);}
+  {return (value ? Integer::get(value) : IntegerVector::missingValue);}
 
 void IntegerVector::setElement(size_t index, const ObjectPtr& value)
   {v[index] = integerObjectToInt(value);}
@@ -344,16 +344,16 @@ size_t ObjectVector::getSizeInBytes(bool recursively) const
 VectorPtr lbcpp::vector(ClassPtr elementsType, size_t initialSize)
 {
   jassert(elementsType);
-  if (elementsType->inheritsFrom(newBooleanClass))
+  if (elementsType->inheritsFrom(booleanClass))
     return booleanVector(initialSize);
-  else if (elementsType->inheritsFrom(newDoubleClass))
+  else if (elementsType->inheritsFrom(doubleClass))
   {
-    if (elementsType->inheritsFrom(newDoubleClass))
-      return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass), initialSize);
+    if (elementsType->inheritsFrom(doubleClass))
+      return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass), initialSize);
     else
       return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
   }
-  else if (elementsType->inheritsFrom(newIntegerClass) || elementsType.isInstanceOf<Enumeration>())
+  else if (elementsType->inheritsFrom(integerClass) || elementsType.isInstanceOf<Enumeration>())
     return integerVector(elementsType, initialSize);
   else
   {

@@ -89,7 +89,7 @@ struct PlayArmWorkUnit : public WorkUnit
   size_t armIndex;
 
   virtual ObjectPtr run(ExecutionContext& context)
-   {return new NewDouble(objective->evaluate(context, object, instanceIndex));}
+   {return new Double(objective->evaluate(context, object, instanceIndex));}
 };
 
 size_t BanditPool::selectAndPlayArm(ExecutionContext& context)
@@ -104,14 +104,14 @@ size_t BanditPool::selectAndPlayArm(ExecutionContext& context)
     context.pushWorkUnit(workUnit, this, false);
   else
   {
-    double objective = NewDouble::get(context.run(workUnit, false));
+    double objective = Double::get(context.run(workUnit, false));
     observeObjective(index, objective);
   }
   return (size_t)index;
 }
 
 void BanditPool::workUnitFinished(const WorkUnitPtr& workUnit, const ObjectPtr& result, const ExecutionTracePtr& trace)
-  {observeObjective(workUnit.staticCast<PlayArmWorkUnit>()->armIndex, NewDouble::get(result));}
+  {observeObjective(workUnit.staticCast<PlayArmWorkUnit>()->armIndex, Double::get(result));}
 
 void BanditPool::observeObjective(size_t index, double objectiveValue)
 {

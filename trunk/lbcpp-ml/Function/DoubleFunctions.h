@@ -19,7 +19,7 @@ class UnaryDoubleFunction : public HomogeneousUnaryFunction
 {
 public:
   UnaryDoubleFunction()
-    : HomogeneousUnaryFunction(newDoubleClass), vectorClass(simpleDenseDoubleVectorClass) {}
+    : HomogeneousUnaryFunction(doubleClass), vectorClass(simpleDenseDoubleVectorClass) {}
 
   virtual double computeDouble(double value) const = 0;
 
@@ -27,9 +27,9 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    double res = computeDouble(NewDouble::get(inputs[0]));
+    double res = computeDouble(Double::get(inputs[0]));
     jassert(res == doubleMissingValue || isNumberValid(res));
-    return res == doubleMissingValue ? ObjectPtr() : ObjectPtr(new NewDouble(res));
+    return res == doubleMissingValue ? ObjectPtr() : ObjectPtr(new Double(res));
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& in, ClassPtr outputType) const
@@ -146,7 +146,7 @@ class BinaryDoubleFunction : public HomogeneousBinaryFunction
 {
 public:
   BinaryDoubleFunction()
-    : HomogeneousBinaryFunction(newDoubleClass) {}
+    : HomogeneousBinaryFunction(doubleClass) {}
 
   virtual double computeDouble(double first, double second) const = 0;
 
@@ -154,11 +154,11 @@ public:
   {
     if (!inputs[0] || !inputs[1])
       return ObjectPtr();
-    double res = computeDouble(NewDouble::get(inputs[0]), NewDouble::get(inputs[1]));
+    double res = computeDouble(Double::get(inputs[0]), Double::get(inputs[1]));
     if (res == doubleMissingValue)
       return ObjectPtr();
     jassert(isNumberValid(res));
-    return new NewDouble(res);
+    return new Double(res);
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const

@@ -47,17 +47,17 @@ class XmlImporter;
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 
-class NewBoolean;
-typedef ReferenceCountedObjectPtr<NewBoolean> NewBooleanPtr;
+class Boolean;
+typedef ReferenceCountedObjectPtr<Boolean> BooleanPtr;
 
-class NewInteger;
-typedef ReferenceCountedObjectPtr<NewInteger> NewIntegerPtr;
+class Integer;
+typedef ReferenceCountedObjectPtr<Integer> IntegerPtr;
 
-class NewEnumValue;
-typedef ReferenceCountedObjectPtr<NewEnumValue> NewEnumValuePtr;
+class EnumValue;
+typedef ReferenceCountedObjectPtr<EnumValue> EnumValuePtr;
 
-class NewDouble;
-typedef ReferenceCountedObjectPtr<NewDouble> NewDoublePtr;
+class Double;
+typedef ReferenceCountedObjectPtr<Double> DoublePtr;
 
 class NewString;
 typedef ReferenceCountedObjectPtr<NewString> NewStringPtr;

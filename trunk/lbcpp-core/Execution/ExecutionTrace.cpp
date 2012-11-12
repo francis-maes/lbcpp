@@ -384,7 +384,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
 ** ExecutionTrace
 */
 ExecutionTrace::ExecutionTrace(const String& contextDescription)
-  : root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
+  : root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(juce::Time::getCurrentTime())
 {
   ScopedLock _(lock);
   using juce::SystemStats;
@@ -418,7 +418,7 @@ void ExecutionTrace::saveToXml(XmlExporter& exporter) const
 {
   ScopedLock _(lock);
 
-  const_cast<ExecutionTrace* >(this)->saveTime = Time::getCurrentTime();
+  const_cast<ExecutionTrace* >(this)->saveTime = juce::Time::getCurrentTime();
   exporter.setAttribute(T("os"), operatingSystem);
   exporter.setAttribute(T("is64bit"), is64BitOs ? T("yes") : T("no"));
   exporter.setAttribute(T("numcpus"), (int)numCpus);

@@ -7,4 +7,4 @@
                                `------------------------------------*/
 
 // This file is necessary for Visual Studio to support precompiled headers
-#include <lbcpp/common.h>
+#include <lbcpp/Core.h>

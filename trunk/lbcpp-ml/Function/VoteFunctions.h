@@ -26,7 +26,7 @@ public:
     {return 1;}
 
   virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
-    {return type == newBooleanClass || type == newProbabilityClass;}
+    {return type == booleanClass || type == probabilityClass;}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return outputType;}
@@ -37,13 +37,13 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    return computeVote(NewDouble::get(inputs[0]));
+    return computeVote(Double::get(inputs[0]));
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVectorPtr weakPredictions = inputs[0];
-    if (weakPredictions->getElementsType() == newBooleanClass)
+    if (weakPredictions->getElementsType() == booleanClass)
     {
       ObjectPtr negativeVote = computeVote(0.0);
       ObjectPtr positiveVote = computeVote(1.0);
@@ -60,7 +60,7 @@ public:
     }
     else
     {
-      jassert(weakPredictions->getElementsType() == newProbabilityClass);
+      jassert(weakPredictions->getElementsType() == probabilityClass);
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
       for (DataVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
@@ -84,21 +84,21 @@ class ScalarVoteFunction : public VoteFunction
 {
 public:
   ScalarVoteFunction(double vote = 0.0)
-    : VoteFunction(newDoubleClass), vote(vote) {}
+    : VoteFunction(doubleClass), vote(vote) {}
 
   virtual ObjectPtr computeVote(double input) const
-    {return new NewDouble((input * 2 - 1) * vote);}
+    {return new Double((input * 2 - 1) * vote);}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
     if (inputs[0])
-      return computeVote(NewDouble::get(inputs[0]));
+      return computeVote(Double::get(inputs[0]));
     else
-      return new NewDouble();
+      return new Double();
   }
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return "vote(" + inputs[0]->toShortString() + ", " + ObjectPtr(new NewDouble(vote))->toShortString() + ")";}
+    {return "vote(" + inputs[0]->toShortString() + ", " + ObjectPtr(new Double(vote))->toShortString() + ")";}
 
 protected:
   friend class ScalarVoteFunctionClass;

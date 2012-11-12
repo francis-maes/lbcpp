@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class NewBoolean : public Object
+class Boolean : public Object
 {
 public:
-  NewBoolean(ClassPtr thisClass, bool value = false)
+  Boolean(ClassPtr thisClass, bool value = false)
     : Object(thisClass), value(value) {}
-  NewBoolean(bool value = false)
+  Boolean(bool value = false)
     : value(value) {}
 
   void set(bool value)
@@ -29,7 +29,7 @@ public:
     {return value;}
 
   static bool get(ObjectPtr object)
-    {return object.staticCast<NewBoolean>()->get();}
+    {return object.staticCast<Boolean>()->get();}
 
   virtual String toShortString() const;
   
@@ -48,7 +48,7 @@ protected:
   bool value;
 };
 
-extern ClassPtr newBooleanClass;
+extern ClassPtr booleanClass;
 
 }; /* namespace lbcpp */
 

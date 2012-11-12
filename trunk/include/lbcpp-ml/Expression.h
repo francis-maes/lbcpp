@@ -68,16 +68,16 @@ public:
       if (owner->implementation == constantValueImpl)
         return owner->constantRawBoolean;
       size_t index = (owner->implementation == ownedVectorImpl ? position : *it);
-      if (owner->elementsType == newBooleanClass)
+      if (owner->elementsType == booleanClass)
         return owner->vector.staticCast<BooleanVector>()->getData()[index];
-      else if (owner->elementsType == newProbabilityClass)
+      else if (owner->elementsType == probabilityClass)
       {
         double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
         return value == doubleMissingValue ? 2 : (value > 0.5 ? 1 : 0);
       }
       else
       {
-        jassert(owner->elementsType == newDoubleClass);
+        jassert(owner->elementsType == doubleClass);
         double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
         return value == doubleMissingValue ? 2 : (value > 0 ? 1 : 0);
       }
@@ -87,9 +87,9 @@ public:
     {
       switch (owner->implementation)
       {
-      case constantValueImpl: return (int)NewInteger::get(owner->constantRawObject);
-      case ownedVectorImpl: return (int)NewInteger::get(owner->vector->getElement(position));
-      case cachedVectorImpl: return (int)NewInteger::get(owner->vector->getElement(*it));
+      case constantValueImpl: return (int)Integer::get(owner->constantRawObject);
+      case ownedVectorImpl: return (int)Integer::get(owner->vector->getElement(position));
+      case cachedVectorImpl: return (int)Integer::get(owner->vector->getElement(*it));
       default: jassert(false); return 0;
       }
     }

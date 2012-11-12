@@ -39,7 +39,7 @@ ClassPtr Enumeration::getClass() const
   {return enumerationClass;}
 
 ObjectPtr Enumeration::createObject(ExecutionContext& context) const
-  {return new NewEnumValue(refCountedPointerFromThis(this), 0);}
+  {return new EnumValue(refCountedPointerFromThis(this), 0);}
 
 bool Enumeration::hasOneLetterCodes() const
 {
@@ -101,7 +101,7 @@ DefaultEnumeration::DefaultEnumeration(const String& name, const String& baseTyp
 }
 
 DefaultEnumeration::DefaultEnumeration()
- : Enumeration(T("UnnamedEnumeration"), T("NewEnumValue"))
+ : Enumeration(T("UnnamedEnumeration"), T("EnumValue"))
 {
 }
 
