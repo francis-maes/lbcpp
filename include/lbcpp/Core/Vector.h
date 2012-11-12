@@ -220,24 +220,22 @@ extern VectorPtr integerVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
 
 template<class TT>
-inline void variableToNative(ExecutionContext& context, std::vector<TT>& dest, const Variable& source)
+inline void objectToNative(ExecutionContext& context, std::vector<TT>& dest, const ObjectPtr& source)
 {
-  jassert(source.isObject());
-  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>(context);
+  const VectorPtr& sourceVector = source.staticCast<Vector>();
   if (sourceVector)
   {
     dest.resize(sourceVector->getNumElements());
     for (size_t i = 0; i < dest.size(); ++i)
-      lbcpp::variableToNative(context, dest[i], sourceVector->getElement(i));
+      lbcpp::objectToNative(context, dest[i], sourceVector->getElement(i));
   }
   else
     dest.clear();
 }
 // I duplicated function for bool case because xcode convert bool to std::_Bit_reference Grrrr
-inline void variableToNative(ExecutionContext& context, std::vector<bool>& dest, const Variable& source)
+inline void objectToNative(ExecutionContext& context, std::vector<bool>& dest, const ObjectPtr& source)
 {
-  jassert(source.isObject());
-  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>(context);
+  const VectorPtr& sourceVector = source.staticCast<Vector>();
   if (sourceVector)
   {
     dest.resize(sourceVector->getNumElements());
@@ -252,7 +250,7 @@ inline void variableToNative(ExecutionContext& context, std::vector<bool>& dest,
 }
 
 template<class TT>
-inline Variable nativeToVariable(const std::vector<TT>& source, const TypePtr& expectedType)
+inline ObjectPtr nativeToObject(const std::vector<TT>& source, const TypePtr& expectedType)
 {
   VectorPtr res = Vector::create(expectedType.staticCast<Class>()).staticCast<Vector>();
 
@@ -260,34 +258,32 @@ inline Variable nativeToVariable(const std::vector<TT>& source, const TypePtr& e
   TypePtr elementsType = res->getElementsType();
   for (size_t i = 0; i < source.size(); ++i)
   {
-    Variable variable = nativeToVariable(source[i], elementsType);
-    if (variable.exists())
-      res->setElement(i, variable.getObject());
+    ObjectPtr variable = nativeToObject(source[i], elementsType);
+    if (variable)
+      res->setElement(i, variable);
   }
-  return Variable(res, expectedType);
+  return res;
 }
 
 template<class TT>
-inline void variableToNative(ExecutionContext& context, std::set<TT>& dest, const Variable& source)
+inline void objectToNative(ExecutionContext& context, std::set<TT>& dest, const ObjectPtr& source)
 {
   dest.clear();
-
-  jassert(source.isObject());
-  const ContainerPtr& sourceContainer = source.getObjectAndCast<Container>(context);
+  const ContainerPtr& sourceContainer = source.staticCast<Container>(context);
   if (sourceContainer)
   {
     size_t n = sourceContainer->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
       TT value;
-      lbcpp::variableToNative(context, value, sourceContainer->getElement(i));
+      lbcpp::objectToNative(context, value, sourceContainer->getElement(i));
       dest.insert(value);
     }
   }
 }
 
 template<class TT>
-inline Variable nativeToVariable(const std::set<TT>& source, const TypePtr& expectedType)
+inline ObjectPtr nativeToObject(const std::set<TT>& source, const TypePtr& expectedType)
 {
   VectorPtr res = Vector::create(expectedType.staticCast<Class>()).staticCast<Vector>();
 
@@ -297,11 +293,11 @@ inline Variable nativeToVariable(const std::set<TT>& source, const TypePtr& expe
   typedef typename std::set<TT>::const_iterator iterator;
   for (iterator it = source.begin(); it != source.end(); ++it, ++i)
   {
-    Variable variable = nativeToVariable(*it, elementsType);
-    if (variable.exists())
+    ObjectPtr variable = nativeToObject(*it, elementsType);
+    if (variable)
       res->setElement(i, variable);
   }
-  return Variable(res, expectedType);
+  return res;
 }
 
 }; /* namespace lbcpp */

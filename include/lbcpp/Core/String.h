@@ -19,6 +19,8 @@ namespace lbcpp
 class NewString : public Object
 {
 public:
+  NewString(ClassPtr thisClass, const juce::String& value = juce::String::empty)
+    : Object(thisClass), value(value) {}
   NewString(const juce::String& value = juce::String::empty)
     : value(value) {}
 
@@ -74,20 +76,21 @@ extern ClassPtr newStringClass;
 class NewFile : public NewString
 {
 public:
+  NewFile(ClassPtr thisClass, const File& file)
+    : NewString(thisClass, file.getFullPathName()) {}
   NewFile(const File& file)
     : NewString(file.getFullPathName()) {}
   NewFile() {}
 
   static NewFilePtr create(const File& file);
+  static juce::File get(const ObjectPtr& object)
+    {return object.staticCast<NewFile>()->get();}
 
   void set(const juce::File& value)
     {this->value = value.getFullPathName();}
 
   juce::File get() const
     {return juce::File(value);}
-
-  static juce::File get(const ObjectPtr& object)
-    {return object.staticCast<NewFile>()->get();}
 
   virtual juce::String toShortString() const
     {return get().getFileName();}

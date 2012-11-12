@@ -37,19 +37,19 @@ class Pair : public Object
 public:
   Pair(ClassPtr thisClass)
     : Object(thisClass) {}
-  Pair(ClassPtr thisClass, const Variable& first, const Variable& second)
+  Pair(ClassPtr thisClass, const ObjectPtr& first, const ObjectPtr& second)
     : Object(thisClass), first(first), second(second) {}
-  Pair(const Variable& first, const Variable& second)
-    : Object(pairClass(first.getType(), second.getType())), first(first), second(second) {}
-  Pair(const std::pair<Variable, Variable>& pair)
-    : Object(pairClass(pair.first.getType(), pair.second.getType())), first(pair.first), second(pair.second) {}
+  Pair(const ObjectPtr& first, const ObjectPtr& second)
+    : Object(pairClass(first->getClass(), second->getClass())), first(first), second(second) {}
+  Pair(const std::pair<ObjectPtr, ObjectPtr>& pair)
+    : Object(pairClass(pair.first->getClass(), pair.second->getClass())), first(pair.first), second(pair.second) {}
   Pair() {}
   
   virtual String toString() const
-    {return T("(") + first.toString() + T(", ") + second.toString() + T(")");}
+    {return T("(") + first->toString() + T(", ") + second->toString() + T(")");}
 
   virtual String toShortString() const
-    {return T("(") + first.toShortString() + T(", ") + second.toShortString() + T(")");}
+    {return T("(") + first->toShortString() + T(", ") + second->toShortString() + T(")");}
  
   virtual int compare(const ObjectPtr& otherObject) const
     {return compareVariables(otherObject);}
@@ -60,25 +60,19 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {PairPtr targetPair = target.staticCast<Pair>(); targetPair->first = first; targetPair->second = second;}
  
-  const Variable& getFirst() const
+  const ObjectPtr& getFirst() const
     {return first;}
 
-  const Variable& getSecond() const
-    {return second;}
-
-  Variable& getFirst()
-    {return first;}
-
-  Variable& getSecond()
+  const ObjectPtr& getSecond() const
     {return second;}
   
-  void setFirst(const Variable& v)
+  void setFirst(const ObjectPtr& v)
     {first = v;}
   
-  void setSecond(const Variable& v)
+  void setSecond(const ObjectPtr& v)
     {second = v;}
 
-  std::pair<Variable, Variable> getValue() const
+  std::pair<ObjectPtr, ObjectPtr> getValue() const
     {return std::make_pair(first, second);}
 
   lbcpp_UseDebuggingNewOperator
@@ -86,22 +80,21 @@ public:
 protected:
   friend class PairClass;
 
-  Variable first;
-  Variable second;
+  ObjectPtr first;
+  ObjectPtr second;
 };
 
 /*
 ** Variable <-> Native conversions
 */
 template<class T1, class T2>
-inline void variableToNative(ExecutionContext& context, std::pair<T1, T2>& dest, const Variable& source)
+inline void objectToNative(ExecutionContext& context, std::pair<T1, T2>& dest, const ObjectPtr& source)
 {
-  jassert(source.isObject());
-  const PairPtr& sourcePair = source.getObjectAndCast<Pair>(context);
+  const PairPtr& sourcePair = source.staticCast<Pair>();
   if (sourcePair)
   {
-    lbcpp::variableToNative(context, dest.first, sourcePair->getFirst());
-    lbcpp::variableToNative(context, dest.second, sourcePair->getSecond());
+    lbcpp::objectToNative(context, dest.first, sourcePair->getFirst());
+    lbcpp::objectToNative(context, dest.second, sourcePair->getSecond());
   }
   else
   {
@@ -111,11 +104,11 @@ inline void variableToNative(ExecutionContext& context, std::pair<T1, T2>& dest,
 }
 
 template<class T1, class T2>
-inline Variable nativeToVariable(const std::pair<T1, T2>& source, const TypePtr& expectedType)
+inline ObjectPtr nativeToObject(const std::pair<T1, T2>& source, const TypePtr& expectedType)
 {
   jassert(expectedType->getNumTemplateArguments() == 2);
-  return Variable::pair(nativeToVariable(source.first, expectedType->getTemplateArgument(0)),
-                        nativeToVariable(source.second, expectedType->getTemplateArgument(1)), expectedType);
+  return new Pair(expectedType, nativeToObject(source.first, expectedType->getTemplateArgument(0)),
+                                nativeToObject(source.second, expectedType->getTemplateArgument(1)));
 }
 
 }; /* namespace lbcpp */

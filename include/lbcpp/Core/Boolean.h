@@ -17,6 +17,8 @@ namespace lbcpp
 class NewBoolean : public Object
 {
 public:
+  NewBoolean(ClassPtr thisClass, bool value = false)
+    : Object(thisClass), value(value) {}
   NewBoolean(bool value = false)
     : value(value) {}
 

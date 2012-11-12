@@ -29,7 +29,7 @@ public:
   virtual ObjectPtr sample(ExecutionContext& context, const ObjectPtr& object) const
   {
     PairPtr pair = object.staticCast<Pair>();
-    std::pair<ObjectPtr, ObjectPtr> res = samplePair(context, pair->getFirst().getObject(), pair->getSecond().getObject());
+    std::pair<ObjectPtr, ObjectPtr> res = samplePair(context, pair->getFirst(), pair->getSecond());
     return new Pair(res.first, res.second);
   }
 

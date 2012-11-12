@@ -347,7 +347,7 @@ protected:
     if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false) && classBaseClass == T("DefaultClass"))
     {
       // getMemberVariableValue
-      openScope(T("virtual lbcpp::Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
+      openScope(T("virtual lbcpp::ObjectPtr getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
         if (baseClassName != T("Object"))
         {
           writeLine(T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
@@ -365,7 +365,7 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": return lbcpp::nativeToVariable(");
+            String code = T("case ") + String((int)i) + T(": return lbcpp::nativeToObject(");
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)
               code += T("(int)(__this__->") + name + T(")");
@@ -375,13 +375,13 @@ protected:
             code += T(", variables[__index__]->getType());");
             writeLine(code, -1);
           }
-          writeLine(T("default: jassert(false); return lbcpp::Variable();"), -1);
+          writeLine(T("default: jassert(false); return lbcpp::ObjectPtr();"), -1);
         closeScope();
       closeScope();
       newLine();
 
       // setMemberVariableValue
-      openScope(T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const lbcpp::Variable& __subValue__) const"));
+      openScope(T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const lbcpp::ObjectPtr& __subValue__) const"));
         writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
         writeLine(T("{baseType->setMemberVariableValue(__thisbase__, __index__, __subValue__); return;}"), 1);
         writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
@@ -394,7 +394,7 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": lbcpp::variableToNative(defaultExecutionContext(), ");
+            String code = T("case ") + String((int)i) + T(": lbcpp::objectToNative(defaultExecutionContext(), ");
 
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)

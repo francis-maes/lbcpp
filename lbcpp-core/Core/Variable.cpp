@@ -19,10 +19,10 @@
 using namespace lbcpp;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
-  {return new Pair(variable1, variable2);}
+  {return new Pair(variable1.getObject(), variable2.getObject());}
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2, TypePtr pairType)
-  {return new Pair(pairType, variable1, variable2);}
+  {return new Pair(pairType, variable1.getObject(), variable2.getObject());}
 
 Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
 {

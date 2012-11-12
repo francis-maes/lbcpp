@@ -89,8 +89,8 @@ protected:
     virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {
       const PairPtr& pair = object.staticCast<Pair>();
-      IterativeSolverPtr optimizer = pair->getFirst().getObjectAndCast<IterativeSolver>();
-      ParetoFrontPtr front = pair->getSecond().getObjectAndCast<ParetoFront>();
+      IterativeSolverPtr optimizer = pair->getFirst().staticCast<IterativeSolver>();
+      ParetoFrontPtr front = pair->getSecond().staticCast<ParetoFront>();
       jassert(optimizer);
       double score = currentScore;
       bool shouldContinue = optimizer->iterateSolver(context, instanceIndex);

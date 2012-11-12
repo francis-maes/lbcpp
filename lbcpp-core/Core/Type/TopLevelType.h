@@ -86,8 +86,8 @@ public:
   virtual int findMemberVariable(const String& name) const
     {return -1;}
 
-  virtual Variable getMemberVariableValue(const VariableValue& value, size_t index) const
-    {jassert(false); return Variable();}
+  virtual ObjectPtr getMemberVariableValue(const VariableValue& value, size_t index) const
+    {jassert(false); return ObjectPtr();}
 
   virtual size_t getNumMemberFunctions() const
     {return 0;}

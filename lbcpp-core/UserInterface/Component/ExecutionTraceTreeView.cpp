@@ -96,23 +96,20 @@ public:
   TabbedExecutionTraceResultsSelectorComponent(const PairPtr& pair)
     : TabbedVariableSelectorComponent(pair)
   {
-    table = pair->getSecond().getObjectAndCast<Table>();
+    table = pair->getSecond().staticCast<Table>();
     if (table)
     {
       addTab(T("Curves"), Colours::white);
       addTab(T("Table"), Colours::white);
     }
 
-    if (pair->getFirst().isObject())
+    results = pair->getFirst();
+    if (results)
     {
-      results = pair->getFirst().getObject();
-      if (results)
-      {
-        for (size_t i = 0; i < results->getNumVariables(); ++i)
-          if (lbcpp::getTopLevelLibrary()->hasUIComponent(results->getVariableType(i)))
-            addTab(results->getVariableName(i), Colours::lightgrey);
-        addTab(T("Results"), Colours::white);
-      }
+      for (size_t i = 0; i < results->getNumVariables(); ++i)
+        if (lbcpp::getTopLevelLibrary()->hasUIComponent(results->getVariableType(i)))
+          addTab(results->getVariableName(i), Colours::lightgrey);
+      addTab(T("Results"), Colours::white);
     }
   }
 

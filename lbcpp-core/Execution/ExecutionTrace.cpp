@@ -305,7 +305,7 @@ VectorPtr ExecutionTraceNode::getResultsVector(ExecutionContext& context) const
   if (results.empty())
     return VectorPtr();
   ClassPtr elementsType = objectVectorClass(pairClass(stringType, objectClass));
-  return lbcpp::nativeToVariable(results, elementsType).getObject();
+  return lbcpp::nativeToObject(results, elementsType);
 }
 
 TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) const
