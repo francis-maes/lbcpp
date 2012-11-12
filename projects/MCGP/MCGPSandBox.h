@@ -558,7 +558,7 @@ public:
   {
     numEvaluations = 0;
     nextEvaluationCount = 1;
-    startingTime = Time::getMillisecondCounterHiRes() / 1000.0;
+    startingTime = Time::getHighResolutionCounter();
     nextEvaluationDeltaTime = 0.001;
     bestFitness = FitnessPtr();
   }
@@ -576,7 +576,7 @@ public:
       nextEvaluationCount *= 2;
     }
 
-    double deltaTime = Time::getMillisecondCounterHiRes() / 1000.0 - startingTime;
+    double deltaTime = Time::getHighResolutionCounter() - startingTime;
     while (deltaTime >= nextEvaluationDeltaTime)
     {
       fitnessPerCpuTime.push_back(bestFitness->getValue(0));

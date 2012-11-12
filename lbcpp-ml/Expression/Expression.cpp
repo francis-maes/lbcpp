@@ -28,8 +28,8 @@ DataVector::DataVector() : implementation(noImpl), constantRawBoolean(2)
 DataVectorPtr DataVector::createConstant(IndexSetPtr indices, const ObjectPtr& constantValue)
 {
   DataVectorPtr res(new DataVector(constantValueImpl, indices, constantValue->getClass()));
-  res->constantRawBoolean = constantValue.dynamicCast<NewBoolean>() ? NewBoolean::get(constantValue) : 2;
-  res->constantRawDouble = constantValue.dynamicCast<NewDouble>() ? NewDouble::get(constantValue) : 0.0;
+  res->constantRawBoolean = constantValue.dynamicCast<Boolean>() ? Boolean::get(constantValue) : 2;
+  res->constantRawDouble = constantValue.dynamicCast<Double>() ? Double::get(constantValue) : 0.0;
   res->constantRawObject = constantValue;
   return res;
 }
@@ -323,12 +323,7 @@ DataVectorPtr FunctionExpression::computeSamples(ExecutionContext& context, cons
   std::vector<DataVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
     inputs[i] = arguments[i]->compute(context, data, indices);
-
-  //double startTime = Time::getMillisecondCounterHiRes();
-  DataVectorPtr res = function->compute(context, inputs, type);
-  //double endTime = Time::getMillisecondCounterHiRes();
-  //cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
-  return res;
+  return function->compute(context, inputs, type);
 }
 
 /*
@@ -373,7 +368,7 @@ String TestExpression::toShortString() const
 ObjectPtr TestExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
   ObjectPtr condition = conditionNode->compute(context, inputs);
-  ExpressionPtr subNode = (condition ? (NewBoolean::get(condition) ? successNode : failureNode) : missingNode);
+  ExpressionPtr subNode = (condition ? (Boolean::get(condition) ? successNode : failureNode) : missingNode);
   return subNode ? subNode->compute(context, inputs) : ObjectPtr();
 }
 
@@ -411,12 +406,12 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
     v[1] = successNode.staticCast<ConstantExpression>()->getValue();
     v[2] = missingNode.staticCast<ConstantExpression>()->getValue();
     
-    if (v[0].dynamicCast<NewDouble>() && v[1].dynamicCast<NewDouble>() && v[2].dynamicCast<NewDouble>())
+    if (v[0].dynamicCast<Double>() && v[1].dynamicCast<Double>() && v[2].dynamicCast<Double>())
     {
       double dv[3];
-      dv[0] = NewDouble::get(v[0]);
-      dv[1] = NewDouble::get(v[1]);
-      dv[2] = NewDouble::get(v[2]);
+      dv[0] = Double::get(v[0]);
+      dv[1] = Double::get(v[1]);
+      dv[2] = Double::get(v[2]);
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
       for (DataVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
@@ -451,7 +446,7 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
     it[1] = subValues[1]->begin();
     it[2] = subValues[2]->begin();
 
-    if (elementsType == newDoubleClass)
+    if (elementsType == doubleClass)
     {
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
@@ -536,13 +531,13 @@ void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr
 ** ScalarSumExpression
 */
 ScalarSumExpression::ScalarSumExpression(const std::vector<ExpressionPtr>& nodes, bool convertToProbabilities, bool computeAverage)
-  : SequenceExpression(convertToProbabilities ? newProbabilityClass : newDoubleClass, nodes),
+  : SequenceExpression(convertToProbabilities ? probabilityClass : doubleClass, nodes),
   convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
 {
 }
 
 ScalarSumExpression::ScalarSumExpression(bool convertToProbabilities, bool computeAverage) 
-  : SequenceExpression(convertToProbabilities ? newProbabilityClass : newDoubleClass), convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
+  : SequenceExpression(convertToProbabilities ? probabilityClass : doubleClass), convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
 {
 }
 
@@ -553,11 +548,11 @@ ObjectPtr ScalarSumExpression::compute(ExecutionContext& context, const ObjectPt
   {
     ObjectPtr value = nodes[i]->compute(context, inputs);
     if (value)
-      res += NewDouble::get(value);
+      res += Double::get(value);
   }
   if (computeAverage)
     res /= (double)nodes.size();
-  return new NewDouble(res);
+  return new Double(res);
 }
 
 VectorPtr ScalarSumExpression::createEmptyOutputs(size_t numSamples) const
@@ -583,7 +578,7 @@ void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const DataVect
 ** VectorSumExpression
 */
 VectorSumExpression::VectorSumExpression(EnumerationPtr enumeration, bool convertToProbabilities) 
-  : SequenceExpression(denseDoubleVectorClass(enumeration, newDoubleClass)), convertToProbabilities(convertToProbabilities)
+  : SequenceExpression(denseDoubleVectorClass(enumeration, doubleClass)), convertToProbabilities(convertToProbabilities)
 {
 }
 
@@ -644,7 +639,7 @@ void VectorSumExpression::updateOutputs(const VectorPtr& outputs, const DataVect
 
 DenseDoubleVectorPtr VectorSumExpression::convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const
 {
-  DenseDoubleVectorPtr probabilities = new DenseDoubleVector(DoubleVector::getElementsEnumeration(type), newProbabilityClass);
+  DenseDoubleVectorPtr probabilities = new DenseDoubleVector(DoubleVector::getElementsEnumeration(type), probabilityClass);
   size_t n = activations->getNumElements();
   double Z = 0.0;
   for (size_t i = 0; i < n; ++i)
@@ -662,10 +657,10 @@ DenseDoubleVectorPtr VectorSumExpression::convertToProbabilitiesUsingSigmoid(con
 ** CreateSparseVectorExpression
 */
 CreateSparseVectorExpression::CreateSparseVectorExpression(const std::vector<ExpressionPtr>& nodes)
-  : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass), nodes) {}
+  : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass), nodes) {}
 
 CreateSparseVectorExpression::CreateSparseVectorExpression()
-  : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass)) {}
+  : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass)) {}
 
 ObjectPtr CreateSparseVectorExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
 {
@@ -674,7 +669,7 @@ ObjectPtr CreateSparseVectorExpression::compute(ExecutionContext& context, const
   {
     ObjectPtr v = nodes[i]->compute(context, inputs);
     if (v)
-      res->incrementValue((size_t)NewInteger::get(v), 1.0);
+      res->incrementValue((size_t)Integer::get(v), 1.0);
   }
   return res;
 }
@@ -692,7 +687,7 @@ void CreateSparseVectorExpression::updateOutputs(const VectorPtr& outputs, const
 { 
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());
-  jassert(newNodeValues->getElementsType() == newPositiveIntegerClass);
+  jassert(newNodeValues->getElementsType() == positiveIntegerClass);
   size_t i = 0;
   for (DataVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
   {

@@ -15,18 +15,18 @@
 namespace lbcpp
 {
 
-class NewInteger : public Object
+class Integer : public Object
 {
 public:
-  NewInteger(ClassPtr thisClass, juce::int64 value = 0)
+  Integer(ClassPtr thisClass, juce::int64 value = 0)
     : Object(thisClass), value(value) {}
-  NewInteger(juce::int64 value = 0)
+  Integer(juce::int64 value = 0)
     : value(value) {}
 
-  static NewIntegerPtr create(ClassPtr type, juce::int64 value);
+  static IntegerPtr create(ClassPtr type, juce::int64 value);
   
   static juce::int64 get(ObjectPtr object)
-    {return object.staticCast<NewInteger>()->get();}
+    {return object.staticCast<Integer>()->get();}
 
   void set(juce::int64 value)
     {this->value = value;}
@@ -50,18 +50,18 @@ protected:
   juce::int64 value;
 };
 
-extern ClassPtr newIntegerClass;
+extern ClassPtr integerClass;
 
-class NewPositiveInteger : public NewInteger
+class PositiveInteger : public Integer
 {
 public:
-  NewPositiveInteger(ClassPtr thisClass, size_t value = 0)
-    : NewInteger(thisClass, value) {}
-  NewPositiveInteger(size_t value = 0)
-    : NewInteger(value) {}
+  PositiveInteger(ClassPtr thisClass, size_t value = 0)
+    : Integer(thisClass, value) {}
+  PositiveInteger(size_t value = 0)
+    : Integer(value) {}
 
   static size_t get(ObjectPtr object)
-    {return object.staticCast<NewPositiveInteger>()->get();}
+    {return object.staticCast<PositiveInteger>()->get();}
 
   void set(size_t value)
     {this->value = (juce::int64)value;}
@@ -70,14 +70,14 @@ public:
     {return (size_t)value;}
 };
 
-extern ClassPtr newPositiveIntegerClass;
+extern ClassPtr positiveIntegerClass;
 
-class NewEnumValue : public NewPositiveInteger
+class EnumValue : public PositiveInteger
 {
 public:
-  NewEnumValue(EnumerationPtr enumeration, size_t value = 0)
-   : NewPositiveInteger(enumeration, value) {}
-  NewEnumValue() {}
+  EnumValue(EnumerationPtr enumeration, size_t value = 0)
+   : PositiveInteger(enumeration, value) {}
+  EnumValue() {}
 
   EnumerationPtr getEnumeration() const
     {return getClass().staticCast<Enumeration>();}
@@ -91,7 +91,7 @@ public:
   virtual String toString() const;
 };
 
-extern ClassPtr newEnumValueClass;
+extern ClassPtr enumValueClass;
 
 }; /* namespace lbcpp */
 

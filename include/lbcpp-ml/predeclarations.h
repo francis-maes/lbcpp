@@ -9,8 +9,6 @@
 #ifndef LBCPP_ML_PREDECLARATIONS_H_
 # define LBCPP_ML_PREDECLARATIONS_H_
 
-# include <lbcpp/Core/Object.h>
-
 namespace lbcpp
 {
 

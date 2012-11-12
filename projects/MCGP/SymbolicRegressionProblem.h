@@ -25,7 +25,7 @@ public:
   virtual void initialize(ExecutionContext& context)
   {
     ExpressionDomainPtr domain = new ExpressionDomain();
-    domain->addInput(newDoubleClass, "x");
+    domain->addInput(doubleClass, "x");
 
 		domain->addFunction(addDoubleFunction());
 		domain->addFunction(subDoubleFunction());
@@ -43,17 +43,17 @@ public:
     const size_t numSamples = 20;
     
     TablePtr data = new Table(numSamples);
-    VariableExpressionPtr supervision = domain->createSupervision(newDoubleClass, "y");
-    data->addColumn(domain->getInput(0), newDoubleClass);
-    data->addColumn(supervision, newDoubleClass);
+    VariableExpressionPtr supervision = domain->createSupervision(doubleClass, "y");
+    data->addColumn(domain->getInput(0), doubleClass);
+    data->addColumn(supervision, doubleClass);
 
     double lowerLimit, upperLimit;
     getInputDomain(lowerLimit, upperLimit);
 		for (size_t i = 0; i < numSamples; ++i)
 		{
 			double x = context.getRandomGenerator()->sampleDouble(lowerLimit, upperLimit);
-      data->setElement(i, 0, new NewDouble(x));
-      data->setElement(i, 1, new NewDouble(computeFunction(x)));
+      data->setElement(i, 0, new Double(x));
+      data->setElement(i, 1, new Double(computeFunction(x)));
 		}
     addObjective(normalizedRMSERegressionObjective(data, supervision));
   }
@@ -81,7 +81,7 @@ public:
   {
     jassert(functionIndex >= 0 && functionIndex < 8);
     ExpressionDomainPtr domain = new ExpressionDomain();
-    domain->addInput(newDoubleClass, "x");
+    domain->addInput(doubleClass, "x");
 
 		domain->addConstant(1.0);
 
@@ -102,7 +102,7 @@ public:
     // data
     const size_t numSamples = 20;
     TablePtr data = new Table(numSamples);
-    VariableExpressionPtr supervision = domain->createSupervision(newDoubleClass, "y");
+    VariableExpressionPtr supervision = domain->createSupervision(doubleClass, "y");
     data->addColumn(domain->getInput(0));
     data->addColumn(supervision);
 

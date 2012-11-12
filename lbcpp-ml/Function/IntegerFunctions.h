@@ -19,10 +19,10 @@ class BinaryIntegerFunction : public HomogeneousBinaryFunction
 {
 public:
   BinaryIntegerFunction()
-    : HomogeneousBinaryFunction(newIntegerClass) {}
+    : HomogeneousBinaryFunction(integerClass) {}
 
   virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
-    {return type->inheritsFrom(newIntegerClass) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
+    {return type->inheritsFrom(integerClass) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const = 0;
 
@@ -30,7 +30,7 @@ public:
   {
     if (!inputs[0] || !inputs[1])
       return ObjectPtr();
-    return new NewInteger(computeInteger(NewInteger::get(inputs[0]), NewInteger::get(inputs[1])));
+    return new Integer(computeInteger(Integer::get(inputs[0]), Integer::get(inputs[1])));
   }
 };
 
@@ -92,7 +92,7 @@ public:
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
-    {return second ? first / second : integerMissingValue;}
+    {return second ? first / second : IntegerVector::missingValue;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}

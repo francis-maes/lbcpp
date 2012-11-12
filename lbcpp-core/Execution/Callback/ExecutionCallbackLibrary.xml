@@ -15,7 +15,7 @@
 
   <class name="MakeAndAutoSaveTraceExecutionCallback" base="MakeTraceExecutionCallback">
     <constructor arguments="ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File&amp; file" returnType="ExecutionCallback"/>
-    <variable type="NewTime" name="saveInterval"/>
+    <variable type="Time" name="saveInterval"/>
     <variable type="NewFile" name="file"/>
   </class>
 
@@ -51,7 +51,7 @@
   
   <class name="ThreadExecutionNotification" base="ExecutionNotification">
     <variable type="ExecutionStack" name="stack"/>
-    <variable type="NewBoolean" name="isThreadEnd"/>
+    <variable type="Boolean" name="isThreadEnd"/>
   </class>
 
 </library>

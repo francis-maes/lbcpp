@@ -19,13 +19,13 @@ namespace lbcpp
 class MakeTraceThreadExecutionCallback : public ExecutionCallback
 {
 public:
-  MakeTraceThreadExecutionCallback(ExecutionTraceNodePtr parentItem, const Time& startTime)
+  MakeTraceThreadExecutionCallback(ExecutionTraceNodePtr parentItem, const juce::Time& startTime)
     : stack(1, parentItem), startTime(startTime), currentNotificationTime(0.0) {}
   MakeTraceThreadExecutionCallback() : currentNotificationTime(0.0) {}
 
   virtual void notificationCallback(const NotificationPtr& notification)
   {
-    Time notificationTime = notification->getConstructionTime();
+    juce::Time notificationTime = notification->getConstructionTime();
     double time = (notificationTime.toMilliseconds() - startTime.toMilliseconds()) / 1000.0;
     if (time > currentNotificationTime)
       currentNotificationTime = time;
@@ -72,7 +72,7 @@ public:
 
 protected:
   std::vector<ExecutionTraceNodePtr> stack;
-  Time startTime;
+  juce::Time startTime;
 
   double currentNotificationTime;
 

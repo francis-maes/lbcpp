@@ -113,9 +113,9 @@ protected:
     if (attributeTypeName == T("float")
         || attributeTypeName == T("real")
         || attributeTypeName == T("numeric"))
-      attributeType = newDoubleClass;
+      attributeType = doubleClass;
     else if (attributeTypeName == T("integer"))
-      attributeType = newIntegerClass;
+      attributeType = integerClass;
     else if (attributeTypeName == T("string"))
     {
       attributeType = newStringClass;
@@ -182,10 +182,10 @@ protected:
       tokens.set(i, tokens[i].trim().unquoted());
     
     ClassPtr attributeType;
-    // It can be a newBooleanClass ?
+    // It can be a booleanClass ?
     if (shouldBeABooleanType(tokens))
     {
-      attributeType = newBooleanClass;
+      attributeType = booleanClass;
     }
     else
     {
@@ -257,7 +257,7 @@ protected:
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
         return false;
       }
-      ObjectPtr v = Object::createFromString(context, newPositiveIntegerClass, tokens[i].substring(0, e));
+      ObjectPtr v = Object::createFromString(context, positiveIntegerClass, tokens[i].substring(0, e));
       if (!v)
       {
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());

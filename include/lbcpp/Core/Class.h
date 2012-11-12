@@ -156,7 +156,6 @@ protected:
 
 extern ClassPtr classClass;
 
-extern int integerMissingValue;
 extern double doubleMissingValue;
 
 }; /* namespace lbcpp */

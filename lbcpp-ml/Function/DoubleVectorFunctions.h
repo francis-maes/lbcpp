@@ -63,9 +63,9 @@ public:
     else
     {
       size_t n = features->getNumElements();
-      VectorPtr res = vector(newPositiveIntegerClass, n);
+      VectorPtr res = vector(positiveIntegerClass, n);
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, new NewPositiveInteger(i));
+        res->setElement(i, new PositiveInteger(i));
       return res;
     }
   }
@@ -185,8 +185,8 @@ public:
     int argmax = vector->getIndexOfMaximumValue();
 
     return new Pair(outputClass, 
-      argmin >= 0 ? ObjectPtr(new NewInteger(enumeration, argmin)) : ObjectPtr(),
-      argmax >= 0 ? ObjectPtr(new NewInteger(enumeration, argmax)) : ObjectPtr());
+      argmin >= 0 ? ObjectPtr(new Integer(enumeration, argmin)) : ObjectPtr(),
+      argmax >= 0 ? ObjectPtr(new Integer(enumeration, argmax)) : ObjectPtr());
   }
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const

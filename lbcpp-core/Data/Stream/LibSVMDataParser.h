@@ -138,7 +138,7 @@ class RegressionLibSVMDataParser : public LibSVMDataParser
 public:
   RegressionLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
     : LibSVMDataParser(context, file), features(features)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), newDoubleClass);}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), doubleClass);}
 
   RegressionLibSVMDataParser() {}
 
@@ -150,7 +150,7 @@ public:
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, new NewDouble(columns[0].getDoubleValue())));
+    setResult(new Pair(elementsType, featuresVector, new Double(columns[0].getDoubleValue())));
     return true;
   }
 
@@ -164,7 +164,7 @@ class BinaryClassificationLibSVMDataParser : public LibSVMDataParser
 public:
   BinaryClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
     : LibSVMDataParser(context, file), features(features), numPositives(0), numNegatives(0)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), newBooleanClass);}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), booleanClass);}
 
   BinaryClassificationLibSVMDataParser() : numPositives(0), numNegatives(0) {}
 
@@ -180,7 +180,7 @@ public:
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, new NewBoolean(supervision)));
+    setResult(new Pair(elementsType, featuresVector, new Boolean(supervision)));
     return true;
   }
   
@@ -219,7 +219,7 @@ public:
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, new NewEnumValue(labels, label)));
+    setResult(new Pair(elementsType, featuresVector, new EnumValue(labels, label)));
     return true;
   }
 
@@ -234,7 +234,7 @@ class MultiLabelClassificationLibSVMDataParser : public LibSVMDataParser
 public:
   MultiLabelClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
     : LibSVMDataParser(context, file), features(features), labels(labels)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), sparseDoubleVectorClass(labels, newProbabilityClass));}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), sparseDoubleVectorClass(labels, probabilityClass));}
 
   MultiLabelClassificationLibSVMDataParser() {}
 
@@ -245,11 +245,11 @@ public:
   {
     StringArray tokens;
     tokens.addTokens(text, T(","), NULL);
-    SparseDoubleVectorPtr res = new SparseDoubleVector(labels, newProbabilityClass);
+    SparseDoubleVectorPtr res = new SparseDoubleVector(labels, probabilityClass);
     for (int i = 0; i < tokens.size(); ++i)
     {
       size_t label = labels->findOrAddElement(context, tokens[i]);
-      res->setElement(label, new NewDouble(1.0));
+      res->setElement(label, new Double(1.0));
     }
     return res;
   }
@@ -278,7 +278,7 @@ class BinaryClassificationLibSVMFastParser : public TextParser
 {
 public:
   BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
-    : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), newBooleanClass)) {}
+    : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanClass)) {}
   BinaryClassificationLibSVMFastParser() {}
 
   virtual ClassPtr getElementsType() const
@@ -297,7 +297,7 @@ public:
     if (firstLetter >= 'A' && firstLetter <= 'Z') firstLetter += 'a' - 'A';
     bool supervision = (firstLetter == 'y' || firstLetter == 't' || firstLetter == '+' || firstLetter == '1');
 
-    SparseDoubleVectorPtr features = new SparseDoubleVector(this->features, newDoubleClass);   
+    SparseDoubleVectorPtr features = new SparseDoubleVector(this->features, doubleClass);   
 		while (true)
 		{
 			char* idx = strtok(NULL, ":");
@@ -308,9 +308,9 @@ public:
 
       size_t index = this->features->findOrAddElement(context, idx);
       double value = strtod(val, NULL);
-      features->setElement(index, new NewDouble(value));
+      features->setElement(index, new Double(value));
 		}
-    setResult(new Pair(elementsType, features, new NewBoolean(supervision)));
+    setResult(new Pair(elementsType, features, new Boolean(supervision)));
     return true;
   }
 

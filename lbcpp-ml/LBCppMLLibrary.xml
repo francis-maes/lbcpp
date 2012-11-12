@@ -34,14 +34,14 @@
     <variable type="ObjectVector[Object]" name="elements"/>
   </class>
   <class name="ContinuousDomain" base="Domain">
-    <variable type="ObjectVector[Pair[NewDouble,NewDouble]]" name="limits"/>
+    <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
   </class>
 
   <!-- Fitness -->
   <class name="FitnessLimits" base="ContinuousDomain"/>
 
   <class name="Fitness">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="values"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
     <variable type="FitnessLimits" name="limits"/>
   </class>
 
@@ -64,9 +64,9 @@
   <!-- Bandit Pool -->
   <class name="BanditPool">
     <variable type="StochasticObjective" name="objective"/>
-    <variable type="NewDouble" name="explorationCoefficient"/>
-    <variable type="NewBoolean" name="optimizeMax"/>
-    <variable type="NewBoolean" name="useMultiThreading"/>
+    <variable type="Double" name="explorationCoefficient"/>
+    <variable type="Boolean" name="optimizeMax"/>
+    <variable type="Boolean" name="useMultiThreading"/>
   </class>
 
 </library>

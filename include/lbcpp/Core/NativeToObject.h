@@ -18,22 +18,22 @@ namespace lbcpp
 ** Atomic Types
 */
 inline ObjectPtr nativeToObject(const bool& source, const ClassPtr& expectedType)
-  {return new NewBoolean(expectedType, source);}
+  {return new Boolean(expectedType, source);}
 
 inline ObjectPtr nativeToObject(const unsigned char& source, const ClassPtr& expectedType)
-  {return NewInteger::create(expectedType, source);}
+  {return Integer::create(expectedType, source);}
 inline ObjectPtr nativeToObject(const size_t& source, const ClassPtr& expectedType)
-  {return NewInteger::create(expectedType, source);}
+  {return Integer::create(expectedType, source);}
 inline ObjectPtr nativeToObject(const int& source, const ClassPtr& expectedType)
-  {return NewInteger::create(expectedType, source);}
+  {return Integer::create(expectedType, source);}
 inline ObjectPtr nativeToObject(const juce::int64& source, const ClassPtr& expectedType)
-  {return NewInteger::create(expectedType, source);}
+  {return Integer::create(expectedType, source);}
 
 inline ObjectPtr nativeToObject(const float& source, const ClassPtr& expectedType)
-  {return NewDouble::create(expectedType, source);}
+  {return Double::create(expectedType, source);}
 
 inline ObjectPtr nativeToObject(const double& source, const ClassPtr& expectedType)
-  {return NewDouble::create(expectedType, source);}
+  {return Double::create(expectedType, source);}
 
 inline ObjectPtr nativeToObject(const juce::String& source, const ClassPtr& expectedType)
   {return new NewString(expectedType, source);}

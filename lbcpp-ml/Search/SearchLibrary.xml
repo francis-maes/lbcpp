@@ -32,7 +32,7 @@
 
   <class name="LookAheadSearchAlgorithm" base="DecoratorSearchAlgorithm">
     <constructor arguments="SolverPtr algorithm, double numActions"/>
-    <variable type="NewDouble" name="numActions"/>
+    <variable type="Double" name="numActions"/>
   </class>
 
 </library>

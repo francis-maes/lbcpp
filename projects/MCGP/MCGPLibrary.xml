@@ -6,7 +6,7 @@
     <variable type="SearchState" name="state"/>
     <variable type="ObjectVector[SearchNode]" name="successors"/>
     <variable type="DiscreteDomain" name="actions"/>
-    <variable type="NewBoolean" name="fullyVisited"/>
+    <variable type="Boolean" name="fullyVisited"/>
   </class>
 
   <class name="PrunedSearchState" base="SearchState">
@@ -20,15 +20,15 @@
   <class name="QuarticSymbolicRegressionProblem" base="KozaSymbolicRegressionProblem" shortName="quartic"/>
   <!--
   <class name="F8SymbolicRegressionProblem" base="Problem" shortName="symbreg">
-    <variable type="NewPositiveInteger" name="functionIndex"/>
+    <variable type="PositiveInteger" name="functionIndex"/>
   </class>-->
 
   <!-- Boolean Problems -->
   <class name="BooleanParityProblem" base="Problem" shortName="parity">
-    <variable type="NewPositiveInteger" name="numBits"/>
+    <variable type="PositiveInteger" name="numBits"/>
   </class>
   <class name="BooleanMultiplexerProblem" base="Problem" shortName="multiplexer">
-    <variable type="NewPositiveInteger" name="numAddressBits"/>
+    <variable type="PositiveInteger" name="numAddressBits"/>
   </class>
 
   <!-- Sante Fe Trail Problem -->
@@ -36,7 +36,7 @@
   
   <class name="SantaFeTrailState" base="Object">
     <variable type="SantaFeTrailWorld" name="world"/>
-    <variable type="NewPositiveInteger" name="maxNumSteps"/>
+    <variable type="PositiveInteger" name="maxNumSteps"/>
   </class>
   
   <class name="SantaFeTrailAction" base="Object" abstract="yes"/>
@@ -57,13 +57,13 @@
   <class name="IfFoodAheadSantaFeTrailFunction" base="SantaFeTrailFunction"/>
 
   <class name="SantaFeTrailProblem" base="Problem" shortName="ant">
-    <variable type="NewPositiveInteger" name="maxNumSteps"/>
+    <variable type="PositiveInteger" name="maxNumSteps"/>
   </class>
 
   <!-- Specific to expressions -->
   <class name="SimpleExpressionSearchActionCodeGenerator" base="SearchActionCodeGenerator"/>
   <class name="NGramExpressionSearchActionCodeGenerator" base="SearchActionCodeGenerator">
-    <variable type="NewPositiveInteger" name="n"/>
+    <variable type="PositiveInteger" name="n"/>
   </class>
   
   <!-- Tree GP: Implementation based on operations -->
@@ -79,25 +79,25 @@
   <class name="TournamentSolutionSelector" base="SolutionSelector">
     <constructor arguments="SolutionComparatorPtr comparator, size_t tournamentSize"/>
     <variable type="SolutionComparator" name="comparator"/>
-    <variable type="NewPositiveInteger" name="tournamentSize"/>
+    <variable type="PositiveInteger" name="tournamentSize"/>
   </class>
 
   <class name="NBestsSolutionSelector" base="SolutionsOperator">
     <constructor arguments="SolutionComparatorPtr comparator, size_t numBests"/>
     <variable type="SolutionComparator" name="comparator"/>
-    <variable type="NewPositiveInteger" name="numBests"/>
+    <variable type="PositiveInteger" name="numBests"/>
   </class>
 
   <class name="MutationOperator" base="SolutionsOperator">
     <constructor arguments="PerturbatorPtr perturbator, double probability"/>
     <variable type="Perturbator" name="perturbator"/>
-    <variable type="NewProbability" name="probability"/>
+    <variable type="Probability" name="probability"/>
   </class>
 
   <class name="CrossOverOperator" base="SolutionsOperator">
     <constructor arguments="BinaryPerturbatorPtr perturbator, double probability"/>
     <variable type="BinaryPerturbator" name="perturbator"/>
-    <variable type="NewProbability" name="probability"/>
+    <variable type="Probability" name="probability"/>
   </class>
   
   <class name="TreeGPOperationsSolver" base="PopulationBasedSolver">
@@ -109,19 +109,19 @@
   <class name="TournamentSampler" base="Sampler">
     <constructor arguments="SolutionComparatorPtr comparator, size_t tournamentSize"/>
     <variable type="SolutionComparator" name="comparator"/>
-    <variable type="NewPositiveInteger" name="tournamentSize"/>
+    <variable type="PositiveInteger" name="tournamentSize"/>
   </class>
   
   <class name="PerturbatorSampler" base="DecoratorSampler">
     <constructor arguments="SamplerPtr inputSampler, PerturbatorPtr perturbator, double probability"/>
     <variable type="Perturbator" name="perturbator"/>
-    <variable type="NewProbability" name="probability"/>
+    <variable type="Probability" name="probability"/>
   </class>
 
   <class name="BinaryPerturbatorSampler" base="DecoratorSampler">
     <constructor arguments="SamplerPtr inputSampler, BinaryPerturbatorPtr perturbator, double probability"/>
     <variable type="BinaryPerturbator" name="perturbator"/>
-    <variable type="NewProbability" name="probability"/>
+    <variable type="Probability" name="probability"/>
   </class>
 
   <class name="TreeGPSamplersSolver" base="PopulationBasedSolver">
@@ -137,40 +137,40 @@
   <!-- Minimalistic incremental -->
   <class name="MinimalisticIncrementalEvolver" base="IterativeSolver">
     <variable type="Sampler" name="sampler"/>
-    <variable type="NewPositiveInteger" name="tournamentSize"/>
+    <variable type="PositiveInteger" name="tournamentSize"/>
   </class>
 
   <class name="RandomWithActiveSubTreesSampler" base="SearchSampler">
     <variable type="ObjectVector[Expression]" name="subTrees"/>
   </class>
   <class name="RandomWithActiveSubTreesSolver" base="PopulationBasedSolver">
-    <variable type="NewPositiveInteger" name="numBests"/>
-    <variable type="NewPositiveInteger" name="numActiveSubTrees"/>
+    <variable type="PositiveInteger" name="numBests"/>
+    <variable type="PositiveInteger" name="numActiveSubTrees"/>
   </class>
 
 
   <class name="MABSamplerExpressionSolver" base="IterativeSolver">
     <variable type="SearchActionCodeGenerator" name="codeGenerator"/>
-    <variable type="NewPositiveInteger" name="numArms"/>
-    <variable type="NewPositiveInteger" name="maxExpressionSize"/>
-    <variable type="NewBoolean" name="usePostfixNotation"/>
+    <variable type="PositiveInteger" name="numArms"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
+    <variable type="Boolean" name="usePostfixNotation"/>
   </class>
 
 
   <!-- SandBox -->
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="Problem" name="problem"/>
-    <variable type="NewPositiveInteger" name="numEvaluations"/>
-    <variable type="NewPositiveInteger" name="numRuns"/>
-    <variable type="NewPositiveInteger" name="maxExpressionSize"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
     <variable type="NewFile" name="outputDirectory"/>
-    <variable type="NewBoolean" name="verbose"/>
+    <variable type="Boolean" name="verbose"/>
   </class>
 
   <class name="SampleExpressionTrajectories" base="WorkUnit">
     <variable type="Problem" name="problem"/>
-    <variable type="NewPositiveInteger" name="numExpressions"/>
-    <variable type="NewPositiveInteger" name="maxExpressionSize"/>
+    <variable type="PositiveInteger" name="numExpressions"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
 
 
@@ -180,15 +180,15 @@
   </class>
   <class name="OptimizeExpressionSamplerSandBox" base="WorkUnit">
     <variable type="Problem" name="problem"/>
-    <variable type="NewPositiveInteger" name="numEvaluations"/>
-    <variable type="NewPositiveInteger" name="maxExpressionSize"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="maxExpressionSize"/>
   </class>
   
   <!-- Classification Sand Box -->
   <class name="ClassificationSandBox" base="WorkUnit">
     <variable type="NewFile" name="dataFile"/>
-    <variable type="NewPositiveInteger" name="maxExamples"/>
-    <variable type="NewPositiveInteger" name="verbosity"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="PositiveInteger" name="verbosity"/>
   </class>
 
 </library>

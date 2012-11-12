@@ -19,8 +19,8 @@
   <class name="ZDT6MOProblem" base="ZDTMOProblem"/>
 
   <class name="MOOSandBox" base="WorkUnit">
-    <variable type="NewPositiveInteger" name="numEvaluations"/>
-    <variable type="NewPositiveInteger" name="verbosity"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="verbosity"/>
   </class>
   
 </library>

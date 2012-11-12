@@ -30,10 +30,10 @@ public:
     {return 1;}
 
   virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
-    {return type->inheritsFrom(newDoubleClass) || type->inheritsFrom(newIntegerClass);}
+    {return type->inheritsFrom(doubleClass) || type->inheritsFrom(integerClass);}
   
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
-    {return newBooleanClass;}
+    {return booleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + " >= " + String(threshold);}
@@ -42,14 +42,14 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    return new NewBoolean(NewDouble::get(inputs[0]) >= threshold);
+    return new Boolean(Double::get(inputs[0]) >= threshold);
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     const DataVectorPtr& scalars = inputs[0];
     jassert(scalars->size());
-    if (scalars->getElementsType() == newDoubleClass)
+    if (scalars->getElementsType() == doubleClass)
     {
       BooleanVectorPtr res = new BooleanVector(scalars->size());
       unsigned char* dest = res->getData();
@@ -119,10 +119,10 @@ public:
     {return 2;}
 
   virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
-    {return type->inheritsFrom(newDoubleClass);}
+    {return type->inheritsFrom(doubleClass);}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
-    {return newBooleanClass;}
+    {return booleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
@@ -131,7 +131,7 @@ public:
   {
     if (!inputs[0] || !inputs[1])
       return ObjectPtr();
-    return new NewBoolean(NewDouble::get(inputs[0]) > NewDouble::get(inputs[1]));
+    return new Boolean(Double::get(inputs[0]) > Double::get(inputs[1]));
   }
 
   virtual Flags getFlags() const
@@ -142,10 +142,10 @@ class NormalizerFunction : public UnaryDoubleFunction
 {
 public:
   NormalizerFunction()
-    {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newProbabilityClass);}
+    {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityClass);}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
-    {return newProbabilityClass;}
+    {return probabilityClass;}
 
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)
     {computePercentiles(inputValues, numPercentiles, percentiles);}
@@ -157,7 +157,7 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    return new NewProbability(computeDouble(NewDouble::get(inputs[0])));
+    return new Probability(computeDouble(Double::get(inputs[0])));
   }
 
   virtual double computeDouble(double value) const

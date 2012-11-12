@@ -22,7 +22,7 @@ class NotBooleanFunction : public HomogeneousUnaryFunction
 {
 public:
   NotBooleanFunction()
-    : HomogeneousUnaryFunction(newBooleanClass) {}
+    : HomogeneousUnaryFunction(booleanClass) {}
   
   virtual String toShortString() const
     {return "!";}
@@ -31,7 +31,7 @@ public:
     {return "!" + inputs[0]->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
-    {return inputs[0] ? new NewBoolean(!NewBoolean::get(inputs[0])) : ObjectPtr();}
+    {return inputs[0] ? new Boolean(!Boolean::get(inputs[0])) : ObjectPtr();}
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
@@ -58,7 +58,7 @@ class BinaryBooleanFunction : public HomogeneousBinaryFunction
 {
 public:
   BinaryBooleanFunction()
-    : HomogeneousBinaryFunction(newBooleanClass) {}
+    : HomogeneousBinaryFunction(booleanClass) {}
 
   virtual bool computeBoolean(bool first, bool second) const = 0;
   
@@ -72,7 +72,7 @@ public:
   {
     if (!inputs[0] || !inputs[1])
       return ObjectPtr();
-    return new NewBoolean(computeBoolean(NewBoolean::get(inputs[0]), NewBoolean::get(inputs[1])));
+    return new Boolean(computeBoolean(Boolean::get(inputs[0]), Boolean::get(inputs[1])));
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
@@ -157,7 +157,7 @@ public:
 class IfThenElseBooleanFunction : public HomogeneousTernaryFunction
 {
 public:
-  IfThenElseBooleanFunction() : HomogeneousTernaryFunction(newBooleanClass) {}
+  IfThenElseBooleanFunction() : HomogeneousTernaryFunction(booleanClass) {}
   
   virtual String toShortString() const
     {return "if-then-else";}
@@ -169,7 +169,7 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    return NewBoolean::get(inputs[0]) ? inputs[1] : inputs[2];
+    return Boolean::get(inputs[0]) ? inputs[1] : inputs[2];
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const

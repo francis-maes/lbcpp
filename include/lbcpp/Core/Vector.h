@@ -92,7 +92,7 @@ public:
   ** Container
   */
   virtual ClassPtr getElementsType() const
-    {return newBooleanClass;}
+    {return booleanClass;}
 
   virtual size_t getNumElements() const;
   virtual ObjectPtr getElement(size_t index) const;

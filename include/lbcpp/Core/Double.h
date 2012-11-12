@@ -14,17 +14,17 @@
 namespace lbcpp
 {
 
-class NewDouble : public Object
+class Double : public Object
 {
 public:
-  NewDouble(ClassPtr thisClass, double value = 0.0)
+  Double(ClassPtr thisClass, double value = 0.0)
     : Object(thisClass), value(value) {}
-  NewDouble(double value = 0.0)
+  Double(double value = 0.0)
     : value(value) {}
 
-  static NewDoublePtr create(ClassPtr type, double value);
+  static DoublePtr create(ClassPtr type, double value);
   static double get(ObjectPtr object)
-    {return object.staticCast<NewDouble>()->get();}
+    {return object.staticCast<Double>()->get();}
 
   void set(double value)
     {this->value = value;}
@@ -48,34 +48,37 @@ protected:
   double value;
 };
 
-extern ClassPtr newDoubleClass;
+extern ClassPtr doubleClass;
 
-class NewProbability : public NewDouble
+class Probability : public Double
 {
 public:
-  NewProbability(ClassPtr thisClass, double value = 0.0)
-    : NewDouble(thisClass, value) {}
-  NewProbability(double value = 0.0)
-    : NewDouble(value) {}
+  Probability(ClassPtr thisClass, double value = 0.0)
+    : Double(thisClass, value) {}
+  Probability(double value = 0.0)
+    : Double(value) {}
 
   virtual String toShortString() const;
   virtual bool toBoolean() const;
 };
 
-extern ClassPtr newProbabilityClass;
+extern ClassPtr probabilityClass;
 
-class NewTime : public NewDouble
+class Time : public Double
 {
 public:
-  NewTime(ClassPtr thisClass, double value = 0.0)
-    : NewDouble(thisClass, value) {}
-  NewTime(double value = 0.0)
-    : NewDouble(value) {}
+  Time(ClassPtr thisClass, double value = 0.0)
+    : Double(thisClass, value) {}
+  Time(double value = 0.0)
+    : Double(value) {}
 
   virtual String toShortString() const;
+
+  static double getHighResolutionCounter()
+    {return juce::Time::getMillisecondCounterHiRes() / 1000.0;}
 };
 
-extern ClassPtr newTimeClass;
+extern ClassPtr timeClass;
 
 }; /* namespace lbcpp */
 

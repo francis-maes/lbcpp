@@ -69,7 +69,7 @@
     <variable type="NewString" name="description"/>
   </class>
   <class name="FunctionSignature" base="Signature">
-    <variable type="NewBoolean" name="staticFunction"/>
+    <variable type="Boolean" name="staticFunction"/>
   </class>
   <class name="LuaFunctionSignature" base="FunctionSignature">
     <!-- variable: lua function -->
@@ -105,7 +105,7 @@
 
   <class name="DefaultClass" base="Class">
     <variable type="ObjectVector[VariableSignature]" name="variables"/>
-    <variable type="NewBoolean" name="abstractClass"/>
+    <variable type="Boolean" name="abstractClass"/>
   </class>
 
   <!-- Template Class -->
@@ -118,7 +118,7 @@
   <class name="Library" base="Object" abstract="yes"/>
 
   <!-- Builtin Types -->
-  <class name="NewBoolean">
+  <class name="Boolean">
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
@@ -126,27 +126,27 @@
         {return true;}
     </code>
   </class>
-  <class name="NewInteger">
+  <class name="Integer">
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
     </code>
   </class>
-  <class name="NewPositiveInteger" base="NewInteger"/>
-  <class name="NewEnumValue" base="NewPositiveInteger"/>
-  <class name="NewDouble">
+  <class name="PositiveInteger" base="Integer"/>
+  <class name="EnumValue" base="PositiveInteger"/>
+  <class name="Double">
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
     </code>
   </class>
-  <class name="NewProbability" base="NewDouble">
+  <class name="Probability" base="Double">
     <code>
       virtual bool isConvertibleToBoolean() const
       {return true;}
     </code>
   </class>
-  <class name="NewTime" base="NewDouble"/>
+  <class name="Time" base="Double"/>
   <class name="NewString"/>
   <class name="NewFile" base="NewString"/>
   <class name="Directory" base="NewFile"/>
@@ -177,17 +177,17 @@
     <constructor arguments="ClassPtr elementsType, size_t initialSize" parameters="elementsType"/>
   </template>
 
-  <class name="BooleanVector" base="Vector[NewBoolean]">
+  <class name="BooleanVector" base="Vector[Boolean]">
     <constructor arguments="size_t initialSize"/>
   </class>
 
-  <template name="IntegerVector" base="Vector[NewInteger]">
+  <template name="IntegerVector" base="Vector[Integer]">
     <parameter name="elementsType"/>
     <constructor arguments="ClassPtr elementsType, size_t initialSize" parameters="elementsType"/>
   </class>
 
   <template name="AddMissingToEnumeration" metaclass="Enumeration">
-    <parameter name="enumeration" type="NewEnumValue"/>
+    <parameter name="enumeration" type="EnumValue"/>
     <code>
       EnumerationPtr getEnumeration() const
         {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
@@ -207,7 +207,7 @@
   </template>
 
   <template name="AddEntropyToEnumeration" metaclass="Enumeration">
-    <parameter name="enumeration" type="NewEnumValue"/>
+    <parameter name="enumeration" type="EnumValue"/>
     <code>
       EnumerationPtr getEnumeration() const
         {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
@@ -275,8 +275,8 @@
   </class>
   
   <template name="CartesianProductEnumeration" metaclass="Enumeration">
-    <parameter name="firstEnumeration" type="NewEnumValue"/>
-    <parameter name="secondEnumeration" type="NewEnumValue"/>
+    <parameter name="firstEnumeration" type="EnumValue"/>
+    <parameter name="secondEnumeration" type="EnumValue"/>
     <code>
       EnumerationPtr getFirstEnumeration() const
         {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}

@@ -5,7 +5,7 @@
   <!-- Solver Base Classes -->
   <class name="Solver" abstract="yes"/>
   <class name="IterativeSolver" base="Solver" abstract="yes">
-    <variable type="NewPositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
   <!-- Solver Callbacks -->
@@ -24,19 +24,19 @@
   </class>
   <class name="MaxEvaluationsSolverCallback" base="SolverCallback">
     <constructor arguments="size_t maxEvaluations"/>
-    <variable type="NewPositiveInteger" name="maxEvaluations"/>
+    <variable type="PositiveInteger" name="maxEvaluations"/>
   </class>
   <class name="EvaluatorSolverCallback" base="SolverCallback" abstract="yes">
-    <variable type="NewPositiveInteger" name="evaluationPeriod"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="cpuTimes"/>
+    <variable type="PositiveInteger" name="evaluationPeriod"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="cpuTimes"/>
   </class>
   <class name="SingleObjectiveEvaluatorSolverCallback" base="EvaluatorSolverCallback">
     <constructor arguments="size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores" returnType="SolverCallback"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="scores"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="scores"/>
   </class>
   <class name="HyperVolumeEvaluatorSolverCallback" base="EvaluatorSolverCallback">
     <constructor arguments="size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores" returnType="SolverCallback"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="scores"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="scores"/>
   </class>
 
   <!-- Solvers -->
@@ -48,27 +48,27 @@
   <class name="NRPASolver" base="Solver">
     <constructor arguments="SamplerPtr sampler, size_t level, size_t numIterationsPerLevel"/>
     <variable type="Sampler" name="sampler"/>
-    <variable type="NewPositiveInteger" name="level"/>
-    <variable type="NewPositiveInteger" name="numIterationsPerLevel"/>
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterationsPerLevel"/>
   </class>
   
   <class name="BeamNRPASolver" base="NRPASolver">
     <constructor arguments="SamplerPtr sampler, size_t level, size_t numIterationsPerLevel, size_t beamSizeAtFirstLevel, size_t beamSizeAtHigherLevels" returnType="Solver"/>
-    <variable type="NewPositiveInteger" name="beamSizeAtFirstLevel"/>
-    <variable type="NewPositiveInteger" name="beamSizeAtHigherLevels"/>
+    <variable type="PositiveInteger" name="beamSizeAtFirstLevel"/>
+    <variable type="PositiveInteger" name="beamSizeAtHigherLevels"/>
   </class>
 
 
   <!-- Population Based Optimizers -->
   <class name="PopulationBasedSolver" base="IterativeSolver" abstract="yes">
-    <variable type="NewPositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="populationSize"/>
   </class>
 
   <class name="CrossEntropySolver" base="PopulationBasedSolver">
     <constructor arguments="SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations, bool elitist, SolutionComparatorPtr comparator"/>
     <variable type="Sampler" name="sampler"/>
-    <variable type="NewPositiveInteger" name="numTrainingSamples"/>
-    <variable type="NewBoolean" name="elitist"/>
+    <variable type="PositiveInteger" name="numTrainingSamples"/>
+    <variable type="Boolean" name="elitist"/>
     <variable type="SolutionComparator" name="comparator"/>
   </class>
 
@@ -80,8 +80,8 @@
 
   <class name="MABMetaSolver" base="IterativeSolver">
     <variable type="IterativeSolver" name="baseOptimizer"/>
-    <variable type="NewPositiveInteger" name="numInstances"/>
-    <variable type="NewDouble" name="explorationCoefficient"/>
+    <variable type="PositiveInteger" name="numInstances"/>
+    <variable type="Double" name="explorationCoefficient"/>
   </class>
   
 </library>

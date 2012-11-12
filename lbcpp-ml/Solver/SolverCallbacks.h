@@ -126,7 +126,7 @@ public:
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
   {
     numEvaluations = 0;
-    startTime = juce::Time::getMillisecondCounterHiRes() / 1000.0;
+    startTime = Time::getHighResolutionCounter();
   }
   
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
@@ -135,7 +135,7 @@ public:
     if (numEvaluations % evaluationPeriod == 0)
     {
       evaluate(context, solver);
-      cpuTimes->appendValue(juce::Time::getMillisecondCounterHiRes() / 1000.0 - startTime);
+      cpuTimes->appendValue(Time::getHighResolutionCounter() - startTime);
     }
   }
 

@@ -25,8 +25,8 @@
         {return true;}
     </code>
 
-    <variable type="NewDouble" name="samplesSum"/>
-    <variable type="NewDouble" name="samplesCount"/>
+    <variable type="Double" name="samplesSum"/>
+    <variable type="Double" name="samplesCount"/>
 
     <function lang="lua" name="clear"/>
     <function lang="lua" name="observe"/>
@@ -37,14 +37,14 @@
   </class>
   
   <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean">
-    <variable type="NewDouble" name="samplesSumOfSquares"/>
+    <variable type="Double" name="samplesSumOfSquares"/>
     <function lang="lua" name="getStandardDeviation"/>
     <function lang="lua" name="getVariance"/>
   </class>
   
   <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance">
-    <variable type="NewDouble" name="minimumValue"/>
-    <variable type="NewDouble" name="maximumValue"/>
+    <variable type="Double" name="minimumValue"/>
+    <variable type="Double" name="maximumValue"/>
     <function lang="lua" name="getMinimum"/>
     <function lang="lua" name="getMaximum"/>
   </class>
@@ -54,8 +54,8 @@
 
   <!-- DoubleVector -->
   <template name="DoubleVector" base="Vector[elementsType]" abstract="yes">
-    <parameter name="elementsEnumeration" type="NewEnumValue"/>
-    <parameter name="elementsType" type="NewDouble"/>
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
 
     <function lang="lua" name="add"/>
     <function lang="lua" name="mul"/>
@@ -68,25 +68,25 @@
   </template>
 
   <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="NewEnumValue"/>
-    <parameter name="elementsType" type="NewDouble"/>
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
     <function lang="lua" name="append"/>
     <function lang="lua" name="increment"/>
   </template>
 
   <template name="DenseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="NewEnumValue"/>
-    <parameter name="elementsType" type="NewDouble"/>
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
   </template>
 
   <template name="CompositeDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="NewEnumValue"/>
-    <parameter name="elementsType" type="NewDouble"/>
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
   </template>
 
   <!-- IndexSet -->
   <class name="IndexSet" base="Object">
-    <variable type="IntegerVector[NewPositiveInteger]" name="v"/>
+    <variable type="IntegerVector[PositiveInteger]" name="v"/>
   </class>
   <class name="BinaryKey" base="Object"/>
 
@@ -95,10 +95,10 @@
 
   <!-- Confusion Matrix -->
   <class name="BinaryConfusionMatrix" base="Object">
-    <variable type="NewPositiveInteger" name="truePositive"/>
-    <variable type="NewPositiveInteger" name="falsePositive"/>
-    <variable type="NewPositiveInteger" name="falseNegative"/>
-    <variable type="NewPositiveInteger" name="trueNegative"/>
+    <variable type="PositiveInteger" name="truePositive"/>
+    <variable type="PositiveInteger" name="falsePositive"/>
+    <variable type="PositiveInteger" name="falseNegative"/>
+    <variable type="PositiveInteger" name="trueNegative"/>
   </class>
 
   <!-- Iteration Function -->
@@ -106,13 +106,13 @@
 
   <class name="ConstantIterationFunction" base="IterationFunction" shortName="constant">
     <constructor arguments="double value"/>
-    <variable type="NewDouble" name="value"/>
+    <variable type="Double" name="value"/>
   </class>
 
   <class name="InvLinearIterationFunction" base="IterationFunction" shortName="invLinear">
     <constructor arguments="double initialValue, size_t numberIterationsToReachHalfInitialValue"/>
-    <variable type="NewDouble" name="initialValue"/>
-    <variable type="NewPositiveInteger" name="numberIterationsToReachHalfInitialValue"/>
+    <variable type="Double" name="initialValue"/>
+    <variable type="PositiveInteger" name="numberIterationsToReachHalfInitialValue"/>
   </class>
 
 </library>

@@ -113,11 +113,11 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-extern ClassPtr doubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
-extern ClassPtr sparseDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
-extern ClassPtr denseDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
-extern ClassPtr lazyDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
-extern ClassPtr compositeDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
+extern ClassPtr doubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
+extern ClassPtr sparseDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
+extern ClassPtr denseDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
+extern ClassPtr lazyDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
+extern ClassPtr compositeDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
 
 extern ClassPtr simpleDenseDoubleVectorClass;
 extern ClassPtr simpleSparseDoubleVectorClass;

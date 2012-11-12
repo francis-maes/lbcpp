@@ -22,7 +22,7 @@ public:
     : enumeration(enumeration), value(value) {}
 
   virtual String toShortString() const
-    {return "= " + ObjectPtr(new NewInteger(enumeration, value))->toShortString();}
+    {return "= " + ObjectPtr(new Integer(enumeration, value))->toShortString();}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -31,16 +31,16 @@ public:
     {return enumeration ? type == enumeration : type.isInstanceOf<Enumeration>();}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
-    {return newBooleanClass;}
+    {return booleanClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + T(" == ") + ObjectPtr(new NewInteger(enumeration, value))->toShortString();}
+    {return inputs[0]->toShortString() + T(" == ") + ObjectPtr(new Integer(enumeration, value))->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {
     if (!inputs[0])
       return ObjectPtr();
-    return new NewBoolean(NewInteger::get(inputs[0]) == (juce::int64)value);
+    return new Boolean(Integer::get(inputs[0]) == (juce::int64)value);
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
@@ -57,7 +57,7 @@ public:
       size_t n = enumeration->getNumElements();
       VectorPtr res = vector(enumeration, n);
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, new NewInteger(enumeration, i));
+        res->setElement(i, new Integer(enumeration, i));
       return res;
     }
   }

@@ -18,22 +18,22 @@ namespace lbcpp
 ** Atomic Types
 */
 inline void objectToNative(ExecutionContext& context, bool& dest, const ObjectPtr& source)
-  {dest = NewBoolean::get(source);}
+  {dest = Boolean::get(source);}
 
 inline void objectToNative(ExecutionContext& context, int& dest, const ObjectPtr& source)
-  {dest = (int)NewInteger::get(source);}
+  {dest = (int)Integer::get(source);}
 
 inline void objectToNative(ExecutionContext& context, juce::int64& dest, const ObjectPtr& source)
-  {dest = NewInteger::get(source);}
+  {dest = Integer::get(source);}
 
 inline void objectToNative(ExecutionContext& context, size_t& dest, const ObjectPtr& source)
-  {dest = (size_t)NewInteger::get(source);}
+  {dest = (size_t)Integer::get(source);}
  
 inline void objectToNative(ExecutionContext& context, unsigned char& dest, const ObjectPtr& source)
-  {dest = (unsigned char)NewInteger::get(source);}
+  {dest = (unsigned char)Integer::get(source);}
 
 inline void objectToNative(ExecutionContext& context, double& dest, const ObjectPtr& source)
-  {dest = NewDouble::get(source);}
+  {dest = Double::get(source);}
 
 inline void objectToNative(ExecutionContext& context, String& dest, const ObjectPtr& source)
   {dest = NewString::get(source);}
@@ -97,7 +97,7 @@ inline void objectToNative(ExecutionContext& context, std::vector<bool>& dest, c
     for (size_t i = 0; i < dest.size(); ++i)
     {
       ObjectPtr elt = sourceVector->getElement(i);
-      dest[i] = elt && NewBoolean::get(elt);
+      dest[i] = elt && Boolean::get(elt);
     }
   }
   else

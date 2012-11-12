@@ -3,7 +3,7 @@
 <library name="Colo" dynamic="yes">
   
   <class name="ColoObject">
-    <variable type="IntegerVector[NewPositiveInteger]" name="sequence"/>
+    <variable type="IntegerVector[PositiveInteger]" name="sequence"/>
   </class>
   <class name="ColoDomain" base="Domain"/>
   <class name="ColoProblem" base="Problem">
@@ -11,16 +11,16 @@
     <variable type="NewFile" name="modelDirectory"/>
   </class>
   <class name="ColoSampler" base="Sampler">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="probabilities"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
   </class>
   <class name="ColoSampler2" base="Sampler">
-    <variable type="ObjectVector[DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]]" name="probabilities"/>
+    <variable type="ObjectVector[DenseDoubleVector[PositiveIntegerEnumeration,Double]]" name="probabilities"/>
   </class>
 
   <class name="ColoSandBox" base="WorkUnit">
     <variable type="NewFile" name="javaDirectory"/>
     <variable type="NewFile" name="modelDirectory"/>
-    <variable type="NewPositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
   </class>
   
 </library>

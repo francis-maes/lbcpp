@@ -121,7 +121,7 @@ bool checkIsAWorkUnit(ExecutionContext& context, const ObjectPtr& object)
 
 bool runWorkUnit(ExecutionContext& context, WorkUnitPtr workUnit)
 {
-  NewBooleanPtr result = context.run(workUnit).dynamicCast<NewBoolean>();
+  BooleanPtr result = context.run(workUnit).dynamicCast<Boolean>();
   return !result || result->get();
 }
 

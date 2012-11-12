@@ -13,16 +13,16 @@
 using namespace lbcpp;
 
 /*
-** NewDouble
+** Double
 */
-NewDoublePtr NewDouble::create(ClassPtr type, double value)
+DoublePtr Double::create(ClassPtr type, double value)
 {
-  if (type == newProbabilityClass)
-    return new NewProbability(type, value);
-  else if (type == newTimeClass)
-    return new NewTime(type, value);
+  if (type == probabilityClass)
+    return new Probability(type, value);
+  else if (type == timeClass)
+    return new Time(type, value);
   else
-    return new NewDouble(type, value);
+    return new Double(type, value);
 }
 
 static String positiveNumberToShortString(double d)
@@ -49,7 +49,7 @@ static String positiveNumberToShortString(double d)
   return res;
 }
 
-String NewDouble::toShortString() const
+String Double::toShortString() const
 {
   if (!value)
     return T("0");
@@ -57,23 +57,23 @@ String NewDouble::toShortString() const
   return value < 0.0 ? T("-") + res : res;
 }
 
-String NewDouble::toString() const
+String Double::toString() const
   {return String(value);}
   
-double NewDouble::toDouble() const
+double Double::toDouble() const
   {return value;}
 
-int NewDouble::compare(const ObjectPtr& otherObject) const
+int Double::compare(const ObjectPtr& otherObject) const
 {
-  const NewDoublePtr& other = otherObject.staticCast<NewDouble>();
+  const DoublePtr& other = otherObject.staticCast<Double>();
   double delta = value - other->get();
   return delta < 0.0 ? -1 : (delta > 0.0 ? 1 : 0);
 }
 
-void NewDouble::clone(ExecutionContext& context, const ObjectPtr& target) const
-  {target.staticCast<NewDouble>()->value = value;}
+void Double::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<Double>()->value = value;}
   
-bool NewDouble::loadFromString(ExecutionContext& context, const String& str)
+bool Double::loadFromString(ExecutionContext& context, const String& str)
 {
   String v = str.trim().toLowerCase();
   if (!v.containsOnly(T("0123456789e.-")))
@@ -85,25 +85,25 @@ bool NewDouble::loadFromString(ExecutionContext& context, const String& str)
   return true;
 }
 
-bool NewDouble::loadFromXml(XmlImporter& importer)
+bool Double::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
-void NewDouble::saveToXml(XmlExporter& exporter) const
+void Double::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
 /*
-** NewProbability
+** Probability
 */
-String NewProbability::toShortString() const
+String Probability::toShortString() const
   {return String(value * 100, 1) + T("%");}
 
-bool NewProbability::toBoolean() const
+bool Probability::toBoolean() const
   {return value > 0.5;}
 
 /*
-** NewTime
+** Time
 */
-String NewTime::toShortString() const
+String Time::toShortString() const
 {
   double timeInSeconds = value;
   if (timeInSeconds == 0.0)

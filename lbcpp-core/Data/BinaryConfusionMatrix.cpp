@@ -177,25 +177,25 @@ bool BinaryConfusionMatrix::loadFromXml(XmlImporter& importer)
   if (tokens.size() != 4)
     return false;
 
-  ObjectPtr v = Object::createFromString(importer.getContext(), newPositiveIntegerClass, tokens[0]);
+  ObjectPtr v = Object::createFromString(importer.getContext(), positiveIntegerClass, tokens[0]);
   if (!v)
     return false;
-  truePositive = NewPositiveInteger::get(v);
+  truePositive = PositiveInteger::get(v);
 
-  v = Object::createFromString(importer.getContext(), newPositiveIntegerClass, tokens[1]);
+  v = Object::createFromString(importer.getContext(), positiveIntegerClass, tokens[1]);
   if (!v.exists())
     return false;
-  falsePositive = NewPositiveInteger::get(v);
+  falsePositive = PositiveInteger::get(v);
 
-  v = Object::createFromString(importer.getContext(), newPositiveIntegerClass, tokens[2]);
+  v = Object::createFromString(importer.getContext(), positiveIntegerClass, tokens[2]);
   if (!v.exists())
     return false;
-  falseNegative = NewPositiveInteger::get(v);
+  falseNegative = PositiveInteger::get(v);
 
-  v = Object::createFromString(importer.getContext(), newPositiveIntegerClass, tokens[3]);
+  v = Object::createFromString(importer.getContext(), positiveIntegerClass, tokens[3]);
   if (!v.exists())
     return false;
-  trueNegative = NewPositiveInteger::get(v);
+  trueNegative = PositiveInteger::get(v);
 
   totalCount = truePositive + falsePositive + falseNegative + trueNegative;
   return true;

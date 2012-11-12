@@ -26,7 +26,7 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
   {
     if (doProgression)
     {
-      juce::uint32 t = Time::getApproximateMillisecondCounter();
+      juce::uint32 t = juce::Time::getApproximateMillisecondCounter();
       if (!lastTimeProgressionWasSent || (t - lastTimeProgressionWasSent) > 100)
       {
         ProgressionStatePtr progression = getCurrentPosition();

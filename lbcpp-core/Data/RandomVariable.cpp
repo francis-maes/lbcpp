@@ -30,7 +30,7 @@ String ScalarVariableMean::toString() const
 }
 
 String ScalarVariableMean::toShortString() const
-  {return ObjectPtr(new NewDouble(getMean()))->toShortString();}
+  {return ObjectPtr(new Double(getMean()))->toShortString();}
 
 int ScalarVariableMean::clear(LuaState& state)
 {
@@ -89,7 +89,7 @@ String ScalarVariableMeanAndVariance::toShortString() const
   String res = ScalarVariableMean::toShortString();
   double stddev = getStandardDeviation();
   if (stddev)
-    res += T(" +/- ") + ObjectPtr(new NewDouble(stddev))->toShortString();
+    res += T(" +/- ") + ObjectPtr(new Double(stddev))->toShortString();
   return res;
 }
 

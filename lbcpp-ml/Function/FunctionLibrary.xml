@@ -117,7 +117,7 @@
   <class name="EqualsConstantEnumFunction" base="Function">
     <constructor arguments="EnumerationPtr enumeration, size_t value"/>
     <variable type="Enumeration" name="enumeration"/>
-    <variable type="NewPositiveInteger" name="value"/>
+    <variable type="PositiveInteger" name="value"/>
   </class>
 
   <!-- Object Functions -->
@@ -126,7 +126,7 @@
     <constructor arguments="ClassPtr inputClass, size_t variableIndex" returnType="Function"/>
     <constructor arguments="ClassPtr inputClass, const String&amp; variableName" returnType="Function"/>
     <variable type="Class" name="inputClass"/>
-    <variable type="NewPositiveInteger" name="variableIndex"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
   </class>
   <class name="GetContainerLengthFunction" base="Function">
     <constructor/>
@@ -136,18 +136,18 @@
   <class name="GetDoubleVectorElementFunction" base="Function">
     <constructor arguments="EnumerationPtr enumeration, size_t index"/>
     <variable type="Enumeration" name="enumeration"/>
-    <variable type="NewPositiveInteger" name="index"/>
+    <variable type="PositiveInteger" name="index"/>
   </class>
 
   <class name="ScalarVariableStatisticsPerception">
-    <variable type="NewDouble" name="mean"/>
-    <variable type="NewDouble" name="stddev"/>
-    <variable type="NewDouble" name="min"/>
-    <variable type="NewDouble" name="max"/>
-    <variable type="NewDouble" name="sum"/>
-    <variable type="NewDouble" name="l0norm"/>
-    <variable type="NewDouble" name="l1norm"/>
-    <variable type="NewDouble" name="l2norm"/>
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="stddev"/>
+    <variable type="Double" name="min"/>
+    <variable type="Double" name="max"/>
+    <variable type="Double" name="sum"/>
+    <variable type="Double" name="l0norm"/>
+    <variable type="Double" name="l1norm"/>
+    <variable type="Double" name="l2norm"/>
   </class>
   <class name="ComputeDoubleVectorStatisticsFunction" base="Function">
     <constructor/>
@@ -161,18 +161,18 @@
   <!-- Special Functions -->
   <class name="StumpFunction" base="Function">
     <constructor arguments="double threshold"/>
-    <variable type="NewDouble" name="threshold"/>
+    <variable type="Double" name="threshold"/>
   </class>
   
   <!-- Vote Functions -->
   <class name="VoteFunction" base="Function" abstract="yes"/>
   <class name="ScalarVoteFunction" base="VoteFunction">
     <constructor arguments="double vote" returnType="Function"/>
-    <variable type="NewDouble" name="vote"/>
+    <variable type="Double" name="vote"/>
   </class>
   <class name="VectorVoteFunction" base="VoteFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; vote" returnType="Function"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="vote"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="vote"/>
   </class>
 
 </library>

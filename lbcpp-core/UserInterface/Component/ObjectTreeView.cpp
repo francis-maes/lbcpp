@@ -79,7 +79,7 @@ public:
       for (size_t i = 0; i < sparseVector->getNumValues(); ++i)
       {
         const std::pair<size_t, double>& value = sparseVector->getValue(i);
-        addSubObject(sparseVector->getElementName(value.first), NewDouble::create(elementsType, value.second));
+        addSubObject(sparseVector->getElementName(value.first), Double::create(elementsType, value.second));
       }
       mightContainSubItemsFlag = true;
       return;
@@ -125,8 +125,8 @@ public:
         for (size_t i = 0; i < count; ++i)
         {
           ObjectPtr elt = container->getElement(i);
-          jassert(elt.dynamicCast<NewDouble>());
-          if (NewDouble::get(elt) != 0.0)
+          jassert(elt.dynamicCast<Double>());
+          if (Double::get(elt) != 0.0)
             addSubObject(container->getElementName(i), container->getElement(i));
         }
       }
