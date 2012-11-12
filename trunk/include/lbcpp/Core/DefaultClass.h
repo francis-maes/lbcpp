@@ -17,54 +17,27 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: Class.h                        | Class introspection             |
+| Filename: DefaultClass.h                 | Class introspection             |
 | Author  : Francis Maes                   |                                 |
 | Started : 02/02/2011 18:35               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_CLASS_H_
-# define LBCPP_CORE_CLASS_H_
+#ifndef LBCPP_CORE_DEFAULT_CLASS_H_
+# define LBCPP_CORE_DEFAULT_CLASS_H_
 
 # include "Type.h"
 
 namespace lbcpp
 {
 
-class Class : public Type
-{
-public:
-  Class(const String& name, TypePtr baseClass)
-    : Type(name, baseClass) {}
-  Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
-    : Type(templateType, templateArguments, baseClass) {}
-  Class() {}
-
-  virtual bool isAbstract() const
-    {return false;}
-
-  virtual String toString() const;
-  virtual ClassPtr getClass() const;
-
-  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
-  virtual ObjectPtr createFromXml(XmlImporter& importer) const;
-
-  lbcpp_UseDebuggingNewOperator
-};
-
-extern ClassPtr pairClass(TypePtr firstClass, TypePtr secondClass);
-
-extern ClassPtr typeClass;
-extern ClassPtr enumerationClass;
-extern ClassPtr classClass;
-
 class DefaultClass : public Class
 {
 public:
-  DefaultClass(const String& name, TypePtr baseClass = objectClass);
+  DefaultClass(const String& name, ClassPtr baseClass = objectClass);
   DefaultClass(const String& name, const String& baseClass);
-  DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
+  DefaultClass(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass);
   DefaultClass() : abstractClass(false) {}
 
   virtual ClassPtr getClass() const;
@@ -83,12 +56,12 @@ public:
 
   virtual int findMemberVariable(const String& name) const;
 
-  size_t findOrAddMemberVariable(ExecutionContext& context, const String& name, TypePtr type);
+  size_t findOrAddMemberVariable(ExecutionContext& context, const String& name, ClassPtr type);
 
   void reserveMemberVariables(size_t count)
     {variables.reserve(count);}
 
-  size_t addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
+  size_t addMemberVariable(ExecutionContext& context, ClassPtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
   size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
   virtual size_t addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature);
 
@@ -119,4 +92,4 @@ typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_CLASS_H_
+#endif // !LBCPP_CORE_DEFAULT_CLASS_H_

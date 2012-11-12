@@ -75,7 +75,7 @@
 
   <template name="ObjectVector" base="Vector[elementsType]">
     <parameter name="elementsType"/>
-    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+    <constructor arguments="ClassPtr elementsType, size_t initialSize" parameters="elementsType"/>
   </template>
 
   <class name="BooleanVector" base="Vector[NewBoolean]">
@@ -84,7 +84,7 @@
 
   <template name="IntegerVector" base="Vector[NewInteger]">
     <parameter name="elementsType"/>
-    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+    <constructor arguments="ClassPtr elementsType, size_t initialSize" parameters="elementsType"/>
   </class>
 
   <template name="AddMissingToEnumeration" metaclass="Enumeration">

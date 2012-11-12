@@ -35,8 +35,8 @@ public:
     {return (getFlags()& flags) == flags;}
 
   virtual size_t getNumInputs() const = 0;
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const = 0; 
-  virtual TypePtr initialize(const TypePtr* inputTypes) = 0; // returns the output type
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const = 0; 
+  virtual ClassPtr initialize(const ClassPtr* inputTypes) = 0; // returns the output type
 
   virtual bool acceptInputsStack(const std::vector<ExpressionPtr>& stack) const;
 
@@ -45,11 +45,11 @@ public:
     
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const;
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
     {jassert(getNumVariables() == 0); return ContainerPtr();}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const;
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const;
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -123,58 +123,58 @@ extern FunctionPtr vectorVoteFunction(const DenseDoubleVectorPtr& vote);
 class HomogeneousUnaryFunction : public Function
 {
 public:
-  HomogeneousUnaryFunction(TypePtr type = anyType)
+  HomogeneousUnaryFunction(ClassPtr type = anyType)
     : type(type) {}
 
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(this->type);}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return type;}
 
 private:
-  TypePtr type;
+  ClassPtr type;
 };
 
 class HomogeneousBinaryFunction : public Function
 {
 public:
-  HomogeneousBinaryFunction(TypePtr type = anyType)
+  HomogeneousBinaryFunction(ClassPtr type = anyType)
     : type(type) {}
 
   virtual size_t getNumInputs() const
     {return 2;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(this->type);}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return type;}
 
 private:
-  TypePtr type;
+  ClassPtr type;
 };
 
 class HomogeneousTernaryFunction : public Function
 {
 public:
-  HomogeneousTernaryFunction(TypePtr type = anyType)
+  HomogeneousTernaryFunction(ClassPtr type = anyType)
     : type(type) {}
 
   virtual size_t getNumInputs() const
     {return 3;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(this->type);}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return type;}
 
 private:
-  TypePtr type;
+  ClassPtr type;
 };
 
 }; /* namespace lbcpp */

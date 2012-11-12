@@ -32,13 +32,13 @@
 namespace lbcpp
 {
 
-class Type : public NameableObject
+class Class : public NameableObject
 {
 public:
-  Type(const String& className, TypePtr baseType);
-  Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType);
-  Type() : namedType(false) {}
-  virtual ~Type();
+  Class(const String& className, ClassPtr baseType);
+  Class(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType);
+  Class() : namedType(false) {}
+  virtual ~Class();
 
   /*
   ** Initialization
@@ -57,22 +57,22 @@ public:
 
   const String& getShortName() const
     {return shortName;}
-
+  
   /*
   ** Type operations
   */
-  TypePtr getBaseType() const
+  ClassPtr getBaseType() const
     {return baseType;}
 
-  void setBaseType(TypePtr baseType)
+  void setBaseType(ClassPtr baseType)
     {this->baseType = baseType;}
 
-  TypePtr findBaseTypeFromTemplateName(const String& templateName) const;
+  ClassPtr findBaseTypeFromTemplateName(const String& templateName) const;
 
-  bool inheritsFrom(TypePtr baseType) const;
-  bool canBeCastedTo(TypePtr targetType) const;
+  bool inheritsFrom(ClassPtr baseType) const;
+  bool canBeCastedTo(ClassPtr targetType) const;
   
-  static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
+  static ClassPtr findCommonBaseClass(ClassPtr type1, ClassPtr type2);
 
   /*
   ** Template Arguments
@@ -80,22 +80,25 @@ public:
   TemplateTypePtr getTemplate() const
     {return templateType;}
 
-  const std::vector<TypePtr>& getTemplateArguments() const
+  const std::vector<ClassPtr>& getTemplateArguments() const
     {return templateArguments;}
 
   size_t getNumTemplateArguments() const
     {return templateArguments.size();}
   
-  TypePtr getTemplateArgument(size_t index) const
+  ClassPtr getTemplateArgument(size_t index) const
     {jassert(index < templateArguments.size()); return templateArguments[index];}
   
   /*
-  ** Operations
+  ** Object Constructor
   */
-  virtual ObjectPtr create(ExecutionContext& context) const;
-  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const;
-  virtual ObjectPtr createFromXml(XmlImporter& importer) const;
+  virtual ObjectPtr createObject(ExecutionContext& context) const;
 
+  /*
+  ** Flags
+  */
+  virtual bool isAbstract() const
+    {return false;}
   virtual bool isConvertibleToBoolean() const;
   virtual bool isConvertibleToDouble() const;
 
@@ -105,7 +108,7 @@ public:
   virtual size_t getNumMemberVariables() const;
   virtual VariableSignaturePtr getMemberVariable(size_t index) const;
 
-  TypePtr getMemberVariableType(size_t index) const;
+  ClassPtr getMemberVariableType(size_t index) const;
   String getMemberVariableName(size_t index) const;
   String getMemberVariableShortName(size_t index) const;
   String getMemberVariableDescription(size_t index) const;
@@ -129,11 +132,7 @@ public:
   virtual ClassPtr getClass() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;
-  static TypePtr loadUnnamedTypeFromXml(XmlImporter& importer);
-
-  virtual String toString() const
-    {return getName();}
-
+  virtual String toString() const;
   virtual String toShortString() const
     {return shortName.isNotEmpty() ? shortName : toString();}
 
@@ -142,25 +141,29 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class TypeClass;
+  friend class ClassClass;
   friend class TypeManager;
   friend struct TemplateTypeCache;
 
   bool initialized;
 
-  TypePtr baseType;
+  ClassPtr baseType;
   TemplateTypePtr templateType;
-  std::vector<TypePtr> templateArguments;
+  std::vector<ClassPtr> templateArguments;
   bool namedType;
   String shortName;
 };
 
-extern TypePtr variableType;
-// synonims of variableType
-extern TypePtr topLevelType;
-extern TypePtr anyType;
+extern ClassPtr classClass;
+
+// all three are synonims of variableType
+extern ClassPtr variableType;
+extern ClassPtr topLevelType;
+extern ClassPtr anyType;
 
 extern ClassPtr objectClass;
+extern ClassPtr pairClass(ClassPtr firstClass, ClassPtr secondClass);
+extern ClassPtr enumerationClass;
 
 extern int integerMissingValue;
 extern double doubleMissingValue;

@@ -23,7 +23,7 @@ public:
 
   DirectoryPairFileStream() : nextFilePosition(0) {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return pairClass(newFileClass, newFileClass);}
 
   virtual bool rewind()

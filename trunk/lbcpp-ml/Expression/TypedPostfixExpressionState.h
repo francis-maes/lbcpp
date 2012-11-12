@@ -109,7 +109,7 @@ protected:
   
   void updateTypeState()
   {
-    std::vector<TypePtr> types(stack.size());
+    std::vector<ClassPtr> types(stack.size());
     for (size_t i = 0; i < types.size(); ++i)
       types[i] = stack[i]->getType();
     typeState = typeSearchSpace->getState(trajectory.size(), types);

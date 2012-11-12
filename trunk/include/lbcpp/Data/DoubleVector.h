@@ -45,11 +45,11 @@ public:
   virtual EnumerationPtr getElementsEnumeration() const
     {return thisClass->getTemplateArgument(0);}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return thisClass->getTemplateArgument(1);}
 
-  static EnumerationPtr getElementsEnumeration(TypePtr doubleVectorType);
-  static bool getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType);
+  static EnumerationPtr getElementsEnumeration(ClassPtr doubleVectorType);
+  static bool getTemplateParameters(ExecutionContext& context, ClassPtr type, EnumerationPtr& elementsEnumeration, ClassPtr& elementsType);
 
   // compute - sum v[i] * log2(v[i])
   virtual double entropy() const = 0;
@@ -113,11 +113,11 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-extern ClassPtr doubleVectorClass(TypePtr elementsEnumeration = newEnumValueClass, TypePtr elementsType = newDoubleClass);
-extern ClassPtr sparseDoubleVectorClass(TypePtr elementsEnumeration = newEnumValueClass, TypePtr elementsType = newDoubleClass);
-extern ClassPtr denseDoubleVectorClass(TypePtr elementsEnumeration = newEnumValueClass, TypePtr elementsType = newDoubleClass);
-extern ClassPtr lazyDoubleVectorClass(TypePtr elementsEnumeration = newEnumValueClass, TypePtr elementsType = newDoubleClass);
-extern ClassPtr compositeDoubleVectorClass(TypePtr elementsEnumeration = newEnumValueClass, TypePtr elementsType = newDoubleClass);
+extern ClassPtr doubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
+extern ClassPtr sparseDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
+extern ClassPtr denseDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
+extern ClassPtr lazyDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
+extern ClassPtr compositeDoubleVectorClass(ClassPtr elementsEnumeration = newEnumValueClass, ClassPtr elementsType = newDoubleClass);
 
 extern ClassPtr simpleDenseDoubleVectorClass;
 extern ClassPtr simpleSparseDoubleVectorClass;
@@ -125,7 +125,7 @@ extern ClassPtr simpleSparseDoubleVectorClass;
 class SparseDoubleVector : public DoubleVector
 {
 public:
-  SparseDoubleVector(EnumerationPtr elementsEnumeration, TypePtr elementsType);
+  SparseDoubleVector(EnumerationPtr elementsEnumeration, ClassPtr elementsType);
   SparseDoubleVector(ClassPtr thisClass);
   SparseDoubleVector(size_t initialReservedSize);
   SparseDoubleVector();
@@ -220,7 +220,7 @@ class DenseDoubleVector : public DoubleVector
 public:
   DenseDoubleVector(ClassPtr thisClass, std::vector<double>& values);
   DenseDoubleVector(ClassPtr thisClass, size_t initialSize = (size_t)-1, double initialValue = 0.0);
-  DenseDoubleVector(EnumerationPtr enumeration, TypePtr elementsType, size_t initialSize = (size_t)-1, double initialValue = 0.0);
+  DenseDoubleVector(EnumerationPtr enumeration, ClassPtr elementsType, size_t initialSize = (size_t)-1, double initialValue = 0.0);
   DenseDoubleVector(size_t initialSize, double initialValue);
   DenseDoubleVector();
   virtual ~DenseDoubleVector();

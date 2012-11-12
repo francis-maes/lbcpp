@@ -17,7 +17,7 @@ using namespace lbcpp;
 Table::Table(size_t numSamples)
   : allIndices(new IndexSet(0, numSamples)) {}
 
-void Table::addColumn(const ObjectPtr& key, const TypePtr& type)
+void Table::addColumn(const ObjectPtr& key, const ClassPtr& type)
 {
   Column c;
   c.key = key;
@@ -27,7 +27,7 @@ void Table::addColumn(const ObjectPtr& key, const TypePtr& type)
   columns.push_back(c);
 }
 
-void Table::addColumn(const String& name, const TypePtr& type)
+void Table::addColumn(const String& name, const ClassPtr& type)
 {
   addColumn(new NewString(name), type);
 }

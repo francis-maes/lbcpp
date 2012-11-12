@@ -32,7 +32,7 @@ public:
     return res == doubleMissingValue ? ObjectPtr() : ObjectPtr(new NewDouble(res));
   }
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& in, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& in, ClassPtr outputType) const
   {
     const DataVectorPtr& inputs = in[0];
     DenseDoubleVectorPtr res = new DenseDoubleVector(vectorClass, inputs->size(), 0.0);
@@ -161,7 +161,7 @@ public:
     return new NewDouble(res);
   }
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVector::const_iterator it1 = inputs[0]->begin();
     DataVector::const_iterator it2 = inputs[1]->begin();

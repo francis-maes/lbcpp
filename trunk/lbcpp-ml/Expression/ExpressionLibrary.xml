@@ -7,7 +7,7 @@
     
   <!-- Expressions-->
   <class name="Expression" base="Object" abstract="yes">
-    <variable type="Type" name="type"/>
+    <variable type="Class" name="type"/>
     <!-- <variable type="NewPositiveInteger" name="allocationIndex"/> -->
   </class>
   <class name="VariableExpression" base="Expression">
@@ -89,7 +89,7 @@
   
   <class name="PostfixExpressionTypeState">
     <variable type="NewPositiveInteger" name="depth"/>
-    <variable type="ObjectVector[Type]" name="stack"/>
+    <variable type="ObjectVector[Class]" name="stack"/>
   </class>
   <class name="PostfixExpressionTypeSpace"/>
 

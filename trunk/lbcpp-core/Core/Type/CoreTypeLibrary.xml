@@ -31,38 +31,15 @@
     <!-- variable: lua function -->
   </class>
   <class name="VariableSignature" base="Signature">
-    <variable type="Type" name="type"/>
+    <variable type="Class" name="type"/>
   </class>
   
   <!-- Type -->
-  <class name="Type" base="NameableObject" abstract="yes">
-    <variable type="Type" name="baseType"/>
+  <class name="Class" base="NameableObject" abstract="yes">
+    <variable type="Class" name="baseType"/>
     <variable type="TemplateType" name="templateType"/>
-    <variable type="ObjectVector[Type]" name="templateArguments"/>
+    <variable type="ObjectVector[Class]" name="templateArguments"/>
     <variable type="NewString" name="shortName"/>
-    <code>
-      virtual ObjectPtr createFromString(ExecutionContext&amp; context, const String&amp; value) const
-        {return typeManager().getType(context, value);}
-
-      virtual ObjectPtr createFromXml(XmlImporter&amp; importer) const
-      {
-        String text = importer.getAllSubText().trim();
-        if (text.isNotEmpty())
-          return createFromString(importer.getContext(), importer.getAllSubText());
-        else
-          return Type::loadUnnamedTypeFromXml(importer);
-      }
-    </code>
-  </class>
-
-  <class name="Class" base="Type" abstract="yes">
-    <code>
-      virtual ObjectPtr createFromString(ExecutionContext&amp; context, const String&amp; value) const
-        {return Type::createFromString(context, value);}
-
-      virtual ObjectPtr createFromXml(XmlImporter&amp; importer) const
-        {return Type::createFromXml(importer);}
-    </code>
   </class>
 
   <class name="EnumerationElement" base="Object">
@@ -72,15 +49,7 @@
     <variable type="NewString" name="description"/>
   </class>
 
-  <class name="Enumeration" base="Class" abstract="yes">
-    <code>
-      virtual ObjectPtr createFromString(ExecutionContext&amp; context, const String&amp; value) const
-        {return Type::createFromString(context, value);}
-
-      virtual ObjectPtr createFromXml(XmlImporter&amp; importer) const
-        {return Type::createFromXml(importer);}
-    </code>
-  </class>
+  <class name="Enumeration" base="Class" abstract="yes"/>
   
   <class name="DefaultEnumeration" base="Enumeration">
     <variable type="ObjectVector[EnumerationElement]" name="elements"/>

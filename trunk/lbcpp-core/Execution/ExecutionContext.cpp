@@ -62,7 +62,7 @@ ObjectPtr ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   return res;
 }
 
-bool ExecutionContext::checkInheritance(TypePtr type, TypePtr baseType)
+bool ExecutionContext::checkInheritance(ClassPtr type, ClassPtr baseType)
 {
   jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))
@@ -73,10 +73,10 @@ bool ExecutionContext::checkInheritance(TypePtr type, TypePtr baseType)
   return true;
 }
 
-bool ExecutionContext::checkInheritance(const ObjectPtr& object, TypePtr baseType)
+bool ExecutionContext::checkInheritance(const ObjectPtr& object, ClassPtr baseType)
 {
   jassert(baseType);
-  return !object || checkInheritance((TypePtr)object->getClass(), baseType);
+  return !object || checkInheritance((ClassPtr)object->getClass(), baseType);
 }
 
 static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const ObjectPtr& object, std::vector<ObjectPtr>& currentStack)

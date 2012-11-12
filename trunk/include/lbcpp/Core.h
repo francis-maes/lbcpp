@@ -12,7 +12,7 @@
 # include "Core/Object.h"
 # include "Core/Type.h"
 # include "Core/Enumeration.h"
-# include "Core/Class.h"
+# include "Core/DefaultClass.h"
 # include "Core/TemplateType.h"
 # include "Core/TypeManager.h"
 # include "Core/Library.h"

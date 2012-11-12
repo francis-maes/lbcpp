@@ -142,7 +142,7 @@ public:
 
   RegressionLibSVMDataParser() {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return elementsType;}
 
   virtual bool parseDataLine(const std::vector<String>& columns)
@@ -156,7 +156,7 @@ public:
 
 private:
   DefaultEnumerationPtr features;
-  TypePtr elementsType;
+  ClassPtr elementsType;
 };
 
 class BinaryClassificationLibSVMDataParser : public LibSVMDataParser
@@ -168,7 +168,7 @@ public:
 
   BinaryClassificationLibSVMDataParser() : numPositives(0), numNegatives(0) {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return elementsType;}
 
   virtual bool parseDataLine(const std::vector<String>& columns)
@@ -196,7 +196,7 @@ public:
 
 private:
   DefaultEnumerationPtr features;
-  TypePtr elementsType;
+  ClassPtr elementsType;
 
   size_t numPositives, numNegatives;
 };
@@ -210,7 +210,7 @@ public:
 
   ClassificationLibSVMDataParser() {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return elementsType;}
 
   virtual bool parseDataLine(const std::vector<String>& columns)
@@ -226,7 +226,7 @@ public:
 private:
   DefaultEnumerationPtr features;
   DefaultEnumerationPtr labels;
-  TypePtr elementsType;
+  ClassPtr elementsType;
 };
 
 class MultiLabelClassificationLibSVMDataParser : public LibSVMDataParser
@@ -238,7 +238,7 @@ public:
 
   MultiLabelClassificationLibSVMDataParser() {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return elementsType;}
 
   SparseDoubleVectorPtr parseLabelsList(const String& text) const
@@ -267,7 +267,7 @@ public:
 private:
   DefaultEnumerationPtr features;
   DefaultEnumerationPtr labels;
-  TypePtr elementsType;
+  ClassPtr elementsType;
 };
 
 #ifdef JUCE_WIN32
@@ -281,7 +281,7 @@ public:
     : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), newBooleanClass)) {}
   BinaryClassificationLibSVMFastParser() {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return elementsType;}
 
   virtual bool parseLine(char* line)
@@ -316,7 +316,7 @@ public:
 
 protected:
   DefaultEnumerationPtr features;
-  TypePtr elementsType;
+  ClassPtr elementsType;
 };
 
 

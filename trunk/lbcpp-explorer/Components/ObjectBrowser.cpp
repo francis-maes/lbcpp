@@ -85,7 +85,7 @@ struct ObjectRelatedCommand
   static bool saveContainerAsGnuplotData(ExecutionContext& context, const ContainerPtr& container, const File& outputFile)
   {
     size_t numRows = container->getNumElements();
-    TypePtr rowType = container->getElementsType();
+    ClassPtr rowType = container->getElementsType();
 
     if (outputFile.existsAsFile())
       outputFile.deleteFile();

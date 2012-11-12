@@ -91,7 +91,7 @@ public:
   /*
   ** Container
   */
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return newBooleanClass;}
 
   virtual size_t getNumElements() const;
@@ -115,8 +115,8 @@ typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;
 class IntegerVector : public Vector
 {
 public:
-  IntegerVector(TypePtr elementsType, size_t initialSize, juce::int64 initialValue);
-  IntegerVector(TypePtr elementsType, size_t initialSize);
+  IntegerVector(ClassPtr elementsType, size_t initialSize, juce::int64 initialValue);
+  IntegerVector(ClassPtr elementsType, size_t initialSize);
   IntegerVector() {}
 
   // Vector
@@ -144,10 +144,10 @@ protected:
 class ObjectVector : public Vector
 {
 public:
-  ObjectVector(TypePtr elementsType, size_t initialSize);
+  ObjectVector(ClassPtr elementsType, size_t initialSize);
   ObjectVector(ClassPtr thisClass);
-  ObjectVector(const std::vector<ObjectPtr>& reference, TypePtr elementsType = TypePtr());
-  ObjectVector(std::vector<ObjectPtr>& reference, TypePtr elementsType = TypePtr());
+  ObjectVector(const std::vector<ObjectPtr>& reference, ClassPtr elementsType = ClassPtr());
+  ObjectVector(std::vector<ObjectPtr>& reference, ClassPtr elementsType = ClassPtr());
   ObjectVector();
 
   virtual ~ObjectVector();
@@ -209,15 +209,15 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ObjectVector> ObjectVectorPtr;
 
-extern ClassPtr vectorClass(TypePtr elementsType = anyType);
-extern ClassPtr objectVectorClass(TypePtr elementsType);
+extern ClassPtr vectorClass(ClassPtr elementsType = anyType);
+extern ClassPtr objectVectorClass(ClassPtr elementsType);
 extern ClassPtr booleanVectorClass;
-extern ClassPtr integerVectorClass(TypePtr elementsType);
+extern ClassPtr integerVectorClass(ClassPtr elementsType);
 
-extern VectorPtr vector(TypePtr elementsType, size_t initialSize = 0);
+extern VectorPtr vector(ClassPtr elementsType, size_t initialSize = 0);
 extern VectorPtr booleanVector(size_t initialSize);
-extern VectorPtr integerVector(TypePtr elementsType, size_t initialSize);
-extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
+extern VectorPtr integerVector(ClassPtr elementsType, size_t initialSize);
+extern VectorPtr objectVector(ClassPtr elementsType, size_t initialSize);
 
 }; /* namespace lbcpp */
 

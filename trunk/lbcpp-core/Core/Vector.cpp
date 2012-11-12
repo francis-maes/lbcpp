@@ -17,7 +17,7 @@ using namespace lbcpp;
 */
 String Vector::toString() const
 {
-  TypePtr type = getElementsType();
+  ClassPtr type = getElementsType();
   size_t n = getNumElements();
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
@@ -67,7 +67,7 @@ bool Vector::loadFromXml(XmlImporter& importer)
 
 bool Vector::loadFromString(ExecutionContext& context, const String& stringValue)
 {
-  TypePtr elementsType = getElementsType();
+  ClassPtr elementsType = getElementsType();
   StringArray tokens;
   tokens.addTokens(stringValue, T(","), T("\""));
   resize(tokens.size());
@@ -182,12 +182,12 @@ void BooleanVector::remove(size_t index)
 */
 juce::int64 IntegerVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
 
-IntegerVector::IntegerVector(TypePtr elementsType, size_t initialSize, juce::int64 initialValue)
+IntegerVector::IntegerVector(ClassPtr elementsType, size_t initialSize, juce::int64 initialValue)
   : Vector(integerVectorClass(elementsType)), v(initialSize, initialValue)
 {
 }
 
-IntegerVector::IntegerVector(TypePtr elementsType, size_t initialSize)
+IntegerVector::IntegerVector(ClassPtr elementsType, size_t initialSize)
   : Vector(integerVectorClass(elementsType)), v(initialSize, missingValue)
 {
 }
@@ -231,7 +231,7 @@ void IntegerVector::remove(size_t index)
 /*
 ** ObjectVector
 */
-ObjectVector::ObjectVector(TypePtr elementsType, size_t initialSize)
+ObjectVector::ObjectVector(ClassPtr elementsType, size_t initialSize)
   : Vector(objectVectorClass(elementsType)), objects(new std::vector<ObjectPtr>(initialSize)), ownObjects(true)
 {
 }
@@ -241,14 +241,14 @@ ObjectVector::ObjectVector(ClassPtr thisClass)
 {
 }
 
-ObjectVector::ObjectVector(const std::vector<ObjectPtr>& reference, TypePtr elementsType)
-  : Vector(objectVectorClass(elementsType ? elementsType : (TypePtr)(reference.size() ? reference[0]->getClass() : objectClass))),
+ObjectVector::ObjectVector(const std::vector<ObjectPtr>& reference, ClassPtr elementsType)
+  : Vector(objectVectorClass(elementsType ? elementsType : (ClassPtr)(reference.size() ? reference[0]->getClass() : objectClass))),
     objects(const_cast<std::vector<ObjectPtr>* >(&reference)), ownObjects(false)
 {
 }
 
-ObjectVector::ObjectVector(std::vector<ObjectPtr>& reference, TypePtr elementsType)
-  : Vector(objectVectorClass(elementsType ? elementsType : (TypePtr)(reference.size() ? reference[0]->getClass() : objectClass))),
+ObjectVector::ObjectVector(std::vector<ObjectPtr>& reference, ClassPtr elementsType)
+  : Vector(objectVectorClass(elementsType ? elementsType : (ClassPtr)(reference.size() ? reference[0]->getClass() : objectClass))),
     objects(&reference), ownObjects(false)
 {
 }
@@ -341,7 +341,7 @@ size_t ObjectVector::getSizeInBytes(bool recursively) const
 /*
 ** Vector Constructor Method
 */
-VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
+VectorPtr lbcpp::vector(ClassPtr elementsType, size_t initialSize)
 {
   jassert(elementsType);
   if (elementsType->inheritsFrom(newBooleanClass))

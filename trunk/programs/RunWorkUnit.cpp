@@ -134,7 +134,7 @@ bool runWorkUnitFromFile(ExecutionContext& context, const File& file)
 bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitClassName, const std::vector<String>& arguments)
 {
   // find the work unit class
-  TypePtr type = typeManager().getType(context, workUnitClassName);
+  ClassPtr type = typeManager().getType(context, workUnitClassName);
   if (!type)
     return false;
 

@@ -35,7 +35,7 @@ public:
   const std::vector<VariableExpressionPtr>& getInputs() const
     {return inputs;}
 
-  VariableExpressionPtr addInput(const TypePtr& type, const String& name);
+  VariableExpressionPtr addInput(const ClassPtr& type, const String& name);
   
   /*
   ** Available Constants
@@ -72,7 +72,7 @@ public:
   VariableExpressionPtr getSupervision() const
     {return supervision;}
 
-  VariableExpressionPtr createSupervision(const TypePtr& type, const String& name);
+  VariableExpressionPtr createSupervision(const ClassPtr& type, const String& name);
 
   /*
   ** Available Functions
@@ -94,8 +94,8 @@ public:
   /*
   ** Accepted target types
   */
-  bool isTargetTypeAccepted(TypePtr type);
-  void addTargetType(TypePtr type)
+  bool isTargetTypeAccepted(ClassPtr type);
+  void addTargetType(ClassPtr type)
     {targetTypes.insert(type);}
   void clearTargetTypes()
     {targetTypes.clear();}
@@ -120,8 +120,8 @@ public:
   /*
   ** Search space - bof
   */
-  PostfixExpressionTypeSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<TypePtr>()
-  PostfixExpressionTypeSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const;
+  PostfixExpressionTypeSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<ClassPtr>()
+  PostfixExpressionTypeSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<ClassPtr>& initialState, size_t complexity, bool verbose) const;
 
 protected:
   friend class ExpressionDomainClass;
@@ -130,7 +130,7 @@ protected:
   VariableExpressionPtr supervision;
   std::vector<ConstantExpressionPtr> constants;
   std::vector<FunctionPtr> functions;
-  std::set<TypePtr> targetTypes;
+  std::set<ClassPtr> targetTypes;
   std::set<ExpressionPtr> activeVariables;
 
   CriticalSection typeSearchSpacesLock;

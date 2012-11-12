@@ -63,9 +63,9 @@ bool PostfixExpressionSequence::startsWith(const PostfixExpressionSequencePtr& s
   return true;
 }
 
-std::vector<TypePtr> PostfixExpressionSequence::computeTypeState(const std::vector<TypePtr>& initialState) const
+std::vector<ClassPtr> PostfixExpressionSequence::computeTypeState(const std::vector<ClassPtr>& initialState) const
 {
-  std::vector<TypePtr> state(initialState);
+  std::vector<ClassPtr> state(initialState);
   for (size_t i = 0; i < sequence.size(); ++i)
   {
     ObjectPtr action = sequence[i];
@@ -75,7 +75,7 @@ std::vector<TypePtr> PostfixExpressionSequence::computeTypeState(const std::vect
     {
       const FunctionPtr& function = action.staticCast<Function>();
       jassert(state.size() >= function->getNumInputs());
-      TypePtr outputType = function->initialize(&state[state.size() - function->getNumInputs()]);
+      ClassPtr outputType = function->initialize(&state[state.size() - function->getNumInputs()]);
       state.resize(state.size() - function->getNumInputs() + 1);
       state.back() = outputType;
     }
@@ -114,7 +114,7 @@ ExpressionPtr PostfixExpressionSequence::toNode() const
 /*
 ** PostfixExpressionTypeState
 */
-PostfixExpressionTypeState::PostfixExpressionTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable)
+PostfixExpressionTypeState::PostfixExpressionTypeState(size_t depth, const std::vector<ClassPtr>& stack, bool yieldable)
   : depth(depth), stack(stack), yieldable(yieldable), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 PostfixExpressionTypeState::PostfixExpressionTypeState() : depth(0), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 
@@ -145,7 +145,7 @@ String PostfixExpressionTypeState::toShortString() const
   return res;
 }
 
-bool PostfixExpressionTypeState::hasPushAction(const TypePtr& type) const
+bool PostfixExpressionTypeState::hasPushAction(const ClassPtr& type) const
 {
   for (size_t i = 0; i < push.size(); ++i)
     if (push[i].first == type)
@@ -153,7 +153,7 @@ bool PostfixExpressionTypeState::hasPushAction(const TypePtr& type) const
   return false;
 }
 
-PostfixExpressionTypeStatePtr PostfixExpressionTypeState::getPushTransition(const TypePtr& type) const
+PostfixExpressionTypeStatePtr PostfixExpressionTypeState::getPushTransition(const ClassPtr& type) const
 {
   for (size_t i = 0; i < push.size(); ++i)
     if (push[i].first == type)
@@ -169,7 +169,7 @@ bool PostfixExpressionTypeState::hasApplyAction(const FunctionPtr& function) con
   return false;
 }
 
-void PostfixExpressionTypeState::setPushTransition(const TypePtr& type, const PostfixExpressionTypeStatePtr& nextState)
+void PostfixExpressionTypeState::setPushTransition(const ClassPtr& type, const PostfixExpressionTypeStatePtr& nextState)
 {
   for (size_t i = 0; i < push.size(); ++i)
     if (push[i].first == type)
@@ -194,10 +194,10 @@ void PostfixExpressionTypeState::setApplyTransition(const FunctionPtr& function,
 /*
 ** PostfixExpressionTypeSpace
 */
-PostfixExpressionTypeSpace::PostfixExpressionTypeSpace(const ExpressionDomainPtr& domain, const std::vector<TypePtr>& initialState, size_t maxDepth)
+PostfixExpressionTypeSpace::PostfixExpressionTypeSpace(const ExpressionDomainPtr& domain, const std::vector<ClassPtr>& initialState, size_t maxDepth)
 {
   jassert(domain->getNumFunctions());
-  std::vector<TypePtr> nodeTypes;
+  std::vector<ClassPtr> nodeTypes;
   for (size_t i = 0; i < domain->getNumInputs(); ++i)
     insertType(nodeTypes, domain->getInput(i)->getType());
   for (size_t i = 0; i < domain->getNumConstants(); ++i)
@@ -249,13 +249,13 @@ void PostfixExpressionTypeSpace::assignStateIndices(ExecutionContext& context)
     it->second->stateIndex = index++;
 }
 
-PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getState(size_t depth, const std::vector<TypePtr>& stack) const
+PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getState(size_t depth, const std::vector<ClassPtr>& stack) const
 {
   StateMap::const_iterator it = states.find(std::make_pair(depth, stack));
   return it == states.end() ? PostfixExpressionTypeStatePtr() : it->second;
 }
 
-PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getOrCreateState(const ExpressionDomainPtr& domain, size_t depth, const std::vector<TypePtr>& stack)
+PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getOrCreateState(const ExpressionDomainPtr& domain, size_t depth, const std::vector<ClassPtr>& stack)
 {
   StateKey key(depth, stack);
   StateMap::const_iterator it = states.find(key);
@@ -270,7 +270,7 @@ PostfixExpressionTypeStatePtr PostfixExpressionTypeSpace::getOrCreateState(const
     return it->second;
 }
 
-void PostfixExpressionTypeSpace::insertType(std::vector<TypePtr>& types, const TypePtr& type)
+void PostfixExpressionTypeSpace::insertType(std::vector<ClassPtr>& types, const ClassPtr& type)
 {
   for (size_t i = 0; i < types.size(); ++i)
     if (types[i] == type)
@@ -278,7 +278,7 @@ void PostfixExpressionTypeSpace::insertType(std::vector<TypePtr>& types, const T
   types.push_back(type);
 }
 
-void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, const PostfixExpressionTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& domain, const PostfixExpressionTypeStatePtr& state, std::vector<ClassPtr>& nodeTypes, size_t maxDepth)
 {
   if (maxDepth == state->getDepth())
   {
@@ -296,14 +296,14 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
   {
     for (size_t i = 0; i < nodeTypes.size(); ++i)
     {
-      TypePtr type = nodeTypes[i];
+      ClassPtr type = nodeTypes[i];
       PostfixExpressionTypeStatePtr nextState = state->getPushTransition(type);
       if (nextState)
         buildSuccessors(domain, nextState, nodeTypes, maxDepth);
       else
       {
         // compute new stack
-        std::vector<TypePtr> newStack = state->getStack();
+        std::vector<ClassPtr> newStack = state->getStack();
         newStack.push_back(type);
 
         // create successor state and call recursively
@@ -322,7 +322,7 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
       size_t numInputs = function->getNumInputs();
       std::vector<ObjectPtr> tmp(function->getNumVariables());
 
-      std::vector<TypePtr> inputTypes(numInputs);
+      std::vector<ClassPtr> inputTypes(numInputs);
       for (size_t i = 0; i < numInputs; ++i)
         inputTypes[i] = state->stack[state->getStackSize() - numInputs + i];
 
@@ -336,7 +336,7 @@ void PostfixExpressionTypeSpace::buildSuccessors(const ExpressionDomainPtr& doma
   }
 }
 
-void PostfixExpressionTypeSpace::enumerateFunctionVariables(const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
+void PostfixExpressionTypeSpace::enumerateFunctionVariables(const FunctionPtr& function, const std::vector<ClassPtr>& inputTypes, std::vector<ObjectPtr>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
 {
   if (variableIndex == variables.size())
   {
@@ -358,20 +358,20 @@ void PostfixExpressionTypeSpace::enumerateFunctionVariables(const FunctionPtr& f
   }
 }
 
-void PostfixExpressionTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& domain, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+void PostfixExpressionTypeSpace::applyFunctionAndBuildSuccessor(const ExpressionDomainPtr& domain, const PostfixExpressionTypeStatePtr& state, const FunctionPtr& function, std::vector<ClassPtr>& nodeTypes, size_t maxDepth)
 {
   // compute output type given input types
   size_t numInputs = function->getNumInputs();
-  TypePtr* inputs = new TypePtr[numInputs];
+  ClassPtr* inputs = new ClassPtr[numInputs];
   for (size_t i = 0; i < numInputs; ++i)
     inputs[i] = state->stack[state->getStackSize() - numInputs + i];
-  TypePtr outputType = function->initialize(inputs);
+  ClassPtr outputType = function->initialize(inputs);
   delete [] inputs;
 
   insertType(nodeTypes, outputType); // the function output type can become a graph node in later episodes
 
   // compute new stack and new graph node types
-  std::vector<TypePtr> newStack(state->getStackSize() - numInputs + 1);
+  std::vector<ClassPtr> newStack(state->getStackSize() - numInputs + 1);
   for (size_t i = 0; i < state->getStackSize() - numInputs; ++i)
     newStack[i] = state->stack[i];
   newStack.back() = outputType;
@@ -382,7 +382,7 @@ void PostfixExpressionTypeSpace::applyFunctionAndBuildSuccessor(const Expression
   buildSuccessors(domain, newState, nodeTypes, maxDepth);
 }
 
-bool PostfixExpressionTypeSpace::acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const
+bool PostfixExpressionTypeSpace::acceptInputTypes(const FunctionPtr& function, const std::vector<ClassPtr>& stack) const
 {
   size_t numInputs = function->getNumInputs();
   if (numInputs > stack.size())
@@ -400,7 +400,7 @@ bool PostfixExpressionTypeSpace::prune(PostfixExpressionTypeStatePtr state) // r
     return state->canBePruned;
 
   {
-    std::vector<std::pair<TypePtr, PostfixExpressionTypeStatePtr> > remainingTransitions;
+    std::vector<std::pair<ClassPtr, PostfixExpressionTypeStatePtr> > remainingTransitions;
     for (size_t i = 0; i < state->push.size(); ++i)
       if (!prune(state->push[i].second))
         remainingTransitions.push_back(state->push[i]);

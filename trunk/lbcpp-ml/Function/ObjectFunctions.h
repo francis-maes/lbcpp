@@ -28,13 +28,13 @@ public:
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
     {return type->inheritsFrom(inputClass ? inputClass : objectClass);}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? pthis().computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVectorPtr objects = inputs[0];
     size_t n = objects->size();
@@ -112,7 +112,7 @@ public:
   virtual String toShortString() const
     {return inputClass ? "." + inputClass->getMemberVariableName(variableIndex) : ".[" + String((int)variableIndex) + T("]");}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
   {
     jassert(inputTypes[0] == inputClass);
     outputType = inputClass->getMemberVariableType(variableIndex);
@@ -132,17 +132,17 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     if (index == 0)
     {
-      VectorPtr res = vector(typeClass, 1);
+      VectorPtr res = vector(classClass, 1);
       res->setElement(0, inputTypes[0]);
       return res;
     }
     else
     {
-      TypePtr objectClass = inputTypes[0];
+      ClassPtr objectClass = inputTypes[0];
       size_t n = objectClass->getNumMemberVariables();
       VectorPtr res = vector(newPositiveIntegerClass, n);
       for (size_t i = 0; i < n; ++i)
@@ -160,7 +160,7 @@ protected:
   size_t variableIndex;
 
   String variableName;
-  TypePtr outputType;
+  ClassPtr outputType;
 };
 
 typedef ReferenceCountedObjectPtr<GetVariableFunction> GetVariableFunctionPtr;
@@ -173,7 +173,7 @@ public:
   virtual String toShortString() const
     {return "length(.)";}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return newPositiveIntegerClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const

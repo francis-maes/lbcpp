@@ -285,10 +285,10 @@ protected:
 class SantaFeTrailFunction : public Function
 {
 public:
-  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+  virtual bool doAcceptInputType(size_t index, const ClassPtr& type) const
 	{return type->inheritsFrom(santaFeTrailActionClass);}
 
-  virtual TypePtr initialize(const TypePtr* inputTypes)
+  virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return santaFeTrailActionClass;}
 
   virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const

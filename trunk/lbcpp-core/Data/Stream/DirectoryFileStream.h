@@ -23,7 +23,7 @@ public:
 
   DirectoryFileStream() {}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return newFileClass;}
 
   virtual bool rewind()

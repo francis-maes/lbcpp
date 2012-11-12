@@ -42,10 +42,10 @@ public:
 
   virtual ClassPtr getClass() const;
 
-  const std::vector<TypePtr>& getTypes() const
+  const std::vector<ClassPtr>& getTypes() const
     {return types;}
 
-  std::vector<TypePtr> getTypesInheritingFrom(TypePtr baseType) const;
+  std::vector<ClassPtr> getTypesInheritingFrom(ClassPtr baseType) const;
 
   const std::vector<TemplateTypePtr>& getTemplateTypes() const
     {return templateTypes;}
@@ -53,7 +53,7 @@ public:
   const std::vector<LibraryPtr>& getSubLibraries() const
     {return subLibraries;}
 #ifdef LBCPP_USER_INTERFACE
-  bool hasUIComponent(TypePtr type) const;
+  bool hasUIComponent(ClassPtr type) const;
   juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
 #endif
   
@@ -70,14 +70,14 @@ protected:
   friend bool importLibrary(ExecutionContext& context, LibraryPtr library, void* handle);
   friend void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);
 
-  std::vector<TypePtr> types;
+  std::vector<ClassPtr> types;
   std::vector<TemplateTypePtr> templateTypes;
   std::vector<LibraryPtr> subLibraries;
   std::vector<LoaderPtr> fileLoaders;
   
 #ifdef LBCPP_USER_INTERFACE
   typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
-  std::vector< std::pair<TypePtr, UIComponentConstructor> > uiComponents;
+  std::vector< std::pair<ClassPtr, UIComponentConstructor> > uiComponents;
   bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
 #endif
 
@@ -85,11 +85,11 @@ protected:
   virtual void cacheTypes(ExecutionContext& context) = 0;
   virtual void uncacheTypes() = 0;
   
-  bool declareType(ExecutionContext& context, TypePtr type);
+  bool declareType(ExecutionContext& context, ClassPtr type);
   bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);
   bool declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary);
 
-  void getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const;
+  void getTypesInheritingFrom(ClassPtr baseType, std::vector<ClassPtr>& res) const;
 };
 
 typedef ReferenceCountedObjectPtr<Library> LibraryPtr;

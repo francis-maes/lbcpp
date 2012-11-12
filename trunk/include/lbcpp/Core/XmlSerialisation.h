@@ -157,15 +157,15 @@ public:
 
   XmlElementPtr getCurrentElement();
 
-  void saveObject(const String& name, const ObjectPtr& object, TypePtr expectedType);
-  void saveGeneratedObject(const String& name, const ObjectPtr& object, TypePtr expectedType);
+  void saveObject(const String& name, const ObjectPtr& object, ClassPtr expectedType);
+  void saveGeneratedObject(const String& name, const ObjectPtr& object, ClassPtr expectedType);
 
-  void saveElement(size_t index, const ObjectPtr& object, TypePtr expectedType);
+  void saveElement(size_t index, const ObjectPtr& object, ClassPtr expectedType);
   
   void enter(const String& tagName, const String& name = String::empty);
-  void writeType(TypePtr type);
+  void writeType(ClassPtr type);
   void writeName(const String& name);
-  void writeObject(const ObjectPtr& object, TypePtr expectedType);
+  void writeObject(const ObjectPtr& object, ClassPtr expectedType);
   void leave();
 
   void addTextElement(const String& text);
@@ -196,7 +196,7 @@ private:
   void linkObjectToCurrentElement(const ObjectPtr& object);
   String makeSharedObjectIdentifier(ObjectPtr object);
 
-  void writeObjectImpl(const ObjectPtr& object, TypePtr expectedType);
+  void writeObjectImpl(const ObjectPtr& object, ClassPtr expectedType);
 };
 
 /*
@@ -246,12 +246,13 @@ public:
   String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
     {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
 
-  ObjectPtr loadObject(juce::XmlElement* child, TypePtr expectedType);
+  ObjectPtr loadObject(juce::XmlElement* child, ClassPtr expectedType);
 
   void enter(juce::XmlElement* child);
   bool enter(const String& childTagName);
-  TypePtr loadType(TypePtr expectedType);
-  ObjectPtr loadObject(TypePtr expectedType);
+  ClassPtr loadType(ClassPtr expectedType);
+  ClassPtr loadUnnamedType();
+  ObjectPtr loadObject(ClassPtr expectedType);
   void leave();
 
   void linkCurrentElementToObject(ObjectPtr object);

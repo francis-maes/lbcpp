@@ -33,7 +33,7 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? new NewBoolean(!NewBoolean::get(inputs[0])) : ObjectPtr();}
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVector::const_iterator it = inputs[0]->begin();
     size_t n = inputs[0]->size();
@@ -75,7 +75,7 @@ public:
     return new NewBoolean(computeBoolean(NewBoolean::get(inputs[0]), NewBoolean::get(inputs[1])));
   }
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVector::const_iterator it1 = inputs[0]->begin();
     DataVector::const_iterator it2 = inputs[1]->begin();
@@ -172,7 +172,7 @@ public:
     return NewBoolean::get(inputs[0]) ? inputs[1] : inputs[2];
   }
 
-  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, TypePtr outputType) const
+  virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     DataVector::const_iterator it1 = inputs[0]->begin();
     DataVector::const_iterator it2 = inputs[1]->begin();

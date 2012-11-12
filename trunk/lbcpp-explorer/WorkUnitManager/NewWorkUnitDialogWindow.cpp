@@ -25,7 +25,7 @@ using juce::TextButton;
 class ObjectEditorComponent : public Component, public juce::ChangeBroadcaster
 {
 public:
-  ObjectEditorComponent(ExecutionContext& context, TypePtr type)
+  ObjectEditorComponent(ExecutionContext& context, ClassPtr type)
     : context(context), type(type) {}
 
   virtual void setValue(const ObjectPtr& value) = 0;
@@ -35,7 +35,7 @@ public:
 
 protected:
   ExecutionContext& context;
-  TypePtr type;
+  ClassPtr type;
 };
 
 class StringObjectEditorComponent : public ObjectEditorComponent, public juce::TextEditorListener
@@ -159,7 +159,7 @@ public:
       LibraryPtr library = lbcpp::getLibrary(i);
       if (library->getName() == T("LBCpp"))
         continue;
-      std::vector<TypePtr> workUnits = library->getTypesInheritingFrom(workUnitClass);
+      std::vector<ClassPtr> workUnits = library->getTypesInheritingFrom(workUnitClass);
       if (workUnits.size())
       {
         addSectionHeading(library->getName());
@@ -191,7 +191,7 @@ public:
   WorkUnitArgumentComponent(ExecutionContext& context, ClassPtr workUnitClass, size_t variableIndex)
     : context(context), name(NULL), shortName(NULL), description(NULL), variableIndex(variableIndex)
   {
-    TypePtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
+    ClassPtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
     String nameValue = workUnitClass->getMemberVariableName(variableIndex);
     String shortNameValue = workUnitClass->getMemberVariableShortName(variableIndex);
     String descriptionValue = workUnitClass->getMemberVariableDescription(variableIndex);
@@ -414,7 +414,7 @@ public:
       if (!value || (value.isInstanceOf<NewBoolean>() && !NewBoolean::get(value)))
         continue;
 
-      TypePtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
+      ClassPtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
       String name = workUnitClass->getMemberVariableName(variableIndex);
       String shortName = workUnitClass->getMemberVariableShortName(variableIndex);
       
@@ -496,7 +496,7 @@ public:
         removeChildComponent(argumentsSelector);
         deleteAndZero(argumentsSelector);
       }
-      TypePtr type = getType(workUnit->getWorkUnitName());
+      ClassPtr type = getType(workUnit->getWorkUnitName());
       if (type && type->getNumMemberVariables() > 0)
       {
         const std::vector<String>& recentArguments = workUnit->getArguments();

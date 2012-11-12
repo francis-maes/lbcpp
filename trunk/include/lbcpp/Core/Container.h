@@ -9,7 +9,7 @@
 #ifndef LBCPP_CORE_CONTAINER_H_
 # define LBCPP_CORE_CONTAINER_H_
 
-# include "Class.h"
+# include "DefaultClass.h"
 # include "Object.h"
 # include "Enumeration.h"
 
@@ -23,16 +23,16 @@ public:
     : Object(thisClass) {}
   Container() {}
 
-  static TypePtr getTemplateParameter(TypePtr type);
-  static bool getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res);
+  static ClassPtr getTemplateParameter(ClassPtr type);
+  static bool getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res);
 
   bool isEmpty() const
     {return getNumElements() == 0;}
     
   int findElement(const ObjectPtr& value) const;
-  TypePtr computeElementsCommonBaseType() const;
+  ClassPtr computeElementsCommonBaseType() const;
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
   virtual EnumerationPtr getElementsEnumeration() const
@@ -181,9 +181,9 @@ public:
   static ContainerPtr makePairsContainer(const ContainerPtr& inputs, const ContainerPtr& samples);
 };
 
-extern ClassPtr containerClass(TypePtr elementsType = anyType);
+extern ClassPtr containerClass(ClassPtr elementsType = anyType);
 
-extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
+extern ClassPtr cumulativeScoreVectorClass(ClassPtr scoresEnumeration);
 
  
 
@@ -216,7 +216,7 @@ public:
   virtual size_t getNumElements() const
     {return target->getNumElements();}
 
-  virtual TypePtr getElementsType() const
+  virtual ClassPtr getElementsType() const
     {return target->getElementsType();}
 
   /**

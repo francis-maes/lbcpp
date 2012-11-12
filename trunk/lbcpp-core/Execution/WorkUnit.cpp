@@ -112,7 +112,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
       argumentValue += T(" ") + arguments[i];
     argumentValue = argumentValue.trim();
 
-    TypePtr argumentType = getVariableType(variableIndex);
+    ClassPtr argumentType = getVariableType(variableIndex);
     ObjectPtr value;
     if (argumentType == newBooleanClass && argumentValue.isEmpty())
       value = new NewBoolean(true); // particular case for boolean arguments: if no value has been given, we take true by default

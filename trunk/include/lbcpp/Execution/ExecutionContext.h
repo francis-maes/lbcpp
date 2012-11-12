@@ -30,8 +30,8 @@ public:
   /*
   ** Checks
   */
-  bool checkInheritance(TypePtr type, TypePtr baseType);
-  bool checkInheritance(const ObjectPtr& object, TypePtr baseType);
+  bool checkInheritance(ClassPtr type, ClassPtr baseType);
+  bool checkInheritance(const ObjectPtr& object, ClassPtr baseType);
   bool checkSharedPointerCycles(const ObjectPtr& object);
 
   /*

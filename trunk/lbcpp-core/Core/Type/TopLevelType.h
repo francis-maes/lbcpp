@@ -32,20 +32,14 @@
 namespace lbcpp
 {
 
-class TopLevelType : public Type
+class TopLevelType : public Class
 {
 public:
   TopLevelType(const String& name)
-    : Type(name, TypePtr()) {}
+    : Class(name, ClassPtr()) {}
 
-  virtual ObjectPtr create(ExecutionContext& context) const
-    {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return ObjectPtr();}
-
-  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
-    {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return ObjectPtr();}
-
-  virtual ObjectPtr createFromXml(XmlImporter& importer) const
-    {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return ObjectPtr();}
+  virtual ObjectPtr createObject(ExecutionContext& context) const
+    {context.errorCallback(T("Type::createObject"), getName() + T(" has no default constructor")); return ObjectPtr();}
 
   virtual bool isConvertibleToBoolean() const
     {return false;}
@@ -56,8 +50,8 @@ public:
   virtual size_t getNumMemberVariables() const
     {return 0;}
 
-  virtual TypePtr getMemberVariableType(size_t index) const
-    {jassert(false); return TypePtr();}
+  virtual ClassPtr getMemberVariableType(size_t index) const
+    {jassert(false); return ClassPtr();}
 
   virtual String getMemberVariableName(size_t index) const
     {jassert(false); return String::empty;}

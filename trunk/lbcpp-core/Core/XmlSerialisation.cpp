@@ -8,7 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Object.h>
-#include <lbcpp/Core/Class.h>
+#include <lbcpp/Core/DefaultClass.h>
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
@@ -211,14 +211,14 @@ void XmlExporter::enter(const String& tagName, const String& name)
   writeName(name);
 }
 
-void XmlExporter::saveObject(const String& name, const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::saveObject(const String& name, const ObjectPtr& object, ClassPtr expectedType)
 {
   enter(T("variable"), name);
   writeObject(object, expectedType);
   leave();
 }
 
-void XmlExporter::saveGeneratedObject(const String& name, const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::saveGeneratedObject(const String& name, const ObjectPtr& object, ClassPtr expectedType)
 {
   enter(T("variable"), name);
   writeType(expectedType);
@@ -227,7 +227,7 @@ void XmlExporter::saveGeneratedObject(const String& name, const ObjectPtr& objec
   leave();
 }
 
-void XmlExporter::saveElement(size_t index, const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::saveElement(size_t index, const ObjectPtr& object, ClassPtr expectedType)
 {
   enter(T("element"));
   setAttribute(T("index"), String((int)index));
@@ -253,7 +253,7 @@ void XmlExporter::writeName(const String& name)
     elt->setAttribute(T("name"), name);
 }
 
-void XmlExporter::writeType(TypePtr type)
+void XmlExporter::writeType(ClassPtr type)
 {
   jassert(type);
   
@@ -265,18 +265,18 @@ void XmlExporter::writeType(TypePtr type)
   else
   {
     enter(T("type"));
-    writeObject(type, TypePtr());
+    writeObject(type, ClassPtr());
     leave();
   }
 }
 
-void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::writeObject(const ObjectPtr& object, ClassPtr expectedType)
 {
   XmlElementPtr elt = getCurrentElement();
   
   if (object)
   {
-    TypePtr typeValue = object.dynamicCast<Type>();
+    ClassPtr typeValue = object.dynamicCast<Class>();
     if (typeValue && typeValue->isNamedType())
       addTextElement(typeValue->getName()); // named type
     else
@@ -290,7 +290,7 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
   }
 }
 
-void XmlExporter::writeObjectImpl(const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::writeObjectImpl(const ObjectPtr& object, ClassPtr expectedType)
 {
   jassert(object->getReferenceCount());
   ObjectXmlElementsMap::iterator it = objectXmlElements.find(object);
@@ -425,12 +425,12 @@ void XmlImporter::unknownVariableWarning(ClassPtr type, const String& variableNa
 ObjectPtr XmlImporter::load()
 {
   if (root->getTagName() == T("lbcpp"))
-    return loadObject(root->getChildByName(T("variable")), TypePtr());
+    return loadObject(root->getChildByName(T("variable")), ClassPtr());
   else
-    return loadObject(root, TypePtr());
+    return loadObject(root, ClassPtr());
 }
 
-TypePtr XmlImporter::loadType(TypePtr expectedType)
+ClassPtr XmlImporter::loadType(ClassPtr expectedType)
 {
   juce::XmlElement* elt = getCurrentElement();
   String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
@@ -441,12 +441,12 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
     juce::XmlElement* child = elt->getChildByName(T("type"));
     if (child)
     {
-      TypePtr res;
+      ClassPtr res;
       enter(child);
       if (hasAttribute(T("ref")))
-        res = getSharedObject(getStringAttribute(T("ref"))).staticCast<Type>().get();
+        res = getSharedObject(getStringAttribute(T("ref"))).staticCast<Class>().get();
       else
-        res = Type::loadUnnamedTypeFromXml(*this);
+        res = loadUnnamedType();
       linkCurrentElementToObject(res);
       leave();
       return res;
@@ -460,13 +460,41 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
   }
 }
 
-ObjectPtr XmlImporter::loadObject(TypePtr expectedType)
+ClassPtr XmlImporter::loadUnnamedType()
+{
+  // load unnamed type from xml
+  if (hasAttribute(T("templateType")))
+  {
+    String templateType = getStringAttribute(T("templateType"));
+    std::vector<ClassPtr> templateArguments;
+    forEachXmlChildElementWithTagName(*getCurrentElement(), elt, T("templateArgument"))
+    {
+      enter(elt);
+      int index = getIntAttribute(T("index"));
+      if (index < 0)
+      {
+        errorMessage(T("Type::loadTypeFromXml"), T("Invalid template argument index"));
+        return ClassPtr();
+      }
+      templateArguments.resize(index + 1);
+      templateArguments[index] = loadType(ClassPtr());
+      if (!templateArguments[index])
+        return ClassPtr();
+      leave();
+    }
+    return typeManager().getType(getContext(), templateType, templateArguments);
+  }
+  else
+    return typeManager().getType(getContext(), getStringAttribute(T("typeName")));
+}
+
+ObjectPtr XmlImporter::loadObject(ClassPtr expectedType)
 {
   if (hasAttribute(T("ref")))
     return getSharedObject(getStringAttribute(T("ref")));
   else
   {
-    TypePtr type = loadType(expectedType);
+    ClassPtr type = loadType(expectedType);
     if (!type || !type->getBaseType())
       return ObjectPtr();
     
@@ -486,7 +514,7 @@ void XmlImporter::linkCurrentElementToObject(ObjectPtr object)
     addSharedObject(getStringAttribute(T("id")), object);
 }
 
-ObjectPtr XmlImporter::loadObject(juce::XmlElement* elt, TypePtr expectedType)
+ObjectPtr XmlImporter::loadObject(juce::XmlElement* elt, ClassPtr expectedType)
 {
   enter(elt);
   ObjectPtr res = loadObject(expectedType);
