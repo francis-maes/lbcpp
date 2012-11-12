@@ -54,6 +54,9 @@ typedef ReferenceCountedObjectPtr<NewBoolean> NewBooleanPtr;
 class NewInteger;
 typedef ReferenceCountedObjectPtr<NewInteger> NewIntegerPtr;
 
+class NewEnumValue;
+typedef ReferenceCountedObjectPtr<NewEnumValue> NewEnumValuePtr;
+
 class NewDouble;
 typedef ReferenceCountedObjectPtr<NewDouble> NewDoublePtr;
 

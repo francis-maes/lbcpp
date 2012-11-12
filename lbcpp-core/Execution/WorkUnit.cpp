@@ -28,7 +28,7 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
     }
   }
 
-  std::vector< std::pair<size_t, Variable> > parsedArguments;
+  std::vector< std::pair<size_t, ObjectPtr> > parsedArguments;
   if (!workUnit->parseArguments(context, arguments, parsedArguments))
   {
     context.informationCallback(workUnit->getUsageString());
@@ -40,7 +40,7 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   return 0;
 }
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments, std::vector< std::pair<size_t, Variable> >& res)
+bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
 {
   StringArray tokens;
   tokens.addTokens(arguments, true);
@@ -58,7 +58,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments
 inline bool isNegativeNumber(const String& str)
   {return str.containsOnly(T("-+e0123456789"));}
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, Variable> >& res)
+bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
 {
   /* shortcut */
   std::map<String, size_t> variableNames;
@@ -113,13 +113,13 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
     argumentValue = argumentValue.trim();
 
     TypePtr argumentType = getVariableType(variableIndex);
-    Variable value;
-    if (argumentType == booleanType && argumentValue.isEmpty())
-      value = Variable(true); // particular case for boolean arguments: if no value has been given, we take true by default
+    ObjectPtr value;
+    if (argumentType == newBooleanClass && argumentValue.isEmpty())
+      value = new NewBoolean(true); // particular case for boolean arguments: if no value has been given, we take true by default
     else
     {
-      value = Variable::createFromString(context, argumentType, argumentValue);
-      if (value.isMissingValue())
+      value = Variable::createFromString(context, argumentType, argumentValue).getObject();
+      if (!value)
       {
         context.errorCallback(T("WorkUnit::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
         return false;
@@ -130,7 +130,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
   return true;
 }
 
-void WorkUnit::setArguments(ExecutionContext& context, const std::vector< std::pair<size_t, Variable> >& arguments)
+void WorkUnit::setArguments(ExecutionContext& context, const std::vector< std::pair<size_t, ObjectPtr> >& arguments)
 {
   for (size_t i = 0; i < arguments.size(); ++i)
     setVariable(arguments[i].first, arguments[i].second);
@@ -138,7 +138,7 @@ void WorkUnit::setArguments(ExecutionContext& context, const std::vector< std::p
 
 bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments)
 {
-  std::vector< std::pair<size_t, Variable> > args;
+  std::vector< std::pair<size_t, ObjectPtr> > args;
   bool res = parseArguments(context, arguments, args);
   setArguments(context, args);
   return res;
@@ -146,7 +146,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments
 
 bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)
 {
-  std::vector< std::pair<size_t, Variable> > args;
+  std::vector< std::pair<size_t, ObjectPtr> > args;
   bool res = parseArguments(context, arguments, args);
   setArguments(context, args);
   return res;

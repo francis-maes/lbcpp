@@ -137,14 +137,14 @@ TypePtr Object::getVariableType(size_t index) const
 String Object::getVariableName(size_t index) const
   {return getClass()->getMemberVariableName(index);}
 
-Variable Object::getVariable(size_t index) const
+ObjectPtr Object::getVariable(size_t index) const
 {
   ClassPtr thisClass = getClass();
   jassert(index < thisClass->getNumMemberVariables());
-  return thisClass->getMemberVariableValue(this, index);
+  return thisClass->getMemberVariableValue(this, index).getObject();
 }
 
-void Object::setVariable(size_t index, const Variable& value)
+void Object::setVariable(size_t index, const ObjectPtr& value)
 {
   jassert(index < getClass()->getNumMemberVariables());
   getClass()->setMemberVariableValue(this, index, value);
@@ -254,7 +254,7 @@ int Object::compareVariables(const ObjectPtr& otherObject) const
   jassert(n == otherObject->getNumVariables());
   for (size_t i = 0; i < n; ++i)
   {
-    int cmp = getVariable(i).compare(otherObject->getVariable(i));
+    int cmp = Object::compare(getVariable(i), otherObject->getVariable(i));
     if (cmp != 0)
       return cmp;
   }
@@ -319,9 +319,9 @@ ObjectPtr Object::deepClone(ExecutionContext& context) const
     TypePtr variableType = thisClass->getMemberVariableType(i);
     if (variableType->inheritsFrom(objectClass) && !variableType->inheritsFrom(typeClass))
     {
-      ObjectPtr object = res->getVariable(i).getObject();
+      ObjectPtr object = res->getVariable(i);
       if (object)
-        res->setVariable(i, Variable(object->deepClone(context), variableType));
+        res->setVariable(i, object->deepClone(context));
     }
   }
   return res;
@@ -340,17 +340,11 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
     int sourceIndex = thisClass->findMemberVariable(newType->getMemberVariableName(i));
     if (sourceIndex >= 0)
     {
-      Variable variable = getVariable((size_t)sourceIndex);
-      if (!variable.exists())
-        continue;
-
-      TypePtr newVariableType = newType->getMemberVariableType(i);
-      if (variable.isObject())
-        res->setVariable(i, variable.getObject()->cloneToNewType(context, newVariableType));
-      else
+      ObjectPtr object = getVariable((size_t)sourceIndex);
+      if (object)
       {
-        jassert(variable.getType() == newVariableType);
-        res->setVariable(i, variable);
+        TypePtr newVariableType = newType->getMemberVariableType(i);
+        res->setVariable(i, object->cloneToNewType(context, newVariableType));
       }
     }
   }
@@ -435,7 +429,7 @@ bool Object::loadFromXml(XmlImporter& importer)
         ok = false;
         continue;
       }
-      setVariable((size_t)variableNumber, value);
+      setVariable((size_t)variableNumber, value.getObject());
     }
   }
   return ok;
@@ -445,7 +439,7 @@ void Object::saveVariablesToXmlAttributes(XmlExporter& exporter) const
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
-    exporter.setAttribute(getVariableName(i), getVariable(i).toString());
+    exporter.setAttribute(getVariableName(i), getVariable(i)->toString());
 }
 
 bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
@@ -459,7 +453,7 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
     {
       Variable var = Variable::createFromString(importer.getContext(), getVariableType(i), xml->getStringAttribute(name));
       if (!var.isMissingValue())
-        setVariable(i, var);
+        setVariable(i, var.getObject());
     }
     else if (name != T("thisClass"))
       importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
@@ -493,7 +487,7 @@ bool Object::loadArgumentsFromString(ExecutionContext& context, const String& st
   {
     Variable value = Variable::createFromString(context, getVariableType(i), tokens[i]);
     if (!value.isNil())
-      setVariable(i, value);
+      setVariable(i, value.getObject());
     else
       ok = false;
   }
@@ -536,9 +530,9 @@ int Object::create(LuaState& state)
     TypePtr targetType = type->getMemberVariableType(i - 2);
     TypePtr sourceType = v.getType();
     if (targetType->inheritsFrom(integerType) && sourceType->inheritsFrom(doubleType))
-      res->setVariable(i - 2, (int)v.getDouble()); // a la rache cast from double to int
+      res->setVariable(i - 2, new NewInteger((int)NewDouble::get(v.getObject()))); // a la rache cast from double to int
     else
-      res->setVariable(i - 2, v);
+      res->setVariable(i - 2, v.getObject());
   }
   if (!res)
     return 0;
@@ -650,11 +644,11 @@ int Object::__newIndex(LuaState& state)
     int index = type->findMemberVariable(string);
     if (index >= 0)
     {
-      Variable variable = state.checkVariable(2);
+      ObjectPtr object = state.checkObject(2);
       if (type->getMemberVariableType(index)->inheritsFrom(integerType))
-        setVariable(index, juce::roundDoubleToInt(variable.toDouble()));
+        setVariable(index, new NewInteger(juce::roundDoubleToInt(NewDouble::get(object))));
       else
-        setVariable(index, variable);
+        setVariable(index, object);
     }
     else
       state.error("Could not find variable");
