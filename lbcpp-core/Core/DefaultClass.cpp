@@ -19,11 +19,11 @@ DefaultClass::DefaultClass(const String& name, ClassPtr baseClass)
 }
 
 DefaultClass::DefaultClass(const String& name, const String& baseClass)
-: Class(name, lbcpp::getType(baseClass)), abstractClass(false)
+  : Class(name, baseClass.isNotEmpty() ? lbcpp::getType(baseClass) : ClassPtr()), abstractClass(false)
 {
 }
 
-DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
+DefaultClass::DefaultClass(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)
   : Class(templateType, templateArguments, baseClass), abstractClass(false) {}
 
 namespace lbcpp {extern ClassPtr defaultClassClass;};

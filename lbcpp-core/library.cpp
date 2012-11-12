@@ -25,7 +25,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/library.h>
-#include <lbcpp/Core/TypeManager.h>
+#include <lbcpp/Core/ClassManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Data/DoubleVector.h>
@@ -285,7 +285,7 @@ struct ApplicationContext
   MemoryLeakDetector* memoryLeakDetector;
 #endif
   TopLevelLibraryPtr topLevelLibrary;
-  TypeManager typeManager;
+  ClassManager typeManager;
   ExecutionContextPtr defaultExecutionContext;
 #ifdef LBCPP_USER_INTERFACE
   UserInterfaceManager* userInterfaceManager;
@@ -301,7 +301,6 @@ extern lbcpp::LibraryPtr lbCppLibrary();
 
 static void lbcppInitializeGlobals()
 {
-  topLevelType = anyType = variableType;
   simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
   simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, newDoubleClass);
   static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
@@ -347,7 +346,6 @@ void lbcpp::deinitialize()
     applicationContext->topLevelLibrary->preShutdown();
     coreLibraryUnCacheTypes();
     lbCppLibraryUnCacheTypes();
-    topLevelType = anyType = ClassPtr();
     simpleDenseDoubleVectorClass = ClassPtr();
     simpleSparseDoubleVectorClass = ClassPtr();
 
@@ -360,7 +358,7 @@ void lbcpp::deinitialize()
   }
 }
 
-TypeManager& lbcpp::typeManager()
+ClassManager& lbcpp::typeManager()
   {jassert(applicationContext); return applicationContext->typeManager;}
 
 #ifdef LBCPP_USER_INTERFACE
@@ -477,7 +475,6 @@ void lbcpp::deinitializeDynamicLibrary()
 #ifdef JUCE_WIN32
   coreLibraryUnCacheTypes();
   lbCppLibraryUnCacheTypes();
-  topLevelType = anyType = ClassPtr();
   simpleDenseDoubleVectorClass = ClassPtr();
   simpleSparseDoubleVectorClass = ClassPtr();
   jassert(lbcpp::applicationContext);

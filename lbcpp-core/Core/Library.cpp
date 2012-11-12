@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/TypeManager.h>
+#include <lbcpp/Core/ClassManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Core/Loader.h>
 #include <lbcpp/Core/DefaultClass.h>
@@ -28,7 +28,7 @@ bool Library::declareType(ExecutionContext& context, ClassPtr type)
   return true;
 }
 
-bool Library::declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType)
+bool Library::declareTemplateClass(ExecutionContext& context, TemplateClassPtr templateType)
 {
   if (!typeManager().declare(context, templateType))
     return false;

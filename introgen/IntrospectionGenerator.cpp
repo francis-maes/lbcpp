@@ -90,9 +90,7 @@ protected:
     for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
     {
       String tag = elt->getTagName();
-      if (tag == T("type") || tag == T("templateType"))
-        generateTypeDeclaration(elt);
-      else if (tag == T("class"))
+      if (tag == T("class"))
         generateClassDeclaration(elt, false);
       else if (tag == T("template"))
       {
@@ -173,52 +171,6 @@ protected:
   }
 
   /*
-  ** Type (implemented in C++)
-  */
-  void generateTypeDeclaration(XmlElement* xml)
-  {
-    String typeName = xml->getStringAttribute(T("name"), T("???"));
-    String baseTypeName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Variable")));
-    String suffix = xml->getTagName() == T("type") ? T("Type") : T("TemplateType");
-    String implementation = xml->getStringAttribute(T("implementation"), String::empty);
-
-    if (implementation.isEmpty())
-    {
-      implementation = typeName + suffix;
-      openClass(implementation, T("Type"));
-      
-      writeLine(implementation + T("(const String& name, ClassPtr baseType)"));
-      writeLine(T(": Type(name, baseType) {}"), 1);
-      
-      forEachXmlChildElementWithTagName(*xml, elt, T("code"))
-        {generateCode(elt); newLine();}
-
-      closeClass();
-    }
-
-    String fullName = implementation + T("(T(") + typeName.quoted() + T(")");
-    if (baseTypeName.isNotEmpty())
-    {
-      fullName += T(", ");
-      if (xml->getTagName() == T("type"))
-        fullName += T("lbcpp::getType(T(") + baseTypeName.quoted() + T("))");
-      else
-        fullName += T("T(") + baseTypeName.quoted() + T(")");
-    }
-    fullName += T(")");
-
-    Declaration declaration = Declaration::makeType(currentNamespace, typeName, T("Type"));
-    declaration.implementationClassName = fullName;
-    declarations.push_back(declaration);
-    // String singletonVariableName = replaceFirstLettersByLowerCase(typeName) + T("Type");
-    //  std::make_pair(currentScope + singletonVariableName, fullName));
-
-    // Type declarator
-    if (xml->getTagName() == T("type"))
-      writeLine(T("ClassPtr ") + declaration.cacheVariableName + T(";"));
-  }
-
-  /*
   ** Enumeration
   */
   void generateEnumValueInInitialize(XmlElement* xml)
@@ -282,7 +234,7 @@ protected:
     String metaClass = getMetaClass(classBaseClass);
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
 
-    Declaration declaration = isTemplate ? Declaration::makeTemplateType(currentNamespace, className, metaClass) : Declaration::makeType(currentNamespace, className, metaClass);
+    Declaration declaration = isTemplate ? Declaration::makeTemplateClass(currentNamespace, className, metaClass) : Declaration::makeType(currentNamespace, className, metaClass);
     if (!isTemplate)
       declarations.push_back(declaration);
 
@@ -292,7 +244,7 @@ protected:
     std::vector<XmlElement* > variables;
     std::vector<XmlElement* > functions;
     if (isTemplate)
-      openScope(declaration.implementationClassName + T("(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)")
+      openScope(declaration.implementationClassName + T("(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)")
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
     {
@@ -533,13 +485,13 @@ protected:
     String metaClass = getMetaClass(classBaseClass);
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
 
-    Declaration declaration = Declaration::makeTemplateType(currentNamespace, className, T("Template") + metaClass);
+    Declaration declaration = Declaration::makeTemplateClass(currentNamespace, className, T("Template") + metaClass);
     declarations.push_back(declaration);
 
-    openClass(declaration.implementationClassName, T("DefaultTemplateType"));
+    openClass(declaration.implementationClassName, T("DefaultTemplateClass"));
 
     // constructor
-    openScope(declaration.implementationClassName + T("() : DefaultTemplateType(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    openScope(declaration.implementationClassName + T("() : DefaultTemplateClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
     closeScope();
     newLine();
 
@@ -551,7 +503,7 @@ protected:
         generateParameterDeclarationInConstructor(className, elt);
         parameters.push_back(elt);
       }
-      writeLine(T("return DefaultTemplateType::initialize(context);"));
+      writeLine(T("return DefaultTemplateClass::initialize(context);"));
     closeScope();
     newLine();
 
@@ -590,7 +542,7 @@ protected:
 
   void generateParameterDeclarationInConstructor(const String& className, XmlElement* xml)
   {
-    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("Variable")));
+    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("Object")));
     String name = xml->getStringAttribute(T("name"), T("???"));
     writeLine(T("addParameter(context, T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
   }
@@ -689,13 +641,6 @@ protected:
     openScope(T("virtual bool initialize(ExecutionContext& context)"));
     writeLine(T("bool __ok__ = true;"));
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
-      if (elt->getBoolAttribute(T("pre"), false))
-      {
-        String name = elt->getStringAttribute(T("name"), T("???"));
-        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library());"));
-      }
- 
     for (size_t i = 0; i < declarations.size(); ++i)
     {
       const Declaration& declaration = declarations[i];
@@ -708,7 +653,7 @@ protected:
       {
         String code = T("__ok__ &= declare");
         if (declaration.type == Declaration::templateTypeDeclaration)
-          code += T("TemplateType");
+          code += T("TemplateClass");
         else if (declaration.type == Declaration::typeDeclaration)
           code += T("Type");
         code += T("(context, new ") + declaration.getImplementationClassFullName() + T(");");
@@ -717,11 +662,10 @@ protected:
     }
 
     forEachXmlChildElementWithTagName(*xml, elt, T("import"))
-      if (!elt->getBoolAttribute(T("pre"), false))
-      {
-        String name = elt->getStringAttribute(T("name"), T("???"));
-        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library());"));
-      }
+    {
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library());"));
+    }
 
     writeLine(T("return __ok__;"));
     closeScope();
@@ -790,7 +734,7 @@ private:
       return res;
     }
 
-    static Declaration makeTemplateType(const String& namespaceName, const String& typeName, const String& kind)
+    static Declaration makeTemplateClass(const String& namespaceName, const String& typeName, const String& kind)
     {
       Declaration res;
       res.namespaceName = namespaceName;

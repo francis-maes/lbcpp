@@ -27,7 +27,7 @@
 #ifndef LBCPP_CORE_DEFAULT_CLASS_H_
 # define LBCPP_CORE_DEFAULT_CLASS_H_
 
-# include "Type.h"
+# include "Class.h"
 
 namespace lbcpp
 {
@@ -37,7 +37,7 @@ class DefaultClass : public Class
 public:
   DefaultClass(const String& name, ClassPtr baseClass = objectClass);
   DefaultClass(const String& name, const String& baseClass);
-  DefaultClass(TemplateTypePtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass);
+  DefaultClass(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass);
   DefaultClass() : abstractClass(false) {}
 
   virtual ClassPtr getClass() const;

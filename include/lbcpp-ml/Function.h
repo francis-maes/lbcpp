@@ -123,7 +123,7 @@ extern FunctionPtr vectorVoteFunction(const DenseDoubleVectorPtr& vote);
 class HomogeneousUnaryFunction : public Function
 {
 public:
-  HomogeneousUnaryFunction(ClassPtr type = anyType)
+  HomogeneousUnaryFunction(ClassPtr type = objectClass)
     : type(type) {}
 
   virtual size_t getNumInputs() const
@@ -142,7 +142,7 @@ private:
 class HomogeneousBinaryFunction : public Function
 {
 public:
-  HomogeneousBinaryFunction(ClassPtr type = anyType)
+  HomogeneousBinaryFunction(ClassPtr type = objectClass)
     : type(type) {}
 
   virtual size_t getNumInputs() const
@@ -161,7 +161,7 @@ private:
 class HomogeneousTernaryFunction : public Function
 {
 public:
-  HomogeneousTernaryFunction(ClassPtr type = anyType)
+  HomogeneousTernaryFunction(ClassPtr type = objectClass)
     : type(type) {}
 
   virtual size_t getNumInputs() const

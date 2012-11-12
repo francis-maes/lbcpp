@@ -182,7 +182,7 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
   if (returnValue)
   {
     exporter.enter(T("return"));
-    exporter.writeObject(returnValue, variableType);
+    exporter.writeObject(returnValue, objectClass);
     exporter.leave();
   }
 
@@ -194,7 +194,7 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
       {
         exporter.enter(T("result"));
         exporter.setAttribute(T("resultName"), results[i].first);
-        exporter.writeObject(results[i].second, variableType);
+        exporter.writeObject(results[i].second, objectClass);
         exporter.leave();
       }
   }
@@ -253,11 +253,11 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       res &= progression->loadFromXml(importer);
     }
     else if (tagName == T("return"))
-      returnValue = importer.loadObject(variableType);
+      returnValue = importer.loadObject(objectClass);
     else if (tagName == T("result"))
     {
       String name = importer.getStringAttribute(T("resultName"));
-      ObjectPtr value = importer.loadObject(variableType);
+      ObjectPtr value = importer.loadObject(objectClass);
       if (value.exists())
         results.push_back(std::make_pair(name, value));
     }

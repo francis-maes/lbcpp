@@ -27,7 +27,7 @@
 #ifndef LBCPP_CORE_LIBRARY_H_
 # define LBCPP_CORE_LIBRARY_H_
 
-# include "Type.h"
+# include "Class.h"
 
 namespace lbcpp
 {
@@ -47,7 +47,7 @@ public:
 
   std::vector<ClassPtr> getTypesInheritingFrom(ClassPtr baseType) const;
 
-  const std::vector<TemplateTypePtr>& getTemplateTypes() const
+  const std::vector<TemplateClassPtr>& getTemplateClasss() const
     {return templateTypes;}
 
   const std::vector<LibraryPtr>& getSubLibraries() const
@@ -71,7 +71,7 @@ protected:
   friend void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);
 
   std::vector<ClassPtr> types;
-  std::vector<TemplateTypePtr> templateTypes;
+  std::vector<TemplateClassPtr> templateTypes;
   std::vector<LibraryPtr> subLibraries;
   std::vector<LoaderPtr> fileLoaders;
   
@@ -86,7 +86,7 @@ protected:
   virtual void uncacheTypes() = 0;
   
   bool declareType(ExecutionContext& context, ClassPtr type);
-  bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);
+  bool declareTemplateClass(ExecutionContext& context, TemplateClassPtr templateType);
   bool declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary);
 
   void getTypesInheritingFrom(ClassPtr baseType, std::vector<ClassPtr>& res) const;

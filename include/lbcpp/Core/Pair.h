@@ -31,6 +31,8 @@
 
 namespace lbcpp
 {
+  
+extern ClassPtr pairClass(ClassPtr firstClass, ClassPtr secondClass);
 
 class Pair : public Object
 {
