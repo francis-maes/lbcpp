@@ -38,7 +38,7 @@ namespace lbcpp
 class ScalarVariableMean : public NameableObject
 {
 public:
-  ScalarVariableMean(const String& name = String::empty);
+  ScalarVariableMean(const string& name = string::empty);
 
   virtual void clear()
     {samplesSum = samplesCount = 0.0;}
@@ -58,8 +58,8 @@ public:
   double getSum() const
     {return samplesSum;}
 
-  virtual String toString() const;
-  virtual String toShortString() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
   
   virtual double toDouble() const
     {return getMean();}
@@ -87,7 +87,7 @@ extern ClassPtr scalarVariableMeanClass;
 class ScalarVariableMeanAndVariance : public ScalarVariableMean
 {
 public:
-  ScalarVariableMeanAndVariance(const String& name = String::empty);
+  ScalarVariableMeanAndVariance(const string& name = string::empty);
 
   virtual void clear()
     {ScalarVariableMean::clear(); samplesSumOfSquares = 0.0;}
@@ -110,8 +110,8 @@ public:
   double getStandardDeviation() const
     {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}
 
-  virtual String toString() const;
-  virtual String toShortString() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
  
   // Lua
   static int getStandardDeviation(LuaState& state);
@@ -132,7 +132,7 @@ extern ClassPtr scalarVariableMeanAndVarianceClass;
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
 public:
-  ScalarVariableStatistics(const String& name = String::empty);
+  ScalarVariableStatistics(const string& name = string::empty);
 
   virtual void clear();
   virtual void push(double val);
@@ -149,8 +149,8 @@ public:
   double getRange() const
     {return maximumValue - minimumValue;}
 
-  virtual String toString() const;
-  virtual String toShortString() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
 
   // Lua
   static int getMinimum(LuaState& state);
@@ -169,7 +169,7 @@ extern ClassPtr scalarVariableStatisticsClass;
 class ScalarVariableRecentMean : public NameableObject
 {
 public:
-  ScalarVariableRecentMean(const String& name = T("Unnamed"), size_t memorySize = 0);
+  ScalarVariableRecentMean(const string& name = T("Unnamed"), size_t memorySize = 0);
 
   void clear()
     {values.clear(); currentSum = 0.0; epoch = 0;}
@@ -202,7 +202,7 @@ protected:
 class ScalarVariableRecentMeanAndVariance : public ScalarVariableRecentMean
 {
 public:
-  ScalarVariableRecentMeanAndVariance(const String& name = T("Unnamed"), size_t memorySize = 0);
+  ScalarVariableRecentMeanAndVariance(const string& name = T("Unnamed"), size_t memorySize = 0);
 
   void clear()
     {ScalarVariableRecentMean::clear(); meansqr.clear();}

@@ -15,14 +15,14 @@ using namespace lbcpp;
 /*
 ** Vector
 */
-String Vector::toString() const
+string Vector::toString() const
 {
   ClassPtr type = getElementsType();
   size_t n = getNumElements();
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
   {
-    String value;
+    string value;
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr element = getElement(i);
@@ -36,14 +36,14 @@ String Vector::toString() const
 
   if (type->inheritsFrom(doubleClass))
   {
-    String value;
+    string value;
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr element = getElement(i);
       if (!element)
         value += '_';
       else
-        value += String(Double::get(element));
+        value += string(Double::get(element));
       if (i < n - 1)
         value += " ";
     }
@@ -58,14 +58,14 @@ bool Vector::loadFromXml(XmlImporter& importer)
   int size = importer.getIntAttribute(T("size"), -1);
   if (size < 0)
   {
-    importer.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
+    importer.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + string(size));
     return false;
   }
   resize(size);
   return Container::loadFromXml(importer);
 }
 
-bool Vector::loadFromString(ExecutionContext& context, const String& stringValue)
+bool Vector::loadFromString(ExecutionContext& context, const string& stringValue)
 {
   ClassPtr elementsType = getElementsType();
   StringArray tokens;
@@ -120,9 +120,9 @@ BooleanVector::BooleanVector(size_t initialSize)
 {
 }
 
-String BooleanVector::toString() const
+string BooleanVector::toString() const
 {
-  String res = T("[");
+  string res = T("[");
   for (size_t i = 0; i < v.size(); ++i)
   {
     switch (v[i])

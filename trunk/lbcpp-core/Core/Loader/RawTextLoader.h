@@ -10,7 +10,7 @@
 # define LBCPP_CORE_LOADER_RAW_TEXT_H_
 
 # include <lbcpp/Core/Loader.h>
-# include <lbcpp/Core/String.h>
+# include <lbcpp/Core/string.h>
 
 namespace lbcpp
 {
@@ -18,17 +18,17 @@ namespace lbcpp
 class RawTextLoader : public Loader
 {
 public:
-  virtual String getFileExtensions() const
+  virtual string getFileExtensions() const
     {return "txt";}
 
   virtual ClassPtr getTargetClass() const
-    {return newStringClass;}
+    {return stringClass;}
   
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const
     {return guessIfIsText(istr);}
 
-  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const
-    {return new NewString(istr.readEntireStreamAsString());}
+  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const string& streamName) const
+    {return new String(istr.readEntireStreamAsString());}
 };
 
 }; /* namespace lbcpp */

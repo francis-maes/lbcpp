@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: StringComponent.h              | String Component                |
+| Filename: StringComponent.h              | string Component                |
 | Author  : Francis Maes                   |                                 |
 | Started : 15/06/2009 16:53               |                                 |
 `------------------------------------------/                                 |

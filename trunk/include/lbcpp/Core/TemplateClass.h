@@ -37,16 +37,16 @@ extern ClassPtr templateClassClass;
 class TemplateClass : public NameableObject
 {
 public:
-  TemplateClass(const String& name)
+  TemplateClass(const string& name)
     : NameableObject(name), initialized(false) {}
   TemplateClass() : initialized(false) {}
 
-  static bool isInstanciatedTypeName(const String& name);
-  static bool parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<String>& arguments);
-  static bool parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<ClassPtr>& templateArguments);
-  static String makeInstanciatedTypeName(const String& name, const std::vector<ClassPtr>& templateArguments);
+  static bool isInstanciatedTypeName(const string& name);
+  static bool parseInstanciatedTypeName(ExecutionContext& context, const string& typeName, string& templateName, std::vector<string>& arguments);
+  static bool parseInstanciatedTypeName(ExecutionContext& context, const string& typeName, string& templateName, std::vector<ClassPtr>& templateArguments);
+  static string makeInstanciatedTypeName(const string& name, const std::vector<ClassPtr>& templateArguments);
 
-  String makeTypeName(const std::vector<ClassPtr>& arguments) const
+  string makeTypeName(const std::vector<ClassPtr>& arguments) const
     {return makeInstanciatedTypeName(getName(), arguments);}
 
   /*
@@ -62,11 +62,11 @@ public:
   ** Parameters
   */
   virtual size_t getNumParameters() const = 0;
-  virtual String getParameterName(size_t index) const = 0;
+  virtual string getParameterName(size_t index) const = 0;
   virtual ClassPtr getParameterBaseType(size_t index) const = 0;
 
   virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments) const = 0;
-  virtual ClassPtr instantiateTypeName(ExecutionContext& context, const String& typeNameExpr, const std::vector<ClassPtr>& arguments) const = 0;
+  virtual ClassPtr instantiateTypeName(ExecutionContext& context, const string& typeNameExpr, const std::vector<ClassPtr>& arguments) const = 0;
 
   /*
   ** Object
@@ -83,28 +83,28 @@ protected:
 class DefaultTemplateClass : public TemplateClass
 {
 public:
-  DefaultTemplateClass(const String& name, const String& baseTypeExpr);
+  DefaultTemplateClass(const string& name, const string& baseTypeExpr);
   DefaultTemplateClass() {}
 
   virtual size_t getNumParameters() const;
-  virtual String getParameterName(size_t index) const;
+  virtual string getParameterName(size_t index) const;
   virtual ClassPtr getParameterBaseType(size_t index) const;
 
-  int findParameter(const String& name) const;
+  int findParameter(const string& name) const;
 
   virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments, ClassPtr baseType) const = 0;
   virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments) const;
 
-  virtual ClassPtr instantiateTypeName(ExecutionContext& context, const String& typeNameExpr, const std::vector<ClassPtr>& arguments) const;
+  virtual ClassPtr instantiateTypeName(ExecutionContext& context, const string& typeNameExpr, const std::vector<ClassPtr>& arguments) const;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  String baseTypeExpr;
-  std::vector<std::pair<String, ClassPtr> > parameters;
+  string baseTypeExpr;
+  std::vector<std::pair<string, ClassPtr> > parameters;
 
-  void addParameter(const String& name, ClassPtr baseType = objectClass);
-  void addParameter(ExecutionContext& context, const String& name, const String& type);
+  void addParameter(const string& name, ClassPtr baseType = objectClass);
+  void addParameter(ExecutionContext& context, const string& name, const string& type);
 };
 
 }; /* namespace lbcpp */

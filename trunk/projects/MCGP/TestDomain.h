@@ -36,7 +36,7 @@ typedef ReferenceCountedObjectPtr<TypeExpression> TypeExpressionPtr;
 class TypeParam : public Object
 {
 private:
-  String identifer;
+  string identifer;
 };
 
 class TypeParams : public Object
@@ -52,7 +52,7 @@ class TypeDefinition : public Object
 {
 private:
   std::vector<TypeParams> params;
-  String typeConstructorName;
+  string typeConstructorName;
   // FIXME: type-information
 };
 
@@ -78,7 +78,7 @@ class IdentTypeExpression : public TypeExpression
 public:
 
 private:
-  String ident;
+  string ident;
 };
 
 // typeexpr ::= typeexpr -> typeexpr
@@ -101,7 +101,7 @@ class ConstructedTypeExpression : public TypeExpression
 {
 private:
   std::vector<TypeExpressionPtr> arguments;
-  String constructor;
+  string constructor;
 };
 
 }; /* namespace ocaml */
@@ -314,17 +314,17 @@ protected:
 class VariantDomain : public Domain
 {
 public:
-  void addConstructor(const String& identifier, const DomainPtr& domain = nilDomain)
+  void addConstructor(const string& identifier, const DomainPtr& domain = nilDomain)
     {constructors.push_back(std::make_pair(identifier, domain));}
 
   size_t getNumConstructors() const
     {return constructors.size();}
 
-  const String& getConstructorName(size_t index) const
+  const string& getConstructorName(size_t index) const
     {jassert(index < constructors.size()); return constructors[index].first;}
 
 protected:
-  std::vector< std::pair<String, DomainPtr> > constructors;
+  std::vector< std::pair<string, DomainPtr> > constructors;
 };
 
 typedef ReferenceCountedObjectPtr<VariantDomain> VariantDomainPtr;
@@ -332,11 +332,11 @@ typedef ReferenceCountedObjectPtr<VariantDomain> VariantDomainPtr;
 class VariantObject : public Object
 {
 public:
-  VariantObject(const String& constructor, const ObjectPtr& argument)
+  VariantObject(const string& constructor, const ObjectPtr& argument)
     : constructor(constructor), argument(argument) {}
 
 private:
-  String constructor;
+  string constructor;
   ObjectPtr argument;
 };
 
@@ -375,7 +375,7 @@ public:
 
     VariantDomainPtr flagDomain = new VariantDomain();
     for (size_t i = 0; i < 50; ++i)
-      flagDomain->addConstructor(String((int)i));
+      flagDomain->addConstructor(string((int)i));
     VariantDomainPtr res = new VariantDomain();
     res->addConstructor("Nil");
     res->addConstructor("Cons", new TupleDomain(flagDomain, res));

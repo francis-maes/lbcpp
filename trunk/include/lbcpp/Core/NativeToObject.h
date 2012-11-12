@@ -35,8 +35,8 @@ inline ObjectPtr nativeToObject(const float& source, const ClassPtr& expectedTyp
 inline ObjectPtr nativeToObject(const double& source, const ClassPtr& expectedType)
   {return Double::create(expectedType, source);}
 
-inline ObjectPtr nativeToObject(const juce::String& source, const ClassPtr& expectedType)
-  {return new NewString(expectedType, source);}
+inline ObjectPtr nativeToObject(const string& source, const ClassPtr& expectedType)
+  {return new String(expectedType, source);}
 
 inline ObjectPtr nativeToObject(const juce::File& source, const ClassPtr& expectedType)
   {return new File(expectedType, source);}

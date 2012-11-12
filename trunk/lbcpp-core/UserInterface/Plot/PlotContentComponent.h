@@ -61,17 +61,17 @@ public:
   virtual PlotAxisPtr getYAxis() const
     {return plot->getYAxis();}
 
-  virtual String getXAxisLabel() const
+  virtual string getXAxisLabel() const
   {
-    String res = plot->getXAxis()->getLabel();
+    string res = plot->getXAxis()->getLabel();
     if (res.isEmpty())
       res = plot->getPlotVariable(plot->getKeyVariableIndex())->getName();
     return res;
   }
 
-  virtual String getYAxisLabel() const
+  virtual string getYAxisLabel() const
   {
-    String res = plot->getYAxis()->getLabel();
+    string res = plot->getYAxis()->getLabel();
     if (res.isEmpty())
     {
       for (size_t i = 0; i < selectedCurves.size(); ++i)

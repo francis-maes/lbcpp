@@ -20,7 +20,7 @@ class NewWorkUnitContentComponent;
 class NewWorkUnitDialogWindow : public juce::DocumentWindow
 {
 public:
-  static bool run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments);
+  static bool run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& arguments);
   
   virtual void closeButtonPressed();
 
@@ -29,7 +29,7 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments);
+  NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& arguments);
   
   ExecutionContext& context;
 };

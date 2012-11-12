@@ -31,7 +31,7 @@ struct ObjectTreeOptions
 class ObjectTreeView : public juce::TreeView, public ObjectSelector, public juce::Timer, public ComponentWithPreferedSize
 {
 public:
-  ObjectTreeView(const ObjectPtr& object, const String& name, const ObjectTreeOptions& options = ObjectTreeOptions());
+  ObjectTreeView(const ObjectPtr& object, const string& name, const ObjectTreeOptions& options = ObjectTreeOptions());
   virtual ~ObjectTreeView();
 
   virtual bool keyPressed(const juce::KeyPress& key);
@@ -49,7 +49,7 @@ public:
 
 protected:
   ObjectPtr object;
-  String name;
+  string name;
   ObjectTreeOptions options;
   ObjectTreeViewItem* root;
   bool isSelectionUpToDate;

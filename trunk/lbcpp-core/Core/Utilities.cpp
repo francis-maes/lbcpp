@@ -14,7 +14,7 @@
 #endif // !JUCE_WIN32
 using namespace lbcpp;
 
-String lbcpp::getTypeName(const std::type_info& info)
+string lbcpp::getTypeName(const std::type_info& info)
 {
 #ifdef JUCE_WIN32
   std::string res = info.name();
@@ -23,7 +23,7 @@ String lbcpp::getTypeName(const std::type_info& info)
 #else // linux or macos x
   int status;
   char* realname = abi::__cxa_demangle(info.name(), 0, 0, &status);
-  String res = realname;
+  string res = realname;
   free(realname);
   return res.startsWith(T("lbcpp::")) ? res.substring(7) : res;
 #endif

@@ -16,10 +16,10 @@ using namespace lbcpp;
 */
 int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[])
 {
-  std::vector<String> arguments(argc - 1);
+  std::vector<string> arguments(argc - 1);
   for (size_t i = 1; i < (size_t)argc; ++i)
   {
-    String arg = argv[i];
+    string arg = argv[i];
     arguments[i - 1] = arg;
     if (arg == T("--help") || arg == T("-h"))
     {
@@ -40,43 +40,43 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   return 0;
 }
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
+bool WorkUnit::parseArguments(ExecutionContext& context, const string& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
 {
   StringArray tokens;
   tokens.addTokens(arguments, true);
-  std::vector<String> toks;
+  std::vector<string> toks;
   toks.reserve(tokens.size());
   for (int i = 0; i < tokens.size(); ++i)
   {
-    String str = tokens[i].isQuotedString() ? tokens[i].unquoted() : tokens[i];
+    string str = tokens[i].isQuotedString() ? tokens[i].unquoted() : tokens[i];
     if (str.isNotEmpty())
       toks.push_back(str);
   }
   return parseArguments(context, toks, res);
 }
 
-inline bool isNegativeNumber(const String& str)
+inline bool isNegativeNumber(const string& str)
   {return str.containsOnly(T("-+e0123456789"));}
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
+bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<string>& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
 {
   /* shortcut */
-  std::map<String, size_t> variableNames;
-  std::map<String, size_t> variableShortNames;
+  std::map<string, size_t> variableNames;
+  std::map<string, size_t> variableShortNames;
   ClassPtr thisClass = getClass();
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
-    String name = thisClass->getMemberVariableName(i);
-    String shortName = thisClass->getMemberVariableShortName(i);
+    string name = thisClass->getMemberVariableName(i);
+    string shortName = thisClass->getMemberVariableShortName(i);
     variableNames[name] = i;
     variableShortNames[shortName.isNotEmpty() ? shortName : name] = i;
   }
   
   for (size_t i = 0; i < arguments.size(); )
   {
-    String argumentName;
-    String argumentValue;
-    std::map<String, size_t>* namesMap = NULL;
+    string argumentName;
+    string argumentValue;
+    std::map<string, size_t>* namesMap = NULL;
     if (arguments[i].startsWith(T("--")))
     {
       int end = arguments[i].indexOfChar(T('='));
@@ -100,7 +100,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
       return false;
     }
 
-    std::map<String, size_t>::const_iterator it = namesMap->find(argumentName);
+    std::map<string, size_t>::const_iterator it = namesMap->find(argumentName);
     if (it == namesMap->end())
     {
       context.errorCallback(T("WorkUnit::parseArguments"), T("Unknown argument: ") + argumentName);
@@ -136,7 +136,7 @@ void WorkUnit::setArguments(ExecutionContext& context, const std::vector< std::p
     setVariable(arguments[i].first, arguments[i].second);
 }
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments)
+bool WorkUnit::parseArguments(ExecutionContext& context, const string& arguments)
 {
   std::vector< std::pair<size_t, ObjectPtr> > args;
   bool res = parseArguments(context, arguments, args);
@@ -144,7 +144,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments
   return res;
 }
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)
+bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<string>& arguments)
 {
   std::vector< std::pair<size_t, ObjectPtr> > args;
   bool res = parseArguments(context, arguments, args);
@@ -152,7 +152,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
   return res;
 }
 
-String WorkUnit::getUsageString() const
+string WorkUnit::getUsageString() const
 {
   ClassPtr thisClass = getClass();
   /* Compute the longest string */
@@ -168,16 +168,16 @@ String WorkUnit::getUsageString() const
       longestShortName = shortNameLength;
   }
   /* Generate usage */
-  String argumentDescriptions = T("-h") + String::repeatedString(T(" "), longestShortName - 1)
-                              + T(" --help") + String::repeatedString(T(" "), longestName - 4)
+  string argumentDescriptions = T("-h") + string::repeatedString(T(" "), longestShortName - 1)
+                              + T(" --help") + string::repeatedString(T(" "), longestName - 4)
                               + T(" Display this help message.\n");
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     
     argumentDescriptions += (thisClass->getMemberVariableShortName(i).isNotEmpty() ? T("-") + thisClass->getMemberVariableShortName(i) : T(" "))
-                        + String::repeatedString(T(" "), longestShortName - thisClass->getMemberVariableShortName(i).length())
+                        + string::repeatedString(T(" "), longestShortName - thisClass->getMemberVariableShortName(i).length())
                         + T(" --") + thisClass->getMemberVariableName(i)
-                        + String::repeatedString(T(" "), longestName - thisClass->getMemberVariableName(i).length())
+                        + string::repeatedString(T(" "), longestName - thisClass->getMemberVariableName(i).length())
                         + T(" ") + thisClass->getMemberVariableDescription(i) + T("\n");
   }
   

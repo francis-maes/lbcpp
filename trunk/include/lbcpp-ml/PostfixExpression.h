@@ -38,7 +38,7 @@ public:
 
   bool startsWith(const PostfixExpressionSequencePtr& start) const;
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   std::vector<ClassPtr> computeTypeState(const std::vector<ClassPtr>& initialState = std::vector<ClassPtr>()) const;
 
@@ -54,7 +54,7 @@ public:
   PostfixExpressionTypeState(size_t depth, const std::vector<ClassPtr>& stack, bool yieldable);
   PostfixExpressionTypeState();
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   size_t getDepth() const
     {return depth;}

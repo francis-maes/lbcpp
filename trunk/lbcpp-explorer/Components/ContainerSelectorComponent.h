@@ -33,7 +33,7 @@ public:
   {
     std::vector<ObjectPtr> selectedObjects;
     selectedObjects.reserve(getNumSelectedRows());
-    String selectionName;
+    string selectionName;
     for (int i = 0; i < getNumSelectedRows(); ++i)
     {
       int rowNumber = getSelectedRow(i);

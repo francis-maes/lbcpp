@@ -20,7 +20,7 @@ class HistogramComponent : public juce::Component, public ComponentWithPreferedS
 public:
   enum {minimumBinWidth = 15};
 
-  HistogramComponent(HistogramPtr histogram, const String& name)
+  HistogramComponent(HistogramPtr histogram, const string& name)
     : histogram(histogram) {}
 
   virtual int getDefaultWidth() const

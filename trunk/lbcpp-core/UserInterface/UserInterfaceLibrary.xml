@@ -21,8 +21,8 @@
     <variable type="Double" name="rangeMax"/>
     <variable type="Boolean" name="autoRange"/>
     <variable type="Boolean" name="logScale"/>
-    <variable type="NewString" name="unit"/>
-    <variable type="NewString" name="label"/>
+    <variable type="String" name="unit"/>
+    <variable type="String" name="label"/>
   </class>
 
   <class name="Plot">
@@ -33,7 +33,7 @@
   </class>
   
   <class name="PieChart" base="Object">
-    <variable type="ObjectVector[Pair[NewString, Double]]" name="values"/>
+    <variable type="ObjectVector[Pair[String, Double]]" name="values"/>
   </class>
 
   <class name="Histogram" base="NameableObject">

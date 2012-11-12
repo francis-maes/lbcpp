@@ -18,7 +18,7 @@ namespace lbcpp
 class LbcppLoader : public Loader
 {
 public:
-  virtual String getFileExtensions() const
+  virtual string getFileExtensions() const
     {return "xml";}
 
   virtual ClassPtr getTargetClass() const
@@ -26,9 +26,9 @@ public:
 
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const
   {
-    String firstLine = readFirstLine(istr);
+    string firstLine = readFirstLine(istr);
     static const char* xmlBegin = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-    return firstLine.startsWith(String(xmlBegin));
+    return firstLine.startsWith(string(xmlBegin));
   }
 
   virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const
@@ -41,7 +41,7 @@ public:
 class TraceLoader : public LbcppLoader
 {
 public:
-  virtual String getFileExtensions() const
+  virtual string getFileExtensions() const
     {return "trace";}
 
   virtual ClassPtr getTargetClass() const

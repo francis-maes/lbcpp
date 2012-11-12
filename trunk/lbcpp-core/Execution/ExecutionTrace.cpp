@@ -10,7 +10,7 @@
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Core/String.h>
+#include <lbcpp/Core/string.h>
 #include <lbcpp/Core/NativeToObject.h>
 #include <lbcpp/Data/Table.h>
 using namespace lbcpp;
@@ -37,16 +37,16 @@ bool ExecutionTraceItem::loadFromXml(XmlImporter& importer)
 /*
 ** MessageExecutionTraceItem
 */
-MessageExecutionTraceItem::MessageExecutionTraceItem(double time, ExecutionMessageType messageType, const String& what, const String& where)
+MessageExecutionTraceItem::MessageExecutionTraceItem(double time, ExecutionMessageType messageType, const string& what, const string& where)
   : ExecutionTraceItem(time), messageType(messageType), what(what), where(where) {}
 
-String MessageExecutionTraceItem::toString() const
-  {return what + (where.isEmpty() ? String::empty : (T(" (in ") + where + T(")")));}
+string MessageExecutionTraceItem::toString() const
+  {return what + (where.isEmpty() ? string::empty : (T(" (in ") + where + T(")")));}
 
-String MessageExecutionTraceItem::toShortString() const
+string MessageExecutionTraceItem::toShortString() const
   {return toString();}
 
-String MessageExecutionTraceItem::getPreferedXmlTag() const
+string MessageExecutionTraceItem::getPreferedXmlTag() const
 {
   switch (messageType)
   {
@@ -55,10 +55,10 @@ String MessageExecutionTraceItem::getPreferedXmlTag() const
   case errorMessageType:       return T("error");
   }
   jassert(false);
-  return String::empty;
+  return string::empty;
 } 
 
-String MessageExecutionTraceItem::getPreferedIcon() const
+string MessageExecutionTraceItem::getPreferedIcon() const
 {
   switch (messageType)
   {
@@ -67,7 +67,7 @@ String MessageExecutionTraceItem::getPreferedIcon() const
   case errorMessageType:       return T("Error-32.png");
   }
   jassert(false);
-  return String::empty;
+  return string::empty;
 } 
 
 void MessageExecutionTraceItem::saveToXml(XmlExporter& exporter) const
@@ -83,7 +83,7 @@ bool MessageExecutionTraceItem::loadFromXml(XmlImporter& importer)
   if (!ExecutionTraceItem::loadFromXml(importer))
     return false;
 
-  String tag = importer.getTagName().toLowerCase();
+  string tag = importer.getTagName().toLowerCase();
   if (tag == T("info"))
     messageType = informationMessageType;
   else if (tag == T("warning"))
@@ -104,13 +104,13 @@ bool MessageExecutionTraceItem::loadFromXml(XmlImporter& importer)
 /*
 ** ExecutionTraceNode
 */
-ExecutionTraceNode::ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime)
+ExecutionTraceNode::ExecutionTraceNode(const string& description, const WorkUnitPtr& workUnit, double startTime)
   : ExecutionTraceItem(startTime), description(description), timeLength(0.0), workUnit(workUnit)
 {
   setThisClass(executionTraceNodeClass);
 }
 
-String ExecutionTraceNode::getPreferedIcon() const
+string ExecutionTraceNode::getPreferedIcon() const
   {return T("WorkUnit-32.png");}
 
 size_t ExecutionTraceNode::getNumSubItems() const
@@ -143,7 +143,7 @@ ExecutionTraceNodePtr ExecutionTraceNode::findFirstNode() const
   return ExecutionTraceNodePtr();
 }
 
-ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description, const WorkUnitPtr& workUnit) const
+ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const string& description, const WorkUnitPtr& workUnit) const
 {
   ScopedLock _(subItemsLock);
   for (size_t i = 0; i < subItems.size(); ++i)
@@ -231,7 +231,7 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
   bool res = true;
   forEachXmlChildElement(*importer.getCurrentElement(), xml)
   {
-    String tagName = xml->getTagName();
+    string tagName = xml->getTagName();
     importer.enter(xml);
     
     if (tagName == T("info") || tagName == T("warning") || tagName == T("error") || tagName == T("node"))
@@ -256,7 +256,7 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       returnValue = importer.loadObject(objectClass);
     else if (tagName == T("result"))
     {
-      String name = importer.getStringAttribute(T("resultName"));
+      string name = importer.getStringAttribute(T("resultName"));
       ObjectPtr value = importer.loadObject(objectClass);
       if (value.exists())
         results.push_back(std::make_pair(name, value));
@@ -276,7 +276,7 @@ bool ExecutionTraceNode::loadFromXml(XmlImporter& importer)
   return loadSubItemsFromXml(importer);
 }
 
-void ExecutionTraceNode::setResult(const String& name, const ObjectPtr& value)
+void ExecutionTraceNode::setResult(const string& name, const ObjectPtr& value)
 {
   ScopedLock _(resultsLock);
   for (size_t i = 0; i < results.size(); ++i)
@@ -288,9 +288,9 @@ void ExecutionTraceNode::setResult(const String& name, const ObjectPtr& value)
   results.push_back(std::make_pair(name, value));
 }
 
-std::vector< std::pair<String, ObjectPtr> > ExecutionTraceNode::getResults() const
+std::vector< std::pair<string, ObjectPtr> > ExecutionTraceNode::getResults() const
 {
-  std::vector< std::pair<String, ObjectPtr> > res;
+  std::vector< std::pair<string, ObjectPtr> > res;
   {
     ScopedLock _(resultsLock);
     res = results;
@@ -302,10 +302,10 @@ std::vector< std::pair<String, ObjectPtr> > ExecutionTraceNode::getResults() con
 
 VectorPtr ExecutionTraceNode::getResultsVector(ExecutionContext& context) const
 {
-  std::vector< std::pair<String, ObjectPtr> > results = getResults();
+  std::vector< std::pair<string, ObjectPtr> > results = getResults();
   if (results.empty())
     return VectorPtr();
-  ClassPtr elementsType = objectVectorClass(pairClass(newStringClass, objectClass));
+  ClassPtr elementsType = objectVectorClass(pairClass(stringClass, objectClass));
   return lbcpp::nativeToObject(results, elementsType);
 }
 
@@ -314,7 +314,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
   ScopedLock _(subItemsLock);
 
   // (variable name, variable type) -> index in common class
-  typedef std::map<String, std::pair<size_t, ObjectPtr> > ColumnsMap;
+  typedef std::map<string, std::pair<size_t, ObjectPtr> > ColumnsMap;
   ColumnsMap mapping;
 
   /*
@@ -328,11 +328,11 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
     if (!childNode)
       continue;
     ++numChildNodes;
-    std::vector< std::pair<String, ObjectPtr> > childResults = childNode->getResults();
-    childResults.insert(childResults.begin(), std::make_pair("name", new NewString(childNode->toShortString())));
+    std::vector< std::pair<string, ObjectPtr> > childResults = childNode->getResults();
+    childResults.insert(childResults.begin(), std::make_pair("name", new String(childNode->toShortString())));
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      String name = childResults[j].first;
+      string name = childResults[j].first;
       ClassPtr type = childResults[j].second->getClass();
 
       ColumnsMap::iterator it = mapping.find(name);
@@ -349,7 +349,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
   /*
   ** Create table
   */
-  std::vector< std::pair<String, ClassPtr> > columns(mapping.size());
+  std::vector< std::pair<string, ClassPtr> > columns(mapping.size());
   for (ColumnsMap::const_iterator it = mapping.begin(); it != mapping.end(); ++it)
     columns[it->second.first] = std::make_pair(it->first, it->second.second);
   TablePtr res = new Table(numChildNodes);
@@ -366,11 +366,11 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
     if (!childNode)
       continue;
 
-    std::vector< std::pair<String, ObjectPtr> > childResults = childNode->getResults();
-    childResults.insert(childResults.begin(), std::make_pair("name", new NewString(childNode->toShortString())));
+    std::vector< std::pair<string, ObjectPtr> > childResults = childNode->getResults();
+    childResults.insert(childResults.begin(), std::make_pair("name", new String(childNode->toShortString())));
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      String name = childResults[j].first;
+      string name = childResults[j].first;
       ColumnsMap::iterator it = mapping.find(name);
       jassert(it != mapping.end());
       res->setElement(index, it->second.first, childResults[j].second);
@@ -383,7 +383,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
 /*
 ** ExecutionTrace
 */
-ExecutionTrace::ExecutionTrace(const String& contextDescription)
+ExecutionTrace::ExecutionTrace(const string& contextDescription)
   : root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(juce::Time::getCurrentTime())
 {
   ScopedLock _(lock);
@@ -406,7 +406,7 @@ ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) c
   size_t d = stack->getDepth();
   for (size_t i = 0; i < d; ++i)
   {
-    const std::pair<String, WorkUnitPtr>& entry = stack->getEntry(i);
+    const std::pair<string, WorkUnitPtr>& entry = stack->getEntry(i);
     res = res->findSubNode(entry.first, entry.second);
     if (!res)
       break;

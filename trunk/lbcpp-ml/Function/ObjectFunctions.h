@@ -103,14 +103,14 @@ class GetVariableFunction : public UnaryObjectFunction<GetVariableFunction>
 public:
   GetVariableFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0)
     : UnaryObjectFunction<GetVariableFunction>(inputClass), inputClass(inputClass), variableIndex(variableIndex) {}
-  GetVariableFunction(ClassPtr inputClass, const String& variableName)
+  GetVariableFunction(ClassPtr inputClass, const string& variableName)
     : UnaryObjectFunction<GetVariableFunction>(inputClass), inputClass(inputClass), variableIndex((size_t)inputClass->findMemberVariable(variableName))
   {
     jassert(variableIndex != (size_t)-1);
   }
 
-  virtual String toShortString() const
-    {return inputClass ? "." + inputClass->getMemberVariableName(variableIndex) : ".[" + String((int)variableIndex) + T("]");}
+  virtual string toShortString() const
+    {return inputClass ? "." + inputClass->getMemberVariableName(variableIndex) : ".[" + string((int)variableIndex) + T("]");}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
   {
@@ -119,7 +119,7 @@ public:
     return outputType;
   }
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
   {
     jassert(inputs.size() == 1);
     VariableSignaturePtr member = inputClass->getMemberVariable(variableIndex);
@@ -159,7 +159,7 @@ protected:
   ClassPtr inputClass;
   size_t variableIndex;
 
-  String variableName;
+  string variableName;
   ClassPtr outputType;
 };
 
@@ -170,13 +170,13 @@ class GetContainerLengthFunction : public UnaryObjectFunction<GetContainerLength
 public:
   GetContainerLengthFunction() : UnaryObjectFunction<GetContainerLengthFunction>(containerClass()) {}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "length(.)";}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return positiveIntegerClass;}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
   ObjectPtr computeObject(const ObjectPtr& object) const

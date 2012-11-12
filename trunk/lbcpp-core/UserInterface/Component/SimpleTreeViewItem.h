@@ -17,20 +17,20 @@ namespace lbcpp
 class SimpleTreeViewItem : public juce::TreeViewItem
 {
 public:
-  SimpleTreeViewItem(const String& uniqueName, juce::Image* iconToUse = 0, bool mightContainSubItems = false)
+  SimpleTreeViewItem(const string& uniqueName, juce::Image* iconToUse = 0, bool mightContainSubItems = false)
     : uniqueName(uniqueName), iconToUse(iconToUse), mightContainSubItemsFlag(mightContainSubItems), hasBeenOpened(false) {}
 
-  SimpleTreeViewItem(const String& uniqueName, const String& iconToUse, bool mightContainSubItems = false)
+  SimpleTreeViewItem(const string& uniqueName, const string& iconToUse, bool mightContainSubItems = false)
     : uniqueName(uniqueName), iconToUse(iconToUse.isEmpty() ? NULL : userInterfaceManager().getImage(iconToUse, 18, 18)),
       mightContainSubItemsFlag(mightContainSubItems), hasBeenOpened(false) {}
      
   virtual bool mightContainSubItems()
     {return mightContainSubItemsFlag;}
 
-  void setUniqueName(const String& name)
+  void setUniqueName(const string& name)
     {this->uniqueName = name;}
 
-  virtual const String getUniqueName() const
+  virtual const string getUniqueName() const
     {return uniqueName;}
     
   enum {defaultIconSize = 18};
@@ -60,14 +60,14 @@ public:
     }
   }
   
-  void setIcon(const String& name)
+  void setIcon(const string& name)
     {iconToUse = userInterfaceManager().getImage(name, 18, 18);}
 
   bool hasBeenOpenedOnce() const
     {return hasBeenOpened;}
 
 protected:
-  String uniqueName;
+  string uniqueName;
   juce::Image* iconToUse;
   bool mightContainSubItemsFlag;
   bool hasBeenOpened;

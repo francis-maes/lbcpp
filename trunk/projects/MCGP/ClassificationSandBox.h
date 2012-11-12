@@ -46,13 +46,13 @@ public:
       int index = strtol(token, NULL, 0);
       if (index < 1 || index > (int)data->getNumElements())
       {
-        context.warningCallback(T("Invalid index ") + String(token) + T(" (num examples = ") + String((int)data->getNumElements()) + T(")"));
+        context.warningCallback(T("Invalid index ") + string(token) + T(" (num examples = ") + string((int)data->getNumElements()) + T(")"));
         //return false;
         continue;
       }
       size_t idx = (size_t)(index - 1);
       if (testingIndices.find(idx) != testingIndices.end())
-        context.warningCallback(T("Redundant index ") + String(token));
+        context.warningCallback(T("Redundant index ") + string(token));
       testingIndices.insert(idx);
     }
 
@@ -104,9 +104,9 @@ public:
     size_t numExamples = dataset->getNumRows();
     size_t numLabels = supervision->getType().staticCast<Enumeration>()->getNumElements();
 
-    context.informationCallback(String((int)numExamples) + T(" examples, ") +
-                                String((int)numVariables) + T(" variables, ") +
-                                String((int)numLabels) + T(" labels"));
+    context.informationCallback(string((int)numExamples) + T(" examples, ") +
+                                string((int)numVariables) + T(" variables, ") +
+                                string((int)numLabels) + T(" labels"));
 
     context.resultCallback("dataset", dataset);
     context.resultCallback("supervision", supervision);
@@ -118,8 +118,8 @@ public:
     if (makeSplits(context, tsFile, inputClass, data, splits) && verbosity > 0)
     {
       for (size_t i = 0; i < splits.size(); ++i)
-        context.informationCallback(T("Split ") + String((int)i) + T(": train size = ") + String((int)splits[i].first->getNumElements())
-                              + T(", test size = ") + String((int)splits[i].second->getNumElements()));
+        context.informationCallback(T("Split ") + string((int)i) + T(": train size = ") + string((int)splits[i].first->getNumElements())
+                              + T(", test size = ") + string((int)splits[i].second->getNumElements()));
     }
     context.leaveScope(splits.size());
     if (!splits.size())

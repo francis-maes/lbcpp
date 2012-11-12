@@ -25,35 +25,35 @@ public:
 
   void finishDeclarations(ExecutionContext& context);
 
-  ClassPtr getType(ExecutionContext& context, const String& typeName, const std::vector<ClassPtr>& arguments) const;
-  ClassPtr getType(ExecutionContext& context, const String& name) const;
-  ClassPtr getTypeByShortName(ExecutionContext& context, const String& shortName) const;
+  ClassPtr getType(ExecutionContext& context, const string& typeName, const std::vector<ClassPtr>& arguments) const;
+  ClassPtr getType(ExecutionContext& context, const string& name) const;
+  ClassPtr getTypeByShortName(ExecutionContext& context, const string& shortName) const;
 
-  ClassPtr findType(const String& name) const;
-  bool doTypeExists(const String& type) const;
+  ClassPtr findType(const string& name) const;
+  bool doTypeExists(const string& type) const;
 
   void shutdown();
 
 private:
-  typedef std::map<String, ClassPtr> TypeMap;
-  typedef std::map<String, TemplateClassCache> TemplateClassMap;
+  typedef std::map<string, ClassPtr> TypeMap;
+  typedef std::map<string, TemplateClassCache> TemplateClassMap;
 
   CriticalSection typesLock;
   TypeMap types;
   TypeMap typesByShortName;
   TemplateClassMap templateTypes;
  
-  bool hasTemplateClass(const String& templateTypeName) const;
-  TemplateClassCache* getTemplateClass(ExecutionContext& context, const String& templateTypeName) const;
+  bool hasTemplateClass(const string& templateTypeName) const;
+  TemplateClassCache* getTemplateClass(ExecutionContext& context, const string& templateTypeName) const;
 
-  static String removeAllSpaces(const String& str);
+  static string removeAllSpaces(const string& str);
 };
 
 extern ClassManager& typeManager();
 
-extern ClassPtr getType(const String& typeName);
-extern ClassPtr getType(const String& name, const std::vector<ClassPtr>& arguments);
-extern bool doTypeExists(const String& typeName);
+extern ClassPtr getType(const string& typeName);
+extern ClassPtr getType(const string& name, const std::vector<ClassPtr>& arguments);
+extern bool doTypeExists(const string& typeName);
 extern bool declareType(ClassPtr type);
 
 }; /* namespace lbcpp */

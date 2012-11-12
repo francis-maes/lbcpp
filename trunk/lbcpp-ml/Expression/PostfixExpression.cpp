@@ -17,9 +17,9 @@ using namespace lbcpp;
 PostfixExpressionSequence::PostfixExpressionSequence(const std::vector<ObjectPtr>& sequence)
   : sequence(sequence) {}
 
-String PostfixExpressionSequence::toShortString() const
+string PostfixExpressionSequence::toShortString() const
 {
-  String res;
+  string res;
   for (size_t i = 0; i < sequence.size(); ++i)
   {
     res += sequence[i]->toShortString();
@@ -118,12 +118,12 @@ PostfixExpressionTypeState::PostfixExpressionTypeState(size_t depth, const std::
   : depth(depth), stack(stack), yieldable(yieldable), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 PostfixExpressionTypeState::PostfixExpressionTypeState() : depth(0), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 
-String PostfixExpressionTypeState::toShortString() const
+string PostfixExpressionTypeState::toShortString() const
 {
-  String res = T("[") + String((int)depth) + T("] {");
+  string res = T("[") + string((int)depth) + T("] {");
   for (size_t i = 0; i < stack.size(); ++i)
   {
-    String name = stack[i]->getName();
+    string name = stack[i]->getName();
     jassert(name.isNotEmpty());
     res += name;
     if (i < stack.size() - 1)
@@ -131,11 +131,11 @@ String PostfixExpressionTypeState::toShortString() const
   }
   res += T("} -> ");
   if (push.size())
-    res += String((int)push.size()) + T(" push actions");
+    res += string((int)push.size()) + T(" push actions");
   if (apply.size())
   {
     if (push.size()) res += T(", ");
-    res += String((int)apply.size()) + T(" apply actions");
+    res += string((int)apply.size()) + T(" apply actions");
   }
   if (hasYieldAction())
   {
@@ -221,7 +221,7 @@ PostfixExpressionTypeSpace::PostfixExpressionTypeSpace(const ExpressionDomainPtr
 
 void PostfixExpressionTypeSpace::pruneStates(ExecutionContext& context, bool verbose)
 {
-//    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
+//    context.informationCallback(T("Num states before pruning: ") + string((int)states.size()));
   prune(initialState);
   //jassert(!isRootPrunable);
 

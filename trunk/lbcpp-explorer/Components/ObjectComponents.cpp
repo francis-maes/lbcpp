@@ -16,11 +16,11 @@
 #include <lbcpp/Core/Loader.h>
 using namespace lbcpp;
 
-extern void flushErrorAndWarningMessages(const String& title);
+extern void flushErrorAndWarningMessages(const string& title);
 
-Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectPtr& object, const String& explicitName)
+Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectPtr& object, const string& explicitName)
 {
-  String name = explicitName.isEmpty() ? object->toShortString() : explicitName;
+  string name = explicitName.isEmpty() ? object->toShortString() : explicitName;
 
   // no components for null objects
   if (!object)
@@ -58,14 +58,14 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
   }
 }
 
-Component* lbcpp::createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& explicitName, bool topLevelComponent)
+Component* lbcpp::createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& explicitName, bool topLevelComponent)
 {
   if (!object)
     return NULL;
   Component* res = createComponentForObjectImpl(context, object, explicitName);
   if (topLevelComponent && dynamic_cast<ObjectSelector* >(res))
     res = new ObjectBrowser(object, res);
-  String title = T("Create Component");
+  string title = T("Create Component");
   if (explicitName.isNotEmpty())
     title += T(" for ") + explicitName;
   flushErrorAndWarningMessages(title);

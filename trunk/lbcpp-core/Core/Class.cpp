@@ -12,7 +12,7 @@ using namespace lbcpp;
 
 double lbcpp::doubleMissingValue = 0.0;
 
-Class::Class(const String& className, ClassPtr baseType)
+Class::Class(const string& className, ClassPtr baseType)
   : NameableObject(className), initialized(false), baseType(baseType), namedType(false) {}
 
 Class::Class(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseType)
@@ -36,9 +36,9 @@ void Class::deinitialize()
 ClassPtr Class::getClass() const
   {return classClass;}
 
-String Class::toString() const
+string Class::toString() const
 {
-  String res = getName();
+  string res = getName();
   res += T(" = {");
   if (baseType)
   {
@@ -112,7 +112,7 @@ bool Class::inheritsFrom(ClassPtr baseType) const
   return this->baseType->inheritsFrom(baseType);
 }
 
-ClassPtr Class::findBaseTypeFromTemplateName(const String& templateName) const
+ClassPtr Class::findBaseTypeFromTemplateName(const string& templateName) const
 {
   ClassPtr res = refCountedPointerFromThis(this);
   while (res)
@@ -142,7 +142,7 @@ size_t Class::getNumMemberVariables() const
 VariableSignaturePtr Class::getMemberVariable(size_t index) const
   {jassert(baseType); return baseType->getMemberVariable(index);}
 
-int Class::findMemberVariable(const String& name) const
+int Class::findMemberVariable(const string& name) const
   {jassert(baseType); return baseType->findMemberVariable(name);}
   
 ObjectPtr Class::getMemberVariableValue(const Object* pthis, size_t index) const
@@ -151,17 +151,17 @@ ObjectPtr Class::getMemberVariableValue(const Object* pthis, size_t index) const
 void Class::setMemberVariableValue(Object* pthis, size_t index, const ObjectPtr& subValue) const
   {if (baseType) baseType->setMemberVariableValue(pthis, index, subValue);}
 
-String Class::makeUniqueMemberVariableName(const String& name) const
+string Class::makeUniqueMemberVariableName(const string& name) const
 {
   if (findMemberVariable(name) < 0)
     return name;
   for (int i = 2; true; ++i)
   {
-    String res = name + String(i);
+    string res = name + string(i);
     if (findMemberVariable(res) < 0)
       return res;
   }
-  return String::empty;
+  return string::empty;
 }
 
 VariableSignaturePtr Class::getLastMemberVariable() const
@@ -177,22 +177,22 @@ ClassPtr Class::getMemberVariableType(size_t index) const
   return signature ? signature->getType() : ClassPtr();
 }
 
-String Class::getMemberVariableName(size_t index) const
+string Class::getMemberVariableName(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
-  return signature ? signature->getName() : String::empty;
+  return signature ? signature->getName() : string::empty;
 }
 
-String Class::getMemberVariableShortName(size_t index) const
+string Class::getMemberVariableShortName(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
-  return signature ? signature->getShortName() : String::empty;
+  return signature ? signature->getShortName() : string::empty;
 }
 
-String Class::getMemberVariableDescription(size_t index) const
+string Class::getMemberVariableDescription(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);
-  return signature ? signature->getDescription() : String::empty;
+  return signature ? signature->getDescription() : string::empty;
 }
 
 size_t Class::getNumMemberFunctions() const
@@ -201,5 +201,5 @@ size_t Class::getNumMemberFunctions() const
 FunctionSignaturePtr Class::getMemberFunction(size_t index) const
   {jassert(baseType); return baseType->getMemberFunction(index);}
 
-int Class::findMemberFunction(const String& name) const
+int Class::findMemberFunction(const string& name) const
   {jassert(baseType); return baseType->findMemberFunction(name);}

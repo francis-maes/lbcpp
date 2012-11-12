@@ -24,9 +24,9 @@ public:
     : ExpressionState(domain, maxSize), isYielded(false) {}
   PostfixExpressionStateBase() : isYielded(false) {}
   
-  virtual String toShortString() const
+  virtual string toShortString() const
   {
-    String res;
+    string res;
     if (!isFinalState())
       res += "{";
     for (size_t i = 0; i < stack.size(); ++i)

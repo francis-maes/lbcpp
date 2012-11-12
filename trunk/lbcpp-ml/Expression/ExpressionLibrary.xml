@@ -11,7 +11,7 @@
     <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
   </class>
   <class name="VariableExpression" base="Expression">
-    <variable type="NewString" name="name"/>
+    <variable type="String" name="name"/>
     <variable type="PositiveInteger" name="inputIndex"/>
   </class>
   <class name="ConstantExpression" base="Expression">

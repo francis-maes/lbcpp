@@ -18,17 +18,17 @@ namespace lbcpp
 class Loader : public Object
 {
 public:
-  virtual String getFileExtensions() const = 0; // separated by semi colons, e.g. "jpg;tga;bmp"
+  virtual string getFileExtensions() const = 0; // separated by semi colons, e.g. "jpg;tga;bmp"
   virtual ClassPtr getTargetClass() const = 0; // returns the type of the loaded object
 
   virtual bool canUnderstand(ExecutionContext& context, const juce::File& file) const;
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const;
 
   virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const;
-  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const;
+  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const string& streamName) const;
 
   static juce::InputStream* openFile(ExecutionContext& context, const juce::File& file, bool doErrorMessages = true);
-  static String readFirstLine(juce::InputStream& istr, size_t maxLength = 256);
+  static string readFirstLine(juce::InputStream& istr, size_t maxLength = 256);
   static bool guessIfIsText(juce::InputStream& istr);
 };
 
@@ -39,11 +39,11 @@ class TextLoader : public Loader
 public:
   virtual bool canUnderstand(ExecutionContext& context, juce::InputStream& istr) const;
   virtual ObjectPtr loadFromFile(ExecutionContext& context, const juce::File& file) const;
-  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const String& streamName) const;
+  virtual ObjectPtr loadFromStream(ExecutionContext& context, juce::InputStream& istr, const string& streamName) const;
 
 protected:
   virtual void parseBegin(ExecutionContext& context) {}
-  virtual bool parseLine(ExecutionContext& context, const String& line) = 0;
+  virtual bool parseLine(ExecutionContext& context, const string& line) = 0;
   virtual ObjectPtr parseEnd(ExecutionContext& context) = 0;
 
 private:

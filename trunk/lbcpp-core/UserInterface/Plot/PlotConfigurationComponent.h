@@ -196,10 +196,10 @@ public:
 
   void updateAxisRanges()
   {
-    xMinScaleTextEditor->setText(String(plot->getXAxis()->getRangeMin()));
-    xMaxScaleTextEditor->setText(String(plot->getXAxis()->getRangeMax()));
-    yMinScaleTextEditor->setText(String(plot->getYAxis()->getRangeMin()));
-    yMaxScaleTextEditor->setText(String(plot->getYAxis()->getRangeMax()));
+    xMinScaleTextEditor->setText(string(plot->getXAxis()->getRangeMin()));
+    xMaxScaleTextEditor->setText(string(plot->getXAxis()->getRangeMax()));
+    yMinScaleTextEditor->setText(string(plot->getYAxis()->getRangeMin()));
+    yMaxScaleTextEditor->setText(string(plot->getYAxis()->getRangeMax()));
   }
 
 protected:

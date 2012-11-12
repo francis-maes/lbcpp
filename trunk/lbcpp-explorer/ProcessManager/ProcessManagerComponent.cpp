@@ -53,7 +53,7 @@ public:
 private:
   ObjectSelectorCallback& selectorCallback;
 
-  void addProcessList(const String& name, ProcessListPtr processes)
+  void addProcessList(const string& name, ProcessListPtr processes)
   {
     ContainerSelectorComponent* list = new ContainerSelectorComponent(processes);
     list->addCallback(selectorCallback);
@@ -94,7 +94,7 @@ const StringArray ProcessManagerComponent::getMenuBarNames()
   return res;
 }
 
-const PopupMenu ProcessManagerComponent::getMenuForIndex(int topLevelMenuIndex, const String& menuName)
+const PopupMenu ProcessManagerComponent::getMenuForIndex(int topLevelMenuIndex, const string& menuName)
 {
   jassert(topLevelMenuIndex == 0);
   PopupMenu menu;
@@ -115,7 +115,7 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   case 1:
     {
       juce::File executable;
-      String arguments;
+      string arguments;
       juce::File workingDirectory;
       if (NewProcessDialogWindow::run(executable, arguments, workingDirectory))
       {
@@ -146,7 +146,7 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   };
 }
 
-void ProcessManagerComponent::selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedVariables, const String& selectionName)
+void ProcessManagerComponent::selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedVariables, const string& selectionName)
 {
   if (selectedVariables.size() == 1)
   {

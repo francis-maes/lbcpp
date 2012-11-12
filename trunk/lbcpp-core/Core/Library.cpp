@@ -13,7 +13,7 @@
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
-Library::Library(const String& name) : NameableObject(name)
+Library::Library(const string& name) : NameableObject(name)
 {
 }
 
@@ -47,7 +47,7 @@ bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary
 }
 
 #ifdef LBCPP_USER_INTERFACE
-bool Library::declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor)
+bool Library::declareUIComponent(ExecutionContext& context, const string& typeName, UIComponentConstructor constructor)
 {
   ClassPtr type = typeManager().getType(context, typeName);
   if (!type)
@@ -67,7 +67,7 @@ bool Library::hasUIComponent(ClassPtr type) const
   return false;
 }
 
-juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name)
+juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const string& name)
 {
   ClassPtr type = object->getClass();
   for (size_t i = 0; i < uiComponents.size(); ++i)
@@ -113,7 +113,7 @@ void Library::luaRegister(LuaState& state) const
 
 LoaderPtr Library::findLoaderForFile(ExecutionContext& context, const juce::File& file) const
 {
-  String ext = file.getFileExtension();
+  string ext = file.getFileExtension();
   if (ext.startsWithChar('.'))
     ext = ext.substring(1);
 

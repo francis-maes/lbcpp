@@ -19,7 +19,7 @@ using juce::Colour;
 /*
 ** ExecutionTraceTreeView
 */
-ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const String& name, ExecutionContextPtr context)
+ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context)
   : trace(trace), isSelectionUpToDate(false), isTreeUpToDate(true)
 {
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
@@ -56,7 +56,7 @@ ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const Execu
   size_t n = stack->getDepth();
   for (size_t i = 0; i < n; ++i)
   {
-    const std::pair<String, WorkUnitPtr>& entry = stack->getEntry(i);
+    const std::pair<string, WorkUnitPtr>& entry = stack->getEntry(i);
     bool ok = false;
     for (int i = 0; i < item->getNumSubItems(); ++i)
     {
@@ -115,7 +115,7 @@ public:
     }
   }
 
-  virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const String& tabName) const
+  virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const string& tabName) const
   {
     if (tabName == T("Results"))
       return results;
@@ -132,7 +132,7 @@ public:
     }
   }
 
-  virtual Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& tabName)
+  virtual Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& tabName)
   {
     if (tabName == T("Results"))
       return userInterfaceManager().createObjectTreeView(context, object, tabName, true, true, false, false);
@@ -146,7 +146,7 @@ protected:
   PlotPtr plot;
 };
 
-juce::Component* ExecutionTraceTreeView::createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)
+juce::Component* ExecutionTraceTreeView::createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& name)
 {
   if (!object)
     return NULL;
@@ -165,7 +165,7 @@ void ExecutionTraceTreeView::timerCallback()
   {
     std::vector<ObjectPtr> selectedObjects;
     selectedObjects.reserve(getNumSelectedItems());
-    String selectionName;
+    string selectionName;
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
       ExecutionTraceTreeViewItem* item = dynamic_cast<ExecutionTraceTreeViewItem* >(getSelectedItem(i));
@@ -227,7 +227,7 @@ public:
   MakeTraceAndFillTreeThreadExecutionCallback(ExecutionTraceTreeView* tree, ExecutionTracePtr trace, ExecutionTraceNodePtr traceNode, ExecutionTraceTreeViewNode* node)
     : MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime()), tree(tree), stack(1, node) {thisClass = executionCallbackClass;}
 
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit)
   {
     MakeTraceThreadExecutionCallback::preExecutionCallback(stack, description, workUnit);
     jassert(this->stack.size());
@@ -238,7 +238,7 @@ public:
     this->stack.push_back(newNode);
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     jassert(this->stack.size());
     this->stack.pop_back();

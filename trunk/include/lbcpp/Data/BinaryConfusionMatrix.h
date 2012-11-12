@@ -20,7 +20,7 @@ public:
   BinaryConfusionMatrix(const BinaryConfusionMatrix& otherMatrix);
   BinaryConfusionMatrix();
 
-  virtual String toString() const;
+  virtual string toString() const;
 
   void clear();
   void set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative);

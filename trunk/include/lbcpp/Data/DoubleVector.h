@@ -194,7 +194,7 @@ public:
   virtual void setElement(size_t index, const ObjectPtr& value);
   
   // Object
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
   virtual size_t getSizeInBytes(bool recursively) const;

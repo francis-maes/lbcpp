@@ -9,8 +9,8 @@
 #include "LibSVMDataParser.h"
 using namespace lbcpp;
 
-// FIXME: Duplicate with Stream.cpp ! This function must be incorporated into String class, no ?
-inline int indexOfAnyNotOf(const String& str, const String& characters, int startPosition = 0)
+// FIXME: Duplicate with Stream.cpp ! This function must be incorporated into string class, no ?
+inline int indexOfAnyNotOf(const string& str, const string& characters, int startPosition = 0)
 {
   for (int i = startPosition; i < str.length(); ++i)
     if (characters.indexOfChar(str[i]) < 0)
@@ -18,7 +18,7 @@ inline int indexOfAnyNotOf(const String& str, const String& characters, int star
   return -1;
 }
 
-bool LibSVMDataParser::parseLine(const String& line)
+bool LibSVMDataParser::parseLine(const string& line)
 {
   int begin = indexOfAnyNotOf(line, T(" \t"));
   bool isEmpty = begin < 0;
@@ -26,17 +26,17 @@ bool LibSVMDataParser::parseLine(const String& line)
     return parseEmptyLine();
   if (line[begin] == '#')
     return parseCommentLine(line.substring(begin + 1).trim());
-  std::vector<String> columns;
+  std::vector<string> columns;
   tokenize(line, columns);
   return parseDataLine(columns);
 }
 
-SparseDoubleVectorPtr LibSVMDataParser::parseFeatureList(DefaultEnumerationPtr features, const std::vector<String>& columns, size_t firstColumn) const
+SparseDoubleVectorPtr LibSVMDataParser::parseFeatureList(DefaultEnumerationPtr features, const std::vector<string>& columns, size_t firstColumn) const
 {
   SparseDoubleVectorPtr res = new SparseDoubleVector(features, doubleClass);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
-    String identifier;
+    string identifier;
     double value;
     if (!parseFeature(columns[i], identifier, value))
       return SparseDoubleVectorPtr();
@@ -46,7 +46,7 @@ SparseDoubleVectorPtr LibSVMDataParser::parseFeatureList(DefaultEnumerationPtr f
   return res;
 }
 
-bool LibSVMDataParser::parseFeature(const String& str, String& featureId, double& featureValue)
+bool LibSVMDataParser::parseFeature(const string& str, string& featureId, double& featureValue)
 {
   int n = str.indexOfChar(':');
   if (n < 0)

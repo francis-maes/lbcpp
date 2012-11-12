@@ -211,7 +211,7 @@ public:
     }
     else
     {
-      juce::File examplesFile = context.getFile("iteration" + String((int)iter) + ".txt");
+      juce::File examplesFile = context.getFile("iteration" + string((int)iter) + ".txt");
       if (examplesFile.existsAsFile())
         examplesFile.deleteFile();
       juce::OutputStream* ostr = examplesFile.createOutputStream();
@@ -267,12 +267,12 @@ public:
     population = SolutionVectorPtr();
   }
 
-  std::map<String, size_t> featuresMap;
-  std::vector<String> features;
+  std::map<string, size_t> featuresMap;
+  std::vector<string> features;
 
-  size_t getFeatureIndex(const String& name)
+  size_t getFeatureIndex(const string& name)
   {
-    std::map<String, size_t>::const_iterator it = featuresMap.find(name);
+    std::map<string, size_t>::const_iterator it = featuresMap.find(name);
     if (it == featuresMap.end())
     {
       size_t res = featuresMap.size();
@@ -284,15 +284,15 @@ public:
       return it->second;
   }
 
-  void addFeature(const String& name, std::set<size_t>& res)
+  void addFeature(const string& name, std::set<size_t>& res)
     {res.insert(getFeatureIndex(name));}
 
-  void makeNodeFeatures(ExpressionPtr node, const String& prefix, size_t maxDepth, std::set<size_t>& res)
+  void makeNodeFeatures(ExpressionPtr node, const string& prefix, size_t maxDepth, std::set<size_t>& res)
   {
     FunctionExpressionPtr functionNode = node.dynamicCast<FunctionExpression>();
     if (functionNode)
     {
-      addFeature(prefix + "arity" + String((int)functionNode->getNumArguments()), res);
+      addFeature(prefix + "arity" + string((int)functionNode->getNumArguments()), res);
       addFeature(prefix + "function" + functionNode->getFunction()->toShortString(), res);
     }
     else
@@ -301,7 +301,7 @@ public:
     if (maxDepth > 1)
     {
       for (size_t i = 0; i < node->getNumSubNodes(); ++i)
-        makeNodeFeatures(node->getSubNode(i), prefix + "_" + String((int)i) + "_", maxDepth - 1, res);
+        makeNodeFeatures(node->getSubNode(i), prefix + "_" + string((int)i) + "_", maxDepth - 1, res);
     }
   }
 
@@ -315,7 +315,7 @@ public:
     //ostr << "E1: " << expression1->toShortString() << " N1: " << node1->toShortString() << " E2: " << expression2->toShortString() << " N2: " << node2->toShortString() << " => " << (isPositive ? '+' : '-') << "\n";
     ostr << (isPositive ? "+1" : "-1");
     for (std::set<size_t>::const_iterator it = activeFeatures.begin(); it != activeFeatures.end(); ++it)
-      ostr << " " << String((int)*it) << ":1";
+      ostr << " " << string((int)*it) << ":1";
     ostr << "\n";
     /*std::cout << (isPositive ? "+1" : "-1");
     for (std::set<size_t>::const_iterator it = activeFeatures.begin(); it != activeFeatures.end(); ++it)

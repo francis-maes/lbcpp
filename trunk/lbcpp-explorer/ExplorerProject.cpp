@@ -16,13 +16,13 @@ ExplorerProjectPtr ExplorerProject::currentProject;
 /*
 ** RecentWorkUnitConfiguration
 */
-RecentWorkUnitConfiguration::RecentWorkUnitConfiguration(const String& workUnitName)
+RecentWorkUnitConfiguration::RecentWorkUnitConfiguration(const string& workUnitName)
   : workUnitName(workUnitName)
 {
   arguments.push_back(T(" "));
 }
 
-void RecentWorkUnitConfiguration::addRecentArguments(const String& args)
+void RecentWorkUnitConfiguration::addRecentArguments(const string& args)
 {
   size_t i;
   for (i = 0; i < arguments.size(); ++i)
@@ -36,7 +36,7 @@ void RecentWorkUnitConfiguration::addRecentArguments(const String& args)
 /*
 ** RecentWorkUnitsConfiguration
 */
-void RecentWorkUnitsConfiguration::addRecentWorkUnit(const String& workUnitName)
+void RecentWorkUnitsConfiguration::addRecentWorkUnit(const string& workUnitName)
 {
   int index = findRecentWorkUnit(workUnitName);
   if (index >= 0)
@@ -50,7 +50,7 @@ void RecentWorkUnitsConfiguration::addRecentWorkUnit(const String& workUnitName)
   ExplorerConfiguration::save(defaultExecutionContext());
 }
 
-RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const String& name)
+RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const string& name)
 {
   if (name.isEmpty())
     return RecentWorkUnitConfigurationPtr();
@@ -63,14 +63,14 @@ RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const S
   return recents[index];
 }
 
-void RecentWorkUnitsConfiguration::addRecent(const String& workUnit, const String& arguments)
+void RecentWorkUnitsConfiguration::addRecent(const string& workUnit, const string& arguments)
 {
   addRecentWorkUnit(workUnit);
   recents[0]->addRecentArguments(arguments);
   ExplorerConfiguration::save(defaultExecutionContext());
 }
 
-int RecentWorkUnitsConfiguration::findRecentWorkUnit(const String& workUnit) const
+int RecentWorkUnitsConfiguration::findRecentWorkUnit(const string& workUnit) const
 {
   for (size_t i = 0; i < recents.size(); ++i)
     if (recents[i]->getWorkUnitName() == workUnit)
@@ -149,8 +149,8 @@ void ExplorerProject::close(ExecutionContext& context)
 
 bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit)
 {
-  String workUnitName;
-  String arguments;
+  string workUnitName;
+  string arguments;
   if (!NewWorkUnitDialogWindow::run(context, recentWorkUnits, workUnitName, arguments))
     return false;
 

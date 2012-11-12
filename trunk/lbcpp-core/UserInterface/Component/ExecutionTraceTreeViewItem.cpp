@@ -19,7 +19,7 @@ using juce::Colour;
 ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth)
   : SimpleTreeViewItem(trace->toShortString(), trace->getPreferedIcon(), false), owner(owner), trace(trace), depth(depth)
 {
-  String str = getUniqueName();
+  string str = getUniqueName();
   numLines = 1;
   for (int i = 0; i < str.length() - 1; ++i)
     if (str[i] == '\n')
@@ -81,7 +81,7 @@ void ExecutionTraceTreeViewItem::paintIconTextAndProgression(Graphics& g, int wi
   g.setColour(Colours::black);
   g.setFont(12);
   
-  String str = getUniqueName();
+  string str = getUniqueName();
   StringArray lines;
   lines.addTokens(str, T("\n"), NULL);
   for (int i = 0; i < lines.size(); ++i)
@@ -104,7 +104,7 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     if (node)
     {
       ObjectPtr returnValue = node->getReturnValue();
-      String text = returnValue ? returnValue->toShortString() : String::empty;
+      string text = returnValue ? returnValue->toShortString() : string::empty;
       g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
 
@@ -112,7 +112,7 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     if (workUnitTrace)
     {
       double timeLength = workUnitTrace->getTimeLength();
-      String timeLengthString = timeLength ? ObjectPtr(new Time(timeLength))->toShortString() : T("...");
+      string timeLengthString = timeLength ? ObjectPtr(new Time(timeLength))->toShortString() : T("...");
       g.drawText(timeLengthString, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
   }

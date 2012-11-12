@@ -1,18 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: String.cpp                     | String                          |
+| Filename: string.cpp                     | string                          |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/11/2012 17:44               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/String.h>
+#include <lbcpp/Core/string.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
 /*
-** NewString
+** String
 */
 FilePtr File::create(const juce::File& file)
 {
@@ -22,15 +22,15 @@ FilePtr File::create(const juce::File& file)
     return new File(file);
 }
 
-juce::String NewString::toShortString() const
+string String::toShortString() const
   {return value;}
 
-String NewString::toString() const
+string String::toString() const
   {return value.quoted();}
 
-int NewString::compare(const ObjectPtr& otherObject) const
+int String::compare(const ObjectPtr& otherObject) const
 {
-  const NewStringPtr& other = otherObject.staticCast<NewString>();
+  const NewStringPtr& other = otherObject.staticCast<String>();
   if (value < other->get())
     return -1;
   else if (value > other->get())
@@ -39,10 +39,10 @@ int NewString::compare(const ObjectPtr& otherObject) const
     return 0;
 }
 
-void NewString::clone(ExecutionContext& context, const ObjectPtr& target) const
-  {target.staticCast<NewString>()->value = value;}
+void String::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<String>()->value = value;}
   
-bool NewString::loadFromString(ExecutionContext& context, const String& str)
+bool String::loadFromString(ExecutionContext& context, const string& str)
 {
   value = str.trim();
   if (value.startsWithChar('"'))
@@ -50,25 +50,25 @@ bool NewString::loadFromString(ExecutionContext& context, const String& str)
   return true;
 }
 
-bool NewString::loadFromXml(XmlImporter& importer)
+bool String::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
-void NewString::saveToXml(XmlExporter& exporter) const
+void String::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
 /*
 ** File
 */
-juce::String File::toShortString() const
+string File::toShortString() const
   {return get().getFileName();}
 
-juce::String File::toString() const
+string File::toString() const
   {return defaultExecutionContext().getFilePath(get());}
 
 void File::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
-bool File::loadFromString(ExecutionContext& context, const String& str)
+bool File::loadFromString(ExecutionContext& context, const string& str)
 {
   juce::File file = context.getFile(str);
   if (file == juce::File::nonexistent)

@@ -25,7 +25,7 @@ public:
   const ObjectPtr& getKey() const
     {return key;}
 
-  String getName() const
+  string getName() const
     {return key->toShortString();}
 
   bool& isSelected()
@@ -53,7 +53,7 @@ typedef ReferenceCountedObjectPtr<PlotVariable> PlotVariablePtr;
 class PlotAxis : public Object
 {
 public:
-  PlotAxis(double rangeMin, double rangeMax, const String& label = String::empty, bool autoRange = true)
+  PlotAxis(double rangeMin, double rangeMax, const string& label = string::empty, bool autoRange = true)
     : rangeMin(rangeMin), rangeMax(rangeMax), autoRange(autoRange), logScale(false), label(label) {}
   PlotAxis() : rangeMin(0.0), rangeMax(0.0), autoRange(true), logScale(false) {}
 
@@ -72,7 +72,7 @@ public:
   double getRangeMax() const
     {return rangeMax;}
 
-  String getLabel() const
+  string getLabel() const
     {return label;}
 
   void setRangeMin(double value)
@@ -97,8 +97,8 @@ private:
   double rangeMin, rangeMax;
   bool autoRange;
   bool logScale;
-  String unit;
-  String label;
+  string unit;
+  string label;
 };
 
 typedef ReferenceCountedObjectPtr<PlotAxis> PlotAxisPtr;

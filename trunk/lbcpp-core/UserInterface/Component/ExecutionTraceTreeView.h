@@ -36,7 +36,7 @@ protected:
 class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback, public ObjectSelector, public ComponentWithPreferedSize
 {
 public:
-  ExecutionTraceTreeView(ExecutionTracePtr trace, const String& name, ExecutionContextPtr context = ExecutionContextPtr());
+  ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context = ExecutionContextPtr());
   virtual ~ExecutionTraceTreeView();
 
   ExecutionTraceTreeViewNode* getNodeFromStack(const ExecutionStackPtr& stack) const;
@@ -51,7 +51,7 @@ public:
   const ExecutionTracePtr& getTrace() const
     {return trace;}
 
-  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name);
+  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& name);
 
   lbcpp_UseDebuggingNewOperator
 

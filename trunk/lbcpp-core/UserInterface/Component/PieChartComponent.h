@@ -18,7 +18,7 @@ namespace lbcpp
 class PieChartComponent : public juce::Component, public ComponentWithPreferedSize
 {
 public:
-  PieChartComponent(PieChartPtr pieChart, const String& name)
+  PieChartComponent(PieChartPtr pieChart, const string& name)
     : pieChart(pieChart) {}
 
   virtual int getDefaultWidth() const
@@ -104,7 +104,7 @@ protected:
       g.setColour(juce::Colours::black);
       g.drawRect(x, currentY + (lineHeight - squareSize) / 2.f, (float)squareSize, (float)squareSize);
 
-      g.drawText(String(pieChart->getElementValue(i) * 100, 2) + T(" %"), (int)x + squareSize + 10, (int)currentY, percentValueWidth, lineHeight, juce::Justification::centredRight, false);
+      g.drawText(string(pieChart->getElementValue(i) * 100, 2) + T(" %"), (int)x + squareSize + 10, (int)currentY, percentValueWidth, lineHeight, juce::Justification::centredRight, false);
       g.drawText(pieChart->getElementName(i), (int)x + squareSize + percentValueWidth + 20, (int)currentY, textWidth, lineHeight, juce::Justification::centredLeft, true);
     }
   }

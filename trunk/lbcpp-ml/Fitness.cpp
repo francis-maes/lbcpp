@@ -124,9 +124,9 @@ int Fitness::compare(const ObjectPtr& otherObject) const
   return 0;
 }
 
-String Fitness::toShortString() const
+string Fitness::toShortString() const
 {
-  String res = "(";
+  string res = "(";
   for (size_t i = 0; i < values.size(); ++i)
   {
     res += ObjectPtr(new Double(values[i]))->toShortString();

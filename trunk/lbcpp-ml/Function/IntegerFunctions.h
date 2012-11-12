@@ -37,10 +37,10 @@ public:
 class AddIntegerFunction : public BinaryIntegerFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "+";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " + " + inputs[1]->toShortString() + ")";}
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
@@ -53,10 +53,10 @@ public:
 class SubIntegerFunction : public BinaryIntegerFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "-";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " - " + inputs[1]->toShortString() + ")";}
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
@@ -69,10 +69,10 @@ public:
 class MulIntegerFunction : public BinaryIntegerFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "*";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " x " + inputs[1]->toShortString() + ")";}
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
@@ -85,10 +85,10 @@ public:
 class DivIntegerFunction : public BinaryIntegerFunction
 {
 public:
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "/";}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const

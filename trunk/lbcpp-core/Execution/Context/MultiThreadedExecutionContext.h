@@ -220,7 +220,7 @@ class WorkUnitThread : public Thread
 {
 public:
   WorkUnitThread(ExecutionContext& parentContext, size_t number, WaitingWorkUnitQueuePtr waitingQueue)
-    : Thread(T("WorkUnitThread ") + String((int)number + 1)), waitingQueue(waitingQueue)
+    : Thread(T("WorkUnitThread ") + string((int)number + 1)), waitingQueue(waitingQueue)
   {
     context = threadOwnedExecutionContext(parentContext, this);
     context->setProjectDirectory(parentContext.getProjectDirectory());
@@ -484,8 +484,8 @@ public:
     threadPool = WorkUnitThreadPoolPtr();
   }
 
-  virtual String toString() const
-    {return T("MultiThreaded(") + String((int)threadPool->getNumThreads()) + T(")");}
+  virtual string toString() const
+    {return T("MultiThreaded(") + string((int)threadPool->getNumThreads()) + T(")");}
 
   virtual bool isMultiThread() const
     {return threadPool->getNumThreads() > 1;}

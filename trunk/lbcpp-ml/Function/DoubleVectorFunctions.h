@@ -36,10 +36,10 @@ public:
     return outputType;
   }
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return T(".") + enumeration->getElementName(index);}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + "." + enumeration->getElementName(index);}
 
   ObjectPtr computeObject(const ObjectPtr& input) const
@@ -101,13 +101,13 @@ class ComputeDoubleVectorStatisticsFunction : public UnaryObjectFunction<Compute
 public:
   ComputeDoubleVectorStatisticsFunction() : UnaryObjectFunction<ComputeDoubleVectorStatisticsFunction>(doubleVectorClass()) {}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return "stats(.)";}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return scalarVariableStatisticsPerceptionClass;}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "stats(" + inputs[0]->toShortString() + ")";}
 
   ObjectPtr computeObject(const ObjectPtr& object) const
@@ -172,10 +172,10 @@ public:
     return outputClass;
   }
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return T("extremums(.)");}
 
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return T("extremums(") + inputs[0]->toShortString() + T(")");}
 
   ObjectPtr computeObject(const ObjectPtr& input) const

@@ -16,8 +16,8 @@
 
   <!-- Project -->
   <class name="RecentWorkUnitConfiguration" base="Object">
-    <variable type="NewString" name="workUnitName"/>
-    <variable type="ObjectVector[NewString]" name="arguments"/>
+    <variable type="String" name="workUnitName"/>
+    <variable type="ObjectVector[String]" name="arguments"/>
   </class>
 
   <class name="RecentWorkUnitsConfiguration" base="Object">

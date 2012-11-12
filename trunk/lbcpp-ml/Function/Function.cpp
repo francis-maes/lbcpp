@@ -11,10 +11,10 @@
 #include <lbcpp-ml/Expression.h>
 using namespace lbcpp;
 
-String Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
+string Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
 {
   ClassPtr thisClass = getClass();
-  String res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");
+  string res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");
   for (size_t i = 0; i < inputs.size(); ++i)
   {
     res += inputs[i]->toShortString();

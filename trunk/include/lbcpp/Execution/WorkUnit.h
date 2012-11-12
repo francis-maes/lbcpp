@@ -18,19 +18,19 @@ namespace lbcpp
 class WorkUnit : public Object
 {
 public:
-  //WorkUnit(const String& name) : NameableObject(name) {}
-  //WorkUnit() : NameableObject(String::empty) {}
+  //WorkUnit(const string& name) : NameableObject(name) {}
+  //WorkUnit() : NameableObject(string::empty) {}
 
   static int main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[]);
 
-  String getUsageString() const;
+  string getUsageString() const;
 
-  bool parseArguments(ExecutionContext& context, const String& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res);
-  bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res);
+  bool parseArguments(ExecutionContext& context, const string& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res);
+  bool parseArguments(ExecutionContext& context, const std::vector<string>& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res);
   void setArguments(ExecutionContext& context, const std::vector< std::pair<size_t, ObjectPtr> >& arguments);
   
-  bool parseArguments(ExecutionContext& context, const String& arguments);
-  bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
+  bool parseArguments(ExecutionContext& context, const string& arguments);
+  bool parseArguments(ExecutionContext& context, const std::vector<string>& arguments);
 
   virtual ObjectPtr run(ExecutionContext& context) = 0;
   
@@ -54,10 +54,10 @@ typedef ObjectPtr (Object::*ObjectMethod)(ExecutionContext& context);
 class ObjectMethodWorkUnit : public WorkUnit
 {
 public:
-  ObjectMethodWorkUnit(const String& description, ObjectPtr object, ObjectMethod method)
+  ObjectMethodWorkUnit(const string& description, ObjectPtr object, ObjectMethod method)
     : object(object), method(method), description(description) {}
  
-  virtual String toString() const
+  virtual string toString() const
     {return description;}
 
   virtual ObjectPtr run(ExecutionContext& context)
@@ -69,7 +69,7 @@ public:
 protected:
   ObjectPtr object;
   ObjectMethod method;
-  String description;
+  string description;
 };
 
 class DecoratorWorkUnit : public WorkUnit
@@ -91,14 +91,14 @@ protected:
 class CompositeWorkUnit : public WorkUnit
 {
 public:
-  CompositeWorkUnit(const String& description, size_t initialSize = 0)
+  CompositeWorkUnit(const string& description, size_t initialSize = 0)
     : workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false), description(description) {}
   CompositeWorkUnit() {}
 
-  virtual String toString() const
+  virtual string toString() const
     {return description;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return description;}
 
   size_t getNumWorkUnits() const
@@ -113,10 +113,10 @@ public:
   void addWorkUnit(const WorkUnitPtr& workUnit)
     {workUnits->append(workUnit);}
 
-  virtual String getProgressionUnit() const
+  virtual string getProgressionUnit() const
     {return progressionUnit;}
 
-  void setProgressionUnit(const String& progressionUnit)
+  void setProgressionUnit(const string& progressionUnit)
     {this->progressionUnit = progressionUnit;}
 
   virtual ProgressionStatePtr getProgression(size_t numWorkUnitsDone) const
@@ -133,9 +133,9 @@ protected:
   friend class CompositeWorkUnitClass;
 
   ObjectVectorPtr workUnits;
-  String progressionUnit;
+  string progressionUnit;
   bool pushChildrenIntoStack;
-  String description;
+  string description;
 
   virtual ObjectPtr run(ExecutionContext& context);
 };

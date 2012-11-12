@@ -34,14 +34,14 @@ public:
   juce::int64 get() const
     {return value;}
   
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   virtual double toDouble() const;
   virtual int compare(const ObjectPtr& otherObject) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  virtual bool loadFromString(ExecutionContext& context, const String& value);
-  virtual String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& value);
+  virtual string toString() const;
 
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void saveToXml(XmlExporter& exporter) const;
@@ -85,10 +85,10 @@ public:
   EnumerationElementPtr getEnumerationElement() const
     {return getEnumeration()->getElement((int)value);}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
-  virtual bool loadFromString(ExecutionContext& context, const String& value);
-  virtual String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& value);
+  virtual string toString() const;
 };
 
 extern ClassPtr enumValueClass;

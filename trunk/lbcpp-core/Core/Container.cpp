@@ -47,9 +47,9 @@ VectorPtr Container::toVector() const
   return res;
 }
 
-String Container::toString() const
+string Container::toString() const
 {
-  String res;
+  string res;
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
@@ -60,14 +60,14 @@ String Container::toString() const
   return res;
 }
 
-String Container::toShortString() const
+string Container::toShortString() const
 {
   size_t n = getNumElements(); 
   if (n == 0)
     return T("<empty>");
   if (n < 10)
   {
-    String res;
+    string res;
     for (size_t i = 0; i < n; ++i)
     {
       res += getElement(i)->toShortString();
@@ -77,7 +77,7 @@ String Container::toShortString() const
     return res;
   }
   else
-    return String((int)n) + T(" elements...");
+    return string((int)n) + T(" elements...");
 }
 
 void Container::clone(ExecutionContext& context, const ObjectPtr& target) const
@@ -111,7 +111,7 @@ int Container::compare(const ObjectPtr& otherObject) const
     return Object::compare(otherObject);
 }
 
-String Container::getElementName(size_t index) const
+string Container::getElementName(size_t index) const
   {return getElementsEnumeration()->getElementName(index);}
 
 int Container::findElement(const ObjectPtr& value) const
@@ -185,7 +185,7 @@ bool Container::loadFromXml(XmlImporter& importer)
     int index = child->getIntAttribute(T("index"), -1);
     if (index < 0)
     {
-      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + String(index));
+      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + string(index));
       return false;
     }
     

@@ -24,11 +24,11 @@ IntegerPtr Integer::create(ClassPtr type, juce::int64 value)
     return new Integer(type, value);
 }
 
-String Integer::toShortString() const
-  {return String(value);}
+string Integer::toShortString() const
+  {return string(value);}
 
-String Integer::toString() const
-  {return String(value);}
+string Integer::toString() const
+  {return string(value);}
   
 double Integer::toDouble() const
   {return (double)value;}
@@ -42,7 +42,7 @@ int Integer::compare(const ObjectPtr& otherObject) const
 void Integer::clone(ExecutionContext& context, const ObjectPtr& target) const
   {target.staticCast<Integer>()->value = value;}
 
-bool Integer::loadFromString(ExecutionContext& context, const String& value)
+bool Integer::loadFromString(ExecutionContext& context, const string& value)
 {
   if (!value.trim().containsOnly(T("-+e0123456789")))
   {
@@ -62,17 +62,17 @@ void Integer::saveToXml(XmlExporter& exporter) const
 /*
 ** EnumValue
 */
-String EnumValue::toShortString() const
+string EnumValue::toShortString() const
 {
   EnumerationElementPtr element = getEnumerationElement();
   return element->getShortName().isNotEmpty() ? element->getShortName() : element->getName();
 }
 
-bool EnumValue::loadFromString(ExecutionContext& context, const String& value)
+bool EnumValue::loadFromString(ExecutionContext& context, const string& value)
 {
   EnumerationPtr enumeration = getEnumeration();
 
-  String str = value.trim();
+  string str = value.trim();
   size_t n = enumeration->getNumElements();
   size_t res = n;
 
@@ -104,5 +104,5 @@ bool EnumValue::loadFromString(ExecutionContext& context, const String& value)
   return true;
 }
 
-String EnumValue::toString() const
+string EnumValue::toString() const
   {return getEnumerationElement()->getName();}

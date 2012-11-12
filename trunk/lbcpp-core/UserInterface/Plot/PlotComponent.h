@@ -18,7 +18,7 @@ namespace lbcpp
 class PlotComponent : public Component, public juce::ChangeListener, public ComponentWithPreferedSize
 {
 public:
-  PlotComponent(PlotPtr plot, const String& name)
+  PlotComponent(PlotPtr plot, const string& name)
     : plot(plot), content(NULL)
   {
     addAndMakeVisible(configuration = new PlotConfigurationComponent(plot));

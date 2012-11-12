@@ -32,14 +32,14 @@ public:
   double get() const
     {return value;}
   
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   virtual double toDouble() const;
   virtual int compare(const ObjectPtr& otherObject) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
-  virtual String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& str);
+  virtual string toString() const;
 
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void saveToXml(XmlExporter& exporter) const;
@@ -58,7 +58,7 @@ public:
   Probability(double value = 0.0)
     : Double(value) {}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual bool toBoolean() const;
 };
 
@@ -72,7 +72,7 @@ public:
   Time(double value = 0.0)
     : Double(value) {}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
 
   static double getHighResolutionCounter()
     {return juce::Time::getMillisecondCounterHiRes() / 1000.0;}

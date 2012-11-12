@@ -36,11 +36,11 @@ void SearchTrajectory::ensureStatesAreComputed(ExecutionContext& context, Search
   }
 }
 
-String SearchTrajectory::toShortString() const
+string SearchTrajectory::toShortString() const
 {
   if (actions.empty())
     return "<empty trajectory>";
-  String res;
+  string res;
   for (size_t i = 0; i < actions.size(); ++i)
   {
     res += actions[i] ? actions[i]->toShortString() : "<null>";

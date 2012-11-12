@@ -39,7 +39,7 @@ using namespace lbcpp;
 
 namespace juce
 {
-  extern void juce_setCurrentExecutableFileName(const String& filename) throw();
+  extern void juce_setCurrentExecutableFileName(const string& filename) throw();
 };
 
 namespace lbcpp
@@ -141,7 +141,7 @@ public:
   {
     ScopedLock _(objectsMapLock);
     jassert(object->classNameUnderWhichThisIsKnown.isEmpty());
-    String name = object->getClassName();
+    string name = object->getClassName();
     if (name != T("Object"))
     {
       objectsMap[object->classNameUnderWhichThisIsKnown].erase(object);
@@ -153,12 +153,12 @@ public:
   void tryToRenameAllUnnamedObjets()
   {
     ScopedLock _(objectsMapLock);
-    std::set<Object* > unnamedObjects = objectsMap[String::empty];
+    std::set<Object* > unnamedObjects = objectsMap[string::empty];
     for (std::set<Object* >::iterator it = unnamedObjects.begin(); it != unnamedObjects.end(); ++it)
       tryToRenameObject(*it);
   }
 
-  typedef std::multimap<int, String> ObjectCountsMap;
+  typedef std::multimap<int, string> ObjectCountsMap;
 
   void getSortedCounts(ObjectCountsMap& res, size_t& totalSize)
   {
@@ -187,10 +187,10 @@ public:
     }
   }
 
-  String describe(const String& name, size_t kiloBytes) const
-    {return String(kiloBytes / 1024.0, 2) + T(" Kb ") + name + T(" [") + String((int)objectsMap.find(name)->second.size()) + T("]\n");}
+  string describe(const string& name, size_t kiloBytes) const
+    {return string(kiloBytes / 1024.0, 2) + T(" Kb ") + name + T(" [") + string((int)objectsMap.find(name)->second.size()) + T("]\n");}
 
-  String updateMemoryInformation()
+  string updateMemoryInformation()
   {
     enum {n = 5};
 
@@ -200,11 +200,11 @@ public:
     ObjectCountsMap sortedCounts;
     size_t totalSize = 0;
     getSortedCounts(sortedCounts, totalSize);
-    String res = T("Total size: ");
+    string res = T("Total size: ");
     if (totalSize > 1024 * 1024)
-      res += String((int)totalSize / (1024 * 1024)) + T(" Mb\n");
+      res += string((int)totalSize / (1024 * 1024)) + T(" Mb\n");
     else
-      res += String((int)totalSize / 1024) + T(" Kb\n");      
+      res += string((int)totalSize / 1024) + T(" Kb\n");      
     res += T("Most allocated objects:\n");
     size_t i = 0;
     
@@ -246,10 +246,10 @@ public:
   }
 
 private:
-  typedef std::map<String, std::set<Object* > > ObjectsMap;
+  typedef std::map<string, std::set<Object* > > ObjectsMap;
   CriticalSection objectsMapLock;
   ObjectsMap objectsMap;
-  std::map<String, size_t> previousCounts;
+  std::map<string, size_t> previousCounts;
 
   size_t getSizeInBytes(const std::set<Object*>& objects)
   {
@@ -314,7 +314,7 @@ void lbcpp::initialize(const char* executableName)
   // juce
   juce::initialiseJuce_NonGUI();
   // FIXME:
-  //juce::juce_setCurrentExecutableFileName(String::fromUTF8((const juce::uint8* )executableName));
+  //juce::juce_setCurrentExecutableFileName(string::fromUTF8((const juce::uint8* )executableName));
 
   // application context
   jassert(!applicationContext);

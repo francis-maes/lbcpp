@@ -29,10 +29,10 @@ public:
   virtual void computeYAxisAutoRange(PlotAxisPtr axis) const
     {jassertfalse;}
 
-  virtual String getXAxisLabel() const
+  virtual string getXAxisLabel() const
     {return getXAxis()->getLabel();}
 
-  virtual String getYAxisLabel() const
+  virtual string getYAxisLabel() const
     {return getYAxis()->getLabel();}
 
   enum

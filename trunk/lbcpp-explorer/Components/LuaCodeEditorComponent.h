@@ -35,14 +35,14 @@ public:
   virtual void resized();
   virtual bool keyPressed(const juce::KeyPress& key);
  
-  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)
+  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& name)
     {return userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, this->context);}
 
   void updateStatus();
 
 protected:
   juce::File luaFile;
-  String name;
+  string name;
   ExecutionContextPtr context;  
   juce::CodeEditorComponent* codeEditor;
   LuaCodeEditorStatusBar* statusBar;

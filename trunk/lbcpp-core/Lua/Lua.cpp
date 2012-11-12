@@ -152,7 +152,7 @@ bool LuaState::processExecuteError(int error)
 {
   if (error)
   {
-    String what = toString(-1);
+    string what = toString(-1);
     pop(1); // pop error message from the stack
 
     ExecutionContext& context = getContext();
@@ -179,12 +179,12 @@ bool LuaState::execute(const char* code, const char* chunkName, bool verbose)
 {
   ExecutionContext& context = getContext();
 
-  if (verbose) context.enterScope(String("Lua loading ") + chunkName); 
+  if (verbose) context.enterScope(string("Lua loading ") + chunkName); 
   bool ok = loadBuffer(code, chunkName);
   if (verbose) context.leaveScope(ok);
   if (ok)
   {
-    if (verbose) context.enterScope(String("Lua interpreting ") + chunkName);
+    if (verbose) context.enterScope(string("Lua interpreting ") + chunkName);
     ok = call(0, 0);
     if (verbose) context.leaveScope(ok);
   }
@@ -267,18 +267,18 @@ void LuaState::pushNumber(double value)
   {lua_pushnumber(L, value);}
 
 /*
-** String
+** string
 */
 bool LuaState::isString(int index) const
   {return lua_isstring(L, index) != 0;}
 
-String LuaState::toString(int index)
+string LuaState::toString(int index)
 {
   // returns tostring(value)
   getGlobal("tostring");
   lua_pushvalue(L, index);
   lua_call(L, 1, 1);
-  String res = checkString(-1);
+  string res = checkString(-1);
   pop(1);
   return res;
 
@@ -303,7 +303,7 @@ const char* LuaState::pushFString(const char* format, ...)
   return res;
 }
 
-void LuaState::pushString(const String& value)
+void LuaState::pushString(const string& value)
   {pushFString(value);}
 
 /*
@@ -419,7 +419,7 @@ ClassPtr LuaState::checkType(int index)
     return ClassPtr();
   ClassPtr res = typeManager().getType(getContext(), name);
   if (!res)
-    error(String("could not find type ") + name);
+    error(string("could not find type ") + name);
   return res;
 }
 
@@ -445,10 +445,10 @@ ExecutionContext& LuaState::getContext()
 
 void LuaState::error(const char* message)
 {
-  error(String(message));
+  error(string(message));
 }
 
-void LuaState::error(const String& message)
+void LuaState::error(const string& message)
 {
   luaL_where(L, 1);
   pushString(message);
@@ -496,7 +496,7 @@ void Class::luaRegister(LuaState& state) const
   reg.func = NULL;
   functions.push_back(reg);
 
-  String libraryName = "lbcpp." + name;
+  string libraryName = "lbcpp." + name;
   state.openLibrary(libraryName, &functions[0]);
 }
 

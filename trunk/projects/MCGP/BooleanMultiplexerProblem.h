@@ -28,9 +28,9 @@ public:
 
     ExpressionDomainPtr domain = new ExpressionDomain();
     for (size_t i = 0; i < numAddressBits; ++i)
-		  domain->addInput(booleanClass, "a" + String((int)i));
+		  domain->addInput(booleanClass, "a" + string((int)i));
     for (size_t i = 0; i < numDataBits; ++i)
-      domain->addInput(booleanClass, "d" + String((int)i));
+      domain->addInput(booleanClass, "d" + string((int)i));
 
 		domain->addFunction(andBooleanFunction());
     domain->addFunction(orBooleanFunction());

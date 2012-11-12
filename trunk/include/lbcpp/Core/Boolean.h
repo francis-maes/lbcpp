@@ -31,15 +31,15 @@ public:
   static bool get(ObjectPtr object)
     {return object.staticCast<Boolean>()->get();}
 
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   
   virtual double toDouble() const;
   virtual bool toBoolean() const;
   virtual int compare(const ObjectPtr& otherObject) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
-  virtual String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& str);
+  virtual string toString() const;
   
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void saveToXml(XmlExporter& exporter) const;

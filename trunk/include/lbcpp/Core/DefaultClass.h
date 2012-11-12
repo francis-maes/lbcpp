@@ -35,8 +35,8 @@ namespace lbcpp
 class DefaultClass : public Class
 {
 public:
-  DefaultClass(const String& name, ClassPtr baseClass = objectClass);
-  DefaultClass(const String& name, const String& baseClass);
+  DefaultClass(const string& name, ClassPtr baseClass = objectClass);
+  DefaultClass(const string& name, const string& baseClass);
   DefaultClass(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass);
   DefaultClass() : abstractClass(false) {}
 
@@ -54,15 +54,15 @@ public:
   virtual VariableSignaturePtr getMemberVariable(size_t index) const;
   bool isMemberVariableGenerated(size_t index) const;
 
-  virtual int findMemberVariable(const String& name) const;
+  virtual int findMemberVariable(const string& name) const;
 
-  size_t findOrAddMemberVariable(ExecutionContext& context, const String& name, ClassPtr type);
+  size_t findOrAddMemberVariable(ExecutionContext& context, const string& name, ClassPtr type);
 
   void reserveMemberVariables(size_t count)
     {variables.reserve(count);}
 
-  size_t addMemberVariable(ExecutionContext& context, ClassPtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
-  size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
+  size_t addMemberVariable(ExecutionContext& context, ClassPtr type, const string& name, const string& shortName = string::empty, const string& description = string::empty, bool isGenerated = false);
+  size_t addMemberVariable(ExecutionContext& context, const string& typeName, const string& name, const string& shortName = string::empty, const string& description = string::empty, bool isGenerated = false);
   virtual size_t addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature);
 
   /*
@@ -70,9 +70,9 @@ public:
   */
   virtual size_t getNumMemberFunctions() const;
   virtual FunctionSignaturePtr getMemberFunction(size_t index) const;
-  virtual int findMemberFunction(const String& name) const;
+  virtual int findMemberFunction(const string& name) const;
 
-  size_t addMemberFunction(ExecutionContext& context, LuaCFunction function, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isStatic = false);
+  size_t addMemberFunction(ExecutionContext& context, LuaCFunction function, const string& name, const string& shortName = string::empty, const string& description = string::empty, bool isStatic = false);
 
   lbcpp_UseDebuggingNewOperator
 
@@ -80,10 +80,10 @@ protected:
   friend class DefaultClassClass;
 
   std::vector<VariableSignaturePtr> variables;
-  std::map<String, size_t> variablesMap;
+  std::map<string, size_t> variablesMap;
 
   std::vector<FunctionSignaturePtr> functions;
-  std::map<String, size_t> functionsMap;
+  std::map<string, size_t> functionsMap;
 
   bool abstractClass;
 };

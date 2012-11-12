@@ -57,7 +57,7 @@ public:
   virtual ObjectPtr getConstructedObject() const
     {return node->getState()->getConstructedObject();}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return node->getState()->toShortString();}
 
   const SearchNodePtr& getNode() const
@@ -155,7 +155,7 @@ public:
     pool->play(context, 1, false);
     if ((iter + 1) % numArms == 0)
     {
-      context.enterScope("Iter " + String((int)iter));
+      context.enterScope("Iter " + string((int)iter));
       pool->displayInformation(context);
       context.leaveScope();
     }
@@ -454,10 +454,10 @@ public:
     makePopulationStatistics(context, population);
     SolutionVectorPtr selected = population->sort(objectiveComparator(0));//population->selectNBests(objectiveComparator(0), numBests);
     subTrees = getMostFrequentSubTrees(selected);
-    context.enterScope("SubTrees at Iter " + String((int)iter));
+    context.enterScope("SubTrees at Iter " + string((int)iter));
     ExpressionDomainPtr expressionDomain = problem->getDomain().staticCast<SearchDomain>()->getInitialState().staticCast<ExpressionState>()->getDomain();
     for (size_t i = 0; i < subTrees.size(); ++i)
-      context.informationCallback(subTrees[i].first->toShortString() + " [" + String(subTrees[i].second) + "]");
+      context.informationCallback(subTrees[i].first->toShortString() + " [" + string(subTrees[i].second) + "]");
     context.leaveScope();
 
     return true;
@@ -480,11 +480,11 @@ public:
     context.resultCallback("treeDepth", treeDepth);
   }
 
-  typedef std::map<String, std::pair<ExpressionPtr, double> > SubTreeMap;
+  typedef std::map<string, std::pair<ExpressionPtr, double> > SubTreeMap;
 
   static void addWeightToSubTree(ExpressionPtr expression, double weight, SubTreeMap& res)
   {
-    String str = expression->toShortString();
+    string str = expression->toShortString();
     SubTreeMap::iterator it = res.find(str);
     if (it == res.end())
       res[str] = std::make_pair(expression, weight);
@@ -613,7 +613,7 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    std::vector< std::pair<SolverPtr, String> > solvers;
+    std::vector< std::pair<SolverPtr, string> > solvers;
 
     //SamplerPtr sampler = Sampler::createFromFile(context, context.getFile("samplers/parity_prefix.sampler"));
     //context.resultCallback("postfixSampler", sampler);
@@ -653,14 +653,14 @@ public:
     for (size_t level = 1; level <= 3; ++level)
     {
       size_t iterationsPerLevel = (size_t)pow((double)numEvaluations, 1.0 / level);
-      solvers.push_back(std::make_pair(repeatSolver(nrpaSolver(learnableSampler, level, iterationsPerLevel)), "nrpa" + String((int)level)));
+      solvers.push_back(std::make_pair(repeatSolver(nrpaSolver(learnableSampler, level, iterationsPerLevel)), "nrpa" + string((int)level)));
     }*/
     solvers.push_back(std::make_pair(nmcSolver(0, randomSampler), "nmc0"));
     solvers.push_back(std::make_pair(nmcSolver(1, randomSampler), "nmc1"));
     solvers.push_back(std::make_pair(nmcSolver(2, randomSampler), "nmc2"));
     solvers.push_back(std::make_pair(nmcSolver(3, randomSampler), "nmc3"));
 
-    std::vector< std::pair<SearchActionCodeGeneratorPtr, String> > codeGenerators;
+    std::vector< std::pair<SearchActionCodeGeneratorPtr, string> > codeGenerators;
     codeGenerators.push_back(std::make_pair(new SimpleExpressionSearchActionCodeGenerator(), "posandsymb"));
     //codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(1), "unigram"));
     codeGenerators.push_back(std::make_pair(new NGramExpressionSearchActionCodeGenerator(2), "bigram"));
@@ -674,7 +674,7 @@ public:
       {
         //solvers.push_back(std::make_pair(new MABSamplerExpressionSolver(codeGenerators[i].first, 100, maxExpressionSize, true), "mab-nmc1-" + codeGenerators[i].second));
         SamplerPtr learnableSampler = logLinearActionCodeSearchSampler(codeGenerators[i].first, 0.1, 1.0);
-        String postfix = String((int)level) + "-" + codeGenerators[i].second;
+        string postfix = string((int)level) + "-" + codeGenerators[i].second;
         //solvers.push_back(std::make_pair(ceSolver(1000, 300, false, learnableSampler), "NON-E CE" + postfix));
         //solvers.push_back(std::make_pair(ceSolver(1000, 300, true, learnableSampler), "CE" + postfix));
 
@@ -721,7 +721,7 @@ public:
     context.enterScope("Running");
     for (size_t i = 0; i < solvers.size(); ++i)
     {
-      String name = solvers[i].second;
+      string name = solvers[i].second;
       infos.push_back(runSolver(context, solvers[i].first, name + "-prefix", false)); // polish
       infos.push_back(runSolver(context, solvers[i].first, name + "-postfix", true)); // reverse polish
       //infos.push_back(runSolver(context, solvers[i].first, name, true)); // reverse polish
@@ -750,7 +750,7 @@ protected:
 
   struct SolverInfo
   {
-    String name;
+    string name;
     std::vector<double> fitnessPerEvaluationCount;
     std::vector<double> fitnessPerCpuTime;
 
@@ -788,7 +788,7 @@ protected:
   SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, SamplerPtr sampler) const
     {return crossEntropySolver(sampler, populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
 
-  SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const String& description, bool usePostfixNotation)
+  SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const string& description, bool usePostfixNotation)
   {
     OutputStream* evalsOutput = NULL;
     OutputStream* timesOutput = NULL;
@@ -814,7 +814,7 @@ protected:
     {
       SolverInfo& info = runInfos[i];
       if (verbose)
-        context.enterScope("Run " + String((int)i));
+        context.enterScope("Run " + string((int)i));
       double res = runSolverOnce(context, solver, info, usePostfixNotation);
       writeToOutput(evalsOutput, info.fitnessPerEvaluationCount);
       writeToOutput(timesOutput, info.fitnessPerCpuTime);
@@ -847,9 +847,9 @@ protected:
   {
     if (ostr)
     {
-      String line;
+      string line;
       for (size_t i = 0; i < values.size(); ++i)
-        line += String(values[i]) + " ";
+        line += string(values[i]) + " ";
       line += "\n";
       *ostr << line;
       ostr->flush();
@@ -893,7 +893,7 @@ protected:
     double x = inFunctionOfCpuTime ? 0.001 : 1.5;
     for (size_t i = 2; i < shortestLength; ++i)
     {
-      context.enterScope(String(x));
+      context.enterScope(string(x));
 
       context.resultCallback("log10(x)", log10(x));
       for (size_t j = 0; j < infos.size(); ++j)

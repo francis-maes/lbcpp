@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: String.h                       | String                          |
+| Filename: string.h                       | string                          |
 | Author  : Francis Maes                   |                                 |
 | Started : 09/11/2012 17:00               |                                 |
 `------------------------------------------/                                 |
@@ -14,47 +14,47 @@
 namespace lbcpp
 {
 
-class NewString : public Object
+class String : public Object
 {
 public:
-  NewString(ClassPtr thisClass, const juce::String& value = juce::String::empty)
+  String(ClassPtr thisClass, const string& value = string::empty)
     : Object(thisClass), value(value) {}
-  NewString(const juce::String& value = juce::String::empty)
+  String(const string& value = string::empty)
     : value(value) {}
 
-  void set(const juce::String& value)
+  void set(const string& value)
     {this->value = value;}
 
-  const juce::String& get() const
+  const string& get() const
     {return value;}
   
-  static juce::String get(const ObjectPtr& object)
-    {return object.staticCast<NewString>()->get();}
+  static string get(const ObjectPtr& object)
+    {return object.staticCast<String>()->get();}
 
-  virtual juce::String toShortString() const;
+  virtual string toShortString() const;
 
   virtual int compare(const ObjectPtr& otherObject) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
-  virtual String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& str);
+  virtual string toString() const;
 
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void saveToXml(XmlExporter& exporter) const;
 
 protected:
-  juce::String value;
+  string value;
 };
 
-extern ClassPtr newStringClass;
+extern ClassPtr stringClass;
 
-class File : public NewString
+class File : public String
 {
 public:
   File(ClassPtr thisClass, const juce::File& file)
-    : NewString(thisClass, file.getFullPathName()) {}
+    : String(thisClass, file.getFullPathName()) {}
   File(const juce::File& file)
-    : NewString(file.getFullPathName()) {}
+    : String(file.getFullPathName()) {}
   File() {}
 
   static FilePtr create(const juce::File& file);
@@ -67,10 +67,10 @@ public:
   juce::File get() const
     {return juce::File(value);}
 
-  virtual juce::String toShortString() const;
+  virtual string toShortString() const;
 
-  virtual juce::String toString() const;
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
+  virtual string toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const string& str);
 
   virtual void saveToXml(XmlExporter& exporter) const;
 };

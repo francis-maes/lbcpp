@@ -49,7 +49,7 @@ public:
   virtual ~Object();
   
   static ObjectPtr create(ClassPtr type);
-  static ObjectPtr createFromString(ExecutionContext& context, ClassPtr type, const String& value);
+  static ObjectPtr createFromString(ExecutionContext& context, ClassPtr type, const string& value);
   static ObjectPtr createFromXml(XmlImporter& importer, ClassPtr type);
   static ObjectPtr createFromFile(ExecutionContext& context, const juce::File& file);
 
@@ -71,8 +71,8 @@ public:
   **
   ** @return the current object (string form).
   */
-  virtual String toString() const;
-  virtual String toShortString() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
 
   virtual double toDouble() const
     {jassertfalse; return 0.0;}
@@ -136,20 +136,20 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
 
   /**
-  ** Override this function to load the object from a String
+  ** Override this function to load the object from a string
   **
-  ** @param str : a String
+  ** @param str : a string
   ** @param callback : a callback that can receive errors and warnings
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the callback.
   */
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
+  virtual bool loadFromString(ExecutionContext& context, const string& str);
 
   /*
   ** Introspection: Class
   */
   virtual ClassPtr getClass() const;
-  String getClassName() const;
+  string getClassName() const;
 
   void setThisClass(ClassPtr thisClass);
 
@@ -158,7 +158,7 @@ public:
   */
   size_t getNumVariables() const;
   ClassPtr getVariableType(size_t index) const;
-  String getVariableName(size_t index) const;
+  string getVariableName(size_t index) const;
   ObjectPtr getVariable(size_t index) const;
   void setVariable(size_t index, const ObjectPtr& value);
 
@@ -193,21 +193,21 @@ protected:
   ClassPtr thisClass;
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
   friend class MemoryLeakDetector;
-  String classNameUnderWhichThisIsKnown;
+  string classNameUnderWhichThisIsKnown;
 #endif // LBCPP_DEBUG_OBJECT_ALLOCATION
   
   template<class T>
   friend struct ObjectTraits;
 
   // utilities
-  String defaultToStringImplementation(bool useShortString) const;
-  bool loadArgumentsFromString(ExecutionContext& context, const String& str);
-  String variablesToString(const String& separator, bool includeTypes = true) const;
+  string defaultToStringImplementation(bool useShortString) const;
+  bool loadArgumentsFromString(ExecutionContext& context, const string& str);
+  string variablesToString(const string& separator, bool includeTypes = true) const;
   void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
   bool loadVariablesFromXmlAttributes(XmlImporter& importer);
   int compareVariables(const ObjectPtr& otherObject) const;
   
-  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName);
+  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const string& variableName);
 };
 
 extern ClassPtr objectClass;
@@ -226,21 +226,21 @@ struct ObjectComparator
 class NameableObject : public Object
 {
 public:
-  NameableObject(ClassPtr thisClass, const String& name)
+  NameableObject(ClassPtr thisClass, const string& name)
     : Object(thisClass), name(name) {}
-  NameableObject(const String& name = T("Unnamed"))
+  NameableObject(const string& name = T("Unnamed"))
     : name(name) {}
 
-  virtual juce::String toString() const
+  virtual string toString() const
     {return getClassName() + T(" ") + name;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return name;}
 
-  void setName(const String& name)
+  void setName(const string& name)
     {this->name = name;}
 
-  const String& getName() const
+  const string& getName() const
     {return name;}
 
   lbcpp_UseDebuggingNewOperator
@@ -248,7 +248,7 @@ public:
 protected:
   friend class NameableObjectClass;
 
-  String name;
+  string name;
 };
 
 extern ClassPtr nameableObjectClass;

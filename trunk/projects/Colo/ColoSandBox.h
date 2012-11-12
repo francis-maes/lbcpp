@@ -27,14 +27,14 @@ public:
   const std::vector<size_t>& getSequence() const
     {return sequence;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
   {
-    String res;
+    string res;
     for (size_t i = 0; i < sequence.size(); ++i)
     {
       if (i > 0)
         res += "-";
-      res += String((int)sequence[i]+1);
+      res += string((int)sequence[i]+1);
     }
     return res;
   }
@@ -281,7 +281,7 @@ public:
     for (size_t i = 0; i < hyperVolumes->getNumValues(); ++i)
     {
       size_t numEvaluations = i * evaluationPeriod;
-      context.enterScope(String((int)numEvaluations));
+      context.enterScope(string((int)numEvaluations));
       context.resultCallback("numEvaluations", numEvaluations);
       context.resultCallback("hyperVolume", hyperVolumes->getValue(i));
       context.resultCallback("cpuTime", cpuTimes->getValue(i));
@@ -289,7 +289,7 @@ public:
     }
 
     double hyperVolume = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
-    context.informationCallback("HyperVolume: " + String(hyperVolume));
+    context.informationCallback("HyperVolume: " + string(hyperVolume));
 
     context.leaveScope(hyperVolume);
   }

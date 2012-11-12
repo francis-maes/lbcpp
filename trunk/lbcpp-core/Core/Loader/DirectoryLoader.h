@@ -18,8 +18,8 @@ namespace lbcpp
 class DirectoryLoader : public Loader
 {
 public:
-  virtual String getFileExtensions() const
-    {return String::empty;}
+  virtual string getFileExtensions() const
+    {return string::empty;}
 
   virtual ClassPtr getTargetClass() const
     {return directoryClass;}

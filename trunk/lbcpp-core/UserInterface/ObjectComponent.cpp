@@ -42,12 +42,12 @@ ObjectSelectorTabbedButtonBar::ObjectSelectorTabbedButtonBar(const ObjectPtr& ob
   : TabbedButtonBar(TabsAtLeft), object(object)
   {addChangeListener(this);}
 
-ObjectPtr ObjectSelectorTabbedButtonBar::getTabSubObject(const ObjectPtr& object, const String& tabName) const
+ObjectPtr ObjectSelectorTabbedButtonBar::getTabSubObject(const ObjectPtr& object, const string& tabName) const
   {return object;}
 
 void ObjectSelectorTabbedButtonBar::changeListenerCallback(void* objectThatHasChanged)
 {
-  String tabName = getCurrentTabName();
+  string tabName = getCurrentTabName();
   sendSelectionChanged(getTabSubObject(object, tabName), tabName);
 }
 

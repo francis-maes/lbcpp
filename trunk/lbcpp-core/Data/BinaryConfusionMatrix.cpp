@@ -30,10 +30,10 @@ BinaryConfusionMatrix::BinaryConfusionMatrix()
 {
 }
 
-inline String toFixedLengthString(const String& str, int size)
+inline string toFixedLengthString(const string& str, int size)
 {
   jassert(str.length() <= size);
-  String res = str;
+  string res = str;
   while (res.length() < size)
     if (res.length() % 2 == 0)
       res = T(" ") + res;
@@ -42,16 +42,16 @@ inline String toFixedLengthString(const String& str, int size)
   return res;
 }
 
-String BinaryConfusionMatrix::toString() const
+string BinaryConfusionMatrix::toString() const
 {
   return toFixedLengthString(T("Actual value: "), 20) + toFixedLengthString(T("positive"), 15) + toFixedLengthString(T("negative"), 15) + T("\n") +
-    toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n") +
-    toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n")
-    + T("ACC = ") + String(computeAccuracy() * 100.0, 2)
-    + T("% P = ") + String(computePrecision() * 100.0, 2)
-    + T("% R = ") + String(computeRecall() * 100.0, 2)
-    + T("% F1 = ") + String(computeF1Score() * 100.0, 2)
-    + T("% MCC = ") + String(computeMatthewsCorrelation(), 4) + T("\n");
+    toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(string((int)truePositive), 15) + toFixedLengthString(string((int)falsePositive), 15) + T("\n") +
+    toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(string((int)falseNegative), 15) + toFixedLengthString(string((int)trueNegative), 15) + T("\n")
+    + T("ACC = ") + string(computeAccuracy() * 100.0, 2)
+    + T("% P = ") + string(computePrecision() * 100.0, 2)
+    + T("% R = ") + string(computeRecall() * 100.0, 2)
+    + T("% F1 = ") + string(computeF1Score() * 100.0, 2)
+    + T("% MCC = ") + string(computeMatthewsCorrelation(), 4) + T("\n");
 }
 
 bool BinaryConfusionMatrix::convertToBoolean(ExecutionContext& context, const ObjectPtr& object, bool& res)
@@ -163,10 +163,10 @@ double BinaryConfusionMatrix::computeSensitivityAndSpecificity() const
 
 void BinaryConfusionMatrix::saveToXml(XmlExporter& exporter) const
 {
-  String res = String((int)truePositive) + T(" ")
-             + String((int)falsePositive) + T(" ")
-             + String((int)falseNegative) + T(" ")
-             + String((int)trueNegative);
+  string res = string((int)truePositive) + T(" ")
+             + string((int)falsePositive) + T(" ")
+             + string((int)falseNegative) + T(" ")
+             + string((int)trueNegative);
   exporter.addTextElement(res);
 }
 

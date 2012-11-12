@@ -53,7 +53,7 @@ public:
     g.setColour(Colours::grey);
     g.setFont(8);
     for (int i = 0; i < numLines; ++i)
-      g.drawText(String(i * sizePerLine), 5, y, leftMargin - 10, letterHeight, Justification::centredRight, false);
+      g.drawText(string(i * sizePerLine), 5, y, leftMargin - 10, letterHeight, Justification::centredRight, false);
     
     g.setColour(Colours::black);
     g.setFont(12);
@@ -68,7 +68,7 @@ public:
       for (int j = 0; j < size; ++j)
       {
         g.drawLine((float)xc, (float)y, (float)xc, (float)yEnd);
-        g.drawText(String::toHexString(bytes + offset + j, 1), xc, y, letterWidth, letterHeight, Justification::centred, false);
+        g.drawText(string::toHexString(bytes + offset + j, 1), xc, y, letterWidth, letterHeight, Justification::centred, false);
         xc += letterWidth;
       }
       g.drawLine((float)xc, (float)y, (float)xc, (float)yEnd);
@@ -84,7 +84,7 @@ protected:
 class HexadecimalFileComponent : public ViewportComponent
 {
 public:
-  HexadecimalFileComponent(const ObjectPtr& file, const String& name)
+  HexadecimalFileComponent(const ObjectPtr& file, const string& name)
     : ViewportComponent(NULL, true, false)
   {
     File::get(file).loadFileAsData(data);

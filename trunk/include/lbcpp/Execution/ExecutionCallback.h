@@ -34,19 +34,19 @@ public:
   /*
   ** Informations, warnings and Errors
   */
-  virtual void informationCallback(const String& where, const String& what) {}
-  virtual void warningCallback(const String& where, const String& what) {}
-  virtual void errorCallback(const String& where, const String& what) {}
+  virtual void informationCallback(const string& where, const string& what) {}
+  virtual void warningCallback(const string& where, const string& what) {}
+  virtual void errorCallback(const string& where, const string& what) {}
 
   // shortcuts
-  void informationCallback(const String& what)
-    {informationCallback(String::empty, what);}
+  void informationCallback(const string& what)
+    {informationCallback(string::empty, what);}
 
-  void warningCallback(const String& what)
-    {warningCallback(String::empty, what);}
+  void warningCallback(const string& what)
+    {warningCallback(string::empty, what);}
 
-  void errorCallback(const String& what)
-    {errorCallback(String::empty, what);}
+  void errorCallback(const string& what)
+    {errorCallback(string::empty, what);}
 
   /*
   ** Progression
@@ -56,8 +56,8 @@ public:
   /*
   ** Execution
   */
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit) {}
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result) {}
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result) {}
 
   virtual void threadBeginCallback(const ExecutionStackPtr& stack) {}
   virtual void threadEndCallback(const ExecutionStackPtr& stack) {}
@@ -65,7 +65,7 @@ public:
   /*
   ** Results
   */
-  virtual void resultCallback(const String& name, const ObjectPtr& value) {}
+  virtual void resultCallback(const string& name, const ObjectPtr& value) {}
   
   /*
   ** Context
@@ -91,7 +91,7 @@ public:
 protected:
   ExecutionContext* context;
 
-  static void getThisWhereAndWhat(LuaState& state, ExecutionCallbackPtr& pthis, String& where, String& what);
+  static void getThisWhereAndWhat(LuaState& state, ExecutionCallbackPtr& pthis, string& where, string& what);
 };
 
 extern ExecutionCallbackPtr consoleExecutionCallback();
@@ -103,37 +103,37 @@ class CompositeExecutionCallback : public ExecutionCallback
 public:
   virtual void notificationCallback(const NotificationPtr& notification);
 
-  virtual void informationCallback(const String& where, const String& what);
-  virtual void warningCallback(const String& where, const String& what);
-  virtual void errorCallback(const String& where, const String& what);
+  virtual void informationCallback(const string& where, const string& what);
+  virtual void warningCallback(const string& where, const string& what);
+  virtual void errorCallback(const string& where, const string& what);
 
   // shortcuts
-  void informationCallback(const String& what)
-    {informationCallback(String::empty, what);}
+  void informationCallback(const string& what)
+    {informationCallback(string::empty, what);}
 
-  void warningCallback(const String& what)
-    {warningCallback(String::empty, what);}
+  void warningCallback(const string& what)
+    {warningCallback(string::empty, what);}
 
-  void errorCallback(const String& what)
-    {errorCallback(String::empty, what);}
+  void errorCallback(const string& what)
+    {errorCallback(string::empty, what);}
 
   virtual void progressCallback(const ProgressionStatePtr& progression);
 
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const ObjectPtr& result);
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result);
   virtual void threadBeginCallback(const ExecutionStackPtr& stack);
   virtual void threadEndCallback(const ExecutionStackPtr& stack);
 
-  virtual void resultCallback(const String& name, const ObjectPtr& value);
+  virtual void resultCallback(const string& name, const ObjectPtr& value);
 
-  void resultCallback(const String& name, bool value);
-  void resultCallback(const String& name, juce::int64 value);
-  void resultCallback(const String& name, size_t value);
-  void resultCallback(const String& name, double value);
-  void resultCallback(const String& name, const String& value);
+  void resultCallback(const string& name, bool value);
+  void resultCallback(const string& name, juce::int64 value);
+  void resultCallback(const string& name, size_t value);
+  void resultCallback(const string& name, double value);
+  void resultCallback(const string& name, const string& value);
 
   template<class T>
-  void resultCallback(const String& name, const ReferenceCountedObjectPtr<T>& value)
+  void resultCallback(const string& name, const ReferenceCountedObjectPtr<T>& value)
     {resultCallback(name, ObjectPtr(value));}
 
 
@@ -182,9 +182,9 @@ protected:
 class ProgressionState : public Object
 {
 public:
-  ProgressionState(double value, double total, const String& unit);
-  ProgressionState(size_t value, size_t total, const String& unit);
-  ProgressionState(double value, const String& unit);
+  ProgressionState(double value, double total, const string& unit);
+  ProgressionState(size_t value, size_t total, const string& unit);
+  ProgressionState(double value, const string& unit);
   ProgressionState(const ProgressionState& other);
   ProgressionState();
 
@@ -209,14 +209,14 @@ public:
   double getNormalizedValue() const
     {jassert(isBounded()); return juce::jlimit(0.0, 1.0, value / total);}
 
-  const String& getUnit() const
+  const string& getUnit() const
     {return unit;}
 
-  void setUnit(const String& unit)
+  void setUnit(const string& unit)
     {this->unit = unit;}
 
   // Object
-  virtual String toString() const;
+  virtual string toString() const;
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
@@ -225,7 +225,7 @@ private:
 
   double value;
   double total;
-  String unit;
+  string unit;
 };
 
 typedef ReferenceCountedObjectPtr<ProgressionState> ProgressionStatePtr;

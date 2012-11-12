@@ -22,7 +22,7 @@ void usage()
   std::cerr << "  --projectDirectory : project directory where find files." << std::endl;
 }
 
-bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments,
+bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<string>& remainingArguments,
                             size_t& numThreads, juce::File& traceOutputFile, double& traceAutoSave, juce::File& projectDirectory)
 {
   numThreads = 1;//(size_t)juce::SystemStats::getNumCpus();
@@ -31,7 +31,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
   remainingArguments.reserve(argc - 1);
   for (int i = 1; i < argc; ++i)
   {
-    String argument = argv[i];
+    string argument = argv[i];
     if (argument == T("--numThreads"))
     {
       ++i;
@@ -40,7 +40,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         context.errorCallback(T("Invalid Syntax"));
         return false;
       }
-      int n = String(argv[i]).getIntValue();
+      int n = string(argv[i]).getIntValue();
       if (n < 1)
       {
         context.errorCallback(T("Invalid number of threads"));
@@ -80,7 +80,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         context.errorCallback(T("Invalid Syntax"));
         return false;
       }
-      traceAutoSave = String(argv[i]).getIntValue();
+      traceAutoSave = string(argv[i]).getIntValue();
     }
     else if (argument == T("--projectDirectory"))
     {
@@ -131,7 +131,7 @@ bool runWorkUnitFromFile(ExecutionContext& context, const juce::File& file)
   return object && checkIsAWorkUnit(context, object) && runWorkUnit(context, object.staticCast<WorkUnit>());
 }
 
-bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitClassName, const std::vector<String>& arguments)
+bool runWorkUnitFromArguments(ExecutionContext& context, const string& workUnitClassName, const std::vector<string>& arguments)
 {
   // find the work unit class
   ClassPtr type = typeManager().getType(context, workUnitClassName);
@@ -174,7 +174,7 @@ int mainImpl(int argc, char** argv)
   }
 
   // parse top level arguments
-  std::vector<String> arguments;
+  std::vector<string> arguments;
   size_t numThreads;
   juce::File traceOutputFile;
   double traceAutoSave;
@@ -213,7 +213,7 @@ int mainImpl(int argc, char** argv)
     result = runWorkUnitFromFile(*context, firstArgumentAsFile) ? 0 : 1;
   else
   {
-    String workUnitClassName = arguments[0];
+    string workUnitClassName = arguments[0];
     arguments.erase(arguments.begin());
     result = runWorkUnitFromArguments(*context, workUnitClassName, arguments) ? 0 : 1;
   }

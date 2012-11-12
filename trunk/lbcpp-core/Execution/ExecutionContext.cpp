@@ -25,7 +25,7 @@ ExecutionContext::ExecutionContext(const juce::File& projectDirectory)
 
 ExecutionContext::~ExecutionContext() {}
 
-void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& workUnit)
+void ExecutionContext::enterScope(const string& description, const WorkUnitPtr& workUnit)
 {
   preExecutionCallback(stack, description, workUnit);
   stack->push(description, workUnit);
@@ -36,7 +36,7 @@ void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
 
 void ExecutionContext::leaveScope(const ObjectPtr& result)
 {
-  std::pair<String, WorkUnitPtr> entry = stack->pop();
+  std::pair<string, WorkUnitPtr> entry = stack->pop();
   postExecutionCallback(stack, entry.first, entry.second, result);
 }
 
@@ -49,8 +49,8 @@ void ExecutionContext::leaveScope(size_t result)
 void ExecutionContext::leaveScope(double result)
   {leaveScope(ObjectPtr(new Double(result)));}
 
-void ExecutionContext::leaveScope(const String& result)
-  {leaveScope(ObjectPtr(new NewString(result)));}
+void ExecutionContext::leaveScope(const string& result)
+  {leaveScope(ObjectPtr(new String(result)));}
 
 ObjectPtr ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {
@@ -84,7 +84,7 @@ static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const
   for (size_t i = 0; i < currentStack.size(); ++i)
     if (currentStack[i] == object)
     {
-      String cycle;
+      string cycle;
       for (size_t j = i; j < currentStack.size(); ++j)
         cycle += currentStack[j]->getClassName() + T(" -> ");
       cycle += object->getClassName();
@@ -113,7 +113,7 @@ bool ExecutionContext::checkSharedPointerCycles(const ObjectPtr& object)
   return checkSharedPointerCyclesRecursively(*this, object, currentStack);
 }
 
-juce::File ExecutionContext::getFile(const String& path)
+juce::File ExecutionContext::getFile(const string& path)
 {
   if (path.isEmpty())
     return juce::File::nonexistent;
@@ -128,7 +128,7 @@ juce::File ExecutionContext::getFile(const String& path)
   return dir.getChildFile(path);
 }
 
-String ExecutionContext::getFilePath(const juce::File& file) const
+string ExecutionContext::getFilePath(const juce::File& file) const
 {
   juce::File dir = getProjectDirectory();
   if (dir.exists() && file.isAChildOf(dir))
@@ -140,7 +140,7 @@ String ExecutionContext::getFilePath(const juce::File& file) const
 int ExecutionContext::enter(LuaState& state)
 {
   ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
-  String name = state.checkString(2);
+  string name = state.checkString(2);
   pthis->enterScope(name);
   return 0;
 }
@@ -242,18 +242,18 @@ int ExecutionContext::waitUntilAllWorkUnitsAreDone(LuaState& state)
 size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
   {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
 
-void ExecutionStack::push(const String& description, const WorkUnitPtr& workUnit)
+void ExecutionStack::push(const string& description, const WorkUnitPtr& workUnit)
   {stack.push_back(std::make_pair(description, workUnit));}
 
-std::pair<String, WorkUnitPtr> ExecutionStack::pop()
+std::pair<string, WorkUnitPtr> ExecutionStack::pop()
 {
   jassert(stack.size());
-  std::pair<String, WorkUnitPtr> res = stack.back();
+  std::pair<string, WorkUnitPtr> res = stack.back();
   stack.pop_back();
   return res;
 }
 
-const std::pair<String, WorkUnitPtr>& ExecutionStack::getEntry(size_t depth) const
+const std::pair<string, WorkUnitPtr>& ExecutionStack::getEntry(size_t depth) const
 {
   size_t parentDepth = parentStack ? parentStack->getDepth() : 0;
   if (depth < parentDepth)
@@ -273,7 +273,7 @@ bool ExecutionStack::equals(const ExecutionStackPtr& otherStack) const
 /*
 ** TimedScope
 */
-TimedScope::TimedScope(ExecutionContext& context, const String& name, bool enable)
+TimedScope::TimedScope(ExecutionContext& context, const string& name, bool enable)
   : context(context), startTime(0.0)
 {
   if (enable)

@@ -81,9 +81,9 @@ public:
     setInitialGuess(initialGuess);
   }
 
-  virtual String toShortString() const
+  virtual string toShortString() const
   {
-    String res = getClassName();
+    string res = getClassName();
     int i = res.indexOf(T("Problem"));
     if (i >= 0)
       res = res.substring(0, i);

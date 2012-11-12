@@ -38,10 +38,10 @@ public:
   int getDy() const
     {static int dys[] = {-1, 0, 1, 1, 0}; return dys[dir];}
 
-  String toString() const
-    {static String strs[] = {T("NE"), T("E"), T("SE"), T("S"), T("none")}; return strs[dir];}
+  string toString() const
+    {static string strs[] = {T("NE"), T("E"), T("SE"), T("S"), T("none")}; return strs[dir];}
   
-  static Direction fromString(const String& str)
+  static Direction fromString(const string& str)
   {
     if (str == T("NE")) return NE;
     if (str == T("E")) return E;
@@ -82,8 +82,8 @@ public:
   int getY() const
     {return y;}
 
-  String toString() const
-    {return T("(") + String(x) + T(", ") + String(y) + T(")");}
+  string toString() const
+    {return T("(") + string(x) + T(", ") + string(y) + T(")");}
 
   MorpionPoint moveIntoDirection(const MorpionDirection& direction, int delta) const
     {return MorpionPoint(x + delta * direction.getDx(), y + delta * direction.getDy());}
@@ -352,7 +352,7 @@ private:
 
   BitMask canonizeMask(const BitMask& mask) const
   {
-    //std::cout << String::toHexString((int)toIndex(mask)) << " => "; 
+    //std::cout << string::toHexString((int)toIndex(mask)) << " => "; 
     BitMask res = mask;
 
     static const int orders[] = {
@@ -371,11 +371,11 @@ private:
     for (size_t i = 1; i < 8; ++i)
     {
       BitMask tmp = reverseBits(mask, orders + i * 8);
-      //std::cout << String::toHexString((int)toIndex(tmp)) << " "; 
+      //std::cout << string::toHexString((int)toIndex(tmp)) << " "; 
       if (tmp.first < res.first)
         res = tmp;
     }
-    //std::cout << " ==> " << String::toHexString((int)toIndex(res)) << std::endl;
+    //std::cout << " ==> " << string::toHexString((int)toIndex(res)) << std::endl;
     return res;
   }
 

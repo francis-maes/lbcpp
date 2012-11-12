@@ -25,8 +25,8 @@ public:
     : time(time) {}
   ExecutionTraceItem() {}
 
-  virtual String getPreferedXmlTag() const = 0;
-  virtual String getPreferedIcon() const = 0;
+  virtual string getPreferedXmlTag() const = 0;
+  virtual string getPreferedIcon() const = 0;
 
   double getTime() const
     {return time;}
@@ -43,13 +43,13 @@ protected:
 class MessageExecutionTraceItem : public ExecutionTraceItem
 {
 public:
-  MessageExecutionTraceItem(double time, ExecutionMessageType messageType, const String& what, const String& where = String::empty);
+  MessageExecutionTraceItem(double time, ExecutionMessageType messageType, const string& what, const string& where = string::empty);
   MessageExecutionTraceItem() {}
 
-  virtual String toString() const;
-  virtual String toShortString() const;
-  virtual String getPreferedXmlTag() const;
-  virtual String getPreferedIcon() const;
+  virtual string toString() const;
+  virtual string toShortString() const;
+  virtual string getPreferedXmlTag() const;
+  virtual string getPreferedIcon() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
@@ -58,8 +58,8 @@ protected:
   friend class MessageExecutionTraceItemClass;
 
   ExecutionMessageType messageType;
-  String what;
-  String where;
+  string what;
+  string where;
 };
 
 typedef ReferenceCountedObjectPtr<MessageExecutionTraceItem> MessageExecutionTraceItemPtr;
@@ -67,25 +67,25 @@ typedef ReferenceCountedObjectPtr<MessageExecutionTraceItem> MessageExecutionTra
 class ExecutionTraceNode : public ExecutionTraceItem
 {
 public:
-  ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime);
+  ExecutionTraceNode(const string& description, const WorkUnitPtr& workUnit, double startTime);
   ExecutionTraceNode() {}
 
-  virtual String toString() const
+  virtual string toString() const
     {return description;}
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return description;}
 
-  virtual String getPreferedXmlTag() const
+  virtual string getPreferedXmlTag() const
     {return T("node");}
 
-  virtual String getPreferedIcon() const;
+  virtual string getPreferedIcon() const;
 
   /*
   ** Sub Items
   */
   void appendSubItem(const ExecutionTraceItemPtr& item);
-  ExecutionTraceNodePtr findSubNode(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr()) const;
+  ExecutionTraceNodePtr findSubNode(const string& description, const WorkUnitPtr& workUnit = WorkUnitPtr()) const;
   ExecutionTraceNodePtr findFirstNode() const;
   std::vector<ExecutionTraceItemPtr> getSubItems() const;
   size_t getNumSubItems() const;
@@ -99,8 +99,8 @@ public:
   void setReturnValue(const ObjectPtr& value)
     {returnValue = value;}
 
-  void setResult(const String& name, const ObjectPtr& value);
-  std::vector< std::pair<String, ObjectPtr> > getResults() const;
+  void setResult(const string& name, const ObjectPtr& value);
+  std::vector< std::pair<string, ObjectPtr> > getResults() const;
 
   VectorPtr getResultsVector(ExecutionContext& context) const;
   TablePtr getChildrenResultsTable(ExecutionContext& context) const;
@@ -146,14 +146,14 @@ public:
 protected:
   friend class ExecutionTraceNodeClass;
 
-  String description;
+  string description;
 
   CriticalSection subItemsLock;
   std::vector<ExecutionTraceItemPtr> subItems;
 
   ObjectPtr returnValue;
   CriticalSection resultsLock;
-  std::vector< std::pair<String, ObjectPtr> > results;
+  std::vector< std::pair<string, ObjectPtr> > results;
 
   ProgressionStatePtr progression;
   double timeLength;
@@ -167,10 +167,10 @@ typedef ReferenceCountedObjectPtr<ExecutionTraceNode> ExecutionTraceNodePtr;
 class ExecutionTrace : public Object
 {
 public:
-  ExecutionTrace(const String& contextDescription);
+  ExecutionTrace(const string& contextDescription);
   ExecutionTrace() {}
 
-  virtual String toString() const
+  virtual string toString() const
     {ScopedLock _(lock); return context + T(" Execution Trace");}
 
   ExecutionTraceNodePtr getRootNode() const
@@ -188,12 +188,12 @@ protected:
 
   CriticalSection lock;
 
-  String operatingSystem;
+  string operatingSystem;
   bool is64BitOs;
   size_t numCpus;
   int cpuSpeedInMegaherz;
   int memoryInMegabytes;
-  String context;
+  string context;
 
   ExecutionTraceNodePtr root;
 

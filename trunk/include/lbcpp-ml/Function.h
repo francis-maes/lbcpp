@@ -40,10 +40,10 @@ public:
 
   virtual bool acceptInputsStack(const std::vector<ExpressionPtr>& stack) const;
 
-  virtual String toShortString() const
+  virtual string toShortString() const
     {return getClassName();}
     
-  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const;
+  virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const;
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
     {jassert(getNumVariables() == 0); return ContainerPtr();}
@@ -105,7 +105,7 @@ extern FunctionPtr greaterThanDoubleFunction();
 
 // Object
 extern FunctionPtr getVariableFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0);
-extern FunctionPtr getVariableFunction(ClassPtr inputClass, const String& variableName);
+extern FunctionPtr getVariableFunction(ClassPtr inputClass, const string& variableName);
 extern FunctionPtr getContainerLengthFunction();
 
 // DoubleVector

@@ -20,9 +20,9 @@ using juce::Graphics;
 using juce::Component;
 using juce::Colours;
 
-static String getIconForType(const ClassPtr& type)
+static string getIconForType(const ClassPtr& type)
 {
-  String res = type->getName() + "-32.png";
+  string res = type->getName() + "-32.png";
   if (UserInterfaceManager().hasImage(res))
     return res;
   
@@ -32,7 +32,7 @@ static String getIconForType(const ClassPtr& type)
   return "Object-32.png";
 }
 
-static String getIconForObject(const ObjectPtr& object)
+static string getIconForObject(const ObjectPtr& object)
 {
   if (object.isInstanceOf<File>())
   {
@@ -47,7 +47,7 @@ static String getIconForObject(const ObjectPtr& object)
 class ObjectTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  ObjectTreeViewItem(const String& name, const ObjectPtr& object, const ObjectTreeOptions& options)
+  ObjectTreeViewItem(const string& name, const ObjectPtr& object, const ObjectTreeOptions& options)
     : SimpleTreeViewItem(name, getIconForObject(object), true), 
       object(object), options(options), typeName(object->getClassName()), component(NULL), numUndisplayedChildElements(0)
   {
@@ -93,10 +93,10 @@ public:
       {
         size_t offset = compositeVector->getSubVectorOffset(i);
         DoubleVectorPtr subVector = compositeVector->getSubVector(i);
-        String name = T("[") + String((int)i) + T("]");
+        string name = T("[") + string((int)i) + T("]");
 
-        String parentName = elementsEnumeration->getElementName(offset);
-        String childName = subVector->getElementName(0);
+        string parentName = elementsEnumeration->getElementName(offset);
+        string childName = subVector->getElementName(0);
         int j = parentName.indexOf(childName);
         if (j >= 0)
           name = parentName.substring(0, j - 1);
@@ -169,19 +169,19 @@ public:
     for (size_t i = 0; i < subObjects.size(); ++i)
       addSubItem(new ObjectTreeViewItem(subObjects[i].first, subObjects[i].second, options));
     if (numUndisplayedChildElements > 0)
-      addSubItem(new SimpleTreeViewItem(String((int)numUndisplayedChildElements) + T(" other elements...")));
+      addSubItem(new SimpleTreeViewItem(string((int)numUndisplayedChildElements) + T(" other elements...")));
   }
 
   const ObjectPtr& getObject() const
     {return object;}
      
-  virtual const String getTooltip()
+  virtual const string getTooltip()
   {
-    String res = T("Name: ") + getUniqueName() +
+    string res = T("Name: ") + getUniqueName() +
       T("\nType: ") + typeName +
       T("\nValue: ") + shortSummary;
     if (getNumSubItems())
-      res += T("\nNum sub variables: ") + String((int)getNumSubItems());
+      res += T("\nNum sub variables: ") + string((int)getNumSubItems());
     return res;
   }
 
@@ -231,21 +231,21 @@ public:
 protected:
   ObjectPtr object;
   const ObjectTreeOptions& options;
-  String typeName;
-  String shortSummary;
+  string typeName;
+  string shortSummary;
   Component* component;
   size_t numUndisplayedChildElements;
 
-  std::vector< std::pair<String, ObjectPtr> > subObjects;
+  std::vector< std::pair<string, ObjectPtr> > subObjects;
 
-  void addSubObject(const String& name, const ObjectPtr& variable)
+  void addSubObject(const string& name, const ObjectPtr& variable)
     {subObjects.push_back(std::make_pair(name, variable));}
 };
 
 /*
 ** ObjectTreeView
 */
-ObjectTreeView::ObjectTreeView(const ObjectPtr& object, const String& name, const ObjectTreeOptions& options)
+ObjectTreeView::ObjectTreeView(const ObjectPtr& object, const string& name, const ObjectTreeOptions& options)
   : object(object), name(name), options(options), root(NULL), isSelectionUpToDate(false)
 {
   setRootItemVisible(options.makeRootNodeVisible);
@@ -297,7 +297,7 @@ void ObjectTreeView::timerCallback()
   {
     std::vector<ObjectPtr> selectedObjects;
     selectedObjects.reserve(getNumSelectedItems());
-    String selectionName;
+    string selectionName;
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
       ObjectTreeViewItem* item = dynamic_cast<ObjectTreeViewItem* >(getSelectedItem(i));

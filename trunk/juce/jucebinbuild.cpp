@@ -208,8 +208,8 @@ int main (int argc, char* argv[])
     }
 
 
-    header->printf("    extern const char* get(const String& fileName, int& size);\r\n");
-    *cpp << T("const char* ") + className + T("::get(const String& fileName, int& size)\r\n{\r\n");
+    header->printf("    extern const char* get(const juce::String& fileName, int& size);\r\n");
+    *cpp << T("const char* ") + className + T("::get(const juce::String& fileName, int& size)\r\n{\r\n");
     for (std::map<String, String>::const_iterator it = dataFiles.begin(); it != dataFiles.end(); ++it)
       *cpp << T("  if (fileName == T(") << it->first.quoted() << T(")) {size = ") << it->second << T("Size; return ") << it->second << ";}\r\n";
     *cpp << T("  size = 0; return NULL;\r\n");

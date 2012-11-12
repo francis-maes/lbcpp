@@ -17,7 +17,7 @@ namespace lbcpp
 class DirectoryFileStream : public Stream
 {
 public:
-  DirectoryFileStream(ExecutionContext& context, const juce::File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
+  DirectoryFileStream(ExecutionContext& context, const juce::File& directory, const string& wildCardPattern = T("*"), bool searchFilesRecursively = false)
     : Stream(context), directory(directory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
     {initialize();}
 
@@ -42,7 +42,7 @@ public:
     return File::create(file);
   }
 
-  static void findChildFiles(const juce::File& directory, const String& wildCardPattern, bool searchRecursively, std::set<String>& res)
+  static void findChildFiles(const juce::File& directory, const string& wildCardPattern, bool searchRecursively, std::set<string>& res)
   {
     juce::OwnedArray<juce::File> files;
     directory.findChildFiles(files, juce::File::findFiles, searchRecursively, wildCardPattern);
@@ -55,11 +55,11 @@ public:
 
 private:
   juce::File directory;
-  String wildCardPattern;
+  string wildCardPattern;
   bool searchFilesRecursively;
 
-  std::set<String> files;
-  std::set<String>::const_iterator nextFileIterator;
+  std::set<string> files;
+  std::set<string>::const_iterator nextFileIterator;
   size_t position;
 
   void initialize()

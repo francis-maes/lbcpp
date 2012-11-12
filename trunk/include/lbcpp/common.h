@@ -45,7 +45,6 @@
 */
 # define DONT_SET_USING_JUCE_NAMESPACE
 # include "../juce/juce_amalgamated.h"
-using juce::String;
 using juce::StringArray;
 using juce::InputStream;
 using juce::OutputStream;
@@ -54,6 +53,9 @@ using juce::ZipFile;
 
 namespace lbcpp
 {
+
+typedef juce::String string;
+
 #ifdef LBCPP_MULTI_THREAD
 using juce::CriticalSection;
 using juce::ScopedLock;

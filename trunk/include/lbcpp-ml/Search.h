@@ -68,7 +68,7 @@ public:
   SearchStatePtr getFinalState() const
     {return finalState;}
     
-  virtual String toShortString() const;
+  virtual string toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   

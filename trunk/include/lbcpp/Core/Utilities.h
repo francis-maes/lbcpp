@@ -34,7 +34,7 @@
 namespace lbcpp
 {
 
-inline std::ostream& operator <<(std::ostream& ostr, const String& value)
+inline std::ostream& operator <<(std::ostream& ostr, const string& value)
   {return ostr << (const char* )value;}
 
 template<bool> struct StaticAssert;
@@ -71,7 +71,7 @@ inline double log2(double x)
 }
 #endif // JUCE_WIN32
 
-extern String getTypeName(const std::type_info& info);
+extern string getTypeName(const std::type_info& info);
 
 }; /* namespace lbcpp */
 

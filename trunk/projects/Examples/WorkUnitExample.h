@@ -26,14 +26,14 @@ public:
       context.progressCallback(new ProgressionState(i + 1.0, 100.0, T("%")));
     }
     context.informationCallback(T("After"));
-    return new NewString("Hello");
+    return new String("Hello");
   }
 };
 
 class WorkUnitExample : public WorkUnit
 {
 public:
-  virtual String toString() const
+  virtual string toString() const
     {return T("My Work Unit !");}
  
   virtual ObjectPtr run(ExecutionContext& context)

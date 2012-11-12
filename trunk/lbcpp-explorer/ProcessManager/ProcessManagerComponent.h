@@ -171,11 +171,11 @@ class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, publ
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
 
-  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedVariables, const String& selectionName);
+  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedVariables, const string& selectionName);
 
   // MenuBarModel
   virtual const StringArray getMenuBarNames();
-  virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const String& menuName);
+  virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const string& menuName);
   virtual void menuItemSelected(int menuItemID, int topLevelMenuIndex);
 
   // Timer

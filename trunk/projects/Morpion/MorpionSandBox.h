@@ -47,9 +47,9 @@ protected:
   size_t verbosity;
 
   ProblemPtr problem;
-  std::vector< std::pair<String, SolverPtr> > solvers;
+  std::vector< std::pair<string, SolverPtr> > solvers;
 
-  void addSolver(const String& name, const SolverPtr& solver)
+  void addSolver(const string& name, const SolverPtr& solver)
     {solvers.push_back(std::make_pair(name, solver));}
 
   ScalarVariableStatisticsPtr runSolver(ExecutionContext& context, ProblemPtr problem, SolverPtr solver)
@@ -57,7 +57,7 @@ protected:
     ScalarVariableStatisticsPtr results = new ScalarVariableStatistics("results");
     for (size_t run = 0; run < numRuns; ++run)
     {
-      context.enterScope("Run " + String((int)run+1));
+      context.enterScope("Run " + string((int)run+1));
       ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
       SolverCallbackPtr callback = compositeSolverCallback(fillParetoFrontSolverCallback(front), maxEvaluationsSolverCallback(numEvaluations));
       solver->setVerbosity((SolverVerbosity)verbosity);

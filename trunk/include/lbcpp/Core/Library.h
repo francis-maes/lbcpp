@@ -37,7 +37,7 @@ extern ClassPtr libraryClass;
 class Library : public NameableObject
 {
 public:
-  Library(const String& name);
+  Library(const string& name);
   Library() {}
 
   virtual ClassPtr getClass() const;
@@ -54,7 +54,7 @@ public:
     {return subLibraries;}
 #ifdef LBCPP_USER_INTERFACE
   bool hasUIComponent(ClassPtr type) const;
-  juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
+  juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const string& name = string::empty);
 #endif
   
   void luaRegister(LuaState& state) const;
@@ -76,9 +76,9 @@ protected:
   std::vector<LoaderPtr> fileLoaders;
   
 #ifdef LBCPP_USER_INTERFACE
-  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
+  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const string& name);
   std::vector< std::pair<ClassPtr, UIComponentConstructor> > uiComponents;
-  bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
+  bool declareUIComponent(ExecutionContext& context, const string& typeName, UIComponentConstructor constructor);
 #endif
 
   virtual bool initialize(ExecutionContext& context) = 0;
@@ -98,7 +98,7 @@ typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
 template<class ComponentClass>
 struct MakeUIComponentConstructor
 {
-  static juce::Component* ctor(const ObjectPtr& object, const String& name)
+  static juce::Component* ctor(const ObjectPtr& object, const string& name)
     {return new ComponentClass(object, name);}
 };
 #endif
