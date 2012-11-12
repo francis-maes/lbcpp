@@ -117,7 +117,7 @@ struct VariableRelatedCommand
     {
       ObjectPtr object = container->getElement(i);
       for (size_t j = 0; j < columns.size(); ++j)
-        *ostr << String(object->getVariable(columns[j]).toDouble()) << " ";
+        *ostr << String(Variable(object->getVariable(columns[j])).toDouble()) << " ";
       *ostr << "\n";
     }
     ostr->flush();

@@ -28,8 +28,8 @@ public:
   VariableEditorComponent(ExecutionContext& context, TypePtr type)
     : context(context), type(type) {}
 
-  virtual void setValue(const Variable& value) = 0;
-  virtual Variable getValue() const = 0;
+  virtual void setValue(const ObjectPtr& value) = 0;
+  virtual ObjectPtr getValue() const = 0;
 
   static VariableEditorComponent* create(ExecutionContext& context, const Variable& value);
 
@@ -46,22 +46,22 @@ public:
   {
     addAndMakeVisible(editor = new TextEditor());
     editor->addListener(this);
-    setValue(variable);
+    setValue(variable.getObject());
   }
 
   virtual ~VariableTextEditor()
     {deleteAllChildren();}
 
-  virtual void setValue(const Variable& value)
+  virtual void setValue(const ObjectPtr& value)
   {
-    if (value.isMissingValue())
-      editor->setText(String::empty);
+    if (value)
+      editor->setText(value->toString());
     else
-      editor->setText(value.toString());
+      editor->setText(String::empty);
   }
 
-  virtual Variable getValue() const
-    {return Variable::createFromString(context, type, editor->getText());}
+  virtual ObjectPtr getValue() const
+    {return Variable::createFromString(context, type, editor->getText()).getObject();}
 
   virtual void resized()
     {editor->setBoundsRelative(0, 0, 1, 1);}
@@ -82,13 +82,13 @@ protected:
 class EnumerationComboBoxEditor : public VariableEditorComponent, public juce::ComboBoxListener
 {
 public:
-  EnumerationComboBoxEditor(ExecutionContext& context, const Variable& value)
-    : VariableEditorComponent(context, value.getType())
+  EnumerationComboBoxEditor(ExecutionContext& context, const NewEnumValuePtr& value)
+    : VariableEditorComponent(context, value->getEnumeration())
   {
     addAndMakeVisible(comboBox = new ComboBox(T("enum")));
     comboBox->addListener(this);
 
-    EnumerationPtr enumeration = value.getType().dynamicCast<Enumeration>();
+    EnumerationPtr enumeration = value->getEnumeration();
     jassert(enumeration);
     for (size_t i = 0; i < enumeration->getNumElements(); ++i)
       comboBox->addItem(enumeration->getElementName(i), i + 1);
@@ -103,16 +103,16 @@ public:
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
     {sendChangeMessage(comboBoxThatHasChanged);}
 
-  virtual void setValue(const Variable& value)
+  virtual void setValue(const ObjectPtr& value)
   {
-    if (value.isMissingValue())
-      comboBox->setSelectedId(0, true);
+    if (value)
+      comboBox->setSelectedId(NewEnumValue::get(value) + 1, true);
     else
-      comboBox->setSelectedId(value.getInteger() + 1, true);
+      comboBox->setSelectedId(0, true);      
   }
 
-  virtual Variable getValue() const
-    {return Variable::createFromString(context, type, comboBox->getText());}
+  virtual ObjectPtr getValue() const
+    {return Variable::createFromString(context, type, comboBox->getText()).getObject();}
 
 protected:
   ComboBox* comboBox;
@@ -121,7 +121,7 @@ protected:
 VariableEditorComponent* VariableEditorComponent::create(ExecutionContext& context, const Variable& value)
 {
   if (value.isEnumeration())
-    return new EnumerationComboBoxEditor(context, value);
+    return new EnumerationComboBoxEditor(context, value.getObjectAndCast<NewEnumValue>());
 
   return new VariableTextEditor(context, value);
 }
@@ -242,7 +242,7 @@ public:
     value->setBounds(0, y, getWidth(), value->getHeight() ? value->getHeight() : defaultValueHeight);
   }
 
-  void setValue(const Variable& v)
+  void setValue(const ObjectPtr& v)
     {value->setValue(v);}
 
   virtual void changeListenerCallback(void* objectThatHasChanged);
@@ -381,9 +381,9 @@ public:
     commandLine->setBounds(0, h, getWidth(), commandLineHeight);
   }
 
-  void argumentChangedCallback(size_t variableIndex, const Variable& newValue)
+  void argumentChangedCallback(size_t variableIndex, const ObjectPtr& newValue)
   {
-    std::vector< std::pair<size_t, Variable> > args;
+    std::vector< std::pair<size_t, ObjectPtr> > args;
     WorkUnitPtr workUnit = this->workUnit->createWorkUnit();
     if (!workUnit)
       return;
@@ -403,15 +403,15 @@ public:
     commandLine->setText(resultString, true);
   }
 
-  String argumentsToString(WorkUnitPtr workUnit, const std::vector< std::pair<size_t, Variable> >& args) const
+  String argumentsToString(WorkUnitPtr workUnit, const std::vector< std::pair<size_t, ObjectPtr> >& args) const
   {
     ClassPtr workUnitClass = workUnit->getClass();
     String res;
     for (size_t i = 0; i < args.size(); ++i)
     {
       size_t variableIndex = args[i].first;
-      const Variable& value = args[i].second;
-      if (value.isMissingValue() || (value.isBoolean() && !value.getBoolean()))
+      const ObjectPtr& value = args[i].second;
+      if (!value || (value.isInstanceOf<NewBoolean>() && !NewBoolean::get(value)))
         continue;
 
       TypePtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
@@ -423,13 +423,13 @@ public:
       else
         res += T(" --") + name;
 
-      if (typeValue == booleanType)
+      if (typeValue == newBooleanClass)
         continue;
       else if (typeValue == newFileClass)
-        res += T(" ") + context.getFilePath(File(value.getString()));
+        res += T(" ") + context.getFilePath(NewFile::get(value));
       else
       {
-        String stringValue = value.toString();
+        String stringValue = value->toString();
         if (stringValue.indexOfAnyOf(T(" \t\n\r")) >= 0)
           stringValue = stringValue.quoted();
         res += T(" ") + stringValue;
