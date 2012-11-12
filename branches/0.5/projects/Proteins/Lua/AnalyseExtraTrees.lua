@@ -143,12 +143,15 @@ local numFolds = 9
 --local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
-main("CBS", {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}, dir .. "x3_", "_K0_1000T_NMIN1_CBS_Fold", numFolds)
+--main("CBS", {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}, dir .. "x3_", "_K0_1000T_NMIN1_CBS_Fold", numFolds)
 
 
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBP/"
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/"
 --main("CBP", {"hgpssm", "hgpssm_hgaa"}, dir .. "FeatureEvaluation-Kmax/", ".param.x3.Kmax.fold", numFolds)
 --main("CBS", {"wpssm11", "wpssm11_hgpssm", "wpssm11_hgpssm_nc", "wpssm11_hgpssm_nc_hgaa"}, dir, ".param.x3.fold", numFolds)
+
+main("SPX - CBS", {""}, dir .. "MultiTask/SPX/CBS/SPX-CBS.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
+main("SPXC - CBS", {""}, dir .. "MultiTask/SPXC/CBS/SPXC-CBS.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
 
 
 --main("CBP > K", {1,2,5,10,20,25}, dir .. "K/hgpssm_nc.K", ".x3.fold", numFolds)

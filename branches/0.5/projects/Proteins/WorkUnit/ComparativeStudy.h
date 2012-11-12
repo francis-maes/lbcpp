@@ -335,6 +335,9 @@ public:
       return DBL_MAX;
     }
     
+    if (numFolds == 1)
+      return computeFold(context, parameters, proteins->invFold(0, 2), proteins->fold(0, 2));
+    
     ScalarVariableMeanAndVariancePtr res = new ScalarVariableMeanAndVariance();
 
     for (size_t i = 0; i < numFolds; ++i)
@@ -389,7 +392,15 @@ public:
       context.errorCallback(T("No learner !"));
       return DBL_MAX;
     }
-    
+
+    if (target == odsbTarget)
+    {
+      // In order to predict bridges for cysteines predicted as bonded,
+      // we have to copy cysteine state predictions into the supervised
+      // proteins.
+      copyCysteineBondingStatePredictions(context, test);
+    }
+
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(target);
     
@@ -420,7 +431,7 @@ protected:
   ProteinTarget target;
 
   ProteinEvaluatorPtr createProteinEvaluator() const
-  {    
+  {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
     if (target == ss3Target || target == ss8Target || target == stalTarget)
@@ -429,12 +440,18 @@ protected:
       evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
     else if (target == drTarget)
       evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
-    else if (target == dsbTarget)
+    else if (target == dsbTarget || target == odsbTarget)
       evaluator->addEvaluator(target, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
     else if (target == cbpTarget)
       evaluator->addEvaluator(target, binaryClassificationEvaluator(binaryClassificationAccuracyScore), T("CBP"), true);
 
     return evaluator;
+  }
+
+  void copyCysteineBondingStatePredictions(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+      proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
   }
 };
 

@@ -225,7 +225,7 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
   case 12: return getDistanceMap(context, false);
   case 13: return getDistanceMap(context, true);
   case 14: return getDisulfideBonds(context);
-  case 15: jassertfalse; return Variable();//getOxidizedDisulfideBonds(context, 0.5f);
+  case 15: return getOxidizedDisulfideBonds(context, 0.5f);
   case 16: jassertfalse; return getFullDisulfideBonds(context);
   case 17: return getCAlphaTrace();
   case 18: return getTertiaryStructure();
@@ -334,7 +334,32 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
 
 const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& context, double oxidizedCysteineThreshold) const
 {
-  jassertfalse;
+  if(!getDisulfideBonds(context) || !getCysteinBondingStates(context))
+    return oxidizedDisulfideBonds;
+
+  const size_t n = cysteinBondingStates->getNumElements();
+  jassert(n == disulfideBonds->getDimension() && n == getCysteinIndices().size());
+
+  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = i; j < n; ++j)
+    {
+      const Variable element = (cysteinBondingStates->getValue(i) >= oxidizedCysteineThreshold
+                                && cysteinBondingStates->getValue(j) >= oxidizedCysteineThreshold)
+      ? disulfideBonds->getElement(i, j) : Variable::missingValue(probabilityType);
+      const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
+    }
+/*
+  std::cout << "CBS" << std::endl;
+  std::cout << cysteinBondingStates->toString() << std::endl;
+  std::cout << "From DSB" << std::endl;
+  std::cout << disulfideBonds->toString() << std::endl;
+  std::cout << "To ODSB" << std::endl;
+  std::cout << oxidizedDisulfideBonds->toString() << std::endl << std::endl;
+*/
+  return oxidizedDisulfideBonds;
+
+/*  
   if (oxidizedDisulfideBonds) // Set missing elements to 0
   {
     const size_t n = oxidizedDisulfideBonds->getDimension();
@@ -343,7 +368,7 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
         if (!oxidizedDisulfideBonds->getElement(i,j).exists())
           const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, probability(0.f));
   }
-  
+
   if(!getDisulfideBonds(context) || !getCysteinBondingStates(context))
     return oxidizedDisulfideBonds;
 
@@ -365,6 +390,7 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
     }
 
   return oxidizedDisulfideBonds;
+*/
 }
 
 const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const

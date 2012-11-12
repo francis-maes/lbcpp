@@ -137,8 +137,15 @@ public:
         ContainerPtr predictedContainer;
         if (targets[i] == odsbTarget)
         {
-          supervisionContainer = supervision->getOxidizedDisulfideBonds(context, oxidizedCysteineThreshold);
+          supervisionContainer = supervision->getDisulfideBonds(context);
           predictedContainer = predicted->getOxidizedDisulfideBonds(context, oxidizedCysteineThreshold);
+          /*
+          std::cout << "Supervised DSB" << std::endl;
+          std::cout << supervisionContainer->toString() << std::endl;
+          std::cout << predicted->getCysteinBondingStates(context)->toString() << std::endl;
+          std::cout << "Predicted ODSB" << std::endl;
+          std::cout << predictedContainer->toString() << std::endl << std::endl;
+          */
         }
         else
         {
