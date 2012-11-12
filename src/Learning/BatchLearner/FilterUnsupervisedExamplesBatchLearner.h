@@ -27,6 +27,11 @@ public:
     keepSupervisedExamplesOnly(context, trainingData, supervisedTrainingData);
     std::vector<ObjectPtr> supervisedValidationData;
     keepSupervisedExamplesOnly(context, validationData, supervisedValidationData);
+    context.informationCallback(T("FilterUnsupervisedExamplesBatchLearner"), T("Training examples: ") + String((int)trainingData.size())
+                                + T(" - Filtered examples: ") + String((int)supervisedTrainingData.size()));
+    context.informationCallback(T("FilterUnsupervisedExamplesBatchLearner"), T("Validation examples: ") + String((int)validationData.size())
+                                + T(" - Filtered examples: ") + String((int)supervisedValidationData.size()));
+
     return decorated->train(context, function, supervisedTrainingData, supervisedValidationData);
   }
 

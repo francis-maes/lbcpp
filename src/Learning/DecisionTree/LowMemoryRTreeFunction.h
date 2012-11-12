@@ -84,6 +84,7 @@ protected:
 
 extern ClassPtr lowMemoryRTreeFunctionClass;
 typedef ReferenceCountedObjectPtr<LowMemoryRTreeFunction> LowMemoryRTreeFunctionPtr;
+extern BatchLearnerPtr rTreeBatchLearner(bool verbose = false);
 
 class LowMemoryRTreeBatchLearner : public BatchLearner
 {
@@ -118,6 +119,7 @@ public:
     for (size_t i = 0; i < rTreeFunction->numTrees; ++i)
     {
       RTreeFunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation().dynamicCast<RTreeFunction>();
+      x3Function->setBatchLearner(rTreeBatchLearner());
       if (!x3Function->train(context, trainingData))
       {
         context.errorCallback(T("LowMemoryRTreeFunction"), T("Error during learning"));

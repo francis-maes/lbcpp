@@ -78,10 +78,19 @@ public:
       score->addPrediction(true);
       return;
     }
-    
+/*
+    std::cout << "--- DisulfidePatternEvaluator ---" << std::endl;
+    std::cout << "Supervised Matrix" << std::endl;
+    std::cout << supervisedMatrix->toString();
+    std::cout << "Predicted Matrix" << std::endl;
+    std::cout << predictedMatrix->toString();
+*/
     if (decoratedFunction)
       predictedMatrix = decoratedFunction->compute(context, predictedMatrix).getObjectAndCast<Matrix>(context);
-
+/*
+    std::cout << "Pattern" << std::endl;
+    std::cout << predictedMatrix->toString() << std::endl;
+*/
     const size_t numRows = dimension - minimumDistanceFromDiagonal;
     // check validity of graph
     bool isValidGraph = true;
