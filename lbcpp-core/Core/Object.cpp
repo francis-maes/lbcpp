@@ -143,8 +143,7 @@ ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
 bool Object::saveToFile(ExecutionContext& context, const File& file) const
 {
   XmlExporter exporter(context);
-  Variable v(refCountedPointerFromThis(this));
-  exporter.saveVariable(String::empty, v, TypePtr());
+  exporter.saveObject(String::empty, refCountedPointerFromThis(this), TypePtr());
   return exporter.saveToFile(file);
 }
 
@@ -382,16 +381,13 @@ void Object::saveToXml(XmlExporter& exporter) const
   size_t n = type->getNumMemberVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    Variable variable = getVariable(i);
+    ObjectPtr variable = getVariable(i);
     bool isGenerated = defaultClass && defaultClass->isMemberVariableGenerated(i);
 
     if (isGenerated)
-      exporter.saveGeneratedVariable(getVariableName(i), variable.getObject(), getVariableType(i));
-    else
-    {
-      if (!variable.isMissingValue())
-        exporter.saveVariable(getVariableName(i), variable, getVariableType(i));
-    }
+      exporter.saveGeneratedObject(getVariableName(i), variable, getVariableType(i));
+    else if (variable)
+      exporter.saveObject(getVariableName(i), variable, getVariableType(i));
   }
 }
 
@@ -425,31 +421,30 @@ bool Object::loadFromXml(XmlImporter& importer)
     TypePtr expectedType = thisClass->getMemberVariableType((size_t)variableNumber);
     jassert(expectedType);
     
-    Variable value;
+    ObjectPtr value;
     if (child->getBoolAttribute(T("generated"), false))
     {
-      ObjectPtr object = computeGeneratedObject(importer.getContext(), name);
-      if (!object)
+      value = computeGeneratedObject(importer.getContext(), name);
+      if (!value)
       {
         ok = false;
         continue;
       }
-      value = Variable(object);
       importer.enter(child);
-      importer.linkCurrentElementToObject(object);
+      importer.linkCurrentElementToObject(value);
       importer.leave();
     }
     else
-      value = importer.loadVariable(child, expectedType);
+      value = importer.loadObject(child, expectedType);
       
-    if (value.exists())
+    if (value)
     {
-      if (!importer.getContext().checkInheritance(value.getType(), expectedType))
+      if (!importer.getContext().checkInheritance((TypePtr)value->getClass(), expectedType))
       {
         ok = false;
         continue;
       }
-      setVariable((size_t)variableNumber, value.getObject());
+      setVariable((size_t)variableNumber, value);
     }
   }
   return ok;

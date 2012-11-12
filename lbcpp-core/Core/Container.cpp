@@ -189,8 +189,8 @@ bool Container::loadFromXml(XmlImporter& importer)
       return false;
     }
     
-    Variable value = importer.loadVariable(child, elementsType);
-    setElement((size_t)index, value.getObject());
+    ObjectPtr value = importer.loadObject(child, elementsType);
+    setElement((size_t)index, value);
   }
   return true;
 }
