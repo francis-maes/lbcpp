@@ -23,15 +23,16 @@ public:
   NewDouble(double value = 0.0)
     : value(value) {}
 
+  static NewDoublePtr create(TypePtr type, double value);
+  static double get(ObjectPtr object)
+    {return object.staticCast<NewDouble>()->get();}
+
   void set(double value)
     {this->value = value;}
 
   double get() const
     {return value;}
   
-  static double get(ObjectPtr object)
-    {return object.staticCast<NewDouble>()->get();}
-
   virtual String toShortString() const
   {
     if (!value)
@@ -98,6 +99,9 @@ private:
 };
 
 extern ClassPtr newDoubleClass;
+
+inline NewDoublePtr NewDouble::create(TypePtr type, double value)
+  {return new NewDouble(type, value);}
 
 }; /* namespace lbcpp */
 

@@ -149,7 +149,7 @@ public:
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, columns[0].getDoubleValue()));
+    setResult(new Pair(elementsType, featuresVector, new NewDouble(columns[0].getDoubleValue())));
     return true;
   }
 
@@ -179,7 +179,7 @@ public:
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, supervision));
+    setResult(new Pair(elementsType, featuresVector, new NewBoolean(supervision)));
     return true;
   }
   
@@ -218,7 +218,7 @@ public:
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, Variable(label, labels)));
+    setResult(new Pair(elementsType, featuresVector, new NewEnumValue(labels, label)));
     return true;
   }
 
@@ -309,7 +309,7 @@ public:
       double value = strtod(val, NULL);
       features->setElement(index, new NewDouble(value));
 		}
-    setResult(new Pair(elementsType, features, supervision));
+    setResult(new Pair(elementsType, features, new NewBoolean(supervision)));
     return true;
   }
 

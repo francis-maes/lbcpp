@@ -125,8 +125,8 @@ public:
 
   String makeUniqueMemberVariableName(const String& name) const;
   virtual int findMemberVariable(const String& name) const;
-  virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
-  virtual void setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const;
+  virtual ObjectPtr getMemberVariableValue(const Object* pthis, size_t index) const;
+  virtual void setMemberVariableValue(Object* pthis, size_t index, const ObjectPtr& subValue) const;
 
   /*
   ** Member Functions

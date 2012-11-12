@@ -1,10 +1,7 @@
-Container: Variable => Object
 
-* Probability
-* Time
-
-VariableSelector => ObjectSelector
-Next step: En finir avec les Variables
+A penser:
+ * Probability
+ * Time
 
 Explorer:
  * TextEditor

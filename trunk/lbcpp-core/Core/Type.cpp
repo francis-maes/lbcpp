@@ -210,10 +210,10 @@ VariableSignaturePtr Type::getMemberVariable(size_t index) const
 int Type::findMemberVariable(const String& name) const
   {jassert(baseType); return baseType->findMemberVariable(name);}
   
-Variable Type::getMemberVariableValue(const Object* pthis, size_t index) const
+ObjectPtr Type::getMemberVariableValue(const Object* pthis, size_t index) const
   {jassert(baseType); return baseType->getMemberVariableValue(pthis, index);}
 
-void Type::setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const
+void Type::setMemberVariableValue(Object* pthis, size_t index, const ObjectPtr& subValue) const
   {if (baseType) baseType->setMemberVariableValue(pthis, index, subValue);}
 
 String Type::makeUniqueMemberVariableName(const String& name) const

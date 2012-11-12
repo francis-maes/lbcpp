@@ -127,7 +127,7 @@ public:
   }
 
   ObjectPtr computeObject(const ObjectPtr& object) const
-    {return inputClass->getMemberVariableValue(object.get(), variableIndex).toObject();}
+    {return inputClass->getMemberVariableValue(object.get(), variableIndex);}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}

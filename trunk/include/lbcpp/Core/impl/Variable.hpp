@@ -212,67 +212,81 @@ inline Variable& Variable::operator =(const Variable& otherVariable)
 }
 
 /*
-** Variable => C++ Native
+** Object => C++ Native
 */
-inline void variableToNative(ExecutionContext& context, bool& dest, const Variable& source)
-  {dest = NewBoolean::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, bool& dest, const ObjectPtr& source)
+  {dest = NewBoolean::get(source);}
 
-inline void variableToNative(ExecutionContext& context, int& dest, const Variable& source)
-  {dest = (int)NewInteger::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, int& dest, const ObjectPtr& source)
+  {dest = (int)NewInteger::get(source);}
 
-inline void variableToNative(ExecutionContext& context, juce::int64& dest, const Variable& source)
-  {dest = NewInteger::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, juce::int64& dest, const ObjectPtr& source)
+  {dest = NewInteger::get(source);}
 
-inline void variableToNative(ExecutionContext& context, size_t& dest, const Variable& source)
-  {dest = (size_t)NewInteger::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, size_t& dest, const ObjectPtr& source)
+  {dest = (size_t)NewInteger::get(source);}
  
-inline void variableToNative(ExecutionContext& context, unsigned char& dest, const Variable& source)
-  {dest = (unsigned char)NewInteger::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, unsigned char& dest, const ObjectPtr& source)
+  {dest = (unsigned char)NewInteger::get(source);}
 
-inline void variableToNative(ExecutionContext& context, double& dest, const Variable& source)
-  {dest = NewDouble::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, double& dest, const ObjectPtr& source)
+  {dest = NewDouble::get(source);}
 
-inline void variableToNative(ExecutionContext& context, String& dest, const Variable& source)
-  {dest = NewString::get(source.getObject());}
+inline void objectToNative(ExecutionContext& context, String& dest, const ObjectPtr& source)
+  {dest = NewString::get(source);}
 
-inline void variableToNative(ExecutionContext& context, File& dest, const Variable& source)
-  {dest = context.getProjectDirectory().getChildFile(NewString::get(source.getObject()));}
+inline void objectToNative(ExecutionContext& context, File& dest, const ObjectPtr& source)
+  {dest = NewFile::get(source);}
 
-inline void variableToNative(ExecutionContext& context, ObjectPtr& dest, const Variable& source)
-  {jassert(source.isObject()); dest = source.getObject();}
-
-template<class TT>
-inline void variableToNative(ExecutionContext& context, ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
-  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context);}
-
-template<class TT>
-inline void variableToNative(ExecutionContext& context, TT*& dest, const Variable& source)
-  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context).get();}
-
-inline void variableToNative(ExecutionContext& context, Variable& dest, const Variable& source)
+inline void objectToNative(ExecutionContext& context, ObjectPtr& dest, const ObjectPtr& source)
   {dest = source;}
 
-/*
-** C++ Native => Variable
-*/
-inline Variable nativeToVariable(const File& source, const TypePtr& expectedType)
-  {return Variable(NewFile::create(source), expectedType);}
+template<class TT>
+inline void objectToNative(ExecutionContext& context, ReferenceCountedObjectPtr<TT>& dest, const ObjectPtr& source)
+  {dest = source.staticCast<TT>();}
 
-inline Variable nativeToVariable(const Variable& source, const TypePtr& )
+template<class TT>
+inline void objectToNative(ExecutionContext& context, TT*& dest, const ObjectPtr& source)
+  {dest = source.staticCast<TT>().get();}
+
+/*
+** C++ Native => Object
+*/
+inline ObjectPtr nativeToObject(const bool& source, const TypePtr& expectedType)
+  {return new NewBoolean(expectedType, source);}
+
+inline ObjectPtr nativeToObject(const unsigned char& source, const TypePtr& expectedType)
+  {return NewInteger::create(expectedType, source);}
+inline ObjectPtr nativeToObject(const size_t& source, const TypePtr& expectedType)
+  {return NewInteger::create(expectedType, source);}
+inline ObjectPtr nativeToObject(const int& source, const TypePtr& expectedType)
+  {return NewInteger::create(expectedType, source);}
+inline ObjectPtr nativeToObject(const juce::int64& source, const TypePtr& expectedType)
+  {return NewInteger::create(expectedType, source);}
+
+inline ObjectPtr nativeToObject(const float& source, const TypePtr& expectedType)
+  {return NewDouble::create(expectedType, source);}
+
+inline ObjectPtr nativeToObject(const double& source, const TypePtr& expectedType)
+  {return NewDouble::create(expectedType, source);}
+
+inline ObjectPtr nativeToObject(const juce::String& source, const TypePtr& expectedType)
+  {return new NewString(expectedType, source);}
+
+inline ObjectPtr nativeToObject(const File& source, const TypePtr& expectedType)
+  {return new NewFile(expectedType, source);}
+
+template<class TT>
+inline ObjectPtr nativeToObject(const ReferenceCountedObjectPtr<TT>& source, const TypePtr& expectedType)
   {return source;}
 
 template<class TT>
-inline Variable nativeToVariable(const ReferenceCountedObjectPtr<TT>& source, const TypePtr& expectedType)
-  {return Variable(source, expectedType);}
+inline ObjectPtr nativeToObject(const TT* source, const TypePtr& expectedType)
+  {return ObjectPtr(source);}
 
 template<class TT>
-inline Variable nativeToVariable(const TT* source, const TypePtr& expectedType)
-  {return Variable(source, expectedType);}
-
-template<class TT>
-inline Variable nativeToVariable(const TT& source, const TypePtr& expectedType)
-  {return Variable(source, expectedType);}
-
+inline ObjectPtr nativeToObject(const TT& source, const TypePtr& expectedType)
+  {return ObjectPtr(&source);}
 
 /*
 ** Inheritance check

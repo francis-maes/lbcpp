@@ -141,7 +141,7 @@ ObjectPtr Object::getVariable(size_t index) const
 {
   ClassPtr thisClass = getClass();
   jassert(index < thisClass->getNumMemberVariables());
-  return thisClass->getMemberVariableValue(this, index).getObject();
+  return thisClass->getMemberVariableValue(this, index);
 }
 
 void Object::setVariable(size_t index, const ObjectPtr& value)
