@@ -105,7 +105,7 @@ private:
     {
       if (i % 5 == 0)
         cysString += T("\n     ");
-      cysString += T("Cys") + String((int)cysteinIndices[i] + 1) + T(" ");
+      cysString += toFixedLengthStringLeftJustified(T("Cys") + String((int)cysteinIndices[i] + 1), 6) + T(" ");
     }
     
     *o << "#- Query ------------------------------------------------------------#\n";
