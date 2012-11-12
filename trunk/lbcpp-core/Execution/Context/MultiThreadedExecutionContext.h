@@ -37,7 +37,7 @@ public:
       bool pushIntoStack = workUnits->hasPushChildrenIntoStackFlag();
       for (size_t i = begin; i < end; ++i)
       {
-        Variable res = context.run(workUnits->getWorkUnit(i), pushIntoStack);
+        ObjectPtr res = context.run(workUnits->getWorkUnit(i), pushIntoStack);
         results->setElement(i, res);
       }
       return new NewBoolean(true);

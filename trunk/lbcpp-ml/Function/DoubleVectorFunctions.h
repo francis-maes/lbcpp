@@ -43,7 +43,7 @@ public:
     {return inputs[0]->toShortString() + "." + enumeration->getElementName(index);}
 
   ObjectPtr computeObject(const ObjectPtr& input) const
-    {return input.staticCast<DoubleVector>()->getElement(index).toObject();}
+    {return input.staticCast<DoubleVector>()->getElement(index);}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
@@ -63,9 +63,9 @@ public:
     else
     {
       size_t n = features->getNumElements();
-      VectorPtr res = vector(positiveIntegerType, n);
+      VectorPtr res = vector(newPositiveIntegerClass, n);
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, i);
+        res->setElement(i, new NewPositiveInteger(i));
       return res;
     }
   }

@@ -352,7 +352,7 @@ void PostfixExpressionTypeSpace::enumerateFunctionVariables(const FunctionPtr& f
       size_t n = values->getNumElements();
       for (size_t i = 0; i < n; ++i)
       {
-        variables[variableIndex] = values->getElement(i).getObject();
+        variables[variableIndex] = values->getElement(i);
         enumerateFunctionVariables(function, inputTypes, variables, variableIndex + 1, res);
       }
     }

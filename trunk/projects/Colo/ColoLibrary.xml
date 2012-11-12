@@ -3,7 +3,7 @@
 <library name="Colo" dynamic="yes">
   
   <class name="ColoObject">
-    <variable type="GenericVector[PositiveInteger]" name="sequence"/>
+    <variable type="IntegerVector[NewPositiveInteger]" name="sequence"/>
   </class>
   <class name="ColoDomain" base="Domain"/>
   <class name="ColoProblem" base="Problem">

@@ -3,26 +3,26 @@
 <library name="Morpion" dynamic="yes">
 
   <class name="MorpionState" base="SearchState">
-    <variable type="PositiveInteger" name="crossLength"/>
-    <variable type="Boolean" name="isDisjoint"/>
+    <variable type="NewPositiveInteger" name="crossLength"/>
+    <variable type="NewBoolean" name="isDisjoint"/>
   </class>
   <uicomponent name="MorpionStateComponent" type="MorpionState"/>
 
   <class name="MorpionAction">
-    <variable type="PositiveInteger" name="requestedIndexInLine"/>
-    <variable type="PositiveInteger" name="indexInLine"/>
+    <variable type="NewPositiveInteger" name="requestedIndexInLine"/>
+    <variable type="NewPositiveInteger" name="indexInLine"/>
   </class>
   <class name="MorpionActionCodeGenerator" base="SearchActionCodeGenerator"/>
 
   <class name="MorpionProblem" base="Problem" shortName="morpion">
-    <variable type="PositiveInteger" name="crossLength"/>
-    <variable type="Boolean" name="isDisjoint"/>
+    <variable type="NewPositiveInteger" name="crossLength"/>
+    <variable type="NewBoolean" name="isDisjoint"/>
   </class>
     
   <class name="CompareSolversWorkUnit" base="WorkUnit" abstract="yes">
-    <variable type="PositiveInteger" name="numEvaluations"/>
-    <variable type="PositiveInteger" name="numRuns"/>
-    <variable type="PositiveInteger" name="verbosity"/>
+    <variable type="NewPositiveInteger" name="numEvaluations"/>
+    <variable type="NewPositiveInteger" name="numRuns"/>
+    <variable type="NewPositiveInteger" name="verbosity"/>
   </class>
   <class name="MorpionSandBox" base="CompareSolversWorkUnit"/>
 

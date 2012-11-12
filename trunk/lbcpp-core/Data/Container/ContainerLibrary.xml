@@ -2,7 +2,6 @@
 
 <library name="Container" directory="Data/Container">
   <include file="lbcpp/Core/Vector.h"/>
-  <include file="lbcpp/Data/SymmetricMatrix.h"/>
   
   <!-- DecoratorContainer -->
   <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">

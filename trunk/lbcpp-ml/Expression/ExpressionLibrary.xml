@@ -8,11 +8,11 @@
   <!-- Expressions-->
   <class name="Expression" base="Object" abstract="yes">
     <variable type="Type" name="type"/>
-    <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
+    <!-- <variable type="NewPositiveInteger" name="allocationIndex"/> -->
   </class>
   <class name="VariableExpression" base="Expression">
-    <variable type="String" name="name"/>
-    <variable type="PositiveInteger" name="inputIndex"/>
+    <variable type="NewString" name="name"/>
+    <variable type="NewPositiveInteger" name="inputIndex"/>
   </class>
   <class name="ConstantExpression" base="Expression">
     <variable type="Object" name="value"/>
@@ -25,11 +25,11 @@
     <variable type="ObjectVector[Expression]" name="nodes"/>
   </class>
   <class name="ScalarSumExpression" base="SequenceExpression">
-    <variable type="Boolean" name="convertToProbabilities"/>
-    <variable type="Boolean" name="computeAverage"/>
+    <variable type="NewBoolean" name="convertToProbabilities"/>
+    <variable type="NewBoolean" name="computeAverage"/>
   </class>
   <class name="VectorSumExpression" base="SequenceExpression">
-    <variable type="Boolean" name="convertToProbabilities"/>
+    <variable type="NewBoolean" name="convertToProbabilities"/>
   </class>
   <class name="CreateSparseVectorExpression" base="SequenceExpression"/>
   <class name="TestExpression" base="Expression">
@@ -45,8 +45,8 @@
   <!-- Expression Samplers -->
   <class name="ExpressionSampler" base="Sampler" abstract="yes"/>
   <class name="DepthControlledExpressionSampler" base="ExpressionSampler" abstract="yes">
-    <variable type="PositiveInteger" name="minDepth"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="NewPositiveInteger" name="minDepth"/>
+    <variable type="NewPositiveInteger" name="maxDepth"/>
   </class>
 
   <class name="FullExpressionSampler" base="DepthControlledExpressionSampler">
@@ -68,18 +68,18 @@
   </class>
   <class name="InsertExpressionPerturbator" base="ExpressionPerturbator">
     <constructor arguments="size_t maxDepth"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="NewPositiveInteger" name="maxDepth"/>
   </class>
   <class name="KozaExpressionPerturbator" base="ExpressionPerturbator">
     <constructor arguments="DepthControlledExpressionSamplerPtr sampler, size_t maxRegenerationDepth, size_t maxDepth"/>
     <variable type="DepthControlledExpressionSampler" name="sampler"/>
-    <variable type="PositiveInteger" name="maxRegenerationDepth"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="NewPositiveInteger" name="maxRegenerationDepth"/>
+    <variable type="NewPositiveInteger" name="maxDepth"/>
   </class>
   <class name="SubTreeCrossOverExpressionPerturbator" base="BinaryPerturbator">
     <constructor arguments="double functionSelectionProbability, size_t maxDepth"/>
     <variable type="Probability" name="functionSelectionProbability"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="NewPositiveInteger" name="maxDepth"/>
   </class>
 
   <!-- Expression RPN -->
@@ -88,7 +88,7 @@
   </class>
   
   <class name="PostfixExpressionTypeState">
-    <variable type="PositiveInteger" name="depth"/>
+    <variable type="NewPositiveInteger" name="depth"/>
     <variable type="ObjectVector[Type]" name="stack"/>
   </class>
   <class name="PostfixExpressionTypeSpace"/>
@@ -96,23 +96,23 @@
   <!-- Expression Search States -->
   <class name="ExpressionState" base="SearchState" abstract="yes">
     <variable type="ExpressionDomain" name="domain"/>
-    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="NewPositiveInteger" name="maxSize"/>
     <variable type="ObjectVector[Object]" name="trajectory"/>
   </class>
 
   <class name="PrefixExpressionState" base="ExpressionState">
     <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
 
-    <variable type="PositiveInteger" name="numLeafs"/>
+    <variable type="NewPositiveInteger" name="numLeafs"/>
     <variable type="ObjectVector[DiscreteDomain]" name="actionsByMaxArity"/>
   </class>
 
   <class name="PostfixExpressionState" base="ExpressionState">
     <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
-    <variable type="PositiveInteger" name="maxFunctionArity"/>
+    <variable type="NewPositiveInteger" name="maxFunctionArity"/>
     <variable type="ObjectVector[DiscreteDomain]" name="actionsCacheByCase"/>
     <variable type="ObjectVector[Expression]" name="stack"/>
-    <variable type="Boolean" name="isYielded"/>
+    <variable type="NewBoolean" name="isYielded"/>
   </class>
 
   <class name="TypedPostfixExpressionState" base="ExpressionState">

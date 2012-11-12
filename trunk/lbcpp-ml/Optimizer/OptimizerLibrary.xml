@@ -10,13 +10,13 @@
   <!-- Multi objective -->
   <class name="NSGA2MOOptimizer" base="PopulationBasedSolver">
     <constructor arguments="size_t populationSize, size_t numGenerations, double mutationDistributionIndex, double crossOverDistributionIndex, double crossOverProbability"/>
-    <variable type="Double" name="mutationDistributionIndex"/>
-    <variable type="Double" name="crossOverDistributionIndex"/>
-    <variable type="Double" name="crossOverProbability"/>
+    <variable type="NewDouble" name="mutationDistributionIndex"/>
+    <variable type="NewDouble" name="crossOverDistributionIndex"/>
+    <variable type="NewDouble" name="crossOverProbability"/>
   </class>
 
   <class name="CMAESMOOptimizer" base="PopulationBasedSolver">
-    <variable type="PositiveInteger" name="numOffsprings"/>
+    <variable type="NewPositiveInteger" name="numOffsprings"/>
   </class>
 
 </library>

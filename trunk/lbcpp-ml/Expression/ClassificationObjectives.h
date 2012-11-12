@@ -71,7 +71,7 @@ public:
     size_t numSuccesses = 0;
     for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
-      int sup = supervisions->getElement(it.getIndex()).getInteger();
+      int sup = (int)NewInteger::get(supervisions->getElement(it.getIndex()));
       int pred = it.getRawInteger();
       if (sup == pred)
         ++numSuccesses;

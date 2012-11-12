@@ -58,11 +58,6 @@
     <variable type="secondType" name="second"/>
   </template>
 
-  <class name="PositiveIntegerPair">
-    <variable type="PositiveInteger" name="first"/>
-    <variable type="PositiveInteger" name="second"/>
-  </class>
-
   <!-- Container -->
   <template name="Container" base="Object" abstract="yes">
     <parameter name="elementsType"/>
@@ -73,11 +68,6 @@
     <parameter name="elementsType"/>
     <function lang="lua" name="resize"/>
     <function lang="lua" name="append"/>
-  </template>
-
-  <template name="GenericVector" base="Vector[elementsType]">
-    <parameter name="elementsType"/>
-    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
   </template>
 
   <template name="ObjectVector" base="Vector[elementsType]">
@@ -93,8 +83,6 @@
     <parameter name="elementsType"/>
     <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
   </class>
-
-  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
 
   <template name="AddMissingToEnumeration" metaclass="Enumeration">
     <parameter name="enumeration" type="EnumValue"/>
@@ -223,10 +211,10 @@
 
   <!-- XmlElement -->
   <class name="XmlElement" base="Object">
-    <variable type="String" name="tagName"/>
+    <variable type="NewString" name="tagName"/>
     <variable type="ObjectVector[XmlElement]" name="childElements"/>
-    <variable type="ObjectVector[Pair[String, String]]" name="attributes"/>
-    <variable type="String" name="text"/>
+    <variable type="ObjectVector[Pair[NewString, NewString]]" name="attributes"/>
+    <variable type="NewString" name="text"/>
   </class>
 
 </library>

@@ -248,7 +248,7 @@ public:
     for (int i = 0; i < tokens.size(); ++i)
     {
       size_t label = labels->findOrAddElement(context, tokens[i]);
-      res->setElement(label, 1.0);
+      res->setElement(label, new NewDouble(1.0));
     }
     return res;
   }
@@ -307,7 +307,7 @@ public:
 
       size_t index = this->features->findOrAddElement(context, idx);
       double value = strtod(val, NULL);
-      features->setElement(index, value);
+      features->setElement(index, new NewDouble(value));
 		}
     setResult(new Pair(elementsType, features, supervision));
     return true;

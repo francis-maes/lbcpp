@@ -99,8 +99,8 @@ public:
       switch (owner->implementation)
       {
       case constantValueImpl: return (int)NewInteger::get(owner->constantRawObject);
-      case ownedVectorImpl: return owner->vector->getElement(position).getInteger();
-      case cachedVectorImpl: return owner->vector->getElement(*it).getInteger();
+      case ownedVectorImpl: return (int)NewInteger::get(owner->vector->getElement(position));
+      case cachedVectorImpl: return (int)NewInteger::get(owner->vector->getElement(*it));
       default: jassert(false); return 0;
       }
     }

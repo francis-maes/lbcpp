@@ -287,7 +287,7 @@ DenseDoubleVectorPtr DoubleVector::toDenseDoubleVector() const
   {
     double* ptr = res->getValuePointer(0);
     for (size_t i = 0; i < n; ++i, ++ptr)
-      *ptr = getElement(i).toDouble();
+      *ptr = NewDouble::get(getElement(i));
   }
   return res;
 }
@@ -320,13 +320,13 @@ double DoubleVector::l2norm(const DoubleVectorPtr& vector) const
     {
       if ((indexInSparse < sparseValues.size()) && (i == sparseValues[indexInSparse].first))
       {
-        const double diff = getElement(i).getDouble() - sparseValues[indexInSparse].second;
+        const double diff = NewDouble::get(getElement(i)) - sparseValues[indexInSparse].second;
         distance += diff * diff;
         indexInSparse++;
       }
       else
       {
-        const double diff = getElement(i).getDouble();
+        const double diff = NewDouble::get(getElement(i));
         distance += diff * diff;
       }
     }
@@ -338,7 +338,7 @@ double DoubleVector::l2norm(const DoubleVectorPtr& vector) const
 
     for (size_t i = 0; i < numElements; i++)
     {
-      const double diff = getElement(i).getDouble() - denseValues[i];
+      const double diff = NewDouble::get(getElement(i)) - denseValues[i];
       distance += diff * diff;
     }
   }
@@ -346,7 +346,7 @@ double DoubleVector::l2norm(const DoubleVectorPtr& vector) const
   {
     for (size_t i = 0; i < numElements; i++)
     {
-      const double diff = getElement(i).getDouble() - vector->getElement(i).getDouble();
+      const double diff = NewDouble::get(getElement(i)) - NewDouble::get(vector->getElement(i));
       distance += diff * diff;
     }
   }
@@ -542,7 +542,7 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
     int index = tokens[i].substring(0, e).getIntValue();
     if (index < 0)
       return false;
-    setElement((size_t)index, tokens[i].substring(e + 1).getDoubleValue());
+    setElement((size_t)index, new NewDouble(tokens[i].substring(e + 1).getDoubleValue()));
   }
   return true;
 }
@@ -720,13 +720,13 @@ double SparseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
     {
       if ((indexInSparse < values.size()) && (i == values[indexInSparse].first))
       {
-        const double diff = values[indexInSparse].second - vector->getElement(i).getDouble();
+        const double diff = values[indexInSparse].second - NewDouble::get(vector->getElement(i));
         distance += diff * diff;
         indexInSparse++;
       }
       else
       {
-        const double diff = vector->getElement(i).getDouble();
+        const double diff = NewDouble::get(vector->getElement(i));
         distance += diff * diff;
       }
     }
@@ -745,10 +745,10 @@ void SparseDoubleVector::reserve(size_t size)
 void SparseDoubleVector::resize(size_t size)
   {jassert(false);}
 
-void SparseDoubleVector::prepend(const Variable& value)
+void SparseDoubleVector::prepend(const ObjectPtr& value)
   {jassert(false);}
 
-void SparseDoubleVector::append(const Variable& value)
+void SparseDoubleVector::append(const ObjectPtr& value)
   {jassert(false);}
 
 void SparseDoubleVector::remove(size_t index)
@@ -758,22 +758,25 @@ void SparseDoubleVector::remove(size_t index)
 size_t SparseDoubleVector::getNumElements() const
   {return (size_t)juce::jmax((int)getElementsEnumeration()->getNumElements(), lastIndex + 1);}
 
-Variable SparseDoubleVector::getElement(size_t index) const
+ObjectPtr SparseDoubleVector::getElement(size_t index) const
 {
   const double* value = SparseDoubleVectorHelper::get(values, index);
-  return Variable(value ? *value : 0.0, getElementsType());
+  if (!value)
+    return ObjectPtr();
+  return *value == doubleMissingValue ? ObjectPtr() : new NewDouble(getElementsType(), *value);
 }
 
-void SparseDoubleVector::setElement(size_t index, const Variable& value)
+void SparseDoubleVector::setElement(size_t index, const ObjectPtr& value)
 {
-  jassert(value.exists() && value.isDouble());
+  jassert(value);
+  double dValue = NewDouble::get(value);
   if ((int)index > lastIndex)
   {
-    appendValue(index, value.getDouble());
+    appendValue(index, dValue);
     return;
   }
   else
-    SparseDoubleVectorHelper::set(values, index, value.getDouble());
+    SparseDoubleVectorHelper::set(values, index, dValue);
 }
 
 void SparseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& target) const
@@ -1150,7 +1153,7 @@ double DenseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
   {
     for (size_t i = 0; i < numElements; i++)
     {
-      const double diff = (*values)[i] - vector->getElement(i).getDouble();
+      const double diff = (*values)[i] - NewDouble::get(vector->getElement(i));
       distance += diff * diff;
     }
   }
@@ -1185,15 +1188,18 @@ void DenseDoubleVector::resize(size_t size)
   values->resize(size);
 }
 
-void DenseDoubleVector::prepend(const Variable& value)
+void DenseDoubleVector::prepend(const ObjectPtr& value)
 {
   // this operation is not permitted
   jassert(false);
   //values->insert(values->begin(), value.getDouble());
 }
 
-void DenseDoubleVector::append(const Variable& value)
-  {values->push_back(NewDouble::get(value.getObject()));}
+static inline double doubleObjectToDouble(const ObjectPtr& value)
+  {return (value ? NewDouble::get(value) : doubleMissingValue);}
+
+void DenseDoubleVector::append(const ObjectPtr& value)
+  {values->push_back(doubleObjectToDouble(value));}
 
 void DenseDoubleVector::remove(size_t index)
 {
@@ -1205,22 +1211,11 @@ void DenseDoubleVector::remove(size_t index)
 size_t DenseDoubleVector::getNumElements() const
   {return values ? values->size() : 0;}
 
-Variable DenseDoubleVector::getElement(size_t index) const
+ObjectPtr DenseDoubleVector::getElement(size_t index) const
   {return new NewDouble(values && index < values->size() ? (*values)[index] : 0.0);}
 
-void DenseDoubleVector::setElement(size_t index, const Variable& value)
-{
-  if (value.isObject())
-  {
-    NewDoublePtr d = value.getObjectAndCast<NewDouble>();
-    (*values)[index] = d->get();
-  }
-  else
-  {
-    jassert(index < values->size() && value.isDouble());
-    (*values)[index] = value.getDouble();
-  }
-}
+void DenseDoubleVector::setElement(size_t index, const ObjectPtr& value)
+  {(*values)[index] = doubleObjectToDouble(value);}
 
 // Object
 void DenseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) const
@@ -1352,13 +1347,13 @@ size_t CompositeDoubleVector::getNumElements() const
   return lastSubVector.first + lastSubVector.second->getNumElements();
 }
 
-Variable CompositeDoubleVector::getElement(size_t index) const
+ObjectPtr CompositeDoubleVector::getElement(size_t index) const
 {
   if (vectors.empty())
-    return missingElement();
+    return ObjectPtr();
   
   if (index < vectors[0].first)
-    return missingElement();
+    return ObjectPtr();
 
   int i = 1;
   while (i < (int)vectors.size() && vectors[i].first <= index)
@@ -1368,7 +1363,7 @@ Variable CompositeDoubleVector::getElement(size_t index) const
   return vectors[i].second->getElement(index - vectors[i].first);
 }
 
-void CompositeDoubleVector::setElement(size_t index, const Variable& value)
+void CompositeDoubleVector::setElement(size_t index, const ObjectPtr& value)
 {
   if (vectors.empty())
     {jassert(false); return;}
@@ -1393,10 +1388,10 @@ void CompositeDoubleVector::reserve(size_t size)
 void CompositeDoubleVector::resize(size_t size)
   {}
 
-void CompositeDoubleVector::prepend(const Variable& value)
+void CompositeDoubleVector::prepend(const ObjectPtr& value)
   {jassert(false);}
 
-void CompositeDoubleVector::append(const Variable& value)
+void CompositeDoubleVector::append(const ObjectPtr& value)
   {jassert(false);}
 
 void CompositeDoubleVector::remove(size_t index)

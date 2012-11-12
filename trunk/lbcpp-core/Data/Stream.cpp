@@ -37,7 +37,7 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
 
     Variable variable = next();
     if (!variable.isNil())
-      res->append(variable);
+      res->append(variable.getObject());
 
     if (isExhausted())
     {

@@ -129,16 +129,16 @@ private:
 class ProcessList;
 typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
 
-class ProcessList : public GenericVector
+class ProcessList : public ObjectVector
 {
 public:
-  ProcessList() : GenericVector(objectClass, 0) {}
+  ProcessList() : ObjectVector(objectClass, 0) {}
 
   size_t getNumProcesses() const
     {return getNumElements();}
 
   ProcessPtr getProcess(size_t index) const
-    {return getElement(index).getObjectAndCast<Process>();}
+    {return getElement(index).staticCast<Process>();}
 
   void moveToTop(size_t index, ProcessListPtr target)
   {

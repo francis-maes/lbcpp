@@ -41,7 +41,7 @@ SparseDoubleVectorPtr LibSVMDataParser::parseFeatureList(DefaultEnumerationPtr f
     if (!parseFeature(columns[i], identifier, value))
       return SparseDoubleVectorPtr();
     size_t index = features->findOrAddElement(context, identifier);
-    res->setElement(index, value);
+    res->setElement(index, new NewDouble(value));
   }
   return res;
 }

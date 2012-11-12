@@ -463,26 +463,15 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
       }
       resultVector = res;
     }
-    else if (elementsType->inheritsFrom(objectClass))
+    else
     {
+      jassert(elementsType->inheritsFrom(objectClass));
       ObjectVectorPtr res = new ObjectVector(type, n);
       size_t i = 0;
       for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
       {
         DataVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
         res->set(i, currentIt.getRawObject());
-        ++currentIt;
-      }
-      resultVector = res;
-    }
-    else
-    {
-      VectorPtr res = vector(type, n);
-      size_t i = 0;
-      for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
-      {
-        DataVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
-        res->setElement(i, *currentIt);
         ++currentIt;
       }
       resultVector = res;

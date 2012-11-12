@@ -38,9 +38,6 @@ typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;
 class NotificationQueue : public Object
 {
 public:
-  virtual void consume(ExecutionContext& context, const Variable& variable)
-    {push(variable.getObjectAndCast<Notification>());}
-  
   void push(const NotificationPtr& notification);
   void flush(const ObjectPtr& target);
   bool isEmpty() const;

@@ -3,13 +3,10 @@
 <library name="Data" directory="Data">
   <import name="Stream"/>
   <import name="Container"/>
-  <import name="Matrix"/>
 
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
   <include file="lbcpp/Data/DoubleVector.h"/>
-  <include file="lbcpp/Data/Matrix.h"/>
-  <include file="lbcpp/Data/SymmetricMatrix.h"/>
   <include file="lbcpp/Data/IndexSet.h"/>
   <include file="lbcpp/Data/BinaryKey.h"/>
   <include file="lbcpp/Data/BinaryConfusionMatrix.h"/>
@@ -33,8 +30,8 @@
       }
     </code>
 
-    <variable type="Double" name="samplesSum"/>
-    <variable type="Double" name="samplesCount"/>
+    <variable type="NewDouble" name="samplesSum"/>
+    <variable type="NewDouble" name="samplesCount"/>
 
     <function lang="lua" name="clear"/>
     <function lang="lua" name="observe"/>
@@ -45,14 +42,14 @@
   </class>
   
   <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean">
-    <variable type="Double" name="samplesSumOfSquares"/>
+    <variable type="NewDouble" name="samplesSumOfSquares"/>
     <function lang="lua" name="getStandardDeviation"/>
     <function lang="lua" name="getVariance"/>
   </class>
   
   <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance">
-    <variable type="Double" name="minimumValue"/>
-    <variable type="Double" name="maximumValue"/>
+    <variable type="NewDouble" name="minimumValue"/>
+    <variable type="NewDouble" name="maximumValue"/>
     <function lang="lua" name="getMinimum"/>
     <function lang="lua" name="getMaximum"/>
   </class>
@@ -92,45 +89,9 @@
     <parameter name="elementsType" type="Double"/>
   </template>
 
-  <!-- Matrix -->
-  <template name="Matrix" base="Container[elementsType]" abstract="yes">
-    <parameter name="elementsType" type="Variable"/>
-  </template>
-
-  <template name="ShortEnumerationMatrix" base="Matrix[elementsType]">
-    <parameter name="elementsType" type="EnumValue"/>
-  </template>
-
-  <template name="ObjectMatrix" base="Matrix[elementsType]">
-    <parameter name="elementsType" type="Object"/>
-  </template>
-
-  <template name="DoubleMatrix" base="Matrix[elementsType]">
-    <parameter name="elementsType" type="Double"/>
-  </template>
-
-  <!-- SymmetricMatrix -->
-  <template name="SymmetricMatrix" base="Matrix[elementsType]" abstract="yes">
-    <parameter name="elementsType" type="Variable"/>
-  </template>
-
-  <template name="DoubleSymmetricMatrix" base="SymmetricMatrix[elementsType]">
-    <parameter name="elementsType" type="Double"/>
-  </template>
-
-  <template name="CharSymmetricMatrix" base="SymmetricMatrix[elementsType]">
-    <parameter name="elementsType" type="Integer"/>
-  </template>
-
-  <template name="ObjectSymmetricMatrix" base="SymmetricMatrix[elementsType]">
-    <parameter name="elementsType" type="Variable"/>
-  </template>
-
-  <!-- <class name="SubsetSymmetricMatrix" base="SymmetricMatrix[Variable]"/> -->
-
   <!-- IndexSet -->
   <class name="IndexSet" base="Object">
-    <variable type="GenericVector[PositiveInteger]" name="v"/>
+    <variable type="IntegerVector[NewPositiveInteger]" name="v"/>
   </class>
   <class name="BinaryKey" base="Object"/>
 
@@ -139,10 +100,10 @@
 
   <!-- Confusion Matrix -->
   <class name="BinaryConfusionMatrix" base="Object">
-    <variable type="PositiveInteger" name="truePositive"/>
-    <variable type="PositiveInteger" name="falsePositive"/>
-    <variable type="PositiveInteger" name="falseNegative"/>
-    <variable type="PositiveInteger" name="trueNegative"/>
+    <variable type="NewPositiveInteger" name="truePositive"/>
+    <variable type="NewPositiveInteger" name="falsePositive"/>
+    <variable type="NewPositiveInteger" name="falseNegative"/>
+    <variable type="NewPositiveInteger" name="trueNegative"/>
   </class>
 
   <!-- Iteration Function -->
@@ -150,13 +111,13 @@
 
   <class name="ConstantIterationFunction" base="IterationFunction" shortName="constant">
     <constructor arguments="double value"/>
-    <variable type="Double" name="value"/>
+    <variable type="NewDouble" name="value"/>
   </class>
 
   <class name="InvLinearIterationFunction" base="IterationFunction" shortName="invLinear">
     <constructor arguments="double initialValue, size_t numberIterationsToReachHalfInitialValue"/>
-    <variable type="Double" name="initialValue"/>
-    <variable type="Integer" name="numberIterationsToReachHalfInitialValue"/>
+    <variable type="NewDouble" name="initialValue"/>
+    <variable type="NewPositiveInteger" name="numberIterationsToReachHalfInitialValue"/>
   </class>
 
 </library>

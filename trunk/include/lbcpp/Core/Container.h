@@ -29,7 +29,7 @@ public:
   bool isEmpty() const
     {return getNumElements() == 0;}
     
-  int findElement(const Variable& value) const;
+  int findElement(const ObjectPtr& value) const;
   TypePtr computeElementsCommonBaseType() const;
 
   virtual TypePtr getElementsType() const
@@ -41,8 +41,8 @@ public:
   String getElementName(size_t index) const;
 
   virtual size_t getNumElements() const = 0;
-  virtual Variable getElement(size_t index) const = 0;
-  virtual void setElement(size_t index, const Variable& value) = 0;
+  virtual ObjectPtr getElement(size_t index) const = 0;
+  virtual void setElement(size_t index, const ObjectPtr& value) = 0;
 
   virtual String toString() const;
   virtual String toShortString() const;
@@ -226,10 +226,10 @@ public:
   **
   ** @return an object pointer.
   */
-  virtual Variable getElement(size_t index) const
+  virtual ObjectPtr getElement(size_t index) const
     {return target->getElement(index);}
 
-  virtual void setElement(size_t index, const Variable& value) const
+  virtual void setElement(size_t index, const ObjectPtr& value) const
     {target->setElement(index, value);}
 
 protected:

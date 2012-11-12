@@ -144,7 +144,7 @@ public:
         // skip 0 values for double vectors
         for (size_t i = 0; i < count; ++i)
         {
-          ObjectPtr elt = container->getElement(i).getObject();
+          ObjectPtr elt = container->getElement(i);
           jassert(elt.dynamicCast<NewDouble>());
           if (NewDouble::get(elt) != 0.0)
             addSubVariable(container->getElementName(i), container->getElement(i));

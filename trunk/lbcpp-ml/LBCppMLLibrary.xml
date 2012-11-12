@@ -64,9 +64,9 @@
   <!-- Bandit Pool -->
   <class name="BanditPool">
     <variable type="StochasticObjective" name="objective"/>
-    <variable type="Double" name="explorationCoefficient"/>
-    <variable type="Boolean" name="optimizeMax"/>
-    <variable type="Boolean" name="useMultiThreading"/>
+    <variable type="NewDouble" name="explorationCoefficient"/>
+    <variable type="NewBoolean" name="optimizeMax"/>
+    <variable type="NewBoolean" name="useMultiThreading"/>
   </class>
 
 </library>

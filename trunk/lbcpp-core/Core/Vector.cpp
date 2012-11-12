@@ -28,25 +28,25 @@ String Vector::toString() const
     String value;
     for (size_t i = 0; i < n; ++i)
     {
-      Variable variable = getElement(i);
-      if (variable.isMissingValue())
+      ObjectPtr element = getElement(i);
+      if (!element)
         value += '_';
       else
-        value += enumeration->getElement(variable.getInteger())->getOneLetterCode();
+        value += enumeration->getElement(NewEnumValue::get(element))->getOneLetterCode();
     }
     return value;
   }
 
-  if (type->inheritsFrom(doubleType))
+  if (type->inheritsFrom(newDoubleClass))
   {
     String value;
     for (size_t i = 0; i < n; ++i)
     {
-      Variable variable = getElement(i);
-      if (variable.isMissingValue())
+      ObjectPtr element = getElement(i);
+      if (!element)
         value += '_';
       else
-        value += String(variable.getDouble());
+        value += String(NewDouble::get(element));
       if (i < n - 1)
         value += " ";
     }
@@ -79,7 +79,7 @@ bool Vector::loadFromString(ExecutionContext& context, const String& stringValue
     Variable variable = Variable::createFromString(context, elementsType, tokens[i]);
     if (!variable.exists())
       return false;
-    setElement(i, variable);
+    setElement(i, variable.getObject());
   }
   return true;
 }
@@ -105,205 +105,9 @@ int Vector::resize(LuaState& state)
 int Vector::append(LuaState& state)
 {
   VectorPtr vector = state.checkObject(1, vectorClass()).staticCast<Vector>();
-  Variable value = state.checkVariable(2);
+  ObjectPtr value = state.checkObject(2);
   vector->append(value);
   return 0;
-}
-
-/*
-** GenericVector
-*/
-GenericVector::GenericVector(TypePtr elementsType, size_t initialSize)
-  : Vector(genericVectorClass(elementsType))
-{
-  jassert(elementsType != topLevelType);
-  if (initialSize)
-    values.resize(initialSize, elementsType->getMissingValue());
-}
-
-size_t GenericVector::getNumElements() const
-  {return values.size();}
-
-Variable GenericVector::getElement(size_t index) const
-{
-  jassert(index < values.size());
-  TypePtr elementsType = getElementsType();
-  if (elementsType.isInstanceOf<Class>())
-  {
-    ObjectPtr res = values[index].getObjectPointer();
-    return res ? Variable(res) : Variable::missingValue(elementsType);
-  }
-  else
-    return Variable::copyFrom(elementsType, values[index]);
-}
-
-void GenericVector::setElement(size_t index, const Variable& value)
-{
-  jassert(value.getType()->inheritsFrom(getElementsType()));
-  jassert(index < values.size());
-  value.copyTo(values[index]);
-}
-
-void GenericVector::clear()
-{
-  TypePtr type = getElementsType();
-  for (size_t i = 0; i < values.size(); ++i)
-    type->destroy(values[i]);
-  values.clear();
-}
-
-void GenericVector::reserve(size_t size)
-  {values.reserve(size);}
-
-void GenericVector::resize(size_t size)
-  {values.resize(size, getElementsType()->getMissingValue());}
-
-void GenericVector::prepend(const Variable& value)
-{
-  if (checkType(value))
-  {
-    values.insert(values.begin(), getElementsType()->getMissingValue());
-    value.copyTo(values.front());
-  }
-}
-
-void GenericVector::append(const Variable& value)
-{
-  if (checkType(value))
-  {
-    values.push_back(getElementsType()->getMissingValue());
-    value.copyTo(values.back());
-  }
-}
-
-void GenericVector::remove(size_t index)
-{
-  jassert(index < values.size());
-  TypePtr type = getElementsType();
-  type->destroy(values[index]);
-  values.erase(values.begin() + index);
-}
-
-void GenericVector::saveToXml(XmlExporter& exporter) const
-{
-  size_t n = getNumElements();
-
-  TypePtr type = getElementsType();
-  exporter.setAttribute(T("size"), (int)n);
-
-  // enumeration vectors: as text
-  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-  if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType))
-  {
-    exporter.addTextElement(toString());
-    return;
-  }
-
-  // long builtin-type vectors: binary encoding
-  if (n > 1000 && (type->inheritsFrom(integerType) || type->inheritsFrom(doubleType) || type->inheritsFrom(booleanType)))
-  {
-    juce::MemoryBlock block(&values[0], (int)(sizeof (VariableValue) * values.size()));
-    exporter.setAttribute(T("binary"), T("true"));
-    exporter.addTextElement(block.toBase64Encoding());
-    return;
-  }
-
-  // other vectors: encore into XML child elements (default implementation)
-  Container::saveToXml(exporter);
-}
-
-bool GenericVector::loadFromXml(XmlImporter& importer)
-{
-  TypePtr type = getElementsType();
-  jassert(type);
-  int size = importer.getIntAttribute(T("size"), -1);
-  if (size < 0)
-  {
-    importer.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
-    return false;
-  }
-  values.resize(size, type->getMissingValue());
-
-  if (importer.getBoolAttribute(T("binary")))
-  {
-    if (!type->inheritsFrom(integerType) && !type->inheritsFrom(doubleType) && !type->inheritsFrom(booleanType))
-    {
-      importer.errorMessage(T("Vector::loadFromXml"), T("Unexpected type for binary encoding"));
-      return false;
-    }
-
-    juce::MemoryBlock block;
-    if (!block.fromBase64Encoding(importer.getAllSubText().trim()))
-    {
-      importer.errorMessage(T("Vector::loadFromXml"), T("Could not decode base 64"));
-      return false;
-    }
-
-    if (block.getSize() != (int)(sizeof (VariableValue) * values.size()))
-    {
-      importer.errorMessage(T("Vector::loadFromXml"), T("Invalid data size: found ") + String(block.getSize())
-        + T(" expected ") + String((int)(sizeof (VariableValue) * values.size())));
-      return false;
-    }
-    memcpy(&values[0], block.getData(), block.getSize());
-    return true;
-  }
-
-  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-  if (enumeration && enumeration->hasOneLetterCodes())
-  {
-    String text = importer.getAllSubText().trim();
-    if (text.length() != size)
-    {
-      importer.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(text.length()));
-      return false;
-    }
-    
-    for (size_t i = 0; i < values.size(); ++i)
-    {
-      int j = enumeration->findElementByOneLetterCode(text[(int)i]);
-      if (j >= 0)
-        values[i] = VariableValue(j);
-      else
-      {
-        if (text[(int)i] != '_')
-          importer.warningMessage(T("Vector::loadFromXml"), String(T("Could not recognize one letter code '")) + text[(int)i] + T("'"));
-        values[i] = enumeration->getMissingValue();
-      }
-    }
-    return true;
-  }
-
-  if (type->inheritsFrom(doubleType))
-  {
-    String text = importer.getAllSubText().trim();
-    StringArray tokens;
-    tokens.addTokens(text, T(" \t\r\n"), NULL);
-    tokens.removeEmptyStrings(true);
-    if (tokens.size() != size)
-    {
-      importer.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(tokens.size()));
-      return false;
-    }
-    for (size_t i = 0; i < values.size(); ++i)
-      if (tokens[(int)i] != T("_"))
-      {
-        Variable value = Variable::createFromString(importer.getContext(), doubleType, tokens[(int)i]);
-        if (!value.exists())
-          return false;
-        values[i] = value.getDouble();
-      }
-    return true;
-  }
-
-  // default implementation  
-  return Container::loadFromXml(importer);
-}
-
-size_t GenericVector::getSizeInBytes(bool recursively) const
-{
-  size_t res = Container::getSizeInBytes(recursively);
-  return res + getNumElements() * sizeof (VariableValue);
 }
 
 /*
@@ -342,32 +146,21 @@ size_t BooleanVector::getSizeInBytes(bool recursively) const
 size_t BooleanVector::getNumElements() const
   {return v.size();}
 
-static inline Variable byteToBooleanVariable(unsigned char b)
-  {return b < 2 ? Variable(b == 1, booleanType) : Variable::missingValue(booleanType);}
+static inline unsigned char booleanObjectToByte(const ObjectPtr& value)
+  {return (value ? (NewBoolean::get(value) ? 1 : 0) : 2);}
 
-static inline unsigned char booleanVariableToByte(const Variable& v)
-  {jassert(v.isBoolean()); return v.isMissingValue() ? 2 : (v.getBoolean() ? 1 : 0);}
-
-Variable BooleanVector::getElement(size_t index) const
+ObjectPtr BooleanVector::getElement(size_t index) const
 {
   jassert(index < v.size());
   unsigned char b = v[index];
   if (b == 2)
-    return Variable::missingValue(newBooleanClass);
+    return ObjectPtr();
   else
-    return Variable(new NewBoolean(b == 1), newBooleanClass);
+    return new NewBoolean(b == 1);
 }
 
-void BooleanVector::setElement(size_t index, const Variable& value)
-{
-  if (value.isObject())
-  {
-    NewBooleanPtr boolean = value.getObjectAndCast<NewBoolean>();
-    v[index] = (boolean ? (boolean->get() ? 1 : 0) : 2);
-  }
-  else if (checkInheritance(value, booleanType))
-    v[index] = booleanVariableToByte(value);
-}
+void BooleanVector::setElement(size_t index, const ObjectPtr& value)
+  {v[index] = booleanObjectToByte(value);}
 
 void BooleanVector::reserve(size_t size)
   {v.reserve(size);}
@@ -378,11 +171,11 @@ void BooleanVector::resize(size_t size)
 void BooleanVector::clear()
   {v.clear();}
 
-void BooleanVector::prepend(const Variable& value)
-  {v.insert(v.begin(), booleanVariableToByte(value));}
+void BooleanVector::prepend(const ObjectPtr& value)
+  {v.insert(v.begin(), booleanObjectToByte(value));}
 
-void BooleanVector::append(const Variable& value)
-  {v.push_back(booleanVariableToByte(value));}
+void BooleanVector::append(const ObjectPtr& value)
+  {v.push_back(booleanObjectToByte(value));}
 
 void BooleanVector::remove(size_t index)
   {v.erase(v.begin() + index);}
@@ -405,26 +198,20 @@ IntegerVector::IntegerVector(TypePtr elementsType, size_t initialSize)
 size_t IntegerVector::getNumElements() const
   {return v.size();}
 
-Variable IntegerVector::getElement(size_t index) const
+ObjectPtr IntegerVector::getElement(size_t index) const
 {
   jassert(index < v.size());
   if (v[index] == missingValue)
-    return Variable::missingValue(newIntegerClass);
+    return ObjectPtr();
   else
-  {
-    ClassPtr elementsType = getElementsType();
-    if (elementsType.isInstanceOf<Enumeration>())
-      return new NewEnumValue(elementsType, (size_t)v[index]);
-    else
-      return new NewInteger(elementsType, v[index]);
-  }
+    return NewInteger::create(getElementsType(), v[index]);
 }
 
-void IntegerVector::setElement(size_t index, const Variable& value)
-{
-  NewIntegerPtr integer = value.getObjectAndCast<NewInteger>();
-  v[index] = (integer ? integer->get() : missingValue);
-}
+static inline juce::int64 integerObjectToInt(const ObjectPtr& value)
+  {return (value ? NewInteger::get(value) : IntegerVector::missingValue);}
+
+void IntegerVector::setElement(size_t index, const ObjectPtr& value)
+  {v[index] = integerObjectToInt(value);}
 
 void IntegerVector::reserve(size_t size)
   {v.reserve(size);}
@@ -435,11 +222,11 @@ void IntegerVector::resize(size_t size)
 void IntegerVector::clear()
   {v.clear();}
 
-void IntegerVector::prepend(const Variable& value)
-  {v.insert(v.begin(), value.getObject().staticCast<NewInteger>()->get());}
+void IntegerVector::prepend(const ObjectPtr& value)
+  {v.insert(v.begin(), integerObjectToInt(value));}
 
-void IntegerVector::append(const Variable& value)
-  {v.push_back(value.getObject() ? value.getObject().staticCast<NewInteger>()->get() : missingValue);}
+void IntegerVector::append(const ObjectPtr& value)
+  {v.push_back(integerObjectToInt(value));}
 
 void IntegerVector::remove(size_t index)
   {v.erase(v.begin() + index);}
@@ -506,14 +293,14 @@ void ObjectVector::resize(size_t size)
   }
 }
 
-void ObjectVector::prepend(const Variable& value)
-  {objects->insert(objects->begin(), value.getObject());}
+void ObjectVector::prepend(const ObjectPtr& value)
+  {objects->insert(objects->begin(), value);}
 
-void ObjectVector::append(const Variable& value)
+void ObjectVector::append(const ObjectPtr& value)
 {
   if (!objects)
     reserve(5);
-  objects->push_back(value.getObject());
+  objects->push_back(value);
 }
 
 void ObjectVector::remove(size_t index)
@@ -522,16 +309,14 @@ void ObjectVector::remove(size_t index)
 size_t ObjectVector::getNumElements() const
   {return objects ? objects->size() : 0;}
 
-Variable ObjectVector::getElement(size_t index) const
+ObjectPtr ObjectVector::getElement(size_t index) const
 {
   jassert(index < objects->size());
-  const ObjectPtr& res = (*objects)[index];
-  TypePtr elementsType = res ? (TypePtr)res->getClass() : getElementsType();
-  return Variable(res, elementsType);
+  return (*objects)[index];
 }
 
-void ObjectVector::setElement(size_t index, const Variable& value)
-  {jassert(index < objects->size()); (*objects)[index] = value.getObject();}
+void ObjectVector::setElement(size_t index, const ObjectPtr& value)
+  {jassert(index < objects->size()); (*objects)[index] = value;}
 
 size_t ObjectVector::getSizeInBytes(bool recursively) const
 {
@@ -573,8 +358,9 @@ VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
   }
   else if (elementsType->inheritsFrom(newIntegerClass) || elementsType.isInstanceOf<Enumeration>())
     return integerVector(elementsType, initialSize);
-  else if (elementsType->inheritsFrom(objectClass))
-    return objectVector(elementsType, initialSize);
   else
-    return genericVector(elementsType, initialSize);
+  {
+    jassert(elementsType->inheritsFrom(objectClass));
+    return objectVector(elementsType, initialSize);
+  }
 }

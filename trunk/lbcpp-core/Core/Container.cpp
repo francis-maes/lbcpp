@@ -11,7 +11,6 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/Pair.h>
-#include <lbcpp/Data/SymmetricMatrix.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Lua/Lua.h>
 #include <algorithm>
@@ -54,7 +53,7 @@ String Container::toString() const
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    res += getElement(i).toString();
+    res += getElement(i)->toString();
     if (i < n - 1)
       res += T(", ");
   }
@@ -71,7 +70,7 @@ String Container::toShortString() const
     String res;
     for (size_t i = 0; i < n; ++i)
     {
-      res += getElement(i).toShortString();
+      res += getElement(i)->toShortString();
       if (i < n - 1)
         res += T(", ");
     }
@@ -102,7 +101,7 @@ int Container::compare(const ObjectPtr& otherObject) const
       return (int)n - (int)other->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      int c = getElement(i).compare(other->getElement(i));
+      int c = Object::compare(getElement(i), other->getElement(i));
       if (c != 0)
         return c;
     }
@@ -115,11 +114,11 @@ int Container::compare(const ObjectPtr& otherObject) const
 String Container::getElementName(size_t index) const
   {return getElementsEnumeration()->getElementName(index);}
 
-int Container::findElement(const Variable& value) const
+int Container::findElement(const ObjectPtr& value) const
 {
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
-    if (getElement(i) == value)
+    if (Object::equals(getElement(i), value))
       return (int)i;
   return -1;
 }
@@ -129,10 +128,10 @@ TypePtr Container::computeElementsCommonBaseType() const
   size_t n = getNumElements();
   if (n == 0)
     return topLevelType;
-  TypePtr type = getElement(0).getType();
+  TypePtr type = getElement(0)->getClass();
   for (size_t i = 1; i < n; ++i)
   {
-    type = Type::findCommonBaseType(type, getElement(i).getType());
+    type = Type::findCommonBaseType(type, getElement(i)->getClass());
     if (type == topLevelType)
       break;
   }
@@ -159,9 +158,9 @@ void Container::saveToXml(XmlExporter& exporter) const
 
   for (size_t i = 0; i < n; ++i)
   {
-    Variable element = getElement(i);
-    if (!element.isMissingValue())
-      exporter.saveElement(i, getElement(i), elementsType);
+    ObjectPtr element = getElement(i);
+    if (element)
+      exporter.saveElement(i, element, elementsType);
   }
 }
 
@@ -191,7 +190,7 @@ bool Container::loadFromXml(XmlImporter& importer)
     }
     
     Variable value = importer.loadVariable(child, elementsType);
-    setElement((size_t)index, value);
+    setElement((size_t)index, value.getObject());
   }
   return true;
 }
@@ -280,7 +279,7 @@ int Container::__newIndex(LuaState& state)
   if (index < 1 || index > (int)getNumElements())
     state.error("Invalid index in Container::set()");
   else
-    setElement(index - 1, state.checkVariable(2));
+    setElement(index - 1, state.checkObject(2));
   return 0;
 }
 
