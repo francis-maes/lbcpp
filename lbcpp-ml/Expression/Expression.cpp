@@ -34,7 +34,7 @@ DataVectorPtr DataVector::createConstant(IndexSetPtr indices, const ObjectPtr& c
   return res;
 }
 
-Variable DataVector::sampleElement(RandomGeneratorPtr random) const
+ObjectPtr DataVector::sampleElement(RandomGeneratorPtr random) const
 {
   if (implementation == constantValueImpl)
     return constantRawObject;

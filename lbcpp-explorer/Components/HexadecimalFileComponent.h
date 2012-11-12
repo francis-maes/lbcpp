@@ -84,10 +84,10 @@ protected:
 class HexadecimalFileComponent : public ViewportComponent
 {
 public:
-  HexadecimalFileComponent(const Variable& file, const String& name)
+  HexadecimalFileComponent(const ObjectPtr& file, const String& name)
     : ViewportComponent(NULL, true, false)
   {
-    NewFile::get(file.getObject()).loadFileAsData(data);
+    NewFile::get(file).loadFileAsData(data);
     setViewedComponent(new HexadecimalMemoryViewer(data));
   }
 

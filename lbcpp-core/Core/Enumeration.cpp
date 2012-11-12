@@ -48,10 +48,10 @@ ObjectPtr Enumeration::create(ExecutionContext& context) const
 VariableValue Enumeration::getMissingValue() const
   {return VariableValue((juce::int64)getNumElements());}
 
-Variable Enumeration::createFromXml(XmlImporter& importer) const
+ObjectPtr Enumeration::createFromXml(XmlImporter& importer) const
   {return createFromString(importer.getContext(), importer.getAllSubText());}
  
-Variable Enumeration::createFromString(ExecutionContext& context, const String& value) const
+ObjectPtr Enumeration::createFromString(ExecutionContext& context, const String& value) const
 {
   String str = value.trim();
   size_t n = getNumElements();

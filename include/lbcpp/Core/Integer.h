@@ -40,6 +40,9 @@ public:
 
   virtual String toString() const
     {return String(value);}
+  
+  virtual double toDouble() const
+    {return (double)value;}
 
   virtual int compare(const ObjectPtr& otherObject) const
   {
@@ -54,7 +57,7 @@ public:
   {
     if (!value.trim().containsOnly(T("-+e0123456789")))
     {
-      context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
+      context.errorCallback(T("IntegerType::loadFromString"), value.quoted() + T(" is not a valid integer"));
       return false;
     }
     this->value = value.getLargeIntValue();

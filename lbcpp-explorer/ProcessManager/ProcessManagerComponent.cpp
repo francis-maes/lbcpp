@@ -14,7 +14,7 @@ using namespace lbcpp;
 class ProcessManagerListTabs : public TabbedComponent
 {
 public:
-  ProcessManagerListTabs(ProcessManagerPtr processManager, VariableSelectorCallback& selectorCallback)
+  ProcessManagerListTabs(ProcessManagerPtr processManager, ObjectSelectorCallback& selectorCallback)
     : TabbedComponent(TabbedButtonBar::TabsAtBottom), selectorCallback(selectorCallback)
   {
     addProcessList(T("Running"), processManager->getRunningProcesses());
@@ -51,7 +51,7 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  VariableSelectorCallback& selectorCallback;
+  ObjectSelectorCallback& selectorCallback;
 
   void addProcessList(const String& name, ProcessListPtr processes)
   {
@@ -146,11 +146,11 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   };
 }
 
-void ProcessManagerComponent::selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
+void ProcessManagerComponent::selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedVariables, const String& selectionName)
 {
   if (selectedVariables.size() == 1)
   {
-    ProcessPtr process = selectedVariables[0].getObjectAndCast<Process>();
+    ProcessPtr process = selectedVariables[0].staticCast<Process>();
     jassert(process);
     RecentProcessesPtr recents = RecentProcesses::getInstance();
     ProcessConsoleSettingsPtr settings = recents->getExecutableConsoleSettings(process->getExecutableFile());

@@ -45,83 +45,51 @@ public:
   virtual void resized();
 };
 
-class VariableSelector;
-class VariableSelectorCallback
+class ObjectSelector;
+class ObjectSelectorCallback
 {
 public:
-  virtual ~VariableSelectorCallback() {}
+  virtual ~ObjectSelectorCallback() {}
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName) = 0;
+  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedObjects, const String& selectionName) = 0;
 };
 
-class VariableSelector
+class ObjectSelector
 {
 public:
-  virtual ~VariableSelector() {}
+  virtual ~ObjectSelector() {}
   
-  void addCallback(VariableSelectorCallback& callback)
+  void addCallback(ObjectSelectorCallback& callback)
     {callbacks.push_back(&callback);}
 
-  void sendSelectionChanged(const Variable& selectedVariable, const String& selectionName)
-    {sendSelectionChanged(std::vector<Variable>(1, selectedVariable), selectionName);}
+  void sendSelectionChanged(const ObjectPtr& selectedObject, const String& selectionName)
+    {sendSelectionChanged(std::vector<ObjectPtr>(1, selectedObject), selectionName);}
 
-  void sendSelectionChanged(const std::vector<Variable>& selectedVariables, const String& selectionName)
+  void sendSelectionChanged(const std::vector<ObjectPtr>& selectedObjects, const String& selectionName)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i]->selectionChangedCallback(this, selectedVariables, selectionName);
+      callbacks[i]->selectionChangedCallback(this, selectedObjects, selectionName);
   }
 
-  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)
     {return NULL;}
 
 protected:
-  std::vector<VariableSelectorCallback* > callbacks;
+  std::vector<ObjectSelectorCallback* > callbacks;
 };
 
-class TabbedVariableSelectorComponent : public juce::TabbedButtonBar, public VariableSelector, public juce::ChangeListener, public ComponentWithPreferedSize
+class ObjectSelectorTabbedButtonBar : public juce::TabbedButtonBar, public ObjectSelector, public juce::ChangeListener, public ComponentWithPreferedSize
 {
 public:
-  TabbedVariableSelectorComponent(const Variable& variable);
+  ObjectSelectorTabbedButtonBar(const ObjectPtr& object);
 
-  virtual Variable getSubVariable(const Variable& variable, const String& tabName) const;
+  virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const String& tabName) const;
   virtual void changeListenerCallback(void* objectThatHasChanged);
   virtual int getDefaultWidth() const;
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const;
 
 protected:
-  Variable variable;
-};
-
-class BooleanButtonsComponent : public Component, public juce::ButtonListener, public juce::ChangeBroadcaster
-{
-public:
-  virtual ~BooleanButtonsComponent();
-
-  void initialize();
-
-  virtual void buttonClicked(juce::Button* button);
-  virtual void paint(Graphics& g);
-  virtual void resized();
-
-  enum {buttonWidth = 200, buttonHeight = 20};
-
-protected:
-  struct ConfigurationButton : public juce::ToggleButton
-  {
-    ConfigurationButton(const String& name, bool& value, const juce::Colour& colour = juce::Colours::black)
-      : ToggleButton(name), value(value)
-    {
-      setColour(textColourId, colour);
-      setToggleState(value, false);
-    }
-      
-    bool& value;
-  };
-
-  std::vector< std::vector<ConfigurationButton* > > buttons;
-
-  void addToggleButton(std::vector<ConfigurationButton* >& buttonsColumn, const String& name, bool& state, size_t columnsHeight, const juce::Colour& colour = juce::Colours::black);
-  void flushButtons(std::vector<ConfigurationButton* >& buttonsColumn);
+  ObjectPtr object;
 };
 
 }; /* namespace lbcpp */

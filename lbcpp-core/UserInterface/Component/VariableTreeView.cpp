@@ -315,22 +315,22 @@ void VariableTreeView::timerCallback()
 {
   if (!isSelectionUpToDate)
   {
-    std::vector<Variable> selectedVariables;
-    selectedVariables.reserve(getNumSelectedItems());
+    std::vector<ObjectPtr> selectedObjects;
+    selectedObjects.reserve(getNumSelectedItems());
     String selectionName;
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
       VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
       if (item && item->getVariable().exists() && item != root)
       {
-        selectedVariables.push_back(item->getVariable());
+        selectedObjects.push_back(item->getVariable().getObject());
         if (!selectionName.isEmpty())
           selectionName += T(", ");
         selectionName += item->getUniqueName();
       }
     }
     isSelectionUpToDate = true;
-    sendSelectionChanged(selectedVariables, selectionName);
+    sendSelectionChanged(selectedObjects, selectionName);
   }
 }
 

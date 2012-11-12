@@ -181,25 +181,25 @@ bool BinaryConfusionMatrix::loadFromXml(XmlImporter& importer)
   if (tokens.size() != 4)
     return false;
 
-  Variable v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[0]);
-  if (!v.exists())
+  ObjectPtr v = Object::createFromString(importer.getContext(), positiveIntegerType, tokens[0]);
+  if (!v)
     return false;
-  truePositive = v.getInteger();
+  truePositive = NewPositiveInteger::get(v);
 
-  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[1]);
+  v = Object::createFromString(importer.getContext(), positiveIntegerType, tokens[1]);
   if (!v.exists())
     return false;
-  falsePositive = v.getInteger();
+  falsePositive = NewPositiveInteger::get(v);
 
-  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[2]);
+  v = Object::createFromString(importer.getContext(), positiveIntegerType, tokens[2]);
   if (!v.exists())
     return false;
-  falseNegative = v.getInteger();
+  falseNegative = NewPositiveInteger::get(v);
 
-  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[3]);
+  v = Object::createFromString(importer.getContext(), positiveIntegerType, tokens[3]);
   if (!v.exists())
     return false;
-  trueNegative = v.getInteger();
+  trueNegative = NewPositiveInteger::get(v);
 
   totalCount = truePositive + falsePositive + falseNegative + trueNegative;
   return true;

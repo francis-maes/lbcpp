@@ -90,11 +90,11 @@ ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const Execu
   return item;
 }
 
-class TabbedExecutionTraceResultsSelectorComponent : public TabbedVariableSelectorComponent
+class TabbedExecutionTraceResultsSelectorComponent : public ObjectSelectorTabbedButtonBar
 {
 public:
   TabbedExecutionTraceResultsSelectorComponent(const PairPtr& pair)
-    : TabbedVariableSelectorComponent(pair)
+    : ObjectSelectorTabbedButtonBar(pair)
   {
     table = pair->getSecond().staticCast<Table>();
     if (table)
@@ -113,12 +113,12 @@ public:
     }
   }
 
-  virtual Variable getSubVariable(const Variable& variable, const String& tabName) const
+  virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const String& tabName) const
   {
     if (tabName == T("Results"))
       return results;
     else if (tabName == T("Curves"))
-      return ObjectPtr(new Plot(table));
+      return new Plot(table);
     else if (tabName == T("Table"))
       return table;
     else
@@ -130,14 +130,14 @@ public:
     }
   }
 
-  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
+  virtual Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& tabName)
   {
     if (tabName == T("Table"))
       return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, table, "Table");
     else if (tabName == T("Results"))
-      return userInterfaceManager().createVariableTreeView(context, variable, tabName, true, true, false, false);
+      return userInterfaceManager().createVariableTreeView(context, object, tabName, true, true, false, false);
     else
-      return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getSubVariable(variable, tabName).getObject(), tabName);
+      return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getTabSubObject(object, tabName), tabName);
   }
 
 protected:
@@ -145,19 +145,14 @@ protected:
   ObjectPtr results;
 };
 
-juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+juce::Component* ExecutionTraceTreeView::createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const String& name)
 {
-  if (!variable.exists())
+  if (!object)
     return NULL;
-  if (variable.isObject())
-  {
-    PairPtr pair = variable.dynamicCast<Pair>();
-    if (pair)
-      return new TabbedExecutionTraceResultsSelectorComponent(pair);
-
-    return userInterfaceManager().createVariableTreeView(context, variable, name, true, true, false, false);
-  }
-  return NULL;
+  PairPtr pair = object.dynamicCast<Pair>();
+  if (pair)
+    return new TabbedExecutionTraceResultsSelectorComponent(pair);
+  return userInterfaceManager().createVariableTreeView(context, object, name, true, true, false, false);
 }
 
 void ExecutionTraceTreeView::timerCallback()
@@ -167,8 +162,8 @@ void ExecutionTraceTreeView::timerCallback()
   DelayToUserInterfaceExecutionCallback::timerCallback();
   if (!isSelectionUpToDate)
   {
-    std::vector<Variable> selectedVariables;
-    selectedVariables.reserve(getNumSelectedItems());
+    std::vector<ObjectPtr> selectedObjects;
+    selectedObjects.reserve(getNumSelectedItems());
     String selectionName;
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
@@ -196,7 +191,7 @@ void ExecutionTraceTreeView::timerCallback()
           }
 
           if (results || table)
-            selectedVariables.push_back(new Pair(results, table));
+            selectedObjects.push_back(new Pair(results, table));
         
           if (!selectionName.isEmpty())
             selectionName += T(", ");
@@ -204,7 +199,7 @@ void ExecutionTraceTreeView::timerCallback()
         }
       }
     }
-    sendSelectionChanged(selectedVariables, selectionName);
+    sendSelectionChanged(selectedObjects, selectionName);
     isSelectionUpToDate = true;
   }
   if (!isTreeUpToDate)

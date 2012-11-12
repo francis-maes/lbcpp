@@ -166,12 +166,12 @@ protected:
   double defaultRatio;
 };
 
-class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer, public VariableSelectorCallback
+class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer, public ObjectSelectorCallback
 {
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName);
+  virtual void selectionChangedCallback(ObjectSelector* selector, const std::vector<ObjectPtr>& selectedVariables, const String& selectionName);
 
   // MenuBarModel
   virtual const StringArray getMenuBarNames();

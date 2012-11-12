@@ -6,8 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "Utilities/FileType.h"
-#include "Components/VariableBrowser.h"
+#include "Components/ObjectBrowser.h"
 #include "ExplorerConfiguration.h"
 #include "ExplorerProject.h"
 #include <lbcpp/Execution/ExecutionTrace.h>
@@ -82,19 +81,19 @@ public:
   ExplorerContentTabs(DocumentWindow* mainWindow)
     : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
 
-  void addVariable(ExecutionContext& context, const Variable& variable, const String& name, Component* component = NULL)
+  void addObject(ExecutionContext& context, const ObjectPtr& object, const String& name, Component* component = NULL)
   {
     if (!component)
-      component = createComponentForVariable(context, variable, name, true);
+      component = createComponentForObject(context, object, name, true);
     addTab(name, Colours::lightblue, component, true);
-    variables.push_back(variable);
+    objects.push_back(object);
     setCurrentTabIndex(getNumTabs() - 1);
   }
 
   void closeCurrentTab()
   {
     int current = getCurrentTabIndex();
-    variables.erase(variables.begin() + current);
+    objects.erase(objects.begin() + current);
     if (current >= 0)
       removeTab(current);
   }
@@ -108,26 +107,16 @@ public:
     dynamic_cast<MenuBarModel* >(mainWindow)->menuItemsChanged();
   }
 
-  Variable getCurrentVariable() const
+  ObjectPtr getCurrentObject() const
   {
     int current = getCurrentTabIndex();
-    return current >= 0 ? variables[current] : Variable();
+    return current >= 0 ? objects[current] : ObjectPtr();
   }
 
 private:
   DocumentWindow* mainWindow;
-  std::vector<Variable> variables;
+  std::vector<ObjectPtr> objects;
 };
-/*
-class ExplorerApplicationData
-{
-public:
-  
-private:
-  ExplorerProjectPtr currentProject;
-  ExecutionContextPtr guiContext;
-  ExecutionContextPtr localContext;
-};*/
 
 class ExplorerMainWindow : public DocumentWindow, public MenuBarModel
 {
@@ -342,7 +331,7 @@ public:
           {
             ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
             Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
-            contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
+            contentTabs->addObject(context, trace, workUnit->getClassName(), new ObjectBrowser(trace, component));
             currentProject->workUnitContext->pushWorkUnit(workUnit);
           }
           flushErrorAndWarningMessages(T("Start Work Unit"));
@@ -395,7 +384,7 @@ public:
     }
 
     if (object)
-      contentTabs->addVariable(context, object, file.getFileNameWithoutExtension());
+      contentTabs->addObject(context, object, file.getFileNameWithoutExtension());
   }
 
   juce_UseDebuggingNewOperator

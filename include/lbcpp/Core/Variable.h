@@ -113,18 +113,7 @@ public:
   ** @see Type::declare
   */
   //static Variable create(TypePtr type);
-  static Variable createFromXml(TypePtr type, XmlImporter& importer);
-  static Variable createFromString(ExecutionContext& context, TypePtr type, const String& value);
 
-  /**
-  ** Loads a variable from a file.
-  **
-  ** @param file : the file to load
-  **
-  ** @return the loaded Variable or Nil if any error occurs.
-  ** @see saveToFile
-  */
-  static Variable createFromFile(ExecutionContext& context, const File& file);
 
   static Variable missingValue(TypePtr type);
 
@@ -158,9 +147,6 @@ public:
   bool isDouble() const;
   double getDouble() const;
 
-  bool isConvertibleToDouble() const;
-  double toDouble() const;
-
   bool isString() const;
   String getString() const;
 
@@ -183,17 +169,6 @@ public:
   String toString() const;
   String toShortString() const;
   Variable clone(ExecutionContext& context) const;
-
-  /**
-  ** Saves variable to a file
-  **
-  ** @param file : output file
-  ** @param callback : A callback that can receive errors and warnings
-  **
-  ** @return false if any error occurs.
-  ** @see createFromFile
-  */
-  bool saveToFile(ExecutionContext& context, const File& file) const;
 
   int compare(const Variable& otherValue) const;
   bool equals(const Variable& otherValue) const;

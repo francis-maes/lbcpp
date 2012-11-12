@@ -215,7 +215,7 @@ private:
     size_t n = res->getNumValues();
     jassert(n == example->getNumVariables());
     for (size_t i = 0; i < n; ++i)
-      res->setValue(i, example->getVariable(i).toDouble());
+      res->setValue(i, example->getVariable(i)->toDouble());
     return res;
   }*/
 };

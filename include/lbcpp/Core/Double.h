@@ -43,6 +43,9 @@ public:
 
   virtual String toString() const
     {return String(value);}
+  
+  virtual double toDouble() const
+    {return value;}
 
   virtual int compare(const ObjectPtr& otherObject) const
   {
@@ -62,7 +65,7 @@ public:
     String v = str.trim().toLowerCase();
     if (!v.containsOnly(T("0123456789e.-")))
     {
-      context.errorCallback(T("Double::createFromString"), T("Could not read double value ") + str.quoted());
+      context.errorCallback(T("Double::loadFromString"), T("Could not read double value ") + str.quoted());
       return false;
     }
     value = v.getDoubleValue();

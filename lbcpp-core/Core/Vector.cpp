@@ -76,10 +76,10 @@ bool Vector::loadFromString(ExecutionContext& context, const String& stringValue
   resize(tokens.size());
   for (int i = 0; i < tokens.size(); ++i)
   {
-    Variable variable = Variable::createFromString(context, elementsType, tokens[i]);
-    if (!variable.exists())
+    ObjectPtr variable = Object::createFromString(context, elementsType, tokens[i]);
+    if (!variable)
       return false;
-    setElement(i, variable.getObject());
+    setElement(i, variable);
   }
   return true;
 }

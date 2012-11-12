@@ -85,7 +85,7 @@ inline ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& conte
     return createObjectFromShortNameOrName(context, baseClass, value);
 }
 
-Variable Class::createFromString(ExecutionContext& context, const String& value) const
+ObjectPtr Class::createFromString(ExecutionContext& context, const String& value) const
 {
   ObjectPtr object;
 
@@ -99,17 +99,17 @@ Variable Class::createFromString(ExecutionContext& context, const String& value)
     else if (!object->loadFromString(context, value))
       object = ObjectPtr();
   }
-  return Variable(object, refCountedPointerFromThis(this));
+  return object;
 }
 
-Variable Class::createFromXml(XmlImporter& importer) const
+ObjectPtr Class::createFromXml(XmlImporter& importer) const
 {
   ObjectPtr object = create(importer.getContext());
   if (!object)
     importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
   else if (!object->loadFromXml(importer))
     object = ObjectPtr();
-  return Variable(object, refCountedPointerFromThis(this));
+  return object;
 }
 
 void Class::saveToXml(XmlExporter& exporter, const VariableValue& value) const

@@ -325,11 +325,11 @@ void LuaState::pushFunction(lua_CFunction function)
 bool LuaState::isTable(int index) const
   {return lua_istable(L, index) != 0;}
 
-Variable LuaState::getTableVariable(int index, const char* key)
+ObjectPtr LuaState::getTableVariable(int index, const char* key)
 {
   lua_pushstring(L, key);
   lua_gettable(L, index);
-  Variable res = checkVariable(-1);
+  ObjectPtr res = checkObject(-1);
   pop(1);
   return res;
 }
@@ -370,54 +370,6 @@ void LuaState::pushObject(ObjectPtr object)
   memset(&object, 0, sizeof (ObjectPtr));
   luaL_getmetatable(L, "LBCppObject");
   lua_setmetatable(L, -2);
-}
-
-/*
-** Variable
-*/
-Variable LuaState::checkVariable(int index)
-{
-  LuaType luaType = getType(index);
-  switch (luaType)
-  {
-  case luaTypeNone: 
-  case luaTypeNil:      return Variable();
-  case luaTypeBoolean:  return Variable(checkBoolean(index));
-  case luaTypeNumber:   return Variable(checkNumber(index));
-  case luaTypeString:   return Variable(String(checkString(index)));
-  case luaTypeUserData: return Variable(checkObject(index));
-  case luaTypeLightUserData:
-  case luaTypeTable:
-  case luaTypeFunction:
-  case luaTypeThread:
-  default:
-    return Variable(new LuaWrapperValue(*this, index));
-  }
-}
-
-void LuaState::pushVariable(const Variable& variable)
-{
-  if (variable.isNil())
-    pushNil();
-  else if (variable.isDouble())
-    pushNumber(variable.getDouble());
-  else if (variable.isBoolean())
-    pushBoolean(variable.getBoolean());
-  else if (variable.isInteger())
-    pushInteger(variable.getInteger());
-  else if (variable.isString())
-    pushString(variable.getString());
-  else if (variable.isObject())
-  {
-    LuaWrapperValuePtr wrapper = variable.dynamicCast<LuaWrapperValue>();
-    if (wrapper)
-      pushReference(wrapper->getReference());
-    else
-      pushObject(variable.getObject());
-  }
-  else
-    jassert(false);
-  // todo: continue ...
 }
 
 /*

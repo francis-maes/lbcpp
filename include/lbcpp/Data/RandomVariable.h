@@ -60,6 +60,9 @@ public:
 
   virtual String toString() const;
   virtual String toShortString() const;
+  
+  virtual double toDouble() const
+    {return getMean();}
 
   // Lua
   static int clear(LuaState& state);

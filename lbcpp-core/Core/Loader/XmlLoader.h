@@ -43,7 +43,7 @@ public:
     }
     if (lastParseError.isNotEmpty())
       context.warningCallback(T("XmlLoader::loadFromFile"), lastParseError);
-    return XmlElement::createFromXml(root, true);
+    return XmlElement::createFromJuceXml(root, true);
   }
 };
 

@@ -33,25 +33,6 @@ Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
   return res;
 }
 
-Variable Variable::createFromString(ExecutionContext& context, TypePtr type, const String& str)
-  {return type->createFromString(context, str);}
-
-Variable Variable::createFromXml(TypePtr type, XmlImporter& importer)
-  {return type->createFromXml(importer);}
-
-Variable Variable::createFromFile(ExecutionContext& context, const File& file)
-{
-  XmlImporter importer(context, file);
-  return importer.isOpened() ? importer.load() : Variable();
-}
-
-bool Variable::saveToFile(ExecutionContext& context, const File& file) const
-{
-  XmlExporter exporter(context);
-  exporter.saveVariable(String::empty, *this, TypePtr());
-  return exporter.saveToFile(file);
-}
-
 int Variable::compare(const Variable& otherValue) const
 {
   TypePtr type2 = otherValue.type;

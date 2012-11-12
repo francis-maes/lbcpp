@@ -46,15 +46,15 @@ public:
   XmlElement() {}
   virtual ~XmlElement() {}
 
-  static XmlElementPtr createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
+  static XmlElementPtr createFromJuceXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
   bool loadFromJuceXmlElement(juce::XmlElement* element);
   juce::XmlElement* createJuceXmlElement() const;
   
   void saveObject(ExecutionContext& context, const ObjectPtr& object, const String& tagName = T("object"));
   void saveVariable(ExecutionContext& context, const Variable& variable, const String& tagName = T("variable"));
 
-  ObjectPtr createObject(ExecutionContext& context) const;
-  Variable createVariable(ExecutionContext& context) const;
+  //ObjectPtr createObject(ExecutionContext& context) const;
+  //Variable createVariable(ExecutionContext& context) const;
 
   template<class O>
   ReferenceCountedObjectPtr<O> createObjectAndCast(ExecutionContext& context) const

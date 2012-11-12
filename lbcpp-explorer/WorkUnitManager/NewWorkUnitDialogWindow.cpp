@@ -22,34 +22,34 @@ using juce::TextEditor;
 using juce::TextButton;
 
 ////////////
-class VariableEditorComponent : public Component, public juce::ChangeBroadcaster
+class ObjectEditorComponent : public Component, public juce::ChangeBroadcaster
 {
 public:
-  VariableEditorComponent(ExecutionContext& context, TypePtr type)
+  ObjectEditorComponent(ExecutionContext& context, TypePtr type)
     : context(context), type(type) {}
 
   virtual void setValue(const ObjectPtr& value) = 0;
   virtual ObjectPtr getValue() const = 0;
 
-  static VariableEditorComponent* create(ExecutionContext& context, const Variable& value);
+  static ObjectEditorComponent* create(ExecutionContext& context, const ObjectPtr& value);
 
 protected:
   ExecutionContext& context;
   TypePtr type;
 };
 
-class VariableTextEditor : public VariableEditorComponent, public juce::TextEditorListener
+class StringObjectEditorComponent : public ObjectEditorComponent, public juce::TextEditorListener
 {
 public:
-  VariableTextEditor(ExecutionContext& context, const Variable& variable)
-    : VariableEditorComponent(context, variable.getType()), hasChanged(false)
+  StringObjectEditorComponent(ExecutionContext& context, const ObjectPtr& object)
+    : ObjectEditorComponent(context, object->getClass()), hasChanged(false)
   {
     addAndMakeVisible(editor = new TextEditor());
     editor->addListener(this);
-    setValue(variable.getObject());
+    setValue(object);
   }
 
-  virtual ~VariableTextEditor()
+  virtual ~StringObjectEditorComponent()
     {deleteAllChildren();}
 
   virtual void setValue(const ObjectPtr& value)
@@ -61,7 +61,7 @@ public:
   }
 
   virtual ObjectPtr getValue() const
-    {return Variable::createFromString(context, type, editor->getText()).getObject();}
+    {return Object::createFromString(context, type, editor->getText());}
 
   virtual void resized()
     {editor->setBoundsRelative(0, 0, 1, 1);}
@@ -79,11 +79,11 @@ protected:
   bool hasChanged;
 };
 
-class EnumerationComboBoxEditor : public VariableEditorComponent, public juce::ComboBoxListener
+class EnumValueEditorComponent : public ObjectEditorComponent, public juce::ComboBoxListener
 {
 public:
-  EnumerationComboBoxEditor(ExecutionContext& context, const NewEnumValuePtr& value)
-    : VariableEditorComponent(context, value->getEnumeration())
+  EnumValueEditorComponent(ExecutionContext& context, const NewEnumValuePtr& value)
+    : ObjectEditorComponent(context, value->getEnumeration())
   {
     addAndMakeVisible(comboBox = new ComboBox(T("enum")));
     comboBox->addListener(this);
@@ -94,7 +94,7 @@ public:
       comboBox->addItem(enumeration->getElementName(i), i + 1);
     setValue(value);
   }
-  virtual ~EnumerationComboBoxEditor()
+  virtual ~EnumValueEditorComponent()
     {deleteAllChildren();}
 
   virtual void resized()
@@ -112,18 +112,19 @@ public:
   }
 
   virtual ObjectPtr getValue() const
-    {return Variable::createFromString(context, type, comboBox->getText()).getObject();}
+    {return Object::createFromString(context, type, comboBox->getText());}
 
 protected:
   ComboBox* comboBox;
 };
 
-VariableEditorComponent* VariableEditorComponent::create(ExecutionContext& context, const Variable& value)
+ObjectEditorComponent* ObjectEditorComponent::create(ExecutionContext& context, const ObjectPtr& value)
 {
-  if (value.isEnumeration())
-    return new EnumerationComboBoxEditor(context, value.getObjectAndCast<NewEnumValue>());
+  NewEnumValuePtr enumValue = value.dynamicCast<NewEnumValue>();
+  if (enumValue)
+    return new EnumValueEditorComponent(context, enumValue);
 
-  return new VariableTextEditor(context, value);
+  return new StringObjectEditorComponent(context, value);
 }
 
 ////////////
@@ -214,7 +215,7 @@ public:
       desiredHeight += descriptionHeightPerLine; // todo: * numLines
     }
 
-    addAndMakeVisible(value = VariableEditorComponent::create(context, Variable::missingValue(typeValue)));
+    addAndMakeVisible(value = ObjectEditorComponent::create(context, ObjectPtr()));
     value->addChangeListener(this);
     desiredHeight += 2 + (value->getHeight() ? value->getHeight() : defaultValueHeight);
 
@@ -252,7 +253,7 @@ private:
   Label* name;
   Label* shortName;
   Label* description;
-  VariableEditorComponent* value;
+  ObjectEditorComponent* value;
   size_t variableIndex;
 };
 

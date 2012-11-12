@@ -37,8 +37,11 @@ public:
   BooleanType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
   {
+    jassertfalse;
+    return ObjectPtr();
+    /*
     String v = value.trim().toLowerCase();
     if (v == T("true"))
       return Variable(true, refCountedPointerFromThis(this));
@@ -48,7 +51,7 @@ public:
     {
       context.errorCallback(T("BooleanType::createFromString"), T("Could not read boolean value ") + value.quoted());
       return Variable::missingValue(refCountedPointerFromThis(this));
-    }
+    }*/
   }
 
   virtual ObjectPtr create(ExecutionContext& context) const
@@ -65,9 +68,6 @@ public:
 
   virtual bool isConvertibleToDouble() const
     {return true;}
-
-  virtual double toDouble(const VariableValue& value) const
-    {return !isMissingValue(value) && value.getBoolean() ? 1.0 : 0.0;}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return (value1.getBoolean() ? 1 : 0) - (value2.getBoolean() ? 1 : 0);}

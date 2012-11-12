@@ -125,8 +125,28 @@ ClassPtr Object::getClass() const
   return thisClass;
 }
 
-ObjectPtr Object::create(ClassPtr objectClass)
-  {return objectClass->create(defaultExecutionContext());}
+ObjectPtr Object::create(ClassPtr type)
+  {return type->create(defaultExecutionContext());}
+
+ObjectPtr Object::createFromString(ExecutionContext& context, ClassPtr type, const String& value)
+  {return type->createFromString(context, value);}
+
+ObjectPtr Object::createFromXml(XmlImporter& importer, ClassPtr type)
+  {return type->createFromXml(importer);}
+
+ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
+{
+  LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
+  return loader ? loader->loadFromFile(context, file) : ObjectPtr();
+}
+
+bool Object::saveToFile(ExecutionContext& context, const File& file) const
+{
+  XmlExporter exporter(context);
+  Variable v(refCountedPointerFromThis(this));
+  exporter.saveVariable(String::empty, v, TypePtr());
+  return exporter.saveToFile(file);
+}
 
 size_t Object::getNumVariables() const
   {return getClass()->getNumMemberVariables();}
@@ -451,9 +471,9 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
     String name = getVariableName(i);
     if (xml->hasAttribute(name))
     {
-      Variable var = Variable::createFromString(importer.getContext(), getVariableType(i), xml->getStringAttribute(name));
-      if (!var.isMissingValue())
-        setVariable(i, var.getObject());
+      ObjectPtr var = Object::createFromString(importer.getContext(), getVariableType(i), xml->getStringAttribute(name));
+      if (var)
+        setVariable(i, var);
     }
     else if (name != T("thisClass"))
       importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
@@ -485,22 +505,13 @@ bool Object::loadArgumentsFromString(ExecutionContext& context, const String& st
   bool ok = true;
   for (size_t i = 0; i < tokens.size(); ++i)
   {
-    Variable value = Variable::createFromString(context, getVariableType(i), tokens[i]);
-    if (!value.isNil())
-      setVariable(i, value.getObject());
+    ObjectPtr value = Object::createFromString(context, getVariableType(i), tokens[i]);
+    if (value)
+      setVariable(i, value);
     else
       ok = false;
   }
   return ok;
-}
-
-void Object::saveToFile(ExecutionContext& context, const File& file) const
-  {Variable(const_cast<Object* >(this)).saveToFile(context, file);}
-
-ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
-{
-  LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(context, file);
-  return loader ? loader->loadFromFile(context, file) : ObjectPtr();
 }
 
 /*
@@ -524,15 +535,15 @@ int Object::create(LuaState& state)
   ObjectPtr res = Object::create(type);
   for (int i = 2; i <= numArguments; ++i)
   {
-    Variable v = state.checkVariable(i);
-    if (v.isNil())
-      continue; // ignore nil values
+    ObjectPtr v = state.checkObject(i);
+    if (!v)
+      continue; // ignore null values
     TypePtr targetType = type->getMemberVariableType(i - 2);
-    TypePtr sourceType = v.getType();
+    TypePtr sourceType = v->getClass();
     if (targetType->inheritsFrom(integerType) && sourceType->inheritsFrom(doubleType))
-      res->setVariable(i - 2, new NewInteger((int)NewDouble::get(v.getObject()))); // a la rache cast from double to int
+      res->setVariable(i - 2, new NewInteger((int)NewDouble::get(v))); // a la rache cast from double to int
     else
-      res->setVariable(i - 2, v.getObject());
+      res->setVariable(i - 2, v);
   }
   if (!res)
     return 0;
@@ -599,7 +610,7 @@ int Object::__index(LuaState& state) const
     int index = type->findMemberVariable(string);
     if (index >= 0)
     {
-      state.pushVariable(getVariable(index));
+      state.pushObject(getVariable(index));
       return 1;
     }
 

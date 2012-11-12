@@ -123,8 +123,8 @@ protected:
     int cy = plot->getData()->findColumnByKey(plot->getPlotVariable(columnY)->getKey());
     jassert(cx >= 0 && cy >= 0);
 
-    x = (float)Variable(plot->getData()->getElement(order[row], (size_t)cx)).toDouble();
-    y = (float)Variable(plot->getData()->getElement(order[row], (size_t)cy)).toDouble();
+    x = (float)plot->getData()->getElement(order[row], (size_t)cx)->toDouble();
+    y = (float)plot->getData()->getElement(order[row], (size_t)cy)->toDouble();
     transform.transformPoint(x, y);
     return true;
   }
@@ -135,7 +135,7 @@ protected:
     jassert(c >= 0);
     for (size_t i = 0; i < plot->getData()->getNumRows(); ++i)
     {
-      double value = Variable(plot->getData()->getElement(i, c)).toDouble();
+      double value = plot->getData()->getElement(i, c)->toDouble();
       if (value > maxValue)
         maxValue = value;
       if (value < minValue)

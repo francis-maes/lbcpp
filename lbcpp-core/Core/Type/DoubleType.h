@@ -42,8 +42,11 @@ public:
   virtual ObjectPtr create(ExecutionContext& context) const
     {jassertfalse; return ObjectPtr();} // broken
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
   {
+    jassertfalse;
+    return ObjectPtr();
+    /*
     String v = value.trim().toLowerCase();
     if (!v.containsOnly(T("0123456789e.-")))
     {
@@ -51,10 +54,11 @@ public:
       return Variable::missingValue(refCountedPointerFromThis(this));
     }
     return Variable(v.getDoubleValue(), refCountedPointerFromThis(this));
+    */
   }
 
-  virtual Variable createFromXml(XmlImporter& importer) const
-    {return Variable(importer.getAllSubText().getDoubleValue(), refCountedPointerFromThis(this));}
+  //virtual Variable createFromXml(XmlImporter& importer) const
+//    {return Variable(importer.getAllSubText().getDoubleValue(), refCountedPointerFromThis(this));}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
     {exporter.addTextElement(String(value.getDouble(), 8));}
@@ -70,9 +74,6 @@ public:
 
   virtual bool isConvertibleToDouble() const
     {return true;}
-
-  virtual double toDouble(const VariableValue& value) const
-    {return value.getDouble();}
 
   static String positiveNumberToShortString(double d)
   {
@@ -128,10 +129,12 @@ public:
   virtual String toString(const VariableValue& value) const
     {return String(value.getDouble());}
 
-  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  virtual ObjectPtr createFromString(ExecutionContext& context, const String& value) const
   {
-    jassert(!value.endsWithChar('%'));
-    return Variable(value.getDoubleValue(), refCountedPointerFromThis(this));
+    jassertfalse;
+    return ObjectPtr();
+    //jassert(!value.endsWithChar('%'));
+    //return Variable(value.getDoubleValue(), refCountedPointerFromThis(this));
   }
 };
 

@@ -45,10 +45,10 @@ public:
     context.resultCallback(T("Some Object"), someObject);
     
     File file = File::createTempFile(T("object"));
-    //Variable(someObject).saveToFile(context, file); // FIXME
+    someObject->saveToFile(context, file); 
 
-    //SimpleClassPtr loadedObject = Variable::createFromFile(context, file).getObjectAndCast<SimpleClass>(context);
-    //context.resultCallback(T("Loaded Object"), loadedObject); // FIXME
+    SimpleClassPtr loadedObject = Object::createFromFile(context, file).staticCast<SimpleClass>();
+    context.resultCallback(T("Loaded Object"), loadedObject);
     file.deleteFile();
 
     return ObjectPtr();
