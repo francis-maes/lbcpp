@@ -24,13 +24,13 @@ public:
   virtual size_t getNumElements() const
     {return count * target->getNumElements();}
     
-  virtual Variable getElement(size_t index) const
+  virtual ObjectPtr getElement(size_t index) const
   {
     jassert(index < target->getNumElements() * count);
     return target->getElement(index % target->getNumElements());
   }
 
-  virtual void setElement(size_t index, const Variable& value)
+  virtual void setElement(size_t index, const ObjectPtr& value)
     {jassert(false);}
 
 private:

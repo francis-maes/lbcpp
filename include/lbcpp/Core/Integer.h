@@ -24,15 +24,17 @@ public:
   NewInteger(juce::int64 value = 0)
     : value(value) {}
 
+  static NewIntegerPtr create(ClassPtr type, juce::int64 value);
+  
+  static juce::int64 get(ObjectPtr object)
+    {return object.staticCast<NewInteger>()->get();}
+
   void set(juce::int64 value)
     {this->value = value;}
 
   juce::int64 get() const
     {return value;}
   
-  static juce::int64 get(ObjectPtr object)
-    {return object.staticCast<NewInteger>()->get();}
-
   virtual String toShortString() const
     {return String(value);}
 
@@ -73,12 +75,17 @@ public:
   NewPositiveInteger(size_t value = 0)
     : NewInteger(value) {}
 
+  static size_t get(ObjectPtr object)
+    {return object.staticCast<NewPositiveInteger>()->get();}
+
   void set(size_t value)
     {this->value = (juce::int64)value;}
 
   size_t get() const
     {return (size_t)value;}
 };
+
+extern ClassPtr newPositiveIntegerClass;
 
 class NewEnumValue : public NewPositiveInteger
 {
@@ -102,6 +109,16 @@ public:
   virtual String toString() const
     {return getEnumerationElement()->getName();}
 };
+
+inline NewIntegerPtr NewInteger::create(ClassPtr type, juce::int64 value)
+{
+  if (type.isInstanceOf<Enumeration>())
+    return new NewEnumValue(type.staticCast<Enumeration>(), (size_t)value);
+  else if (type == newPositiveIntegerClass)
+    return new NewPositiveInteger(type, (size_t)value);
+  else
+    return new NewInteger(type, value);
+}
 
 }; /* namespace lbcpp */
 

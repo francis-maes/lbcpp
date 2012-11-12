@@ -6,7 +6,7 @@
   
   <class name="ObjectiveComparator" base="SolutionComparator">
     <constructor arguments="size_t index"/>
-    <variable type="PositiveInteger" name="index"/>
+    <variable type="NewPositiveInteger" name="index"/>
   </class>
   <class name="LexicographicComparator" base="SolutionComparator">
     <constructor/>

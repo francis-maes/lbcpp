@@ -180,8 +180,8 @@ public:
   LuaWrapperVector();
 
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
 
 protected:
   LuaState state;

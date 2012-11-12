@@ -95,6 +95,9 @@ public:
   virtual int compare(const ObjectPtr& otherObject) const
     {return (int)(this - otherObject.get());}
 
+  static int compare(const ObjectPtr& object1, const ObjectPtr& object2);
+  static bool equals(const ObjectPtr& object1, const ObjectPtr& object2);
+
   /**
   ** Override this function to save the object to an XML tree
   **

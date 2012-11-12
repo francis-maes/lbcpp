@@ -150,6 +150,27 @@ void Object::setVariable(size_t index, const Variable& value)
   getClass()->setMemberVariableValue(this, index, value);
 }
 
+int Object::compare(const ObjectPtr& object1, const ObjectPtr& object2)
+{
+  if (!object1 && !object2)
+    return 0;
+  if (!object1 && object2)
+    return -1;
+  if (object1 && !object2)
+    return 1;
+  return object1->compare(object2);
+}
+
+bool Object::equals(const ObjectPtr& object1, const ObjectPtr& object2)
+{
+  if (!object1 && !object2)
+    return true;
+  if (!object1 || !object2)
+    return false;
+  if (object1->getClass() != object2->getClass())
+    return false;
+  return object1->compare(object2) == 0;
+}
 
 /*
 ** to string

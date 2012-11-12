@@ -582,7 +582,7 @@ LuaWrapperVector::LuaWrapperVector() : index(-1)
 size_t LuaWrapperVector::getNumElements() const
   {return state.length(index);}
 
-Variable LuaWrapperVector::getElement(size_t index) const
+ObjectPtr LuaWrapperVector::getElement(size_t index) const
 {
   LuaState& state = const_cast<LuaWrapperVector* >(this)->state;
   state.pushInteger(index + 1);
@@ -591,5 +591,5 @@ Variable LuaWrapperVector::getElement(size_t index) const
   return new LuaWrapperValue(state, reference);
 }
 
-void LuaWrapperVector::setElement(size_t index, const Variable& value)
+void LuaWrapperVector::setElement(size_t index, const ObjectPtr& value)
   {jassert(false);} // not implemented yet

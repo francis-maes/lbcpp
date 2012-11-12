@@ -115,7 +115,7 @@ struct VariableRelatedCommand
     // write data
     for (size_t i = 0; i < numRows; ++i)
     {
-      ObjectPtr object = container->getElement(i).getObject();
+      ObjectPtr object = container->getElement(i);
       for (size_t j = 0; j < columns.size(); ++j)
         *ostr << String(object->getVariable(columns[j]).toDouble()) << " ";
       *ostr << "\n";

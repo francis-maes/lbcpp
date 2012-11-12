@@ -144,9 +144,9 @@ public:
     {
       TypePtr objectClass = inputTypes[0];
       size_t n = objectClass->getNumMemberVariables();
-      VectorPtr res = vector(positiveIntegerType, n);
+      VectorPtr res = vector(newPositiveIntegerClass, n);
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, i);
+        res->setElement(i, new NewPositiveInteger(i));
       return res;
     }
   }

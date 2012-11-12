@@ -215,36 +215,28 @@ inline Variable& Variable::operator =(const Variable& otherVariable)
 ** Variable => C++ Native
 */
 inline void variableToNative(ExecutionContext& context, bool& dest, const Variable& source)
-  {jassert(source.isBoolean()); dest = source.getBoolean();}
+  {dest = NewBoolean::get(source.getObject());}
 
 inline void variableToNative(ExecutionContext& context, int& dest, const Variable& source)
-  {jassert(source.isInteger()); dest = source.getInteger();}
+  {dest = (int)NewInteger::get(source.getObject());}
 
 inline void variableToNative(ExecutionContext& context, juce::int64& dest, const Variable& source)
-  {jassert(source.isInteger()); dest = source.getInteger();}
+  {dest = NewInteger::get(source.getObject());}
 
 inline void variableToNative(ExecutionContext& context, size_t& dest, const Variable& source)
-  {jassert(source.isInteger() && source.getInteger() >= 0); dest = (size_t)source.getInteger();}
+  {dest = (size_t)NewInteger::get(source.getObject());}
  
 inline void variableToNative(ExecutionContext& context, unsigned char& dest, const Variable& source)
-  {jassert(source.isInteger() && source.getInteger() >= 0); dest = (unsigned char)source.getInteger();}
+  {dest = (unsigned char)NewInteger::get(source.getObject());}
 
 inline void variableToNative(ExecutionContext& context, double& dest, const Variable& source)
-  {jassert(source.isDouble()); dest = source.getDouble();}
+  {dest = NewDouble::get(source.getObject());}
 
 inline void variableToNative(ExecutionContext& context, String& dest, const Variable& source)
-  {jassert(source.isString()); dest = source.getString();}
+  {dest = NewString::get(source.getObject());}
 
 inline void variableToNative(ExecutionContext& context, File& dest, const Variable& source)
-{
-  if (source.isObject())
-    dest = context.getProjectDirectory().getChildFile(NewString::get(source.getObject()));
-  else
-  {
-    jassert(source.isString());
-    dest = context.getProjectDirectory().getChildFile(source.getString());
-  }
-}
+  {dest = context.getProjectDirectory().getChildFile(NewString::get(source.getObject()));}
 
 inline void variableToNative(ExecutionContext& context, ObjectPtr& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObject();}

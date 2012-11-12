@@ -48,9 +48,6 @@ public:
   virtual TypePtr getElementsType() const
     {return thisClass->getTemplateArgument(1);}
 
-  Variable missingElement() const
-    {return Variable::missingValue(getElementsType());}
-
   static EnumerationPtr getElementsEnumeration(TypePtr doubleVectorType);
   static bool getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType);
 
@@ -187,14 +184,14 @@ public:
   virtual void clear();
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
+  virtual void prepend(const ObjectPtr& value);
+  virtual void append(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
   
   // Object
   virtual String toShortString() const;
@@ -292,14 +289,14 @@ public:
   virtual void clear();
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
+  virtual void prepend(const ObjectPtr& value);
+  virtual void append(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
 
   // Object
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
@@ -361,14 +358,14 @@ public:
   virtual void clear();
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
+  virtual void prepend(const ObjectPtr& value);
+  virtual void append(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
 
   // Object
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;

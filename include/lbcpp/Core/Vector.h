@@ -27,8 +27,8 @@ public:
   virtual void clear() = 0;
   virtual void reserve(size_t size) = 0;
   virtual void resize(size_t size) = 0;
-  virtual void prepend(const Variable& value) = 0;
-  virtual void append(const Variable& value) = 0;
+  virtual void prepend(const ObjectPtr& value) = 0;
+  virtual void append(const ObjectPtr& value) = 0;
   virtual void remove(size_t index) = 0;
 
   /*
@@ -50,49 +50,6 @@ public:
 protected:
   bool checkType(const Variable& value) const;
 };
-
-class GenericVector : public Vector
-{
-public:
-  GenericVector(TypePtr elementsType, size_t initialSize);
-  GenericVector() {}
-  virtual ~GenericVector()
-    {clear();}
-
-  /*
-  ** Vector
-  */
-  virtual void clear();
-  virtual void reserve(size_t size);
-  virtual void resize(size_t size);
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
-  virtual void remove(size_t index);
-
-  /*
-  ** Container
-  */
-  virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
-
-  /*
-  ** Object
-  */
-  virtual void saveToXml(XmlExporter& exporter) const;
-  virtual bool loadFromXml(XmlImporter& importer);
-  virtual size_t getSizeInBytes(bool recursively) const;
-
-  const std::vector<VariableValue>& getValues() const
-    {return values;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  std::vector<VariableValue> values;
-};
-
-typedef ReferenceCountedObjectPtr<GenericVector> GenericVectorPtr;
 
 class BooleanVector : public Vector
 {
@@ -127,8 +84,8 @@ public:
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
 
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
+  virtual void prepend(const ObjectPtr& value);
+  virtual void append(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   /*
@@ -138,8 +95,8 @@ public:
     {return booleanType;}
 
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
 
   /*
   ** Object
@@ -167,14 +124,14 @@ public:
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
 
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
+  virtual void prepend(const ObjectPtr& value);
+  virtual void append(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
 
   static juce::int64 missingValue;
 
@@ -202,16 +159,16 @@ public:
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
 
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
+  virtual void prepend(const ObjectPtr& value);
+  virtual void append(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   /*
   ** Container
   */
   virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
+  virtual ObjectPtr getElement(size_t index) const;
+  virtual void setElement(size_t index, const ObjectPtr& value);
 
   const ObjectPtr& get(size_t index) const
     {jassert(index < objects->size()); return (*objects)[index];}
@@ -252,100 +209,12 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ObjectVector> ObjectVectorPtr;
 
-template<class ImplementationType, class ObjectType>
-class BuiltinVector : public Vector
-{
-public:
-  BuiltinVector(ClassPtr thisClass, size_t initialSize, const ImplementationType& defaultValue)
-    : Vector(thisClass), values(initialSize, defaultValue) {}
-  BuiltinVector(ClassPtr thisClass, const std::vector<ImplementationType>& values)
-    : Vector(thisClass), values(values) {}
-  BuiltinVector() {}
-
-  virtual TypePtr getElementsType() const
-    {return thisClass->getTemplateArgument(0);}
-
-  virtual size_t getNumElements() const
-    {return values.size();}
-
-  virtual Variable getElement(size_t index) const
-    {return new ObjectType(values[index]);}
-
-  virtual void setElement(size_t index, const Variable& value)
-    {values[index] = getImplementation(value);}
-
-  virtual void reserve(size_t size)
-    {values.reserve(size);}
-
-  virtual void resize(size_t size)
-    {values.resize(size, ImplementationType());}
-
-  virtual void clear()
-    {values.clear();}
-
-  virtual void prepend(const Variable& value)
-    {values.insert(values.begin(), getImplementation(value));}
-
-  virtual void append(const Variable& value)
-    {values.push_back(getImplementation(value));}
-
-  virtual void remove(size_t index)
-    {values.erase(values.begin() + index);}
-
-  size_t size() const
-    {return values.size();}
-
-  const ImplementationType& get(size_t index) const
-    {jassert(index < values.size()); return values[index];}
-
-  ImplementationType& get(size_t index)
-    {jassert(index < values.size()); return values[index];}
-
-  void set(size_t index, const ImplementationType& value)
-    {jassert(index < values.size()); values[index] = value;}
-
-  void prepend(const ImplementationType& value)
-    {values.insert(values.begin(), value);}
-
-  void append(const ImplementationType& value)
-    {values.push_back(value);}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  std::vector<ImplementationType> values;
-
-  static ImplementationType getImplementation(const Variable& value)
-  {
-    const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>();
-    return v ? v->getValue() : ImplementationType();
-  }
-};
-
-extern ClassPtr positiveIntegerPairVectorClass;
-
-class PositiveIntegerPairVector : public BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair>
-{
-public:
-  typedef BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair> BaseClass;
-
-  PositiveIntegerPairVector(size_t length = 0)
-    : BaseClass(positiveIntegerPairVectorClass, length, impl::PositiveIntegerPair(0, 0)) {}
-
-  virtual TypePtr getElementsType() const
-    {return positiveIntegerPairClass;}
-  
-  lbcpp_UseDebuggingNewOperator
-};
-
 extern ClassPtr vectorClass(TypePtr elementsType = anyType);
-extern ClassPtr genericVectorClass(TypePtr elementsType);
 extern ClassPtr objectVectorClass(TypePtr elementsType);
 extern ClassPtr booleanVectorClass;
 extern ClassPtr integerVectorClass(TypePtr elementsType);
 
 extern VectorPtr vector(TypePtr elementsType, size_t initialSize = 0);
-extern VectorPtr genericVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr booleanVector(size_t initialSize);
 extern VectorPtr integerVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
@@ -374,8 +243,8 @@ inline void variableToNative(ExecutionContext& context, std::vector<bool>& dest,
     dest.resize(sourceVector->getNumElements());
     for (size_t i = 0; i < dest.size(); ++i)
     {
-      jassert(sourceVector->getElement(i).isBoolean());
-      dest[i] = sourceVector->getElement(i).getBoolean();
+      ObjectPtr elt = sourceVector->getElement(i);
+      dest[i] = elt && NewBoolean::get(elt);
     }
   }
   else
@@ -393,7 +262,7 @@ inline Variable nativeToVariable(const std::vector<TT>& source, const TypePtr& e
   {
     Variable variable = nativeToVariable(source[i], elementsType);
     if (variable.exists())
-      res->setElement(i, variable);
+      res->setElement(i, variable.getObject());
   }
   return Variable(res, expectedType);
 }

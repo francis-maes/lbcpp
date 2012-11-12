@@ -18,6 +18,8 @@ namespace lbcpp
 class NewDouble : public Object
 {
 public:
+  NewDouble(ClassPtr thisClass, double value = 0.0)
+    : Object(thisClass), value(value) {}
   NewDouble(double value = 0.0)
     : value(value) {}
 

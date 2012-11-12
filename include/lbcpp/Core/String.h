@@ -51,12 +51,20 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<NewString>()->value = value;}
   
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    value = str.trim();
+    if (value.startsWithChar('"'))
+      value = value.unquoted();
+    return true;
+  }
+
   virtual bool loadFromXml(XmlImporter& importer)
   {
     String text = importer.getAllSubText().trim();
     return loadFromString(importer.getContext(), text);
   }
-
+  
 protected:
   juce::String value;
 };

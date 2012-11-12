@@ -12,7 +12,6 @@ GENERATE_INTROSPECTION_CODE(Core/Loader/CoreLoaderLibrary.xml CoreLoaderLibrary.
 
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Matrix/MatrixLibrary.xml MatrixLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
@@ -102,8 +101,6 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/DoubleVector.h
   Data/FeatureGeneratorCallbacks.hpp
   Data/DoubleVector.cpp
-  ../include/lbcpp/Data/Matrix.h
-  ../include/lbcpp/Data/SymmetricMatrix.h
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
   ../include/lbcpp/Data/RandomVariable.h  
@@ -121,19 +118,11 @@ SET(LBCPP_DATA_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )
 
-SET(LBCPP_DATA_MATRIX_SOURCES
-  Data/Matrix/Matrix.cpp
-  Data/Matrix/UpperLowerSquareMatrix.h
-  Data/Matrix/MatrixLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/MatrixLibrary.cpp
-)
-
 SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/DirectoryFileStream.h
   Data/Stream/DirectoryPairFileStream.h
   Data/Stream/LibSVMDataParser.h
   Data/Stream/LibSVMDataParser.cpp
-  Data/Stream/BuiltinTypeStream.h
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
 )
@@ -246,8 +235,6 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/ExecutionTraceTreeView.h
     UserInterface/Component/ExecutionTraceTreeView.cpp
     UserInterface/Component/ConfusionMatrixComponent.h
-	UserInterface/Component/MatrixComponent.h
-    UserInterface/Component/DoubleMatrixComponent.h
     UserInterface/Component/PieChartComponent.h
     UserInterface/Component/HistogramComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
@@ -300,7 +287,6 @@ SET(LBCPP_SOURCES
   ${LBCPP_DATA_SOURCES}
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
-    ${LBCPP_DATA_MATRIX_SOURCES}
   
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
@@ -339,7 +325,6 @@ SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
-SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})

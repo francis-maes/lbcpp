@@ -71,7 +71,7 @@ ObjectPtr Table::getElement(size_t rowIndex, size_t columnIndex) const
 {
   jassert(rowIndex < allIndices->size());
   jassert(columnIndex < columns.size());
-  return columns[columnIndex].data->getElement(rowIndex).getObject();
+  return columns[columnIndex].data->getElement(rowIndex);
 }
 
 int Table::findColumnByKey(const ObjectPtr& key) const

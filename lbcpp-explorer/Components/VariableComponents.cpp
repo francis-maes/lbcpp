@@ -146,6 +146,6 @@ Variable lbcpp::createMultiSelectionVariable(const std::vector<Variable>& variab
   VectorPtr res = vector(baseType);
   res->reserve(variables.size());
   for (size_t i = 0; i < variables.size(); ++i)
-    res->append(variables[i]);
+    res->append(variables[i].getObject());
   return res;
 }

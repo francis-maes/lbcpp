@@ -4,8 +4,6 @@
 
   <uicomponent name="TableComponent" type="Table"/>
   <uicomponent name="ConfusionMatrixComponent" type="BinaryConfusionMatrix"/>
-  <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
-  <uicomponent name="DoubleSymmetricMatrixComponent" type="DoubleSymmetricMatrix[Double]"/>
   <uicomponent name="PieChartComponent" type="PieChart"/>
   <uicomponent name="HistogramComponent" type="Histogram"/>
   <uicomponent name="ExecutionTraceTreeView" type="ExecutionTrace"/>

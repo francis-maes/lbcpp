@@ -33,7 +33,7 @@ public:
     {return recentFiles->getNumElements();}
 
   File getRecentFile(size_t index) const
-    {jassert(index < recentFiles->getNumElements()); return NewFile::get(recentFiles->getElement(index).getObject());}
+    {jassert(index < recentFiles->getNumElements()); return NewFile::get(recentFiles->getElement(index));}
 
   void addRecentFile(const File& file);
   

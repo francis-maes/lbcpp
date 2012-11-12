@@ -35,9 +35,6 @@ namespace lbcpp
 class Stream;
 typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
 
-class SymmetricMatrix;
-typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
-
 class RandomGenerator;
 typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
 

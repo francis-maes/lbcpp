@@ -12,36 +12,36 @@
   <!-- Objects -->
   <class name="PlotVariable">
     <variable type="Object" name="key"/>
-    <variable type="Boolean" name="selected"/>
+    <variable type="NewBoolean" name="selected"/>
     <!--<variable type="Colour" name="colour"/> -->
   </class>
 
   <class name="PlotAxis">
-    <variable type="Double" name="rangeMin"/>
-    <variable type="Double" name="rangeMax"/>
-    <variable type="Boolean" name="autoRange"/>
-    <variable type="Boolean" name="logScale"/>
-    <variable type="String" name="unit"/>
-    <variable type="String" name="label"/>
+    <variable type="NewDouble" name="rangeMin"/>
+    <variable type="NewDouble" name="rangeMax"/>
+    <variable type="NewBoolean" name="autoRange"/>
+    <variable type="NewBoolean" name="logScale"/>
+    <variable type="NewString" name="unit"/>
+    <variable type="NewString" name="label"/>
   </class>
 
   <class name="Plot">
     <variable type="PlotAxis" name="xAxis"/>
     <variable type="PlotAxis" name="yAxis"/>
     <variable type="ObjectVector[PlotVariable]" name="variables"/>
-    <variable type="PositiveInteger" name="keyVariableIndex"/>
+    <variable type="NewPositiveInteger" name="keyVariableIndex"/>
   </class>
   
   <class name="PieChart" base="Object">
-    <variable type="ObjectVector[Pair[String, Double]]" name="values"/>
+    <variable type="ObjectVector[Pair[NewString, NewDouble]]" name="values"/>
   </class>
 
   <class name="Histogram" base="NameableObject">
-    <variable type="Double" name="stepSize"/>
-    <variable type="Double" name="minValue"/>
-    <variable type="Double" name="maxValue"/>
-    <variable type="Boolean" name="includeOutOfBound"/>
-    <variable type="GenericVector[Double]" name="values"/>
+    <variable type="NewDouble" name="stepSize"/>
+    <variable type="NewDouble" name="minValue"/>
+    <variable type="NewDouble" name="maxValue"/>
+    <variable type="NewBoolean" name="includeOutOfBound"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,NewDouble]" name="values"/>
   </class>
 
 </library>

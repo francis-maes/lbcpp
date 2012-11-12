@@ -299,7 +299,7 @@ public:
         }
     SparseDoubleVectorPtr res = new SparseDoubleVector(simpleSparseDoubleVectorClass);
     for (std::map<size_t, size_t>::const_iterator it = counts.begin(); it != counts.end(); ++it)
-      res->setElement(it->first, (double)it->second);
+      res->setElement(it->first, new NewDouble(it->second));
     return res;
   }
 

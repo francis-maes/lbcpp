@@ -25,14 +25,14 @@ public:
   virtual size_t getNumElements() const
     {return end - begin;}
     
-  virtual Variable getElement(size_t index) const
+  virtual ObjectPtr getElement(size_t index) const
   {
     index += begin;
     jassert(index < end);
     return target->getElement(index);
   }
 
-  virtual void setElement(size_t index, const Variable& value)
+  virtual void setElement(size_t index, const ObjectPtr& value)
     {jassert(false);}
 
 private:
