@@ -39,6 +39,8 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
     flushErrorAndWarningMessages("Load file " + file.getFullPathName());
     if (object)
       return createComponentForObjectImpl(context, object, file.getFileName());
+  
+    return NULL;
   }
 
   // try to create a custom UI component
