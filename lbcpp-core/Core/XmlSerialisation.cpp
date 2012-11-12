@@ -7,7 +7,9 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Object.h>
+#include <lbcpp/Core/Class.h>
+#include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 

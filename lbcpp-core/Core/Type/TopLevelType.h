@@ -56,6 +56,9 @@ public:
   virtual String toString(const VariableValue& value) const
     {jassert(false); return String::empty;}
 
+  virtual bool isConvertibleToBoolean() const
+    {return false;}
+
   virtual bool isConvertibleToDouble() const
     {return false;}
 

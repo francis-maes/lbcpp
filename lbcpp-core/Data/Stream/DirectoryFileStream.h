@@ -32,10 +32,10 @@ public:
   virtual bool isExhausted() const
     {return nextFileIterator == files.end();}
 
-  virtual Variable next()
+  virtual ObjectPtr next()
   {
     if (isExhausted())
-      return Variable();
+      return ObjectPtr();
     File file(*nextFileIterator);
     ++nextFileIterator;
     ++position;

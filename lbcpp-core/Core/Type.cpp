@@ -6,11 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/TypeManager.h>
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Core/Vector.h>
-#include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Core.h>
 #include <map>
 using namespace lbcpp;
 
@@ -179,6 +175,9 @@ ObjectPtr Type::createFromXml(XmlImporter& importer) const
 
 String Type::toString(const VariableValue& value) const
   {jassert(baseType); return baseType->toString(value);}
+
+bool Type::isConvertibleToBoolean() const
+  {jassert(baseType); return baseType->isConvertibleToBoolean();}
 
 bool Type::isConvertibleToDouble() const
   {jassert(baseType); return baseType->isConvertibleToDouble();}

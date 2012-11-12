@@ -23,6 +23,8 @@
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
+      virtual bool isConvertibleToBoolean() const
+        {return true;}
     </code>
   </class>
   <class name="NewInteger">
@@ -39,7 +41,12 @@
         {return true;}
     </code>
   </class>
-  <class name="NewProbability" base="NewDouble"/>
+  <class name="NewProbability" base="NewDouble">
+    <code>
+      virtual bool isConvertibleToBoolean() const
+      {return true;}
+    </code>
+  </class>
   <class name="NewTime" base="NewDouble"/>
   <class name="NewString"/>
   <class name="NewFile" base="NewString"/>
@@ -47,8 +54,8 @@
   
   <!-- Pair -->
   <template name="Pair" base="Object">
-    <parameter name="firstType" type="Variable"/>
-    <parameter name="secondType" type="Variable"/>
+    <parameter name="firstType" type="Object"/>
+    <parameter name="secondType" type="Object"/>
 
     <variable type="firstType" name="first"/>
     <variable type="secondType" name="second"/>

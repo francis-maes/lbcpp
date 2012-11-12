@@ -6,13 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/Object.h>
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/Container.h>
-#include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Core/Library.h>
-#include <lbcpp/Core/Loader.h>
-#include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Core.h>
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/library.h>
 #include <fstream>
@@ -219,8 +213,8 @@ String Object::defaultToStringImplementation(bool useShortString) const
   String res;
   for (size_t i = 0; i < n; ++i)
   {
-    Variable value = getVariable(i);
-    res += (useShortString ? value.toShortString() : value.toString());
+    ObjectPtr value = getVariable(i);
+    res += (useShortString ? value->toShortString() : value->toString());
     if (i < n - 1)
       res += T(", ");
   }
@@ -233,10 +227,10 @@ String Object::variablesToString(const String& separator, bool includeTypes) con
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    Variable v = getVariable(i);
-    if (includeTypes && !v.isNil())
-      res += v.getTypeName() + T(" ");
-    res += v.toString();
+    ObjectPtr v = getVariable(i);
+    if (includeTypes)
+      res += v->getClassName() + T(" ");
+    res += v->toString();
     if (i < n - 1)
       res += separator;
   }
@@ -254,9 +248,9 @@ size_t Object::getSizeInBytes(bool recursively) const
       size_t n = getNumVariables();
       for (size_t i = 0; i < n; ++i)
       {
-        Variable v = getVariable(i);
-        if (v.isObject() && v.exists())
-          res += v.getObject()->getSizeInBytes(true);
+        ObjectPtr v = getVariable(i);
+        if (v)
+          res += v->getSizeInBytes(true);
       }
     }
   }
@@ -279,33 +273,6 @@ int Object::compareVariables(const ObjectPtr& otherObject) const
   }
   return 0;
 }
-
-static void getAllChildObjectsRecursively(const ObjectPtr& object, std::set<ObjectPtr>& res)
-{
-  if (res.find(object) == res.end())
-  {
-    res.insert(object);
-    std::vector<ObjectPtr> childObjects;
-    object->getChildObjects(childObjects);
-    for (size_t i = 0; i < childObjects.size(); ++i)
-      getAllChildObjectsRecursively(childObjects[i], res);
-  }
-}
-
-void Object::getChildObjects(std::vector<ObjectPtr>& res) const
-{
-  size_t n = getNumVariables();
-  for (size_t i = 0; i < n; ++i)
-  {
-    Variable v = getVariable(i);
-    if (v.isObject() && v.exists())
-      res.push_back(v.getObject());
-  }
-}
-  
-
-void Object::getAllChildObjects(std::set<ObjectPtr>& res) const
-  {return getAllChildObjectsRecursively(refCountedPointerFromThis(this), res);}
 
 /*
 ** Clone

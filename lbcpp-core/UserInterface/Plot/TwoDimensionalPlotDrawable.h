@@ -10,7 +10,7 @@
 # define LBCPP_USER_INTERFACE_PLOT_TWO_DIMENSIONAL_DRAWABLE_H_
 
 # include <lbcpp/UserInterface/Plot.h>
-# include <lbcpp/Core/Variable.h>
+# include <lbcpp/Core.h>
 
 namespace lbcpp
 {

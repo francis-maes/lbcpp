@@ -6,11 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/Enumeration.h>
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/Vector.h>
-#include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Core/Integer.h>
+#include <lbcpp/Core.h>
 #include <map>
 using namespace lbcpp;
 

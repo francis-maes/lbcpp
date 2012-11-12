@@ -7,8 +7,9 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Data/BinaryConfusionMatrix.h>
-#include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Core/Class.h>
+#include <lbcpp/Core/Integer.h>
 using namespace lbcpp;
 
 BinaryConfusionMatrix::BinaryConfusionMatrix(const BinaryConfusionMatrix& other)
@@ -53,16 +54,11 @@ String BinaryConfusionMatrix::toString() const
     + T("% MCC = ") + String(computeMatthewsCorrelation(), 4) + T("\n");
 }
 
-bool BinaryConfusionMatrix::convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
+bool BinaryConfusionMatrix::convertToBoolean(ExecutionContext& context, const ObjectPtr& object, bool& res)
 {
-  if (!variable.exists())
+  if (!object || !object->getClass()->isConvertibleToBoolean())
     return false;
-  if (!lbcpp::convertSupervisionVariableToBoolean(variable, res))
-  {
-    context.errorCallback(T("BinaryConfusionMatrix::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
-    jassert(false);
-    return false;
-  }
+  res = object->toBoolean();
   return true;
 }
 
@@ -89,7 +85,7 @@ void BinaryConfusionMatrix::addPrediction(bool predicted, bool correct, size_t c
   totalCount += count;
 }
 
-void BinaryConfusionMatrix::addPredictionIfExists(ExecutionContext& context, const Variable& predicted, const Variable& correct, size_t count)
+void BinaryConfusionMatrix::addPredictionIfExists(ExecutionContext& context, const ObjectPtr& predicted, const ObjectPtr& correct, size_t count)
 {
   bool p, c;
   if (convertToBoolean(context, predicted, p) && convertToBoolean(context, correct, c))

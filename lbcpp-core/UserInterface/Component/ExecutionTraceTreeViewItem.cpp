@@ -103,8 +103,8 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     ExecutionTraceNodePtr node = trace.dynamicCast<ExecutionTraceNode>();
     if (node)
     {
-      Variable returnValue = node->getReturnValue();
-      String text = returnValue.exists() ? returnValue.toShortString() : String::empty;
+      ObjectPtr returnValue = node->getReturnValue();
+      String text = returnValue ? returnValue->toShortString() : String::empty;
       g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
 

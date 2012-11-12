@@ -39,6 +39,9 @@ public:
 
   virtual double toDouble() const
     {return value ? 1.0 : 0.0;}
+  
+  virtual bool toBoolean() const
+    {return value;}
 
   virtual int compare(const ObjectPtr& otherObject) const
   {

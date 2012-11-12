@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VariableTreeView.h             | Variable Tree component         |
+| Filename: ObjectTreeView.h               | Object Tree component           |
 | Author  : Francis Maes                   |                                 |
 | Started : 14/06/2010 12:05               |                                 |
 `------------------------------------------/                                 |
@@ -12,14 +12,14 @@
 # include <lbcpp/UserInterface/ObjectComponent.h>
 # include "SimpleTreeViewItem.h"
 
-class VariableTreeViewItem;
+class ObjectTreeViewItem;
 
 namespace lbcpp
 {
 
-struct VariableTreeOptions
+struct ObjectTreeOptions
 {
-  VariableTreeOptions(bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true)
+  ObjectTreeOptions(bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true)
     : showTypes(showTypes), showShortSummaries(showShortSummaries), showMissingVariables(showMissingVariables), makeRootNodeVisible(makeRootNodeVisible) {}
 
   bool showTypes;
@@ -28,11 +28,11 @@ struct VariableTreeOptions
   bool makeRootNodeVisible;
 };
 
-class VariableTreeView : public juce::TreeView, public ObjectSelector, public juce::Timer, public ComponentWithPreferedSize
+class ObjectTreeView : public juce::TreeView, public ObjectSelector, public juce::Timer, public ComponentWithPreferedSize
 {
 public:
-  VariableTreeView(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions());
-  virtual ~VariableTreeView();
+  ObjectTreeView(const ObjectPtr& object, const String& name, const ObjectTreeOptions& options = ObjectTreeOptions());
+  virtual ~ObjectTreeView();
 
   virtual bool keyPressed(const juce::KeyPress& key);
 
@@ -48,10 +48,10 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  Variable variable;
+  ObjectPtr object;
   String name;
-  VariableTreeOptions options;
-  VariableTreeViewItem* root;
+  ObjectTreeOptions options;
+  ObjectTreeViewItem* root;
   bool isSelectionUpToDate;
 };
 

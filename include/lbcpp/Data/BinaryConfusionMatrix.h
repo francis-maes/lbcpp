@@ -27,7 +27,7 @@ public:
   void addPrediction(bool predicted, bool correct, size_t count = 1);
   void removePrediction(bool predicted, bool correct, size_t count = 1);
 
-  void addPredictionIfExists(ExecutionContext& context, const Variable& predicted, const Variable& correct, size_t count = 1);
+  void addPredictionIfExists(ExecutionContext& context, const ObjectPtr& predicted, const ObjectPtr& correct, size_t count = 1);
 
   double computeAccuracy() const;
   double computeF1Score() const;
@@ -80,7 +80,7 @@ protected:
 
   size_t totalCount;
 
-  bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res);
+  bool convertToBoolean(ExecutionContext& context, const ObjectPtr& object, bool& res);
 };
 
 typedef ReferenceCountedObjectPtr<BinaryConfusionMatrix> BinaryConfusionMatrixPtr;

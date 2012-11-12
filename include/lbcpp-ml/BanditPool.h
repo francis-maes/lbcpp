@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_BANDIT_POOL_H_
 # define LBCPP_ML_BANDIT_POOL_H_
 
-# include <lbcpp/Core/Variable.h>
+# include <lbcpp/Core.h>
 # include "predeclarations.h"
 # include <lbcpp-ml/Objective.h>
 # include <queue>

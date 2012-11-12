@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Container.h                    | Variable Container base class   |
+| Filename: Container.h                    | Container base class            |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/06/2010 18:43               |                                 |
 `------------------------------------------/                                 |
@@ -9,9 +9,9 @@
 #ifndef LBCPP_CORE_CONTAINER_H_
 # define LBCPP_CORE_CONTAINER_H_
 
-# include "../Core/Class.h"
-# include "../Core/Variable.h"
-# include "../Core/Enumeration.h"
+# include "Class.h"
+# include "Object.h"
+# include "Enumeration.h"
 
 namespace lbcpp
 {

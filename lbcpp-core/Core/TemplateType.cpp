@@ -6,9 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/TemplateType.h>
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/Vector.h>
+#include <lbcpp/Core.h>
 using namespace lbcpp;
 
 bool TemplateType::isInstanciatedTypeName(const String& name)

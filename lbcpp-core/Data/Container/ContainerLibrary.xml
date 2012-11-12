@@ -5,7 +5,7 @@
   
   <!-- DecoratorContainer -->
   <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
-    <variable type="Container[Variable]" name="target"/>
+    <variable type="Container[Object]" name="target"/>
     <parameter name="elementsType"/>
   </template>
 

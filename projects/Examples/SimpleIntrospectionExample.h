@@ -9,7 +9,7 @@
 #ifndef LBCPP_EXAMPLES_SIMPLE_INTROSPECTION_H_
 # define LBCPP_EXAMPLES_SIMPLE_INTROSPECTION_H_
 
-# include <lbcpp/Core/Variable.h>
+# include <lbcpp/Core.h>
 
 namespace lbcpp
 {

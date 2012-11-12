@@ -35,9 +35,9 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
       }
     }
 
-    Variable variable = next();
-    if (!variable.isNil())
-      res->append(variable.getObject());
+    ObjectPtr variable = next();
+    if (variable)
+      res->append(variable);
 
     if (isExhausted())
     {
@@ -58,8 +58,8 @@ bool Stream::iterate(size_t maximumCount)
   size_t count = 0;
   while (maximumCount == 0 || count < maximumCount)
   {
-    Variable variable = next();
-    if (variable.exists())
+    ObjectPtr variable = next();
+    if (variable)
       ++count;
     else
       break;
@@ -134,16 +134,16 @@ void TextParser::tokenize(const String& line, std::vector<String>& columns, cons
   }
 }
   
-Variable TextParser::next()
+ObjectPtr TextParser::next()
 {
   if (!f)
-    return Variable();
-  if (!currentResult.exists())
+    return ObjectPtr();
+  if (!currentResult)
   {
     //parsingBreaked = false;
     parseBegin();
   }
-  currentResult = Variable();
+  currentResult = ObjectPtr();
   
   while (f)
   {
@@ -162,12 +162,12 @@ Variable TextParser::next()
       String lineString(line);
       context.errorCallback(T("-> Could not parse line ") + String((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
       if (f) {fclose(f); f = NULL;}
-      return Variable();
+      return ObjectPtr();
     }
     if (currentResult.exists())
       return currentResult;
   }
-  return Variable();
+  return ObjectPtr();
 }
 
 char* TextParser::readNextLine()
