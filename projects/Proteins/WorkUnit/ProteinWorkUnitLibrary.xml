@@ -93,6 +93,10 @@
     <variable type="File" name="spxFile"/>
     <variable type="File" name="outputDirectory"/>
   </class>
+  
+  <class name="CountCysteinesWorkUnit" base="WorkUnit">
+    <variable type="File" name="proteinDirectory"/>
+  </class>
 
   <class name="GenerateFoldsWorkUnit" base="WorkUnit">
     <variable type="File" name="sourceDirectory" shortName="i"/>
