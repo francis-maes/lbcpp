@@ -10,7 +10,7 @@
 # define LBCPP_LUA_H_
 
 # include "../Core/Object.h"
-# include "../Core/Container.h"
+# include "../Core/Vector.h"
 
 namespace lbcpp
 {

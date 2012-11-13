@@ -266,8 +266,8 @@ public:
   {
     context.enterScope(optimizer->toShortString());
 
-    DenseDoubleVectorPtr cpuTimes = new DenseDoubleVector(0, 0.0);
-    DenseDoubleVectorPtr hyperVolumes = new DenseDoubleVector(0, 0.0);
+    DVectorPtr cpuTimes = new DVector();
+    DVectorPtr hyperVolumes = new DVector();
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     ParetoFrontPtr front = new ParetoFront();
     SolverCallbackPtr callback = compositeSolverCallback(
@@ -278,13 +278,13 @@ public:
     optimizer->setVerbosity(verbosityProgressAndResult);
     optimizer->solve(context, problem, callback);
 
-    for (size_t i = 0; i < hyperVolumes->getNumValues(); ++i)
+    for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)
     {
       size_t numEvaluations = i * evaluationPeriod;
       context.enterScope(string((int)numEvaluations));
       context.resultCallback("numEvaluations", numEvaluations);
-      context.resultCallback("hyperVolume", hyperVolumes->getValue(i));
-      context.resultCallback("cpuTime", cpuTimes->getValue(i));
+      context.resultCallback("hyperVolume", hyperVolumes->get(i));
+      context.resultCallback("cpuTime", cpuTimes->get(i));
       context.leaveScope();
     }
 

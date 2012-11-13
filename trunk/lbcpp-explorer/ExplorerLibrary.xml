@@ -7,7 +7,7 @@
   <!-- Explorer Configuration -->
   <class name="RecentFileVector">
     <variable type="File" name="recentDirectory"/>
-    <variable type="ObjectVector[File]" name="recentFiles"/>
+    <variable type="Vector[File]" name="recentFiles"/>
   </class>
 
   <class name="ExplorerConfiguration" base="Object">
@@ -17,11 +17,11 @@
   <!-- Project -->
   <class name="RecentWorkUnitConfiguration" base="Object">
     <variable type="String" name="workUnitName"/>
-    <variable type="ObjectVector[String]" name="arguments"/>
+    <variable type="Vector[String]" name="arguments"/>
   </class>
 
   <class name="RecentWorkUnitsConfiguration" base="Object">
-    <variable type="ObjectVector[RecentWorkUnitConfiguration]" name="recents"/>
+    <variable type="Vector[RecentWorkUnitConfiguration]" name="recents"/>
   </class>
   
   <class name="ExplorerProject">

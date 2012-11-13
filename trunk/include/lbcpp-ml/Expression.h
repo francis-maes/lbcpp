@@ -69,17 +69,11 @@ public:
         return owner->constantRawBoolean;
       size_t index = (owner->implementation == ownedVectorImpl ? position : *it);
       if (owner->elementsType == booleanClass)
-        return owner->vector.staticCast<BooleanVector>()->getData()[index];
-      else if (owner->elementsType == probabilityClass)
-      {
-        double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
-        return value == doubleMissingValue ? 2 : (value > 0.5 ? 1 : 0);
-      }
+        return owner->vector.staticCast<BVector>()->get(index);
       else
       {
-        jassert(owner->elementsType == doubleClass);
-        double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
-        return value == doubleMissingValue ? 2 : (value > 0 ? 1 : 0);
+        ObjectPtr element = owner->vector->getElement(index);
+        return element ? (element->toBoolean() ? 1 : 0) : 2;
       }
     }
 
@@ -99,8 +93,8 @@ public:
       switch (owner->implementation)
       {
       case constantValueImpl: return owner->constantRawDouble;
-      case ownedVectorImpl: return owner->vector.staticCast<DenseDoubleVector>()->getValue(position);
-      case cachedVectorImpl: return owner->vector.staticCast<DenseDoubleVector>()->getValue(*it);
+      case ownedVectorImpl: return owner->vector.staticCast<DVector>()->get(position);
+      case cachedVectorImpl: return owner->vector.staticCast<DVector>()->get(*it);
       default: jassert(false); return 0.0;
       }
     }
@@ -110,8 +104,8 @@ public:
       switch (owner->implementation)
       {
       case constantValueImpl: return owner->constantRawObject;
-      case ownedVectorImpl: return owner->vector.staticCast<ObjectVector>()->get(position);
-      case cachedVectorImpl: return owner->vector.staticCast<ObjectVector>()->get(*it);
+      case ownedVectorImpl: return owner->vector.staticCast<OVector>()->get(position);
+      case cachedVectorImpl: return owner->vector.staticCast<OVector>()->get(*it);
       default: jassert(false); static ObjectPtr empty; return empty;
       }
     }

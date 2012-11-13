@@ -21,7 +21,7 @@
   </class>
 
   <class name="CompositeWorkUnit" base="WorkUnit">
-    <variable type="ObjectVector[WorkUnit]" name="workUnits"/>
+    <variable type="Vector[WorkUnit]" name="workUnits"/>
     <variable type="String" name="progressionUnit"/>
     <variable type="Boolean" name="pushChildrenIntoStack"/>
     <variable type="String" name="description"/>
@@ -33,7 +33,7 @@
   <!-- Function Stack -->
   <class name="ExecutionStack">
     <variable type="ExecutionStack" name="parentStack"/>
-    <variable type="ObjectVector[Pair[String,WorkUnit]]" name="stack"/>
+    <variable type="Vector[Pair[String,WorkUnit]]" name="stack"/>
   </class>
 
   <!-- Notifications -->
@@ -62,7 +62,7 @@
   </class>
   
   <class name="CompositeExecutionCallback" base="ExecutionCallback" abstract="yes">
-    <variable type="ObjectVector[ExecutionCallback]" name="callbacks"/>
+    <variable type="Vector[ExecutionCallback]" name="callbacks"/>
   </class>
   <class name="DispatchByThreadExecutionCallback" base="CompositeExecutionCallback" abstract="yes"/>
 
@@ -98,9 +98,9 @@
 
   <class name="ExecutionTraceNode" base="ExecutionTraceItem">
     <variable type="String" name="description"/>
-    <variable type="ObjectVector[ExecutionTraceItem]" name="subItems"/>
+    <variable type="Vector[ExecutionTraceItem]" name="subItems"/>
     <variable type="Object" name="returnValue"/>
-    <variable type="ObjectVector[Pair[String,Object]]" name="results"/>
+    <variable type="Vector[Pair[String,Object]]" name="results"/>
     <variable type="ProgressionState" name="progression"/>
     <variable type="Time" name="timeLength"/>
   </class>

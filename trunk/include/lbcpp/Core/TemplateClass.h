@@ -105,6 +105,7 @@ protected:
 
   void addParameter(const string& name, ClassPtr baseType = objectClass);
   void addParameter(ExecutionContext& context, const string& name, const string& type);
+  bool inheritsFrom(ExecutionContext& context, const std::vector<ClassPtr>& arguments, const string& parameterName, const string& baseType) const;
 };
 
 }; /* namespace lbcpp */

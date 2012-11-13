@@ -28,12 +28,12 @@
   <class name="Plot">
     <variable type="PlotAxis" name="xAxis"/>
     <variable type="PlotAxis" name="yAxis"/>
-    <variable type="ObjectVector[PlotVariable]" name="variables"/>
+    <variable type="Vector[PlotVariable]" name="variables"/>
     <variable type="PositiveInteger" name="keyVariableIndex"/>
   </class>
   
   <class name="PieChart" base="Object">
-    <variable type="ObjectVector[Pair[String, Double]]" name="values"/>
+    <variable type="Vector[Pair[String, Double]]" name="values"/>
   </class>
 
   <class name="Histogram" base="NameableObject">

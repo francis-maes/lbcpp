@@ -4,7 +4,7 @@
 
   <class name="SearchNode" base="Object">
     <variable type="SearchState" name="state"/>
-    <variable type="ObjectVector[SearchNode]" name="successors"/>
+    <variable type="Vector[SearchNode]" name="successors"/>
     <variable type="DiscreteDomain" name="actions"/>
     <variable type="Boolean" name="fullyVisited"/>
   </class>
@@ -48,7 +48,7 @@
     <variable type="SantaFeTrailAction" name="elseAction"/>
   </class>
   <class name="SequenceSantaFeTrailAction" base="SantaFeTrailAction">
-    <variable type="ObjectVector[SantaFeTrailAction]" name="actions"/>
+    <variable type="Vector[SantaFeTrailAction]" name="actions"/>
   </class>
 
   <class name="SantaFeTrailFunction" base="Function" abstract="yes"/>
@@ -72,7 +72,7 @@
   <class name="CompositeSolutionsOperator" base="SolutionsOperator">
     <constructor arguments="const std::vector&lt;SolutionsOperatorPtr&gt;&amp; operators"/>
     <constructor arguments="SolutionsOperatorPtr operator1, SolutionsOperatorPtr operator2, SolutionsOperatorPtr operator3, SolutionsOperatorPtr operator4, SolutionsOperatorPtr operator5"/>
-    <variable type="ObjectVector[SolutionsOperator]" name="operators"/>
+    <variable type="Vector[SolutionsOperator]" name="operators"/>
   </class>
 
   <class name="SolutionSelector" base="SolutionsOperator" abstract="yes"/>
@@ -141,7 +141,7 @@
   </class>
 
   <class name="RandomWithActiveSubTreesSampler" base="SearchSampler">
-    <variable type="ObjectVector[Expression]" name="subTrees"/>
+    <variable type="Vector[Expression]" name="subTrees"/>
   </class>
   <class name="RandomWithActiveSubTreesSolver" base="PopulationBasedSolver">
     <variable type="PositiveInteger" name="numBests"/>

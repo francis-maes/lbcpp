@@ -9,6 +9,7 @@
 # define LBCPP_VARIABLE_STREAM_LIBSVM_DATA_PARSER_H_
 
 # include <lbcpp/Data/Stream.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Execution/ExecutionContext.h>
 
 namespace lbcpp

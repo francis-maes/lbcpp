@@ -129,10 +129,10 @@ private:
 class ProcessList;
 typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
 
-class ProcessList : public ObjectVector
+class ProcessList : public OVector
 {
 public:
-  ProcessList() : ObjectVector(objectClass, 0) {}
+  ProcessList() : OVector(objectClass, 0) {}
 
   size_t getNumProcesses() const
     {return getNumElements();}

@@ -412,15 +412,15 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
       dv[0] = Double::get(v[0]);
       dv[1] = Double::get(v[1]);
       dv[2] = Double::get(v[2]);
-      DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
-      double* ptr = res->getValuePointer(0);
+      DVectorPtr res = new DVector(type, n, 0.0);
+      double* ptr = res->getDataPointer();
       for (DataVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
         *ptr++ = dv[it.getRawBoolean()];
       resultVector = res;
     }
     else
     {
-      ObjectVectorPtr res = new ObjectVector(type, n);
+      OVectorPtr res = new OVector(type, n);
       size_t i = 0;
       for (DataVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
         res->set(i, v[it.getRawBoolean()]);
@@ -448,8 +448,8 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
 
     if (elementsType == doubleClass)
     {
-      DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
-      double* ptr = res->getValuePointer(0);
+      DVectorPtr res = new DVector(type, n, 0.0);
+      double* ptr = res->getDataPointer();
       for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt)
       {
         DataVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
@@ -461,7 +461,7 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
     else
     {
       jassert(elementsType->inheritsFrom(objectClass));
-      ObjectVectorPtr res = new ObjectVector(type, n);
+      OVectorPtr res = new OVector(type, n);
       size_t i = 0;
       for (DataVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
       {
@@ -556,7 +556,7 @@ ObjectPtr ScalarSumExpression::compute(ExecutionContext& context, const ObjectPt
 }
 
 VectorPtr ScalarSumExpression::createEmptyOutputs(size_t numSamples) const
-  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, numSamples, 0.0);}
+  {return new DVector(type, numSamples, 0.0);}
 
 void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
@@ -610,7 +610,7 @@ DataVectorPtr VectorSumExpression::computeSamples(ExecutionContext& context, con
 VectorPtr VectorSumExpression::createEmptyOutputs(size_t numSamples) const
 {
   ClassPtr doubleVectorClass = type;
-  ObjectVectorPtr res = new ObjectVector(doubleVectorClass, numSamples);
+  OVectorPtr res = new OVector(doubleVectorClass, numSamples);
   for (size_t i = 0; i < numSamples; ++i)
     res->set(i, new DenseDoubleVector(doubleVectorClass));
   return res;
@@ -618,7 +618,7 @@ VectorPtr VectorSumExpression::createEmptyOutputs(size_t numSamples) const
  
 void VectorSumExpression::updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
-  const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
+  const OVectorPtr& a = outputs.staticCast<OVector>();
   jassert(newNodeValues->size() == a->getNumElements());
   jassert(newNodeValues->getElementsType()->inheritsFrom(denseDoubleVectorClass()));
   size_t i = 0;
@@ -677,7 +677,7 @@ ObjectPtr CreateSparseVectorExpression::compute(ExecutionContext& context, const
 VectorPtr CreateSparseVectorExpression::createEmptyOutputs(size_t numSamples) const
 {
   ClassPtr sparseVectorClass = type;
-  ObjectVectorPtr res = new ObjectVector(sparseVectorClass, numSamples);
+  OVectorPtr res = new OVector(sparseVectorClass, numSamples);
   for (size_t i = 0; i < numSamples; ++i)
     res->set(i, new SparseDoubleVector(sparseVectorClass));
   return res;
@@ -685,7 +685,7 @@ VectorPtr CreateSparseVectorExpression::createEmptyOutputs(size_t numSamples) co
 
 void CreateSparseVectorExpression::updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const
 { 
-  const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
+  const OVectorPtr& a = outputs.staticCast<OVector>();
   jassert(newNodeValues->size() == a->getNumElements());
   jassert(newNodeValues->getElementsType() == positiveIntegerClass);
   size_t i = 0;

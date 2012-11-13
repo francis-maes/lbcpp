@@ -19,7 +19,7 @@ class UnaryDoubleFunction : public HomogeneousUnaryFunction
 {
 public:
   UnaryDoubleFunction()
-    : HomogeneousUnaryFunction(doubleClass), vectorClass(simpleDenseDoubleVectorClass) {}
+    : HomogeneousUnaryFunction(doubleClass) {}
 
   virtual double computeDouble(double value) const = 0;
 
@@ -35,8 +35,8 @@ public:
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& in, ClassPtr outputType) const
   {
     const DataVectorPtr& inputs = in[0];
-    DenseDoubleVectorPtr res = new DenseDoubleVector(vectorClass, inputs->size(), 0.0);
-    double* dest = res->getValuePointer(0);
+    DVectorPtr res = new DVector(outputType, inputs->size(), 0.0);
+    double* dest = res->getDataPointer();
     for (DataVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)
     {
       double value = it.getRawDouble();
@@ -47,9 +47,6 @@ public:
 
   virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return toShortString() + "(" + inputs[0]->toShortString() + ")";}
-
-protected:
-  ClassPtr vectorClass;
 };
 
 class OppositeDoubleFunction : public UnaryDoubleFunction
@@ -168,8 +165,8 @@ public:
     size_t n = inputs[0]->size();
     jassert(n == inputs[1]->size());
 
-    DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
-    double* dest = res->getValuePointer(0);
+    DVectorPtr res = new DVector(outputType, n, 0.0);
+    double* dest = res->getDataPointer();
     double* lim = dest + n;
     while (dest < lim)
     {

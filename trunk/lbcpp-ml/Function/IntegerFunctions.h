@@ -92,7 +92,7 @@ public:
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual juce::int64 computeInteger(juce::int64 first, juce::int64 second) const
-    {return second ? first / second : IntegerVector::missingValue;}
+    {return second ? first / second : IVector::missingValue;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}

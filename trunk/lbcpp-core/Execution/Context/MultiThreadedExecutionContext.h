@@ -97,7 +97,7 @@ public:
   };
 
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, ObjectPtr* result = NULL);
-  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, ObjectVectorPtr results = ObjectVectorPtr());
+  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, OVectorPtr results = OVectorPtr());
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack = true);
 
   Entry pop();
@@ -160,7 +160,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), pushIntoStack, counterToDecrementWhenDone, result));
 }
 
-void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, ObjectVectorPtr results)
+void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, OVectorPtr results)
 {
   ExecutionStackPtr stack = s->cloneAndCast<ExecutionStack>();
 
@@ -173,7 +173,7 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
 
   *numRemainingWorkUnitsCounter = (int)n;
   for (size_t i = 0; i < n; ++i)
-    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results ? &results->getObjects()[i] : NULL));
+    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results ? results->getDataPointer() + i : NULL));
 }
 
 void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack)
@@ -364,7 +364,7 @@ public:
     size_t numThreads = waitingQueue->getNumThreads();
     size_t maxInParallel = numThreads * 5;
 
-    VectorPtr results = new ObjectVector(objectClass, numWorkUnits);
+    VectorPtr results = new OVector(objectClass, numWorkUnits);
     result = results;
     if (numWorkUnits > maxInParallel)
     {

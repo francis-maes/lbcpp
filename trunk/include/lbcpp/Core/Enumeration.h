@@ -94,16 +94,7 @@ public:
 
 extern ClassPtr enumerationClass;
 
-extern EnumerationPtr addMissingToEnumerationEnumeration(ClassPtr type);
-extern EnumerationPtr addEntropyToEnumerationEnumeration(ClassPtr type);
-extern EnumerationPtr singletonEnumeration;
-extern EnumerationPtr existOrMissingEnumeration;
-extern EnumerationPtr falseOrTrueEnumeration;
-extern EnumerationPtr falseTrueOrMissingEnumeration;
-extern EnumerationPtr variablesEnumerationEnumeration(ClassPtr type);
 extern EnumerationPtr positiveIntegerEnumerationEnumeration;
-
-extern EnumerationPtr cartesianProductEnumerationEnumeration(ClassPtr firstType, ClassPtr secondType);
 
 class DefaultEnumeration : public Enumeration
 {

@@ -29,7 +29,7 @@ public:
      // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
     DataVectorPtr predictions = computePredictions(context, expression);
-    DenseDoubleVectorPtr supervisions = getSupervisions().staticCast<DenseDoubleVector>();
+    DVectorPtr supervisions = getSupervisions().staticCast<DVector>();
     
     // compute mean absolute error
     double squaredError = 0.0;
@@ -38,11 +38,11 @@ public:
       double prediction = it.getRawDouble();
       if (prediction == doubleMissingValue || !isNumberValid(prediction))
         prediction = 0.0;
-      double delta = supervisions->getValue(it.getIndex()) - prediction;
+      double delta = supervisions->get(it.getIndex()) - prediction;
       squaredError += delta * delta;
     }
     // mean squared error
-    return squaredError / (double)supervisions->getNumValues();
+    return squaredError / (double)supervisions->getNumElements();
   }
 };
 

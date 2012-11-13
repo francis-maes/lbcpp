@@ -47,7 +47,7 @@ public:
   {
     if (index == 0)
     {
-      ObjectVectorPtr res = new ObjectVector(enumerationClass, 1);
+      OVectorPtr res = new OVector(enumerationClass, 1);
       res->set(0, inputTypes[0]);
       return res;
     }

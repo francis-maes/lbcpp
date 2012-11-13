@@ -91,11 +91,15 @@ protected:
     {
       String tag = elt->getTagName();
       if (tag == T("class"))
-        generateClassDeclaration(elt, false);
+        generateClassDeclaration(elt, NULL);
       else if (tag == T("template"))
       {
-        generateClassDeclaration(elt, true);
-        newLine();
+        for (XmlElement* cl = elt->getFirstChildElement(); cl; cl = cl->getNextElement())
+          if (cl->getTagName() == T("class"))
+          {
+            generateClassDeclaration(cl, elt);
+            newLine();
+          }
         generateTemplateClassDeclaration(elt);
       }
       else if (tag == T("enumeration"))
@@ -225,15 +229,18 @@ protected:
   /*
   ** Class
   */
-  void generateClassDeclaration(XmlElement* xml, bool isTemplate)
+  void generateClassDeclaration(XmlElement* xml, XmlElement* templateClassXml)
   {
-    String className = xml->getStringAttribute(T("name"), T("???"));
-    bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
-    String classShortName = xml->getStringAttribute(T("shortName"), String::empty);
-    String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
-    String metaClass = getMetaClass(classBaseClass);
-    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
+    XmlElement* attributesXml = (templateClassXml ? templateClassXml : xml);
 
+    String className = (templateClassXml && !xml->hasAttribute(T("name")) ? templateClassXml : xml)->getStringAttribute(T("name"), String::empty);
+    bool isAbstract = attributesXml->getBoolAttribute(T("abstract"), false);
+    String classShortName = attributesXml->getStringAttribute(T("shortName"), String::empty);
+    String classBaseClass = attributesXml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String metaClass = getMetaClass(classBaseClass);
+    String baseClassName = xmlTypeToCppType(attributesXml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
+
+    bool isTemplate = (templateClassXml != NULL);
     Declaration declaration = isTemplate ? Declaration::makeTemplateClass(currentNamespace, className, metaClass) : Declaration::makeType(currentNamespace, className, metaClass);
     if (!isTemplate)
       declarations.push_back(declaration);
@@ -509,7 +516,7 @@ protected:
 
     // instantiate
     openScope(T("virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments, ClassPtr baseType) const"));
-      writeLine(T("return new ") + className + metaClass + T("(refCountedPointerFromThis(this), arguments, baseType);"));
+      generateTemplateInstantiationFunction(xml);
     closeScope();
     newLine();
 
@@ -546,6 +553,37 @@ protected:
     String name = xml->getStringAttribute(T("name"), T("???"));
     writeLine(T("addParameter(context, T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
   }
+
+  void generateTemplateInstantiationFunction(XmlElement* xml)
+  {
+    String templateClassName = xml->getStringAttribute(T("name"), T("???"));
+    String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String metaClass = getMetaClass(classBaseClass);
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("class"))
+    {
+      String className = elt->getStringAttribute(T("name"));
+      if (className.isEmpty())
+        className = templateClassName;
+      String condition = generateSpecializationCondition(elt);
+      if (condition.isNotEmpty())
+        writeLine(T("if (") + condition + T(")"));
+      writeLine(T("return new ") + className + metaClass + T("(refCountedPointerFromThis(this), arguments, baseType);"), condition.isEmpty() ? 0 : 1);
+    }
+  }
+
+  String generateSpecializationCondition(XmlElement* xml)
+  {
+    String res;
+    forEachXmlChildElementWithTagName(*xml, elt, T("specialization"))
+    {
+      if (res.isNotEmpty())
+        res += " && ";
+      res += "inheritsFrom(context, arguments, " + elt->getStringAttribute(T("name"), T("???")).quoted() + T(", ") + elt->getStringAttribute(T("type"), T("???")).quoted() + T(")");
+    }
+    return res;
+  }
+
 
   /*
   ** Code

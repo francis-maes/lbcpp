@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "ObjectTreeView.h"
-#include <lbcpp/Core/Container.h>
+#include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/Loader.h>
 #include <lbcpp/Core/Double.h>
 #include <lbcpp/Data/DoubleVector.h>
@@ -117,23 +117,23 @@ public:
         count = maxCount;
       }
       subObjects.reserve(subObjects.size() + count);
-      bool isDoubleVector = container.dynamicCast<DoubleVector>();
-    
-      if (isDoubleVector && !options.showMissingVariables)
-      {
-        // skip 0 values for double vectors
-        for (size_t i = 0; i < count; ++i)
-        {
-          ObjectPtr elt = container->getElement(i);
-          jassert(elt.dynamicCast<Double>());
-          if (Double::get(elt) != 0.0)
-            addSubObject(container->getElementName(i), container->getElement(i));
-        }
-      }
-      else
-        for (size_t i = 0; i < count; ++i)
-          addSubObject(container->getElementName(i), container->getElement(i));
+      for (size_t i = 0; i < count; ++i)
+        addSubObject(container->getElementName(i), container->getElement(i));
+      mightContainSubItemsFlag = true;
+      return;
+    }
 
+    if (object.isInstanceOf<DoubleVector>())
+    {
+      DoubleVectorPtr doubleVector = object.staticCast<DoubleVector>();
+      // skip 0 values for double vectors
+      for (size_t i = 0; i < doubleVector->getNumElements(); ++i)
+      {
+        ObjectPtr elt = doubleVector->getElement(i);
+        jassert(elt.dynamicCast<Double>());
+        if (Double::get(elt) != 0.0)
+          addSubObject(container->getElementName(i), container->getElement(i));
+      }
       mightContainSubItemsFlag = true;
       return;
     }

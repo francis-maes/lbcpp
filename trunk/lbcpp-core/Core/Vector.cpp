@@ -8,9 +8,229 @@
 #include "precompiled.h"
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Data/DoubleVector.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
+
+/*
+** Container
+*/
+ClassPtr Container::getTemplateParameter(ClassPtr type)
+{
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  jassert(dvType && dvType->getNumTemplateArguments() == 1);
+  ClassPtr res = dvType->getTemplateArgument(0);
+  jassert(res);
+  return res;
+}
+
+bool Container::getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res)
+{
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  if (!dvType)
+  {
+    context.errorCallback(type->getName() + T(" is not a Container"));
+    return false;
+  }
+  jassert(dvType->getNumTemplateArguments() == 1);
+  res = dvType->getTemplateArgument(0);
+  return true;
+}
+
+VectorPtr Container::toVector() const
+{
+  size_t n = getNumElements();
+  VectorPtr res = vector(getElementsType(), n);
+  for (size_t i = 0; i < n; ++i)
+    res->setElement(i, getElement(i));
+  return res;
+}
+
+string Container::toString() const
+{
+  string res;
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+  {
+    res += getElement(i)->toString();
+    if (i < n - 1)
+      res += T(", ");
+  }
+  return res;
+}
+
+string Container::toShortString() const
+{
+  size_t n = getNumElements(); 
+  if (n == 0)
+    return T("<empty>");
+  if (n < 10)
+  {
+    string res;
+    for (size_t i = 0; i < n; ++i)
+    {
+      res += getElement(i)->toShortString();
+      if (i < n - 1)
+        res += T(", ");
+    }
+    return res;
+  }
+  else
+    return string((int)n) + T(" elements...");
+}
+
+void Container::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  Object::clone(context, target);
+  ContainerPtr targetContainer = target.staticCast<Container>();
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    targetContainer->setElement(i, getElement(i));
+}
+
+int Container::compare(const ObjectPtr& otherObject) const
+{
+  if (otherObject.get() == this)
+    return 0;
+  if (otherObject.isInstanceOf<Container>())
+  {
+    const ContainerPtr& other = otherObject.staticCast<Container>();
+    size_t n = getNumElements();
+    if (n != other->getNumElements())
+      return (int)n - (int)other->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      int c = Object::compare(getElement(i), other->getElement(i));
+      if (c != 0)
+        return c;
+    }
+    return 0;
+  }
+  else
+    return Object::compare(otherObject);
+}
+
+string Container::getElementName(size_t index) const
+  {return getElementsEnumeration()->getElementName(index);}
+
+int Container::findElement(const ObjectPtr& value) const
+{
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    if (Object::equals(getElement(i), value))
+      return (int)i;
+  return -1;
+}
+
+ClassPtr Container::computeElementsCommonBaseType() const
+{
+  size_t n = getNumElements();
+  if (n == 0)
+    return objectClass;
+  ClassPtr type = getElement(0)->getClass();
+  for (size_t i = 1; i < n; ++i)
+  {
+    type = Class::findCommonBaseClass(type, getElement(i)->getClass());
+    if (type == objectClass)
+      break;
+  }
+  return type;
+}
+
+void Container::saveToXml(XmlExporter& exporter) const
+{
+  Object::saveToXml(exporter);
+  size_t n = getNumElements();
+  exporter.setAttribute(T("size"), (int)n);
+  ClassPtr elementsType = getElementsType();
+  if (n > 1)
+  {
+    ClassPtr actualType = computeElementsCommonBaseType();
+    if (elementsType != actualType)
+    {
+      exporter.enter(T("elementsActualType"));
+      exporter.writeType(actualType);
+      exporter.leave();
+      elementsType = actualType;
+    }
+  }
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    ObjectPtr element = getElement(i);
+    if (element)
+      exporter.saveElement(i, element, elementsType);
+  }
+}
+
+bool Container::loadFromXml(XmlImporter& importer)
+{
+  if (!Object::loadFromXml(importer))
+    return false;
+
+  ClassPtr elementsType = getElementsType();
+  juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(T("elementsActualType"));
+  if (elementsActualType)
+  {
+    importer.enter(elementsActualType);
+    elementsType = importer.loadType(ClassPtr());
+    importer.leave();
+    if (!elementsType)
+      return false;
+  }
+
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("element"))
+  {
+    int index = child->getIntAttribute(T("index"), -1);
+    if (index < 0)
+    {
+      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + string(index));
+      return false;
+    }
+    
+    ObjectPtr value = importer.loadObject(child, elementsType);
+    setElement((size_t)index, value);
+  }
+  return true;
+}
+
+/*
+** Lua
+*/
+int Container::__len(LuaState& state) const
+{ 
+  state.pushInteger(getNumElements());
+  return 1;
+}
+
+int Container::__newIndex(LuaState& state)
+{
+  if (!state.isInteger(1))
+    return Object::__newIndex(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
+    state.error("Invalid index in Container::set()");
+  else
+    setElement(index - 1, state.checkObject(2));
+  return 0;
+}
+
+int Container::__index(LuaState& state) const
+{
+  if (!state.isInteger(1))
+    return Object::__index(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
+  {
+    state.error("Invalid index in Container::get()");
+    return 0;
+  }
+
+  state.pushObject(getElement(index - 1));
+  return 1;
+}
 
 /*
 ** Vector
@@ -108,19 +328,9 @@ int Vector::append(LuaState& state)
 }
 
 /*
-** BooleanVector
+** BVector
 */
-BooleanVector::BooleanVector(size_t initialSize, bool initialValue)
-  : Vector(booleanVectorClass), v(initialSize, initialValue ? 1 : 0)
-{
-}
-
-BooleanVector::BooleanVector(size_t initialSize)
-  : Vector(booleanVectorClass), v(initialSize, 2)
-{
-}
-
-string BooleanVector::toString() const
+string BVector::toString() const
 {
   string res = T("[");
   for (size_t i = 0; i < v.size(); ++i)
@@ -137,204 +347,38 @@ string BooleanVector::toString() const
   return res;
 }  
 
-size_t BooleanVector::getSizeInBytes(bool recursively) const
+size_t BVector::getSizeInBytes(bool recursively) const
   {return Object::getSizeInBytes(recursively) + sizeof (v) + v.size() * sizeof (unsigned char);}
 
-size_t BooleanVector::getNumElements() const
-  {return v.size();}
-
-static inline unsigned char booleanObjectToByte(const ObjectPtr& value)
-  {return (value ? (Boolean::get(value) ? 1 : 0) : 2);}
-
-ObjectPtr BooleanVector::getElement(size_t index) const
-{
-  jassert(index < v.size());
-  unsigned char b = v[index];
-  if (b == 2)
-    return ObjectPtr();
-  else
-    return new Boolean(b == 1);
-}
-
-void BooleanVector::setElement(size_t index, const ObjectPtr& value)
-  {v[index] = booleanObjectToByte(value);}
-
-void BooleanVector::reserve(size_t size)
-  {v.reserve(size);}
-
-void BooleanVector::resize(size_t size)
-  {v.resize(size);}
-
-void BooleanVector::clear()
-  {v.clear();}
-
-void BooleanVector::prepend(const ObjectPtr& value)
-  {v.insert(v.begin(), booleanObjectToByte(value));}
-
-void BooleanVector::append(const ObjectPtr& value)
-  {v.push_back(booleanObjectToByte(value));}
-
-void BooleanVector::remove(size_t index)
-  {v.erase(v.begin() + index);}
+/*
+** IVector / DVector / SVector
+*/
+juce::int64 IVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
+double DVector::missingValue = doubleMissingValue;
+string SVector::missingValue = T("<missing string>");
 
 /*
-** IntegerVector
+** OVector
 */
-juce::int64 IntegerVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
+ObjectPtr OVector::missingValue = ObjectPtr();
 
-IntegerVector::IntegerVector(ClassPtr elementsType, size_t initialSize, juce::int64 initialValue)
-  : Vector(integerVectorClass(elementsType)), v(initialSize, initialValue)
-{
-}
-
-IntegerVector::IntegerVector(ClassPtr elementsType, size_t initialSize)
-  : Vector(integerVectorClass(elementsType)), v(initialSize, missingValue)
-{
-}
-
-size_t IntegerVector::getNumElements() const
-  {return v.size();}
-
-ObjectPtr IntegerVector::getElement(size_t index) const
-{
-  jassert(index < v.size());
-  if (v[index] == missingValue)
-    return ObjectPtr();
-  else
-    return Integer::create(getElementsType(), v[index]);
-}
-
-static inline juce::int64 integerObjectToInt(const ObjectPtr& value)
-  {return (value ? Integer::get(value) : IntegerVector::missingValue);}
-
-void IntegerVector::setElement(size_t index, const ObjectPtr& value)
-  {v[index] = integerObjectToInt(value);}
-
-void IntegerVector::reserve(size_t size)
-  {v.reserve(size);}
-
-void IntegerVector::resize(size_t size)
-  {v.resize(size);}
-
-void IntegerVector::clear()
-  {v.clear();}
-
-void IntegerVector::prepend(const ObjectPtr& value)
-  {v.insert(v.begin(), integerObjectToInt(value));}
-
-void IntegerVector::append(const ObjectPtr& value)
-  {v.push_back(integerObjectToInt(value));}
-
-void IntegerVector::remove(size_t index)
-  {v.erase(v.begin() + index);}
-
-/*
-** ObjectVector
-*/
-ObjectVector::ObjectVector(ClassPtr elementsType, size_t initialSize)
-  : Vector(objectVectorClass(elementsType)), objects(new std::vector<ObjectPtr>(initialSize)), ownObjects(true)
-{
-}
-
-ObjectVector::ObjectVector(ClassPtr thisClass)
-  : Vector(thisClass), objects(new std::vector<ObjectPtr>()), ownObjects(true)
-{
-}
-
-ObjectVector::ObjectVector(const std::vector<ObjectPtr>& reference, ClassPtr elementsType)
-  : Vector(objectVectorClass(elementsType ? elementsType : (ClassPtr)(reference.size() ? reference[0]->getClass() : objectClass))),
-    objects(const_cast<std::vector<ObjectPtr>* >(&reference)), ownObjects(false)
-{
-}
-
-ObjectVector::ObjectVector(std::vector<ObjectPtr>& reference, ClassPtr elementsType)
-  : Vector(objectVectorClass(elementsType ? elementsType : (ClassPtr)(reference.size() ? reference[0]->getClass() : objectClass))),
-    objects(&reference), ownObjects(false)
-{
-}
-
-ObjectVector::ObjectVector() : objects(NULL), ownObjects(false)
-{
-}
-
-ObjectVector::~ObjectVector()
-{
-  if (ownObjects)
-  {
-    jassert(objects);
-    delete objects;
-  }
-}
-
-void ObjectVector::clear()
-  {objects->clear();}
-
-void ObjectVector::reserve(size_t size)
-{
-  if (!objects)
-  {
-    objects = new std::vector<ObjectPtr>();
-    ownObjects = true;
-  }
-  objects->reserve(size);
-}
-
-void ObjectVector::resize(size_t size)
-{
-  if (objects)
-    objects->resize(size);
-  else
-  {
-    objects = new std::vector<ObjectPtr>(size);
-    ownObjects = true;
-  }
-}
-
-void ObjectVector::prepend(const ObjectPtr& value)
-  {objects->insert(objects->begin(), value);}
-
-void ObjectVector::append(const ObjectPtr& value)
-{
-  if (!objects)
-    reserve(5);
-  objects->push_back(value);
-}
-
-void ObjectVector::remove(size_t index)
-  {objects->erase(objects->begin() + index);}
-
-size_t ObjectVector::getNumElements() const
-  {return objects ? objects->size() : 0;}
-
-ObjectPtr ObjectVector::getElement(size_t index) const
-{
-  jassert(index < objects->size());
-  return (*objects)[index];
-}
-
-void ObjectVector::setElement(size_t index, const ObjectPtr& value)
-  {jassert(index < objects->size()); (*objects)[index] = value;}
-
-size_t ObjectVector::getSizeInBytes(bool recursively) const
+size_t OVector::getSizeInBytes(bool recursively) const
 {
   size_t res = Object::getSizeInBytes(recursively);
-  if (objects && ownObjects)
+  // all the objects are assumed to have the same size
+  size_t sizePerObject = 0;
+  if (recursively)
   {
-    // all the objects are assumed to have the same size
-    size_t sizePerObject = 0;
-    if (recursively)
-    {
-      for (size_t i = 0; i < objects->size(); ++i)
-        if ((*objects)[i])
-        {
-          sizePerObject = (*objects)[i]->getSizeInBytes(recursively);
-          break;
-        }
-    }
-    else
-      sizePerObject = sizeof (ObjectPtr);
-    res += sizeof (*objects) + objects->size() * sizePerObject;
+    for (size_t i = 0; i < v.size(); ++i)
+      if (v[i])
+      {
+        sizePerObject = v[i]->getSizeInBytes(recursively);
+        break;
+      }
   }
+  else
+    sizePerObject = sizeof (ObjectPtr);
+  res += sizeof (v) + v.size() * sizePerObject;
   return res;
 }
 
@@ -345,19 +389,13 @@ VectorPtr lbcpp::vector(ClassPtr elementsType, size_t initialSize)
 {
   jassert(elementsType);
   if (elementsType->inheritsFrom(booleanClass))
-    return booleanVector(initialSize);
+    return new BVector(elementsType, initialSize);
+  else if (elementsType->inheritsFrom(integerClass))
+    return new IVector(elementsType, initialSize);
   else if (elementsType->inheritsFrom(doubleClass))
-  {
-    if (elementsType->inheritsFrom(doubleClass))
-      return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass), initialSize);
-    else
-      return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
-  }
-  else if (elementsType->inheritsFrom(integerClass) || elementsType.isInstanceOf<Enumeration>())
-    return integerVector(elementsType, initialSize);
+    return new DVector(elementsType, initialSize);
+  else if (elementsType->inheritsFrom(stringClass))
+    return new SVector(elementsType, initialSize);
   else
-  {
-    jassert(elementsType->inheritsFrom(objectClass));
-    return objectVector(elementsType, initialSize);
-  }
+    return new OVector(elementsType, initialSize);
 }

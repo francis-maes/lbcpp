@@ -31,24 +31,24 @@
   <!-- Domain -->
   <class name="Domain" abstract="yes"/>
   <class name="DiscreteDomain" base="Domain">
-    <variable type="ObjectVector[Object]" name="elements"/>
+    <variable type="Vector[Object]" name="elements"/>
   </class>
   <class name="ContinuousDomain" base="Domain">
-    <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
+    <variable type="Vector[Pair[Double,Double]]" name="limits"/>
   </class>
 
   <!-- Fitness -->
   <class name="FitnessLimits" base="ContinuousDomain"/>
 
   <class name="Fitness">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
+    <variable type="Vector[Double]" name="values"/>
     <variable type="FitnessLimits" name="limits"/>
   </class>
 
   <!-- Solution Vectors -->
   <class name="SolutionVector">
     <variable type="FitnessLimits" name="limits"/>
-    <variable type="ObjectVector[Pair[Object,Fitness]]" name="solutions"/>
+    <variable type="Vector[Pair[Object,Fitness]]" name="solutions"/>
   </class>
   <class name="ParetoFront" base="SolutionVector"/>
 

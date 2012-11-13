@@ -17,9 +17,6 @@ namespace lbcpp
 
 class FeatureGeneratorCallback;
 
-class FeatureGenerator;
-typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
-
 class DoubleVector;
 typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
 
@@ -29,18 +26,23 @@ typedef ReferenceCountedObjectPtr<SparseDoubleVector> SparseDoubleVectorPtr;
 class DenseDoubleVector;
 typedef ReferenceCountedObjectPtr<DenseDoubleVector> DenseDoubleVectorPtr;
 
-class LazyDoubleVector;
-typedef ReferenceCountedObjectPtr<LazyDoubleVector> LazyDoubleVectorPtr;
-
 class CompositeDoubleVector;
 typedef ReferenceCountedObjectPtr<CompositeDoubleVector> CompositeDoubleVectorPtr;
 
-class DoubleVector : public Vector
+class DoubleVector : public Object
 {
 public:
   DoubleVector(ClassPtr thisClass)
-    : Vector(thisClass) {}
+    : Object(thisClass) {}
   DoubleVector() {}
+
+  // tmp
+  virtual size_t getNumElements() const = 0;
+  virtual ObjectPtr getElement(size_t index) const = 0;
+  virtual void setElement(size_t index, const ObjectPtr& value) = 0;
+  virtual string getElementName(size_t index) const
+    {return getElementsEnumeration()->getElementName(index);}
+  virtual void append(const ObjectPtr& object) const {jassertfalse;}
 
   virtual EnumerationPtr getElementsEnumeration() const
     {return thisClass->getTemplateArgument(0);}

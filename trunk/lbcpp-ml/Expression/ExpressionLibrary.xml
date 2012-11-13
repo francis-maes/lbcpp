@@ -19,10 +19,10 @@
   </class>
   <class name="FunctionExpression" base="Expression">
     <variable type="Function" name="function"/>
-    <variable type="ObjectVector[Expression]" name="arguments"/>
+    <variable type="Vector[Expression]" name="arguments"/>
   </class>
   <class name="SequenceExpression" base="Expression" abstract="yes">
-    <variable type="ObjectVector[Expression]" name="nodes"/>
+    <variable type="Vector[Expression]" name="nodes"/>
   </class>
   <class name="ScalarSumExpression" base="SequenceExpression">
     <variable type="Boolean" name="convertToProbabilities"/>
@@ -84,12 +84,12 @@
 
   <!-- Expression RPN -->
   <class name="PostfixExpressionSequence" base="Object">
-    <variable type="ObjectVector[Object]" name="sequence"/>
+    <variable type="Vector[Object]" name="sequence"/>
   </class>
   
   <class name="PostfixExpressionTypeState">
     <variable type="PositiveInteger" name="depth"/>
-    <variable type="ObjectVector[Class]" name="stack"/>
+    <variable type="Vector[Class]" name="stack"/>
   </class>
   <class name="PostfixExpressionTypeSpace"/>
 
@@ -97,21 +97,21 @@
   <class name="ExpressionState" base="SearchState" abstract="yes">
     <variable type="ExpressionDomain" name="domain"/>
     <variable type="PositiveInteger" name="maxSize"/>
-    <variable type="ObjectVector[Object]" name="trajectory"/>
+    <variable type="Vector[Object]" name="trajectory"/>
   </class>
 
   <class name="PrefixExpressionState" base="ExpressionState">
     <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
 
     <variable type="PositiveInteger" name="numLeafs"/>
-    <variable type="ObjectVector[DiscreteDomain]" name="actionsByMaxArity"/>
+    <variable type="Vector[DiscreteDomain]" name="actionsByMaxArity"/>
   </class>
 
   <class name="PostfixExpressionState" base="ExpressionState">
     <constructor arguments="ExpressionDomainPtr domain, size_t maxSize"/>
     <variable type="PositiveInteger" name="maxFunctionArity"/>
-    <variable type="ObjectVector[DiscreteDomain]" name="actionsCacheByCase"/>
-    <variable type="ObjectVector[Expression]" name="stack"/>
+    <variable type="Vector[DiscreteDomain]" name="actionsCacheByCase"/>
+    <variable type="Vector[Expression]" name="stack"/>
     <variable type="Boolean" name="isYielded"/>
   </class>
 

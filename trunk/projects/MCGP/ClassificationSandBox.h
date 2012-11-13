@@ -160,7 +160,7 @@ private:
   {
     if (tsFile.existsAsFile())
     {
-      ContainerPtr convertedData = convertExamplesToVectors(data.staticCast<ObjectVector>());
+      ContainerPtr convertedData = convertExamplesToVectors(data.staticCast<OVector>());
 
       TextParserPtr parser = new TestingSetParser(context, tsFile, convertedData);
       ContainerPtr splits = parser->load(0);
@@ -190,7 +190,7 @@ private:
     return true;
   }
 
-  static ObjectVectorPtr convertExamplesToVectors(const ContainerPtr& examples)
+  static OVectorPtr convertExamplesToVectors(const ContainerPtr& examples)
   {
     PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
     
@@ -200,7 +200,7 @@ private:
 
     size_t n = examples->getNumElements();
 
-    ObjectVectorPtr res = new ObjectVector(exampleType, n);
+    OVectorPtr res = new OVector(exampleType, n);
     for (size_t i = 0; i < n; ++i)
     {
       PairPtr example =  examples->getElement(i).getObjectAndCast<Pair>();

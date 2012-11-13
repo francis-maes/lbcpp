@@ -141,7 +141,7 @@ public:
     SparseDoubleVectorPtr stateFeatures = features.compute(board, featuresComplexity);
 
     size_t n = actions->getNumElements();
-    ObjectVectorPtr res = new ObjectVector(simpleSparseDoubleVectorClass, n);
+    OVectorPtr res = new OVector(simpleSparseDoubleVectorClass, n);
     for (size_t i = 0; i < n; ++i)
     {
       MorpionActionPtr action = actions->getElement(i).getObjectAndCast<MorpionAction>();
@@ -168,7 +168,7 @@ public:
     updateAvailableActions();
 
 #if 0
-    ObjectVectorPtr dbg = computeAvailableActionsReference();
+    OVectorPtr dbg = computeAvailableActionsReference();
     size_t correctSize = dbg->getNumElements();
     size_t newSize = availableActions->getNumElements();
     //jassert(correctSize == newSize);
@@ -472,9 +472,9 @@ protected:
   }
 
 #if 0
-  ObjectVectorPtr computeAvailableActionsReference() const
+  OVectorPtr computeAvailableActionsReference() const
   {
-		ObjectVectorPtr res = new ObjectVector(morpionActionClass, 0);
+		OVectorPtr res = new OVector(morpionActionClass, 0);
     int minSizeX, maxSizeX, minSizeY, maxSizeY;
     board.getXRange(minSizeX, maxSizeX);
     board.getYRange(minSizeY, maxSizeY);
@@ -485,7 +485,7 @@ protected:
     return res;    
   }
 
-  void exhaustiveList(int x, int y, ObjectVectorPtr res) const
+  void exhaustiveList(int x, int y, OVectorPtr res) const
   {
     MorpionPoint position(x, y);
     

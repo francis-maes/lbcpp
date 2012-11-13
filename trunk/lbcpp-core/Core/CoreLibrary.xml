@@ -82,7 +82,7 @@
   <class name="Class" base="NameableObject" abstract="yes">
     <variable type="Class" name="baseType"/>
     <variable type="TemplateClass" name="templateType"/>
-    <variable type="ObjectVector[Class]" name="templateArguments"/>
+    <variable type="Vector[Class]" name="templateArguments"/>
     <variable type="String" name="shortName"/>
   </class>
 
@@ -96,15 +96,15 @@
   <class name="Enumeration" base="Class" abstract="yes"/>
 
   <class name="DefaultEnumeration" base="Enumeration">
-    <variable type="ObjectVector[EnumerationElement]" name="elements"/>
+    <variable type="Vector[EnumerationElement]" name="elements"/>
   </class>
 
   <class name="ConcatenateEnumeration" base="Enumeration">
-    <variable type="ObjectVector[Pair[String,Enumeration]]" name="subEnumerations"/>
+    <variable type="Vector[Pair[String,Enumeration]]" name="subEnumerations"/>
   </class>
 
   <class name="DefaultClass" base="Class">
-    <variable type="ObjectVector[VariableSignature]" name="variables"/>
+    <variable type="Vector[VariableSignature]" name="variables"/>
     <variable type="Boolean" name="abstractClass"/>
   </class>
 
@@ -155,114 +155,36 @@
   <template name="Pair" base="Object">
     <parameter name="firstType" type="Object"/>
     <parameter name="secondType" type="Object"/>
-
-    <variable type="firstType" name="first"/>
-    <variable type="secondType" name="second"/>
+    <class>
+      <variable type="firstType" name="first"/>
+      <variable type="secondType" name="second"/>
+    </class>
   </template>
 
   <!-- Container -->
   <template name="Container" base="Object" abstract="yes">
     <parameter name="elementsType"/>
+    <class/>
   </template>
   
   <!-- Vector -->
-  <template name="Vector" base="Container[elementsType]" abstract="yes">
+  <template name="Vector" base="Container[elementsType]">
     <parameter name="elementsType"/>
-    <function lang="lua" name="resize"/>
-    <function lang="lua" name="append"/>
+    <class name="BVector">
+      <specialization name="elementsType" type="Boolean"/>
+    </class>
+    <class name="IVector">
+      <specialization name="elementsType" type="Integer"/>
+    </class>
+    <class name="DVector">
+      <specialization name="elementsType" type="Double"/>
+    </class>
+    <class name="SVector">
+      <specialization name="elementsType" type="String"/>
+    </class>
+    <class name="OVector"/>
   </template>
 
-  <template name="ObjectVector" base="Vector[elementsType]">
-    <parameter name="elementsType"/>
-    <constructor arguments="ClassPtr elementsType, size_t initialSize" parameters="elementsType"/>
-  </template>
-
-  <class name="BooleanVector" base="Vector[Boolean]">
-    <constructor arguments="size_t initialSize"/>
-  </class>
-
-  <template name="IntegerVector" base="Vector[Integer]">
-    <parameter name="elementsType"/>
-    <constructor arguments="ClassPtr elementsType, size_t initialSize" parameters="elementsType"/>
-  </class>
-
-  <template name="AddMissingToEnumeration" metaclass="Enumeration">
-    <parameter name="enumeration" type="EnumValue"/>
-    <code>
-      EnumerationPtr getEnumeration() const
-        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
- 
-      virtual size_t getNumElements() const
-        {return getEnumeration()-&gt;getNumElements() + 1;}
-
-      virtual EnumerationElementPtr getElement(size_t index) const
-      {
-        EnumerationPtr enumeration = getEnumeration();
-        if (index &lt; enumeration-&gt;getNumElements())
-          return enumeration->getElement(index);
-        else
-          return new EnumerationElement(T("missing"), T("_"), string::empty, T("Missing Value"));
-      }
-      </code>
-  </template>
-
-  <template name="AddEntropyToEnumeration" metaclass="Enumeration">
-    <parameter name="enumeration" type="EnumValue"/>
-    <code>
-      EnumerationPtr getEnumeration() const
-        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
- 
-      virtual size_t getNumElements() const
-        {return getEnumeration()-&gt;getNumElements() + 1;}
-
-      virtual EnumerationElementPtr getElement(size_t index) const
-      {
-        EnumerationPtr enumeration = getEnumeration();
-        if (index &lt; enumeration-&gt;getNumElements())
-          return enumeration->getElement(index);
-        else
-          return new EnumerationElement(T("entropy"), string::empty, string::empty, T("Entropy"));
-      }
-      </code>
-  </template>
-
-  <template name="VariablesEnumeration" metaclass="Enumeration">
-    <parameter name="class" type="Object"/>
-    <code>
-      ClassPtr getTargetClass() const
-        {return getTemplateArgument(0).dynamicCast&lt;Class&gt;();}
- 
-      virtual size_t getNumElements() const
-        {return getTargetClass()-&gt;getNumMemberVariables();}
-
-      virtual EnumerationElementPtr getElement(size_t index) const
-      {
-        VariableSignaturePtr variable = getTargetClass()-&gt;getMemberVariable(index);
-        return new EnumerationElement(variable->getName(), string::empty, variable->getShortName(), variable->getDescription());
-      }
-    </code>
-  </template>
-  
-  <enumeration name="Singleton">
-    <value name="singleton" oneLetterCode="e"/>
-  </enumeration>
-  
-  <enumeration name="ExistOrMissing">
-    <value name="exist" oneLetterCode="e"/>
-    <value name="missing" oneLetterCode="m"/>
-  </enumeration>
-
-  <enumeration name="FalseOrTrue">
-    <value name="false" oneLetterCode="f"/>
-    <value name="true" oneLetterCode="t"/>
-  </enumeration>
-
-  <enumeration name="FalseTrueOrMissing">
-    <value name="false" oneLetterCode="f"/>
-    <value name="true" oneLetterCode="t"/>
-    <value name="missing" oneLetterCode="m"/>
-  </enumeration>
-  
   <class name="PositiveIntegerEnumeration" metaclass="Enumeration">
     <code>
       virtual size_t getNumElements() const
@@ -273,45 +195,12 @@
         {return name.getIntValue();}
     </code>
   </class>
-  
-  <template name="CartesianProductEnumeration" metaclass="Enumeration">
-    <parameter name="firstEnumeration" type="EnumValue"/>
-    <parameter name="secondEnumeration" type="EnumValue"/>
-    <code>
-      EnumerationPtr getFirstEnumeration() const
-        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
-      
-      EnumerationPtr getSecondEnumeration() const
-        {return getTemplateArgument(1).dynamicCast&lt;Enumeration&gt;();}
- 
-      virtual size_t getNumElements() const
-        {return getFirstEnumeration()-&gt;getNumElements() * getSecondEnumeration()-&gt;getNumElements();}
-
-      virtual EnumerationElementPtr getElement(size_t index) const
-      {
-        if (index &gt;= getNumElements())
-          return new EnumerationElement(T("missing"), T("_"), string::empty, T("Missing Value"));
-
-        EnumerationPtr firstEnumeration = getFirstEnumeration();
-        EnumerationPtr secondEnumeration = getSecondEnumeration();
-        size_t numSecondElements = secondEnumeration-&gt;getNumElements();
-        EnumerationElementPtr firstElement = firstEnumeration->getElement(index / numSecondElements);
-        EnumerationElementPtr secondElement = secondEnumeration->getElement(index % numSecondElements);
-
-        return new EnumerationElement(T("(") + firstElement-&gt;getName() + T(", ") + secondElement-&gt;getName() + T(")"),
-                                      string::empty,
-                                      firstElement-&gt;getShortName() + T("x") + secondElement-&gt;getShortName(),
-                                      T("Cartesian Product (") + firstElement-&gt;getDescription() +
-                                            T(", ") + secondElement-&gt;getDescription() + T(")"));
-      }
-      </code>
-  </template>
 
   <!-- XmlElement -->
   <class name="XmlElement" base="Object">
     <variable type="String" name="tagName"/>
-    <variable type="ObjectVector[XmlElement]" name="childElements"/>
-    <variable type="ObjectVector[Pair[String, String]]" name="attributes"/>
+    <variable type="Vector[XmlElement]" name="childElements"/>
+    <variable type="Vector[Pair[String, String]]" name="attributes"/>
     <variable type="String" name="text"/>
   </class>
 
