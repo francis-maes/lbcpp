@@ -56,7 +56,7 @@ public:
 
     if (index == 0)
     {
-      ObjectVectorPtr res = new ObjectVector(enumerationClass, 1);
+      OVectorPtr res = new OVector(enumerationClass, 1);
       res->set(0, features);
       return res;
     }
@@ -198,7 +198,7 @@ public:
     if (!features || features->getNumElements() == 0)
       return ContainerPtr();
 
-    ObjectVectorPtr res = new ObjectVector(enumerationClass, 1);
+    OVectorPtr res = new OVector(enumerationClass, 1);
     res->set(0, features);
     return res;
   }

@@ -10,7 +10,6 @@ GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/Loader/CoreLoaderLibrary.xml CoreLoaderLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
@@ -56,8 +55,6 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/Library.h
   Core/Library.cpp
   ../include/lbcpp/Core/Pair.h
-  ../include/lbcpp/Core/Container.h
-  Core/Container.cpp
   ../include/lbcpp/Core/Vector.h
   Core/Vector.cpp
   ../include/lbcpp/Core/Loader.h
@@ -112,15 +109,6 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/LibSVMDataParser.cpp
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
-)
-
-SET(LBCPP_DATA_CONTAINER_SOURCES
-  Data/Container/SubsetContainer.h
-  Data/Container/DuplicatedContainer.h
-  Data/Container/RangeContainer.h
-  Data/Container/ExcludeRangeContainer.h
-  Data/Container/ContainerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp
 )
 
 #### Execution ####
@@ -272,7 +260,6 @@ SET(LBCPP_SOURCES
   # Data
   ${LBCPP_DATA_SOURCES}
     ${LBCPP_DATA_STREAM_SOURCES}
-    ${LBCPP_DATA_CONTAINER_SOURCES}
   
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
@@ -308,7 +295,6 @@ SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
-SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})

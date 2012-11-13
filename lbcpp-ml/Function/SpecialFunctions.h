@@ -51,8 +51,8 @@ public:
     jassert(scalars->size());
     if (scalars->getElementsType() == doubleClass)
     {
-      BooleanVectorPtr res = new BooleanVector(scalars->size());
-      unsigned char* dest = res->getData();
+      BVectorPtr res = new BVector(scalars->size());
+      unsigned char* dest = res->getDataPointer();
       for (DataVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
       {
         double value = it.getRawDouble();
@@ -141,9 +141,6 @@ public:
 class NormalizerFunction : public UnaryDoubleFunction
 {
 public:
-  NormalizerFunction()
-    {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityClass);}
-
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
     {return probabilityClass;}
 

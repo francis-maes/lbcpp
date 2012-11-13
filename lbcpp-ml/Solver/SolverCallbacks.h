@@ -117,7 +117,7 @@ protected:
 class EvaluatorSolverCallback : public SolverCallback
 {
 public:
-  EvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes)
+  EvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes)
     : evaluationPeriod(evaluationPeriod), cpuTimes(cpuTimes), numEvaluations(0) {}
   EvaluatorSolverCallback() : evaluationPeriod(0), numEvaluations(0) {}
   
@@ -135,7 +135,7 @@ public:
     if (numEvaluations % evaluationPeriod == 0)
     {
       evaluate(context, solver);
-      cpuTimes->appendValue(Time::getHighResolutionCounter() - startTime);
+      cpuTimes->append(Time::getHighResolutionCounter() - startTime);
     }
   }
 
@@ -143,7 +143,7 @@ protected:
   friend class EvaluatorSolverCallbackClass;
 
   size_t evaluationPeriod;
-  DenseDoubleVectorPtr cpuTimes;
+  DVectorPtr cpuTimes;
 
   size_t numEvaluations;
   double startTime;
@@ -152,7 +152,7 @@ protected:
 class SingleObjectiveEvaluatorSolverCallback : public EvaluatorSolverCallback
 {
 public:
-  SingleObjectiveEvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores)
+  SingleObjectiveEvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores)
     : EvaluatorSolverCallback(evaluationPeriod, cpuTimes), scores(scores) {}
   SingleObjectiveEvaluatorSolverCallback() {}
   
@@ -163,7 +163,7 @@ public:
   }
 
   virtual void evaluate(ExecutionContext& context, SolverPtr solver)
-    {scores->appendValue(bestFitness->getValue(0));}
+    {scores->append(bestFitness->getValue(0));}
 
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
@@ -175,14 +175,14 @@ public:
 protected:
   friend class SingleObjectiveEvaluatorSolverCallbackClass;
 
-  DenseDoubleVectorPtr scores;
+  DVectorPtr scores;
   FitnessPtr bestFitness;
 };
 
 class HyperVolumeEvaluatorSolverCallback : public EvaluatorSolverCallback
 {
 public:
-  HyperVolumeEvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores)
+  HyperVolumeEvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores)
     : EvaluatorSolverCallback(evaluationPeriod, cpuTimes), scores(scores) {}
   HyperVolumeEvaluatorSolverCallback() {}
   
@@ -193,7 +193,7 @@ public:
   }
 
   virtual void evaluate(ExecutionContext& context, SolverPtr solver)
-    {scores->appendValue(front->computeHyperVolume(solver->getProblem()->getFitnessLimits()->getWorstPossibleFitness()));}
+    {scores->append(front->computeHyperVolume(solver->getProblem()->getFitnessLimits()->getWorstPossibleFitness()));}
 
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
@@ -204,7 +204,7 @@ public:
 protected:
   friend class HyperVolumeEvaluatorSolverCallbackClass;
 
-  DenseDoubleVectorPtr scores;
+  DVectorPtr scores;
   ParetoFrontPtr front;
 };
 

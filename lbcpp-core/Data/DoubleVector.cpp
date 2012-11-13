@@ -812,8 +812,8 @@ int SparseDoubleVector::append(LuaState& state)
       vector->appendValue((size_t)(index - 1), value);
     }
   }
-  else
-    DoubleVector::append(state);
+  //else
+  //  DoubleVector::append(state);
   return 0;
 }
 

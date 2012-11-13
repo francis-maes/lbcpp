@@ -38,57 +38,15 @@ public:
   {
     DataVectorPtr objects = inputs[0];
     size_t n = objects->size();
-    if (outputType->inheritsFrom(objectClass))
+    VectorPtr res = vector(outputType, n);
+    size_t i = 0;
+    for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
     {
-      ObjectVectorPtr res = new ObjectVector(outputType, n);
-      size_t i = 0;
-      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
-      {
-        const ObjectPtr& object = it.getRawObject();
-        if (object)
-          res->set(i, pthis().computeObject(object));
-      }
-      return new DataVector(objects->getIndices(), res);
+      const ObjectPtr& object = it.getRawObject();
+      if (object)
+        res->setElement(i, pthis().computeObject(object));
     }
-    else if (outputType->inheritsFrom(doubleClass))
-    {
-      DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, outputType, n, doubleMissingValue);
-      size_t i = 0;
-      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
-      {
-        const ObjectPtr& object = it.getRawObject();
-        if (object)
-          res->setValue(i, Double::get(pthis().computeObject(object)));
-      }
-      return new DataVector(objects->getIndices(), res);
-    }
-    else if (outputType->inheritsFrom(booleanClass))
-    {
-      BooleanVectorPtr res = new BooleanVector(n);
-      size_t i = 0;
-      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
-      {
-        const ObjectPtr& object = it.getRawObject();
-        if (object)
-        {
-          ObjectPtr v = pthis().computeObject(object);
-          res->getData()[i] = v ? 2 : (Boolean::get(v) ? 1 : 0);
-        }
-      }
-      return new DataVector(objects->getIndices(), res);
-    }
-    else
-    {
-      VectorPtr res = vector(outputType, n);
-      size_t i = 0;
-      for (DataVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
-      {
-        const ObjectPtr& object = it.getRawObject();
-        if (object)
-          res->setElement(i, pthis().computeObject(object));
-      }
-      return new DataVector(objects->getIndices(), res);
-    }
+    return new DataVector(objects->getIndices(), res);
   }
 
 protected:

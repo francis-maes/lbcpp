@@ -1,11 +1,4 @@
 
-
-Vector:
- * DoubleVector sans math
- * Cleaner doubleMissingValue
- * System de specialisation de templates
- * Finir de cleaner Vector
-
 Explorer:
  * Cassé: LuaCodeEditor/StringComponent/LuaCodeEditor
 

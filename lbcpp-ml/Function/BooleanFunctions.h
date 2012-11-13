@@ -38,8 +38,8 @@ public:
     DataVector::const_iterator it = inputs[0]->begin();
     size_t n = inputs[0]->size();
 
-    BooleanVectorPtr res = new BooleanVector(n);
-    unsigned char* dest = res->getData();
+    BVectorPtr res = new BVector(n);
+    unsigned char* dest = res->getDataPointer();
     const unsigned char* lim = dest + n;
     while (dest < lim)
     {
@@ -82,8 +82,8 @@ public:
     size_t n = inputs[0]->size();
     jassert(n == inputs[1]->size());
 
-    BooleanVectorPtr res = new BooleanVector(n);
-    unsigned char* dest = res->getData();
+    BVectorPtr res = new BVector(n);
+    unsigned char* dest = res->getDataPointer();
     const unsigned char* lim = dest + n;
     while (dest < lim)
     {
@@ -180,8 +180,8 @@ public:
     size_t n = inputs[0]->size();
     jassert(n == inputs[1]->size() && n == inputs[2]->size());
 
-    BooleanVectorPtr res = new BooleanVector(n);
-    unsigned char* dest = res->getData();
+    BVectorPtr res = new BVector(n);
+    unsigned char* dest = res->getDataPointer();
     const unsigned char* lim = dest + n;
     while (dest < lim)
     {

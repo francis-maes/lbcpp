@@ -135,6 +135,14 @@ void DefaultTemplateClass::addParameter(ExecutionContext& context, const string&
     addParameter(name, baseType);
 }
 
+bool DefaultTemplateClass::inheritsFrom(ExecutionContext& context, const std::vector<ClassPtr>& arguments, const string& parameterName, const string& baseTypeName) const
+{
+  int index = findParameter(parameterName);
+  jassert(index >= 0);
+  ClassPtr baseType = typeManager().getType(context, baseTypeName);
+  return arguments[index]->inheritsFrom(baseType);
+}
+
 int DefaultTemplateClass::findParameter(const string& name) const
 {
   for (size_t i = 0; i < parameters.size(); ++i)

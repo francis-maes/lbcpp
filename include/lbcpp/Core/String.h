@@ -28,6 +28,7 @@ public:
   const string& get() const
     {return value;}
   
+  static StringPtr create(ClassPtr type, const string& value);
   static string get(const ObjectPtr& object)
     {return object.staticCast<String>()->get();}
 

@@ -119,8 +119,8 @@ protected:
   {
     context.enterScope(optimizer->toShortString());
 
-    DenseDoubleVectorPtr cpuTimes = new DenseDoubleVector(0, 0.0);
-    DenseDoubleVectorPtr scores = new DenseDoubleVector(0, 0.0);
+    DVectorPtr cpuTimes = new DVector(0, 0.0);
+    DVectorPtr scores = new DVector(0, 0.0);
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     ParetoFrontPtr front = new ParetoFront();
     SolverCallbackPtr callback = compositeSolverCallback(
@@ -137,13 +137,13 @@ protected:
     {
       context.enterScope("curve");
 
-      for (size_t i = 0; i < scores->getNumValues(); ++i)
+      for (size_t i = 0; i < scores->getNumElements(); ++i)
       {
         size_t numEvaluations = i * evaluationPeriod;
         context.enterScope(string((int)numEvaluations));
         context.resultCallback("numEvaluations", numEvaluations);
-        context.resultCallback("score", scores->getValue(i));
-        context.resultCallback("cpuTime", cpuTimes->getValue(i));
+        context.resultCallback("score", scores->get(i));
+        context.resultCallback("cpuTime", cpuTimes->get(i));
         context.leaveScope();
       }
       context.leaveScope();
@@ -203,8 +203,8 @@ protected:
   {
     context.enterScope(optimizer->toShortString());
 
-    DenseDoubleVectorPtr cpuTimes = new DenseDoubleVector(0, 0.0);
-    DenseDoubleVectorPtr hyperVolumes = new DenseDoubleVector(0, 0.0);
+    DVectorPtr cpuTimes = new DVector();
+    DVectorPtr hyperVolumes = new DVector();
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     ParetoFrontPtr front = new ParetoFront();
     SolverCallbackPtr callback = compositeSolverCallback(
@@ -222,13 +222,13 @@ protected:
     {
       context.enterScope("curve");
 
-      for (size_t i = 0; i < hyperVolumes->getNumValues(); ++i)
+      for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)
       {
         size_t numEvaluations = i * evaluationPeriod;
         context.enterScope(string((int)numEvaluations));
         context.resultCallback("numEvaluations", numEvaluations);
-        context.resultCallback("hyperVolume", hyperVolumes->getValue(i));
-        context.resultCallback("cpuTime", cpuTimes->getValue(i));
+        context.resultCallback("hyperVolume", hyperVolumes->get(i));
+        context.resultCallback("cpuTime", cpuTimes->get(i));
         context.leaveScope();
       }
       context.leaveScope();

@@ -92,7 +92,7 @@ class CompositeWorkUnit : public WorkUnit
 {
 public:
   CompositeWorkUnit(const string& description, size_t initialSize = 0)
-    : workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false), description(description) {}
+    : workUnits(new OVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false), description(description) {}
   CompositeWorkUnit() {}
 
   virtual string toString() const
@@ -132,7 +132,7 @@ public:
 protected:
   friend class CompositeWorkUnitClass;
 
-  ObjectVectorPtr workUnits;
+  OVectorPtr workUnits;
   string progressionUnit;
   bool pushChildrenIntoStack;
   string description;

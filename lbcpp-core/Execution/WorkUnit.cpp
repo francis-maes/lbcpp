@@ -194,7 +194,7 @@ string WorkUnit::getUsageString() const
 ObjectPtr CompositeWorkUnit::run(ExecutionContext& context)
 {
   const size_t n = getNumWorkUnits();
-  ObjectVectorPtr results = new ObjectVector(objectClass, n);
+  OVectorPtr results = new OVector(objectClass, n);
   for (size_t i = 0; i < n; ++i)
   {
     WorkUnitPtr workUnit = getWorkUnit(i);

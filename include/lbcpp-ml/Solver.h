@@ -33,8 +33,8 @@ extern SolverCallbackPtr storeBestFitnessSolverCallback(FitnessPtr& bestFitness)
 extern SolverCallbackPtr fillParetoFrontSolverCallback(ParetoFrontPtr front);
 extern SolverCallbackPtr maxEvaluationsSolverCallback(size_t maxEvaluations);
 
-extern SolverCallbackPtr singleObjectiveEvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores);
-extern SolverCallbackPtr hyperVolumeEvaluatorSolverCallback(size_t evaluationPeriod, DenseDoubleVectorPtr cpuTimes, DenseDoubleVectorPtr scores);
+extern SolverCallbackPtr singleObjectiveEvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores);
+extern SolverCallbackPtr hyperVolumeEvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores);
 
 extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, SolverCallbackPtr callback2);
 extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, SolverCallbackPtr callback2, SolverCallbackPtr callback3);

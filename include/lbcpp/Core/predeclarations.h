@@ -60,7 +60,7 @@ class Double;
 typedef ReferenceCountedObjectPtr<Double> DoublePtr;
 
 class String;
-typedef ReferenceCountedObjectPtr<String> NewStringPtr;
+typedef ReferenceCountedObjectPtr<String> StringPtr;
 
 class File;
 typedef ReferenceCountedObjectPtr<File> FilePtr;

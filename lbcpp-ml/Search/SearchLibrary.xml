@@ -6,7 +6,7 @@
   
   <class name="SearchState" base="Object" abstract="yes"/>
   <class name="SearchTrajectory" base="Object">
-    <variable type="ObjectVector[Object]" name="actions"/>
+    <variable type="Vector[Object]" name="actions"/>
     <variable type="SearchState" name="finalState"/>
   </class>
   <class name="SearchDomain" base="Domain">

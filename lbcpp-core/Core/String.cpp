@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
+#include <lbcpp/Core/Class.h>
 #include <lbcpp/Core/string.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
@@ -14,12 +15,12 @@ using namespace lbcpp;
 /*
 ** String
 */
-FilePtr File::create(const juce::File& file)
+StringPtr String::create(ClassPtr type, const string& value)
 {
-  if (file.isDirectory())
-    return new Directory(file);
+  if (type == fileClass || type == directoryClass)
+    return File::create(value);
   else
-    return new File(file);
+    return new String(type, value);
 }
 
 string String::toShortString() const
@@ -30,7 +31,7 @@ string String::toString() const
 
 int String::compare(const ObjectPtr& otherObject) const
 {
-  const NewStringPtr& other = otherObject.staticCast<String>();
+  const StringPtr& other = otherObject.staticCast<String>();
   if (value < other->get())
     return -1;
   else if (value > other->get())
@@ -59,6 +60,14 @@ void String::saveToXml(XmlExporter& exporter) const
 /*
 ** File
 */
+FilePtr File::create(const juce::File& file)
+{
+  if (file.isDirectory())
+    return new Directory(file);
+  else
+    return new File(file);
+}
+
 string File::toShortString() const
   {return get().getFileName();}
 
