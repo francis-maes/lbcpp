@@ -345,28 +345,30 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
   const size_t n = cysteinBondingStates->getNumElements();
   jassert(n == disulfideBonds->getDimension() && n == getCysteinIndices().size());
 
+  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
+
   // --- Filter: Discard chain predicted as having no bridges ---
+
   size_t numBondedCysteins = 0;
   for (size_t i = 0; i < n; ++i)
     if (cysteinBondingStates->getElement(i).getDouble() > 0.5)
       ++numBondedCysteins;
 
-  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
-
-  if (numBondedCysteins != 0)
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = i; j < n; ++j)
-        const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, disulfideBonds->getElement(i, j));
-  
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = i; j < n; ++j)
+    {
+      const Variable element = numBondedCysteins != 0 ? disulfideBonds->getElement(i, j)
+                                                      : Variable::missingValue(probabilityType);
+      const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
+    }
 /*
    std::cout << "CBS" << std::endl;
    std::cout << cysteinBondingStates->toString() << std::endl;
    std::cout << "From DSB" << std::endl;
-   std::cout << disulfideBonds->toString() << std::endl;
+   std::cout << disulfideBonds->toString();
    std::cout << "To ODSB" << std::endl;
-   std::cout << oxidizedDisulfideBonds->toString() << std::endl << std::endl;
+   std::cout << oxidizedDisulfideBonds->toString() << std::endl;
 */
-  
   return oxidizedDisulfideBonds;
 
   // --- Filter: Discard cysteines predicted as not involved in a bridge

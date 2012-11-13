@@ -328,7 +328,7 @@ public:
     }
     
     context.informationCallback(T("No train/test split detected ! Application of Cross-Validation."));
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 10, T("Loading proteins"));
     if (!proteins || proteins->getNumElements() == 0)
     {
       context.errorCallback(T("Trouble with proteins !"));
@@ -348,7 +348,7 @@ public:
 
   double computeFold(ExecutionContext& context, const LargeProteinParametersPtr& parameters, const ContainerPtr& train, const ContainerPtr& test) const
   {
-    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameters);
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameters, 0.f);
     // Extra-Trees - Default settings
     if (learningMachineName.startsWith(T("ExtraTrees")))
     {
