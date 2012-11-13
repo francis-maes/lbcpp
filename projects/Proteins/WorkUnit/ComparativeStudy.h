@@ -311,8 +311,8 @@ public:
       return false;
     }
 
-    if (inputDirectory.getChildFile(T("train/")).exists() && supervisionDirectory.getChildFile(T("test/")).exists()
-        && supervisionDirectory.getChildFile(T("train/")).exists() && supervisionDirectory.getChildFile(T("test/")).exists())
+    if (supervisionDirectory.getChildFile(T("train/")).exists()
+        && supervisionDirectory.getChildFile(T("test/")).exists())
     {
       context.informationCallback(T("Train/Test split detected."));
       ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("train/")), supervisionDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
@@ -328,13 +328,13 @@ public:
     }
     
     context.informationCallback(T("No train/test split detected ! Application of Cross-Validation."));
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
-    if (!proteins)
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 10, T("Loading proteins"));
+    if (!proteins || proteins->getNumElements() == 0)
     {
       context.errorCallback(T("Trouble with proteins !"));
       return DBL_MAX;
     }
-    
+
     if (numFolds == 1)
       return computeFold(context, parameters, proteins->invFold(0, 2), proteins->fold(0, 2));
     
@@ -401,7 +401,7 @@ public:
       //copyCysteineBondingStatePredictions(context, test);
       
       // Use actual value of CBS
-      copyCysteineBondingStateSupervisons(context, test);
+      copyCysteineBondingStateSupervisions(context, test);
     }
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
@@ -439,9 +439,8 @@ protected:
     
     // Use target == cbsTarget and use a cbpTarget predictor to classify chains
     // from the classification of their cysteines.
-    evaluator->addEvaluator(cbpTarget, binaryClassificationEvaluator(binaryClassificationAccuracyScore), T("CBP"), true);
-    return evaluator;
-
+    //evaluator->addEvaluator(cbpTarget, binaryClassificationEvaluator(binaryClassificationAccuracyScore), T("CBP"), true);
+    //return evaluator;
 
     if (target == ss3Target || target == ss8Target || target == stalTarget)
       evaluator->addEvaluator(target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
@@ -463,7 +462,7 @@ protected:
       proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
   }
 
-  void copyCysteineBondingStateSupervisons(ExecutionContext& context, const ContainerPtr& proteins) const
+  void copyCysteineBondingStateSupervisions(ExecutionContext& context, const ContainerPtr& proteins) const
   {
     for (size_t i = 0; i < proteins->getNumElements(); ++i)
       proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
