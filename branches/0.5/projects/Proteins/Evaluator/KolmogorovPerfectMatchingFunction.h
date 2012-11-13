@@ -20,15 +20,22 @@ public:
   {
     DoubleSymmetricMatrixPtr matrix = input.getObjectAndCast<DoubleSymmetricMatrix>();
     jassert(matrix);
+    
+    // replace Missing by 0
+    const size_t dimension = matrix->getDimension();
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = i; j < dimension; ++j)
+        if (!matrix->getElement(i, j).exists())
+          matrix->setValue(i, j, 0.f);
 
-    std::vector<size_t> vertexMap(matrix->getDimension());
+    std::vector<size_t> vertexMap(dimension);
     for (size_t i = 0; i < vertexMap.size(); ++i)
       vertexMap[i] = i;
 
-    std::vector<size_t> matching(matrix->getDimension(), (size_t)-1);
+    std::vector<size_t> matching(dimension, (size_t)-1);
     computePerfectMatching(matrix, vertexMap, matching);
 
-    DoubleSymmetricMatrixPtr res = new DoubleSymmetricMatrix(matrix->getElementsType(), matrix->getDimension(), 0.f);
+    DoubleSymmetricMatrixPtr res = new DoubleSymmetricMatrix(matrix->getElementsType(), dimension, 0.f);
     for (size_t i = 0; i < matching.size(); ++i)
       if (matching[i] != (size_t)-1)
         res->setValue(i, matching[i], matrix->getValue(i, matching[i]));

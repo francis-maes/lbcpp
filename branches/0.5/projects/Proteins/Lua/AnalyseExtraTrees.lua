@@ -156,8 +156,13 @@ dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-Pl
 --main("SPX - ODSB", {""}, dir .. "MultiTask/SPX/ODSB/SPX-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
 --main("SPXC - ODSB", {""}, dir .. "MultiTask/SPXC/ODSB/SPXC-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
 
-main("SPX - DSB", {""}, dir .. "MultiTask/SPX/DSB/SPX-DSB.wpssm15_csp17.x3.fold", "", numFolds)
-main("SPXC - DSB", {""}, dir .. "MultiTask/SPXC/DSB/SPXC-DSB.wpssm15_csp17.x3.fold", "", numFolds)
+--main("SPX - DSB", {""}, dir .. "MultiTask/SPX/DSB/SPX-DSB.wpssm15_csp17.x3.fold", "", numFolds)
+--main("SPXC - DSB", {""}, dir .. "MultiTask/SPXC/DSB/SPXC-DSB.wpssm15_csp17.x3.fold", "", numFolds)
+
+--main("SPX - aCSB-DSB", {""}, dir .. "MultiTask/SPX/ActualCBS-ODSB/SPX-aCBS-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
+--main("SPXC - aCSB-DSB", {""}, dir .. "MultiTask/SPXC/ActualCBS-ODSB/SPXC-aCBS-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
+
+main("SPX - CSBToCBP", {""}, dir .. "MultiTask/SPXC/CBSToCBP/SPXC-CBSToCBP.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
 
 
 --main("CBP > K", {1,2,5,10,20,25}, dir .. "K/hgpssm_nc.K", ".x3.fold", numFolds)
