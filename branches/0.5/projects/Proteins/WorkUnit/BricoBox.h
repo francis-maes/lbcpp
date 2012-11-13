@@ -265,8 +265,43 @@ public:
     if (!spxFile.exists())
       return false;
 
-    ConsumerPtr consumer = saveToFileConsumer(outputDirectory);
-    consumer->consumeStream(context, new SPXFileParser(context, spxFile));
+    //ConsumerPtr consumer = saveToFileConsumer(outputDirectory);
+    //consumer->consumeStream(context, new SPXFileParser(context, spxFile));
+    
+    ContainerPtr data = (new SPXFileParser(context, spxFile))->load();
+    size_t numCys = 0;
+    size_t all = 0;
+    size_t none = 0;
+    size_t mix = 0;
+    for (size_t i = 0; i < data->getNumElements(); ++i)
+    {
+      ProteinPtr protein = data->getElement(i).getObjectAndCast<Protein>(context);
+      size_t n = protein->getCysteinIndices().size();
+      numCys += n;
+
+      size_t numBonded = 0;
+      SymmetricMatrixPtr matrix = protein->getDisulfideBonds(context);
+      for (size_t j = 0; j < n; ++j)
+        for (size_t jj = j + 1; jj < n; ++jj)
+          numBonded += matrix->getElement(j, jj).getDouble() * 2;
+
+      if (numBonded == n)
+        ++all;
+      else if (numBonded == 0)
+        ++none;
+      else
+      {
+        if (n - numBonded != 1)
+          std::cout << "Num. Cys: " << n << " - Num. Bonded: " << numBonded << std::endl;
+        ++mix;
+      }
+    }
+    
+    std::cout << "Num. Cysteines: " << numCys << std::endl;
+    std::cout << "Num. All  : " << all << std::endl;
+    std::cout << "Num. None : " << none << std::endl;
+    std::cout << "Num. Mix  : " << mix << std::endl;
+    
     return true;
   }
 
@@ -275,6 +310,38 @@ protected:
 
   File spxFile;
   File outputDirectory;
+};
+
+class CountCysteinesWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory, 0, T("Loading training proteins"));
+
+    size_t numCys = 0;
+    size_t numBonded = 0;
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>(context);
+      const size_t n = protein->getCysteinIndices().size();
+      numCys += n;
+      SymmetricMatrixPtr matrix = protein->getDisulfideBonds(context);
+      for (size_t j = 0; j < n; ++j)
+        for (size_t jj = j + 1; jj < n; ++jj)
+          numBonded += matrix->getElement(j, jj).getDouble() * 2;
+    }
+    
+    std::cout << "Num. Cysteines: " << numCys << std::endl;
+    std::cout << "Num. Bonded:    " << numBonded << std::endl;
+    
+    return true;
+  }
+
+protected:
+  friend class CountCysteinesWorkUnitClass;
+
+  File proteinDirectory;
 };
 
 class GenerateFoldsWorkUnit : public WorkUnit
