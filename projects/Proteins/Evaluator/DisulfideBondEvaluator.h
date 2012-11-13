@@ -20,13 +20,27 @@ class DisulfidePatternScoreObject : public ScoreObject
 public:
   DisulfidePatternScoreObject()
     : accuracy(0.0), validGraphAccuracy(0.0),
-      accuracyVector(new ScalarVariableMean()), validGraphAccuracyVector(new ScalarVariableMean()) {}
+      accuracyVector(new ScalarVariableMean()), validGraphAccuracyVector(new ScalarVariableMean())
+  {
+    accuracyVectors.resize(6);
+    for (size_t i = 0; i < 6; ++i)
+      accuracyVectors[i] = new ScalarVariableMean();
+  }
 
   virtual double getScoreToMinimize() const
     {return 1.0 - accuracy;}
 
-  virtual void addPrediction(bool isCorrect) // FIXME: remove virtual (used by ExporteDisulfidePatternScoreObject)
-    {accuracyVector->push(isCorrect);}
+  void addPrediction(bool isCorrect, size_t numActualBridges)
+  {
+    accuracyVector->push(isCorrect);
+    
+    if (numActualBridges == 0)
+      accuracyVectors[0]->push(isCorrect);
+    else if (numActualBridges <= 5)
+      accuracyVectors[numActualBridges - 1]->push(isCorrect);
+    else
+      accuracyVectors[5]->push(isCorrect);
+  }
   
   void addValidGraphPrediction(bool isValid)
     {validGraphAccuracyVector->push(isValid);}
@@ -35,6 +49,12 @@ public:
   {
     accuracy = accuracyVector->getMean();
     validGraphAccuracy = validGraphAccuracyVector->getMean();
+    accuracyOne = accuracyVectors[0]->getMean();
+    accuracyTwo = accuracyVectors[1]->getMean();
+    accuracyThree = accuracyVectors[2]->getMean();
+    accuracyFour = accuracyVectors[3]->getMean();
+    accuracyFive = accuracyVectors[4]->getMean();
+    accuracyMore = accuracyVectors[5]->getMean();
   }
 
 protected:
@@ -42,8 +62,15 @@ protected:
 
   double accuracy;
   double validGraphAccuracy;
+  double accuracyOne;
+  double accuracyTwo;
+  double accuracyThree;
+  double accuracyFour;
+  double accuracyFive;
+  double accuracyMore;
   ScalarVariableMeanPtr accuracyVector;
   ScalarVariableMeanPtr validGraphAccuracyVector;
+  std::vector<ScalarVariableMeanPtr> accuracyVectors;
 };
 
 typedef ReferenceCountedObjectPtr<DisulfidePatternScoreObject> DisulfidePatternScoreObjectPtr;
@@ -72,10 +99,15 @@ public:
     DisulfidePatternScoreObjectPtr score = result.staticCast<DisulfidePatternScoreObject>();
     const size_t dimension = supervisedMatrix->getNumRows();
 
+    size_t numActualBridges = 0;
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = i + 1; j < dimension; ++j)
+        numActualBridges += supervisedMatrix->getElement(i, j).getDouble() > threshold ? 1 : 0;
+
     if (minimumDistanceFromDiagonal >= dimension)
     {
       score->addValidGraphPrediction(true);
-      score->addPrediction(true);
+      score->addPrediction(true, numActualBridges);
       return;
     }
 /*
@@ -116,10 +148,10 @@ public:
       for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
         if (predictedMatrix->getElement(i, j).getDouble() > threshold != supervisedMatrix->getElement(i, j).getDouble() > 0.5)
         {
-          score->addPrediction(false);
+          score->addPrediction(false, numActualBridges);
           return;
         }
-    score->addPrediction(true);
+    score->addPrediction(true, numActualBridges);
   }
   
   /* Evaluator */

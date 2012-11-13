@@ -311,12 +311,17 @@ public:
       return false;
     }
 
+    size_t numProteinsToLoad = 0;
+#if JUCE_MAC && JUCE_DEBUG
+    numProteinsToLoad = 10;
+#endif
+
     if (supervisionDirectory.getChildFile(T("train/")).exists()
         && supervisionDirectory.getChildFile(T("test/")).exists())
     {
       context.informationCallback(T("Train/Test split detected."));
-      ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("train/")), supervisionDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
-      ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("test/")), supervisionDirectory.getChildFile(T("test/")), 0, T("Loading testing proteins"));
+      ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("train/")), supervisionDirectory.getChildFile(T("train/")), numProteinsToLoad, T("Loading training proteins"));
+      ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("test/")), supervisionDirectory.getChildFile(T("test/")), numProteinsToLoad, T("Loading testing proteins"));
 
       if (!trainingProteins && !testingProteins)
       {
@@ -328,7 +333,7 @@ public:
     }
     
     context.informationCallback(T("No train/test split detected ! Application of Cross-Validation."));
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 10, T("Loading proteins"));
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, numProteinsToLoad, T("Loading proteins"));
     if (!proteins || proteins->getNumElements() == 0)
     {
       context.errorCallback(T("Trouble with proteins !"));

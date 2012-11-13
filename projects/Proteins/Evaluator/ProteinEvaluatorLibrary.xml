@@ -22,6 +22,12 @@
   <class name="DisulfidePatternScoreObject" base="ScoreObject">
     <variable type="Double" name="accuracy"/>
     <variable type="Double" name="validGraphAccuracy"/>
+    <variable type="Double" name="accuracyOne"/>
+    <variable type="Double" name="accuracyTwo"/>
+    <variable type="Double" name="accuracyThree"/>
+    <variable type="Double" name="accuracyFour"/>
+    <variable type="Double" name="accuracyFive"/>
+    <variable type="Double" name="accuracyMore"/>
   </class>
   
   <class name="DisulfidePatternEvaluator" base="SupervisedEvaluator">

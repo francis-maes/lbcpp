@@ -437,13 +437,13 @@ class ExporteDisulfidePatternScoreObject : public DisulfidePatternScoreObject
 {
 public:
   ExporteDisulfidePatternScoreObject(OutputStream* o) : o(o) {}
-
+/*
   virtual void addPrediction(bool isCorrect)
   {
     DisulfidePatternScoreObject::addPrediction(isCorrect);
     *o << " " << (isCorrect ? 1 : 0);
   }
-
+*/
 private:
   OutputStream* o;
 };
@@ -514,7 +514,7 @@ protected:
       jassertfalse;
     
     EvaluatorPtr eval = new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0);
-    ScoreObjectPtr score = new ExporteDisulfidePatternScoreObject(o);
+    ScoreObjectPtr score;jassertfalse;// = new ExporteDisulfidePatternScoreObject(o);
     for (size_t i = 0; i < n; ++i)
     {
       Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
