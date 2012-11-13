@@ -345,7 +345,31 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
   const size_t n = cysteinBondingStates->getNumElements();
   jassert(n == disulfideBonds->getDimension() && n == getCysteinIndices().size());
 
+  // --- Filter: Discard chain predicted as having no bridges ---
+  size_t numBondedCysteins = 0;
+  for (size_t i = 0; i < n; ++i)
+    if (cysteinBondingStates->getElement(i).getDouble() > 0.5)
+      ++numBondedCysteins;
+
   const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
+
+  if (numBondedCysteins != 0)
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = i; j < n; ++j)
+        const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, disulfideBonds->getElement(i, j));
+  
+/*
+   std::cout << "CBS" << std::endl;
+   std::cout << cysteinBondingStates->toString() << std::endl;
+   std::cout << "From DSB" << std::endl;
+   std::cout << disulfideBonds->toString() << std::endl;
+   std::cout << "To ODSB" << std::endl;
+   std::cout << oxidizedDisulfideBonds->toString() << std::endl << std::endl;
+*/
+  
+  return oxidizedDisulfideBonds;
+
+  // --- Filter: Discard cysteines predicted as not involved in a bridge
   for (size_t i = 0; i < n; ++i)
     for (size_t j = i; j < n; ++j)
     {
@@ -354,48 +378,8 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
       ? disulfideBonds->getElement(i, j) : Variable::missingValue(probabilityType);
       const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
     }
-/*
-  std::cout << "CBS" << std::endl;
-  std::cout << cysteinBondingStates->toString() << std::endl;
-  std::cout << "From DSB" << std::endl;
-  std::cout << disulfideBonds->toString() << std::endl;
-  std::cout << "To ODSB" << std::endl;
-  std::cout << oxidizedDisulfideBonds->toString() << std::endl << std::endl;
-*/
-  return oxidizedDisulfideBonds;
-
-/*  
-  if (oxidizedDisulfideBonds) // Set missing elements to 0
-  {
-    const size_t n = oxidizedDisulfideBonds->getDimension();
-    for (size_t i = 0; i < n - 1; ++i)
-      for (size_t j = i + 1; j < n; ++j)
-        if (!oxidizedDisulfideBonds->getElement(i,j).exists())
-          const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, probability(0.f));
-  }
-
-  if(!getDisulfideBonds(context) || !getCysteinBondingStates(context))
-    return oxidizedDisulfideBonds;
-
-  const size_t n = cysteinBondingStates->getNumElements();
-  jassert(n == disulfideBonds->getDimension() && n == getCysteinIndices().size());
-
-  size_t numBondedCysteines = 0;
-  for (size_t i = 0; i < n; ++i)
-    numBondedCysteines += cysteinBondingStates->getValue(i) >= oxidizedCysteineThreshold ? 1 : 0;
-
-  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
-  for (size_t i = 0; i < n; ++i)
-    for (size_t j = i; j < n; ++j)
-    {
-      const Variable element = (cysteinBondingStates->getValue(i) >= oxidizedCysteineThreshold
-                                && cysteinBondingStates->getValue(j) >= oxidizedCysteineThreshold)
-                                ? disulfideBonds->getElement(i, j) : probability(0.f);
-      const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
-    }
 
   return oxidizedDisulfideBonds;
-*/
 }
 
 const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const

@@ -328,7 +328,7 @@ public:
     }
     
     context.informationCallback(T("No train/test split detected ! Application of Cross-Validation."));
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 10, T("Loading proteins"));
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
     if (!proteins || proteins->getNumElements() == 0)
     {
       context.errorCallback(T("Trouble with proteins !"));
@@ -398,10 +398,10 @@ public:
       // In order to predict bridges for cysteines predicted as bonded,
       // we have to copy cysteine state predictions into the supervised
       // proteins.
-      //copyCysteineBondingStatePredictions(context, test);
+      copyCysteineBondingStatePredictions(context, test);
       
       // Use actual value of CBS
-      copyCysteineBondingStateSupervisions(context, test);
+      //copyCysteineBondingStateSupervisions(context, test);
     }
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
