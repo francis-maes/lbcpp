@@ -106,7 +106,7 @@ public:
       return;
     }
 
-    ContainerPtr container = object.dynamicCast<Container>();
+    VectorPtr container = object.dynamicCast<Vector>();
     if (container)
     {
       static const size_t maxCount = 1000;
@@ -118,7 +118,7 @@ public:
       }
       subObjects.reserve(subObjects.size() + count);
       for (size_t i = 0; i < count; ++i)
-        addSubObject(container->getElementName(i), container->getElement(i));
+        addSubObject(string((int)i), container->getElement(i));
       mightContainSubItemsFlag = true;
       return;
     }
@@ -132,7 +132,7 @@ public:
         ObjectPtr elt = doubleVector->getElement(i);
         jassert(elt.dynamicCast<Double>());
         if (Double::get(elt) != 0.0)
-          addSubObject(container->getElementName(i), container->getElement(i));
+          addSubObject(string((int)i), container->getElement(i));
       }
       mightContainSubItemsFlag = true;
       return;

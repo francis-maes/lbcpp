@@ -12,24 +12,45 @@
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
-/*
-** Container
-*/
-ClassPtr Container::getTemplateParameter(ClassPtr type)
+ClassPtr Vector::computeElementsCommonBaseType() const
 {
-  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  size_t n = getNumElements();
+  if (n == 0)
+    return objectClass;
+  ClassPtr type = getElement(0)->getClass();
+  for (size_t i = 1; i < n; ++i)
+  {
+    type = Class::findCommonBaseClass(type, getElement(i)->getClass());
+    if (type == objectClass)
+      break;
+  }
+  return type;
+}
+
+int Vector::findElement(const ObjectPtr& value) const
+{
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    if (Object::equals(getElement(i), value))
+      return (int)i;
+  return -1;
+}
+
+ClassPtr Vector::getTemplateParameter(ClassPtr type)
+{
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Vector"));
   jassert(dvType && dvType->getNumTemplateArguments() == 1);
   ClassPtr res = dvType->getTemplateArgument(0);
   jassert(res);
   return res;
 }
 
-bool Container::getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res)
+bool Vector::getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res)
 {
-  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Vector"));
   if (!dvType)
   {
-    context.errorCallback(type->getName() + T(" is not a Container"));
+    context.errorCallback(type->getName() + T(" is not a Vector"));
     return false;
   }
   jassert(dvType->getNumTemplateArguments() == 1);
@@ -37,29 +58,7 @@ bool Container::getTemplateParameter(ExecutionContext& context, ClassPtr type, C
   return true;
 }
 
-VectorPtr Container::toVector() const
-{
-  size_t n = getNumElements();
-  VectorPtr res = vector(getElementsType(), n);
-  for (size_t i = 0; i < n; ++i)
-    res->setElement(i, getElement(i));
-  return res;
-}
-
-string Container::toString() const
-{
-  string res;
-  size_t n = getNumElements();
-  for (size_t i = 0; i < n; ++i)
-  {
-    res += getElement(i)->toString();
-    if (i < n - 1)
-      res += T(", ");
-  }
-  return res;
-}
-
-string Container::toShortString() const
+string Vector::toShortString() const
 {
   size_t n = getNumElements(); 
   if (n == 0)
@@ -79,162 +78,6 @@ string Container::toShortString() const
     return string((int)n) + T(" elements...");
 }
 
-void Container::clone(ExecutionContext& context, const ObjectPtr& target) const
-{
-  Object::clone(context, target);
-  ContainerPtr targetContainer = target.staticCast<Container>();
-  size_t n = getNumElements();
-  for (size_t i = 0; i < n; ++i)
-    targetContainer->setElement(i, getElement(i));
-}
-
-int Container::compare(const ObjectPtr& otherObject) const
-{
-  if (otherObject.get() == this)
-    return 0;
-  if (otherObject.isInstanceOf<Container>())
-  {
-    const ContainerPtr& other = otherObject.staticCast<Container>();
-    size_t n = getNumElements();
-    if (n != other->getNumElements())
-      return (int)n - (int)other->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      int c = Object::compare(getElement(i), other->getElement(i));
-      if (c != 0)
-        return c;
-    }
-    return 0;
-  }
-  else
-    return Object::compare(otherObject);
-}
-
-string Container::getElementName(size_t index) const
-  {return getElementsEnumeration()->getElementName(index);}
-
-int Container::findElement(const ObjectPtr& value) const
-{
-  size_t n = getNumElements();
-  for (size_t i = 0; i < n; ++i)
-    if (Object::equals(getElement(i), value))
-      return (int)i;
-  return -1;
-}
-
-ClassPtr Container::computeElementsCommonBaseType() const
-{
-  size_t n = getNumElements();
-  if (n == 0)
-    return objectClass;
-  ClassPtr type = getElement(0)->getClass();
-  for (size_t i = 1; i < n; ++i)
-  {
-    type = Class::findCommonBaseClass(type, getElement(i)->getClass());
-    if (type == objectClass)
-      break;
-  }
-  return type;
-}
-
-void Container::saveToXml(XmlExporter& exporter) const
-{
-  Object::saveToXml(exporter);
-  size_t n = getNumElements();
-  exporter.setAttribute(T("size"), (int)n);
-  ClassPtr elementsType = getElementsType();
-  if (n > 1)
-  {
-    ClassPtr actualType = computeElementsCommonBaseType();
-    if (elementsType != actualType)
-    {
-      exporter.enter(T("elementsActualType"));
-      exporter.writeType(actualType);
-      exporter.leave();
-      elementsType = actualType;
-    }
-  }
-
-  for (size_t i = 0; i < n; ++i)
-  {
-    ObjectPtr element = getElement(i);
-    if (element)
-      exporter.saveElement(i, element, elementsType);
-  }
-}
-
-bool Container::loadFromXml(XmlImporter& importer)
-{
-  if (!Object::loadFromXml(importer))
-    return false;
-
-  ClassPtr elementsType = getElementsType();
-  juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(T("elementsActualType"));
-  if (elementsActualType)
-  {
-    importer.enter(elementsActualType);
-    elementsType = importer.loadType(ClassPtr());
-    importer.leave();
-    if (!elementsType)
-      return false;
-  }
-
-  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("element"))
-  {
-    int index = child->getIntAttribute(T("index"), -1);
-    if (index < 0)
-    {
-      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + string(index));
-      return false;
-    }
-    
-    ObjectPtr value = importer.loadObject(child, elementsType);
-    setElement((size_t)index, value);
-  }
-  return true;
-}
-
-/*
-** Lua
-*/
-int Container::__len(LuaState& state) const
-{ 
-  state.pushInteger(getNumElements());
-  return 1;
-}
-
-int Container::__newIndex(LuaState& state)
-{
-  if (!state.isInteger(1))
-    return Object::__newIndex(state);
-
-  int index = state.toInteger(1);
-  if (index < 1 || index > (int)getNumElements())
-    state.error("Invalid index in Container::set()");
-  else
-    setElement(index - 1, state.checkObject(2));
-  return 0;
-}
-
-int Container::__index(LuaState& state) const
-{
-  if (!state.isInteger(1))
-    return Object::__index(state);
-
-  int index = state.toInteger(1);
-  if (index < 1 || index > (int)getNumElements())
-  {
-    state.error("Invalid index in Container::get()");
-    return 0;
-  }
-
-  state.pushObject(getElement(index - 1));
-  return 1;
-}
-
-/*
-** Vector
-*/
 string Vector::toString() const
 {
   ClassPtr type = getElementsType();
@@ -270,7 +113,14 @@ string Vector::toString() const
     return value;
   }
 
-  return Container::toString();
+  string res;
+  for (size_t i = 0; i < n; ++i)
+  {
+    res += getElement(i)->toString();
+    if (i < n - 1)
+      res += T(", ");
+  }
+  return res;
 }
 
 bool Vector::loadFromXml(XmlImporter& importer)
@@ -282,7 +132,59 @@ bool Vector::loadFromXml(XmlImporter& importer)
     return false;
   }
   resize(size);
-  return Container::loadFromXml(importer);
+  if (!Object::loadFromXml(importer))
+    return false;
+
+  ClassPtr elementsType = getElementsType();
+  juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(T("elementsActualType"));
+  if (elementsActualType)
+  {
+    importer.enter(elementsActualType);
+    elementsType = importer.loadType(ClassPtr());
+    importer.leave();
+    if (!elementsType)
+      return false;
+  }
+
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("element"))
+  {
+    int index = child->getIntAttribute(T("index"), -1);
+    if (index < 0)
+    {
+      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + string(index));
+      return false;
+    }
+    
+    ObjectPtr value = importer.loadObject(child, elementsType);
+    setElement((size_t)index, value);
+  }
+  return true;
+}
+
+void Vector::saveToXml(XmlExporter& exporter) const
+{
+  Object::saveToXml(exporter);
+  size_t n = getNumElements();
+  exporter.setAttribute(T("size"), (int)n);
+  ClassPtr elementsType = getElementsType();
+  if (n > 1)
+  {
+    ClassPtr actualType = computeElementsCommonBaseType();
+    if (elementsType != actualType)
+    {
+      exporter.enter(T("elementsActualType"));
+      exporter.writeType(actualType);
+      exporter.leave();
+      elementsType = actualType;
+    }
+  }
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    ObjectPtr element = getElement(i);
+    if (element)
+      exporter.saveElement(i, element, elementsType);
+  }
 }
 
 bool Vector::loadFromString(ExecutionContext& context, const string& stringValue)
@@ -305,7 +207,66 @@ void Vector::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   VectorPtr targetVector = target.staticCast<Vector>();
   targetVector->resize(getNumElements());
-  Container::clone(context, targetVector);
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    targetVector->setElement(i, getElement(i));
+}
+
+int Vector::compare(const ObjectPtr& otherObject) const
+{
+  if (otherObject.get() == this)
+    return 0;
+  if (otherObject.isInstanceOf<Vector>())
+  {
+    const VectorPtr& other = otherObject.staticCast<Vector>();
+    size_t n = getNumElements();
+    if (n != other->getNumElements())
+      return (int)n - (int)other->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      int c = Object::compare(getElement(i), other->getElement(i));
+      if (c != 0)
+        return c;
+    }
+    return 0;
+  }
+  else
+    return Object::compare(otherObject);
+}
+
+int Vector::__len(LuaState& state) const
+{ 
+  state.pushInteger(getNumElements());
+  return 1;
+}
+
+int Vector::__newIndex(LuaState& state)
+{
+  if (!state.isInteger(1))
+    return Object::__newIndex(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
+    state.error("Invalid index in Container::set()");
+  else
+    setElement(index - 1, state.checkObject(2));
+  return 0;
+}
+
+int Vector::__index(LuaState& state) const
+{
+  if (!state.isInteger(1))
+    return Object::__index(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
+  {
+    state.error("Invalid index in Container::get()");
+    return 0;
+  }
+
+  state.pushObject(getElement(index - 1));
+  return 1;
 }
 
 int Vector::resize(LuaState& state)

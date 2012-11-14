@@ -78,11 +78,11 @@ struct ObjectRelatedCommand
     {
       juce::File outputFile = selectFileToSave(T("*.data"));
       if (outputFile != juce::File::nonexistent)
-        saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Container>(), outputFile);
+        saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Vector>(), outputFile);
     }
   }
 
-  static bool saveContainerAsGnuplotData(ExecutionContext& context, const ContainerPtr& container, const juce::File& outputFile)
+  static bool saveContainerAsGnuplotData(ExecutionContext& context, const VectorPtr& container, const juce::File& outputFile)
   {
     size_t numRows = container->getNumElements();
     ClassPtr rowType = container->getElementsType();
@@ -156,9 +156,9 @@ public:
     string str = object->toShortString();
     if (str.isNotEmpty())
       properties->addProperty(T("Desc"), str);
-    ContainerPtr container = object.dynamicCast<Container>();
-    if (container)
-      properties->addProperty(T("Size"), string((int)container->getNumElements()));
+    VectorPtr vector = object.dynamicCast<Vector>();
+    if (vector)
+      properties->addProperty(T("Size"), string((int)vector->getNumElements()));
     
     // command buttons
     commands = ObjectRelatedCommand::getObjectCommands(object);

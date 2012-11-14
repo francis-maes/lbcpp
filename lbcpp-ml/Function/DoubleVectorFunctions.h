@@ -48,11 +48,11 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
+  virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(inputTypes[0]);
     if (!features || features->getNumElements() == 0)
-      return ContainerPtr();
+      return VectorPtr();
 
     if (index == 0)
     {
@@ -192,11 +192,11 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
+  virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(inputTypes[0]);
     if (!features || features->getNumElements() == 0)
-      return ContainerPtr();
+      return VectorPtr();
 
     OVectorPtr res = new OVector(enumerationClass, 1);
     res->set(0, features);

@@ -67,7 +67,7 @@ public:
       return Function::compute(context, inputs, outputType);
   }
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
+  virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     /*
     DenseDoubleVectorPtr res = new DenseDoubleVector(0, 0.0);
@@ -95,7 +95,7 @@ public:
       jassert(false); // no training data, cannot choose thresholds
 
     return res;*/
-    return ContainerPtr();
+    return VectorPtr();
   }
 
   double getThreshold() const

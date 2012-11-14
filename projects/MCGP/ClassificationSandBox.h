@@ -23,14 +23,14 @@ namespace lbcpp
 class TestingSetParser : public TextParser
 {
 public:
-  TestingSetParser(ExecutionContext& context, const juce::File& file, ContainerPtr data)
+  TestingSetParser(ExecutionContext& context, const juce::File& file, VectorPtr data)
     : TextParser(context, file), data(data) {}
   TestingSetParser() {}
 
   virtual ClassPtr getElementsType() const
   {
     ClassPtr exampleType = data->getElementsType();
-    return pairClass(containerClass(exampleType), containerClass(exampleType));
+    return pairClass(vectorClass(exampleType), vectorClass(exampleType));
   }
 
   virtual bool parseLine(char* line)
@@ -84,7 +84,7 @@ public:
   }
 
 protected:
-  ContainerPtr data;
+  VectorPtr data;
 };
 
 class ClassificationSandBox : public WorkUnit

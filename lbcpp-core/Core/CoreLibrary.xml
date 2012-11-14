@@ -161,14 +161,8 @@
     </class>
   </template>
 
-  <!-- Container -->
-  <template name="Container" base="Object" abstract="yes">
-    <parameter name="elementsType"/>
-    <class/>
-  </template>
-  
   <!-- Vector -->
-  <template name="Vector" base="Container[elementsType]">
+  <template name="Vector" base="Object">
     <parameter name="elementsType"/>
     <class name="BVector">
       <specialization name="elementsType" type="Boolean"/>

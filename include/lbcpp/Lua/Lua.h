@@ -169,7 +169,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuaWrapperValue> LuaWrapperValuePtr;
 
-class LuaWrapperVector : public Container
+class LuaWrapperVector : public Vector
 {
 public:
   LuaWrapperVector(const LuaState& state, int index);
@@ -178,6 +178,24 @@ public:
   virtual size_t getNumElements() const;
   virtual ObjectPtr getElement(size_t index) const;
   virtual void setElement(size_t index, const ObjectPtr& value);
+  
+  virtual void clear()
+    {jassertfalse;}
+
+  virtual void reserve(size_t size)
+    {jassertfalse;}
+
+  virtual void resize(size_t size)
+    {jassertfalse;}
+
+  virtual void prepend(const ObjectPtr& value)
+    {jassertfalse;}
+
+  virtual void append(const ObjectPtr& value)
+    {jassertfalse;}
+
+  virtual void remove(size_t index)
+    {jassertfalse;}
 
 protected:
   LuaState state;

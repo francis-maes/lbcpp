@@ -86,9 +86,6 @@ typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
 class Pair;
 typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 
-class Container;
-typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
-
 class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
