@@ -90,7 +90,7 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
+  virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     if (index == 0)
     {
@@ -126,7 +126,7 @@ typedef ReferenceCountedObjectPtr<GetVariableFunction> GetVariableFunctionPtr;
 class GetContainerLengthFunction : public UnaryObjectFunction<GetContainerLengthFunction>
 {
 public:
-  GetContainerLengthFunction() : UnaryObjectFunction<GetContainerLengthFunction>(containerClass()) {}
+  GetContainerLengthFunction() : UnaryObjectFunction<GetContainerLengthFunction>(vectorClass()) {}
 
   virtual string toShortString() const
     {return "length(.)";}
@@ -138,7 +138,7 @@ public:
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
   ObjectPtr computeObject(const ObjectPtr& object) const
-    {return new Integer(object.staticCast<Container>()->getNumElements());} // positiveInteger
+    {return new Integer(object.staticCast<Vector>()->getNumElements());} // positiveInteger
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
     {return inputs[0] ? computeObject(inputs[0]) : ObjectPtr();}

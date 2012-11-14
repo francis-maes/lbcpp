@@ -48,10 +48,10 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
   if (res)
     return res;
 
-  if (object.isInstanceOf<Container>())
+  if (object.isInstanceOf<Vector>())
   {
     // generic component for containers
-    return new ContainerSelectorComponent(object.staticCast<Container>());
+    return new ContainerSelectorComponent(object.staticCast<Vector>());
   }
   else
   {

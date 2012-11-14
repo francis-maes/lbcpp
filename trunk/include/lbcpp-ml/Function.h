@@ -45,8 +45,8 @@ public:
     
   virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const;
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
-    {jassert(getNumVariables() == 0); return ContainerPtr();}
+  virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
+    {jassert(getNumVariables() == 0); return VectorPtr();}
 
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const;

@@ -22,7 +22,7 @@ namespace lbcpp
 class ContainerSelectorComponent : public juce::ListBox, public ObjectSelector
 {
 public:
-  ContainerSelectorComponent(ContainerPtr container)
+  ContainerSelectorComponent(VectorPtr container)
     : juce::ListBox(container->toShortString(), new Model(this, container)), container(container)
     {setMultipleSelectionEnabled(true);}
   
@@ -43,7 +43,7 @@ public:
         selectedObjects.push_back(element);
         if (selectionName.isNotEmpty())
           selectionName += T(", ");
-        selectionName += container->getElementName(i);
+        selectionName += string(i);
       }
     }
     sendSelectionChanged(selectedObjects, selectionName);
@@ -51,7 +51,7 @@ public:
 
   struct Model : public juce::ListBoxModel
   {
-    Model(ContainerSelectorComponent* owner, ContainerPtr container)
+    Model(ContainerSelectorComponent* owner, VectorPtr container)
       : owner(owner), container(container) {}
 
     virtual int getNumRows()
@@ -68,7 +68,7 @@ public:
       g.setFont(f);
 
       ObjectPtr element = container->getElement(rowNumber);
-      g.drawText(container->getElementName(rowNumber) + T(" = ") + element->toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
+      g.drawText(string(rowNumber) + T(" = ") + element->toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
     }
 
     virtual void selectedRowsChanged(int lastRowSelected)
@@ -78,16 +78,16 @@ public:
 
   private:
     ContainerSelectorComponent* owner;
-    ContainerPtr container;
+    VectorPtr container;
   };
 
   juce_UseDebuggingNewOperator
 
-  ContainerPtr getContainer() const
+  VectorPtr getContainer() const
     {return container;}
 
 private:
-  ContainerPtr container;
+  VectorPtr container;
 };
 
 }; /* namespace lbcpp */

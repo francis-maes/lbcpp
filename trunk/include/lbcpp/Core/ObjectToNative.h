@@ -108,7 +108,7 @@ template<class TT>
 inline void objectToNative(ExecutionContext& context, std::set<TT>& dest, const ObjectPtr& source)
 {
   dest.clear();
-  const ContainerPtr& sourceContainer = source.staticCast<Container>(context);
+  const VectorPtr& sourceContainer = source.staticCast<Vector>(context);
   if (sourceContainer)
   {
     size_t n = sourceContainer->getNumElements();

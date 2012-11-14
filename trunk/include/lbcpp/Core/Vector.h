@@ -16,62 +16,21 @@
 
 namespace lbcpp
 {
-  
-class Container : public Object
+
+class Vector : public Object
 {
 public:
-  Container(ClassPtr thisClass)
-    : Object(thisClass) {}
-  Container() {}
+  Vector(ClassPtr thisClass) : Object(thisClass) {}
+  Vector() {}
 
-  static ClassPtr getTemplateParameter(ClassPtr type);
-  static bool getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res);
+  ClassPtr getElementsType() const
+    {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
-  bool isEmpty() const
-    {return getNumElements() == 0;}
-    
   int findElement(const ObjectPtr& value) const;
   ClassPtr computeElementsCommonBaseType() const;
 
-  virtual ClassPtr getElementsType() const
-    {jassert(thisClass); return thisClass->getTemplateArgument(0);}
-
-  virtual EnumerationPtr getElementsEnumeration() const
-    {return positiveIntegerEnumerationEnumeration;}
-
-  string getElementName(size_t index) const;
-
-  virtual size_t getNumElements() const = 0;
-  virtual ObjectPtr getElement(size_t index) const = 0;
-  virtual void setElement(size_t index, const ObjectPtr& value) = 0;
-
-  virtual string toString() const;
-  virtual string toShortString() const;
-  VectorPtr toVector() const;
-
-  virtual void saveToXml(XmlExporter& exporter) const;
-  virtual bool loadFromXml(XmlImporter& importer);
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
-  virtual int compare(const ObjectPtr& otherObject) const;
-    
-  /*
-  ** Lua
-  */
-  virtual int __len(LuaState& state) const;
-  virtual int __index(LuaState& state) const;
-  virtual int __newIndex(LuaState& state);
-
-  lbcpp_UseDebuggingNewOperator
-};
-
-extern ClassPtr containerClass(ClassPtr elementsType = objectClass);
- 
-class Vector : public Container
-{
-public:
-  Vector(ClassPtr thisClass) : Container(thisClass) {}
-  Vector() {}
+  static ClassPtr getTemplateParameter(ClassPtr type);
+  static bool getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res);
 
   /*
   ** Vector
@@ -82,18 +41,30 @@ public:
   virtual void prepend(const ObjectPtr& value) = 0;
   virtual void append(const ObjectPtr& value) = 0;
   virtual void remove(size_t index) = 0;
+  virtual size_t getNumElements() const = 0;
+  virtual ObjectPtr getElement(size_t index) const = 0;
+  virtual void setElement(size_t index, const ObjectPtr& value) = 0;
 
   /*
   ** Object
   */
-  virtual string toString() const;
+  virtual string toShortString() const;
+
   virtual bool loadFromString(ExecutionContext& context, const string& stringValue);
+  virtual string toString() const;
+
   virtual bool loadFromXml(XmlImporter& importer);
+  virtual void saveToXml(XmlExporter& exporter) const;
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+  virtual int compare(const ObjectPtr& otherObject) const;
 
   /*
   ** Lua
   */
+  virtual int __len(LuaState& state) const;
+  virtual int __index(LuaState& state) const;
+  virtual int __newIndex(LuaState& state);
   static int resize(LuaState& state);
   static int append(LuaState& state);
 
@@ -127,7 +98,6 @@ public:
   virtual void remove(size_t index)
     {v.erase(v.begin() + index);}
 
-  // Container
   virtual size_t getNumElements() const
     {return v.size();}
 
@@ -136,6 +106,9 @@ public:
 
   virtual void setElement(size_t index, const ObjectPtr& value)
     {jassert(index < v.size()); v[index] = objectToNative(value);}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+    {target.staticCast<ExactClass>()->v = v;}
 
   const NativeType& get(size_t index) const
     {jassert(index < v.size()); return v[index];}

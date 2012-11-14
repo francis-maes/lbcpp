@@ -43,7 +43,7 @@ public:
     return new Boolean(Integer::get(inputs[0]) == (juce::int64)value);
   }
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
+  virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const
   {
     if (index == 0)
     {

@@ -5,6 +5,7 @@ Explorer:
  * TextEditor
    * class Text et TextComponent
    * Cas particulier pour Lua
+   * Recycler StringComponent
 
  * Classe de base pour faire des arbres
     => FileTree
@@ -13,7 +14,6 @@ Explorer:
     => ResultsTree (pour les container(pair(string,object)))
 
  * Cleaner
-   * Bouger StringComponent dans lbcpp-core
    * Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
    * Enlever le repertoire "Components"
    

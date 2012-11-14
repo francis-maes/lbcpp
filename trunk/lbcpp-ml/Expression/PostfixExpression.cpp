@@ -345,7 +345,7 @@ void PostfixExpressionTypeSpace::enumerateFunctionVariables(const FunctionPtr& f
   }
   else
   {
-    ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
+    VectorPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
     if (values)
     {
       size_t n = values->getNumElements();
