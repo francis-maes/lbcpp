@@ -63,10 +63,27 @@ VariableExpressionPtr ExpressionDomain::addInput(const ClassPtr& type, const str
   return res;
 }
 
+void ExpressionDomain::addInputs(const std::vector<VariableExpressionPtr>& inputs)
+{
+  this->inputs.reserve(this->inputs.size() + inputs.size());
+  for (size_t i = 0; i < inputs.size(); ++i)
+    this->inputs.push_back(inputs[i]);
+}
+
 VariableExpressionPtr ExpressionDomain::createSupervision(const ClassPtr& type, const string& name)
 {
   supervision = new VariableExpression(type, name, inputs.size());
   return supervision;
+}
+
+TablePtr ExpressionDomain::createTable(size_t numSamples) const
+{
+  TablePtr res = new Table(numSamples);
+  for (size_t i = 0; i < inputs.size(); ++i)
+    res->addColumn(inputs[i], inputs[i]->getType());
+  if (supervision)
+    res->addColumn(supervision, supervision->getType());
+  return res;
 }
 
 ExpressionPtr ExpressionDomain::getActiveVariable(size_t index) const

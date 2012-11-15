@@ -56,7 +56,7 @@ public:
       for (DataVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
       {
         double value = it.getRawDouble();
-        if (value == doubleMissingValue)
+        if (value == DVector::missingValue)
           *dest++ = 2;
         else
           *dest++ = (value >= threshold ? 1 : 0);

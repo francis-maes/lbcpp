@@ -100,9 +100,10 @@ public:
     if (table)
     {
       plot = new Plot(table);
-      if (plot->getNumPlotVariables() > 0)
+      if (plot->getNumPlotVariables() >= 2)
         addTab(T("Plot"), Colours::white);
-      addTab(T("Table"), Colours::white);
+      if (table->getNumColumns() >= 2 && table->getNumRows() > 1)
+        addTab(T("Table"), Colours::white);
     }
 
     results = pair->getFirst();

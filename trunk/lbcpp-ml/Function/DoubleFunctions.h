@@ -28,8 +28,8 @@ public:
     if (!inputs[0])
       return ObjectPtr();
     double res = computeDouble(Double::get(inputs[0]));
-    jassert(res == doubleMissingValue || isNumberValid(res));
-    return res == doubleMissingValue ? ObjectPtr() : ObjectPtr(new Double(res));
+    jassert(res == DVector::missingValue || isNumberValid(res));
+    return res == DVector::missingValue ? ObjectPtr() : ObjectPtr(new Double(res));
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& in, ClassPtr outputType) const
@@ -40,7 +40,7 @@ public:
     for (DataVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)
     {
       double value = it.getRawDouble();
-      *dest++ = value == doubleMissingValue ? doubleMissingValue : computeDouble(value);
+      *dest++ = value == DVector::missingValue ? DVector::missingValue : computeDouble(value);
     }
     return new DataVector(inputs->getIndices(), res);
   }
@@ -66,7 +66,7 @@ public:
     {return "inverse";}
 
   virtual double computeDouble(double value) const
-    {return value ? 1.0 / value : doubleMissingValue;}
+    {return value ? 1.0 / value : DVector::missingValue;}
 };
 
 class AbsDoubleFunction : public UnaryDoubleFunction
@@ -86,7 +86,7 @@ public:
     {return "log";}
 
   virtual double computeDouble(double value) const
-    {return value <= 0.0 ? doubleMissingValue : log(value);}
+    {return value <= 0.0 ? DVector::missingValue : log(value);}
 };
 
 class ProtectedLogDoubleFunction : public UnaryDoubleFunction
@@ -106,7 +106,7 @@ public:
     {return "exp";}
 
   virtual double computeDouble(double value) const
-    {return value >= 100 ? doubleMissingValue : exp(value);}
+    {return value >= 100 ? DVector::missingValue : exp(value);}
 };
 
 class SqrtDoubleFunction : public UnaryDoubleFunction
@@ -116,7 +116,7 @@ public:
     {return "sqrt";}
 
   virtual double computeDouble(double value) const
-    {return value < 0.0 ? doubleMissingValue : sqrt(value);}
+    {return value < 0.0 ? DVector::missingValue : sqrt(value);}
 };
 
 class CosDoubleFunction : public UnaryDoubleFunction
@@ -152,7 +152,7 @@ public:
     if (!inputs[0] || !inputs[1])
       return ObjectPtr();
     double res = computeDouble(Double::get(inputs[0]), Double::get(inputs[1]));
-    if (res == doubleMissingValue)
+    if (res == DVector::missingValue)
       return ObjectPtr();
     jassert(isNumberValid(res));
     return new Double(res);
@@ -172,8 +172,8 @@ public:
     {
       double d1 = it1.getRawDouble();
       double d2 = it2.getRawDouble();
-      if (d1 == doubleMissingValue || d2 == doubleMissingValue)
-        *dest++ = doubleMissingValue;
+      if (d1 == DVector::missingValue || d2 == DVector::missingValue)
+        *dest++ = DVector::missingValue;
       else
         *dest++ = computeDouble(d1, d2);
       ++it1;
@@ -232,7 +232,7 @@ public:
     {return "/";}
 
   virtual double computeDouble(double first, double second) const
-    {return second ? first / second : doubleMissingValue;}
+    {return second ? first / second : DVector::missingValue;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}
@@ -258,7 +258,7 @@ public:
     {return "^";}
 
   virtual double computeDouble(double first, double second) const
-    {return first || second ? std::pow(first, second) : doubleMissingValue;}
+    {return first || second ? std::pow(first, second) : DVector::missingValue;}
 };
 
 class MinDoubleFunction : public BinaryDoubleFunction

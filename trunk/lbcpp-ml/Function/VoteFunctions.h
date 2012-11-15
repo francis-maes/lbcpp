@@ -66,7 +66,7 @@ public:
       for (DataVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
       {
         double d = it.getRawDouble();
-        if (d != doubleMissingValue)
+        if (d != DVector::missingValue)
           res->setElement(index, computeVote(d));
         ++index;
       }

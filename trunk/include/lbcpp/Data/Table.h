@@ -54,6 +54,14 @@ public:
 
   void makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size_t>& res) const;
 
+  TablePtr randomize(ExecutionContext& context) const;
+  TablePtr range(size_t begin, size_t end) const;
+  TablePtr invRange(size_t begin, size_t end) const;
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+  lbcpp_UseDebuggingNewOperator
+
 private:
   IndexSetPtr allIndices;
 

@@ -61,6 +61,8 @@ public:
   void reinitialize(ExecutionContext& context);
   virtual bool loadFromString(ExecutionContext& context, const string& str);
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   DomainPtr domain;
   std::vector<ObjectivePtr> objectives;

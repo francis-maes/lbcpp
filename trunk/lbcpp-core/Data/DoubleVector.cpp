@@ -764,7 +764,8 @@ ObjectPtr SparseDoubleVector::getElement(size_t index) const
   const double* value = SparseDoubleVectorHelper::get(values, index);
   if (!value)
     return ObjectPtr();
-  return *value == doubleMissingValue ? ObjectPtr() : new Double(getElementsType(), *value);
+  jassert(*value != DVector::missingValue);
+  return new Double(getElementsType(), *value);
 }
 
 void SparseDoubleVector::setElement(size_t index, const ObjectPtr& value)
@@ -920,10 +921,8 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
   for (size_t i = 0; i < n; ++i)
   {
     double value = (*values)[i];
-    if (value == doubleMissingValue)
-      res += T("_ ");
-    else
-      res += string(value) + T(" ");
+    jassert(value != DVector::missingValue);
+    res += string(value) + T(" ");
   }
   exporter.addTextElement(res.trimEnd());
   exporter.setAttribute(T("size"), n);
@@ -957,10 +956,8 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   {
     string token = tokens[i];
     double& value = getValueReference(i);
-    if (token == T("_"))
-      value = doubleMissingValue;
-    else
-      value = tokens[i].getDoubleValue();
+    jassert(token != T("_"));
+    value = tokens[i].getDoubleValue();
   }
   return ok;
 }
@@ -1197,7 +1194,7 @@ void DenseDoubleVector::prepend(const ObjectPtr& value)
 }
 
 static inline double doubleObjectToDouble(const ObjectPtr& value)
-  {return (value ? Double::get(value) : doubleMissingValue);}
+  {jassert(value); return Double::get(value);}
 
 void DenseDoubleVector::append(const ObjectPtr& value)
   {values->push_back(doubleObjectToDouble(value));}

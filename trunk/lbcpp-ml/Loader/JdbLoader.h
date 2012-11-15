@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Loader.h>
 # include <lbcpp/Data/Table.h>
+# include <lbcpp-ml/Expression.h>
 
 namespace lbcpp
 {
@@ -88,7 +89,7 @@ protected:
         context.errorCallback(T("Could not recognize attribute type ") + string(kind).quoted());
         return TablePtr();
       }
-      res->addColumn(name, attributeClass);
+      res->addColumn(new VariableExpression(attributeClass, name, res->getNumColumns()), attributeClass);
     }
     return res;
   }
