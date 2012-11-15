@@ -36,6 +36,7 @@ public:
     {return inputs;}
 
   VariableExpressionPtr addInput(const ClassPtr& type, const string& name);
+  void addInputs(const std::vector<VariableExpressionPtr>& inputs);
   
   /*
   ** Available Constants
@@ -72,7 +73,15 @@ public:
   VariableExpressionPtr getSupervision() const
     {return supervision;}
 
+  void setSupervision(const VariableExpressionPtr& supervision)
+    {this->supervision = supervision;}
+
   VariableExpressionPtr createSupervision(const ClassPtr& type, const string& name);
+
+  /*
+  ** Table
+  */
+  TablePtr createTable(size_t numSamples) const;
 
   /*
   ** Available Functions

@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Core/string.h>
 #include <lbcpp/Data/Table.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 #include <algorithm>
 using namespace lbcpp;
 
@@ -130,4 +131,65 @@ void Table::makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size
   res = allIndices->getIndices();
   OrderContainerFunction order(refCountedPointerFromThis(this), columnIndex, increasingOrder, getType(columnIndex)->isConvertibleToDouble());
   std::sort(res.begin(), res.end(), order);
+}
+
+void Table::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  const TablePtr& target = t.staticCast<Table>();
+  target->allIndices = allIndices;
+  target->columnMap = columnMap;
+  target->columns = columns;
+}
+
+TablePtr Table::randomize(ExecutionContext& context) const
+{
+  size_t nc = columns.size();
+  size_t nr = allIndices->size();
+
+  TablePtr res = cloneAndCast<Table>();
+  std::vector<size_t> order;
+  context.getRandomGenerator()->sampleOrder(nr, order);
+  for (size_t i = 0; i < nc; ++i)
+    res->columns[i].data = vector(res->columns[i].type, nr);
+  for (size_t i = 0; i < order.size(); ++i)
+    for (size_t j = 0; j < nc; ++j)
+      res->setElement(i, j, getElement(order[i], j));
+  return res;
+}
+
+TablePtr Table::range(size_t begin, size_t end) const
+{
+  jassert(end >= begin);
+  size_t numRows = end - begin;
+  size_t numColumns = getNumColumns();
+  TablePtr res = cloneAndCast<Table>();
+  res->allIndices = new IndexSet(numRows);
+  for (size_t i = 0; i < numColumns; ++i)
+  {
+    VectorPtr data = vector(columns[i].type, numRows);
+    for (size_t j = 0; j < numRows; ++j)
+      data->setElement(j, columns[i].data->getElement(begin + j));
+    res->columns[i].data = data;
+  }
+  return res;
+}
+
+TablePtr Table::invRange(size_t begin, size_t end) const
+{
+  jassert(end >= begin);
+  size_t numRows = getNumRows() - (end - begin);
+  size_t numColumns = getNumColumns();
+  TablePtr res = cloneAndCast<Table>();
+  res->allIndices = new IndexSet(numRows);
+  for (size_t i = 0; i < numColumns; ++i)
+  {
+    VectorPtr data = vector(columns[i].type, numRows);
+    size_t idx = 0;
+    for (size_t j = 0; j < begin; ++j)
+      data->setElement(idx++, columns[i].data->getElement(j));
+    for (size_t j = end; j < getNumRows(); ++j)
+      data->setElement(idx++, columns[i].data->getElement(j));
+    res->columns[i].data = data;
+  }
+  return res;
 }

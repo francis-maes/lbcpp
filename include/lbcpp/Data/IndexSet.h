@@ -21,7 +21,8 @@ class IndexSet : public Object
 {
 public:
   IndexSet(size_t begin, size_t end);
-  IndexSet();
+  IndexSet(size_t size);
+  IndexSet() {}
   
   typedef std::vector<size_t>::iterator iterator;
   typedef std::vector<size_t>::const_iterator const_iterator;

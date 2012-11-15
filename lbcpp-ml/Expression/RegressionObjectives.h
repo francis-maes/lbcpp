@@ -36,7 +36,7 @@ public:
     for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       double prediction = it.getRawDouble();
-      if (prediction == doubleMissingValue || !isNumberValid(prediction))
+      if (prediction == DVector::missingValue || !isNumberValid(prediction))
         prediction = 0.0;
       double delta = supervisions->get(it.getIndex()) - prediction;
       squaredError += delta * delta;

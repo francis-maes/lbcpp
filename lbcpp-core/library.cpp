@@ -303,8 +303,6 @@ static void lbcppInitializeGlobals()
 {
   simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass);
   simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass);
-  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
-  doubleMissingValue = *(const double* )&missing;
 }
 
 void lbcpp::initialize(const char* executableName)

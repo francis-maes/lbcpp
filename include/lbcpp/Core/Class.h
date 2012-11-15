@@ -156,8 +156,6 @@ protected:
 
 extern ClassPtr classClass;
 
-extern double doubleMissingValue;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_TYPE_H_

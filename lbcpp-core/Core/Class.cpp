@@ -10,8 +10,6 @@
 #include <map>
 using namespace lbcpp;
 
-double lbcpp::doubleMissingValue = 0.0;
-
 Class::Class(const string& className, ClassPtr baseType)
   : NameableObject(className), initialized(false), baseType(baseType), namedType(false) {}
 

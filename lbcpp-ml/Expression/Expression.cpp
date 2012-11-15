@@ -565,7 +565,7 @@ void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const DataVect
   for (DataVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it)
   {
     double value = it.getRawDouble();
-    if (value == doubleMissingValue)
+    if (value == DVector::missingValue)
       value = 0.0;
     if (computeAverage && newNodeIndex > 0)
       *dest++ = (*dest * (newNodeIndex - 1) + value) / (double)newNodeIndex;

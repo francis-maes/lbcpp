@@ -13,13 +13,10 @@
 using namespace lbcpp;
 
 IndexSet::IndexSet(size_t begin, size_t end)
-{
-  addInterval(begin, end);
-}
+  {addInterval(begin, end);}
 
-IndexSet::IndexSet()
-{
-}
+IndexSet::IndexSet(size_t size)
+  {addInterval(0, size);}
 
 void IndexSet::addInterval(size_t begin, size_t end)
 {

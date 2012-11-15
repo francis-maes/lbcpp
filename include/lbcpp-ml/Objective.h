@@ -20,12 +20,16 @@ class ScalarProperty : public Object
 {
 public:
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) = 0;
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 class Objective : public ScalarProperty
 {
 public:
   virtual void getObjectiveRange(double& worst, double& best) const = 0;
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 class DifferentiableObjective : public Objective
@@ -38,6 +42,8 @@ public:
 
   bool testDerivativeWithRandomDirection(ExecutionContext& context, const DenseDoubleVectorPtr& parameters);
   bool testDerivative(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, const DoubleVectorPtr& direction);
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 class StochasticObjective : public Objective
@@ -56,6 +62,8 @@ public:
       res += evaluate(context, object, i);
     return res / (double)numInstances;
   }
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 class LearningObjective : public StochasticObjective
@@ -72,6 +80,8 @@ public:
 
   DataVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const;
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class LearningObjectiveClass;
 
@@ -86,6 +96,8 @@ public:
   SupervisedLearningObjective() {}
 
   VectorPtr getSupervisions() const;
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class SupervisedLearningObjectiveClass;

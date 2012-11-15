@@ -315,7 +315,7 @@ size_t BVector::getSizeInBytes(bool recursively) const
 ** IVector / DVector / SVector
 */
 juce::int64 IVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
-double DVector::missingValue = doubleMissingValue;
+double DVector::missingValue = *(const double* )&IVector::missingValue;
 string SVector::missingValue = T("<missing string>");
 
 /*

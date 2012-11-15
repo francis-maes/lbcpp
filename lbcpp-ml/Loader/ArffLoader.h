@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Loader.h>
 # include <lbcpp/Data/Table.h>
+# include <lbcpp-ml/Expression.h>
 
 namespace lbcpp
 {
@@ -126,7 +127,7 @@ protected:
       context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Unknown attribute type: ") + attributeTypeName.quoted());
       return false;
     }
-    table->addColumn(attributeName, attributeType);
+    table->addColumn(new VariableExpression(attributeType, attributeName, table->getNumColumns()), attributeType);
     return true;
   }
 
