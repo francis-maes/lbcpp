@@ -92,6 +92,10 @@ protected:
 extern SolverPtr nrpaSolver(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel);
 extern SolverPtr beamNRPASolver(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel, size_t beamSizeAtFirstLevel, size_t beamSizeAtHigherLevels);
 
+// learners
+extern SolverPtr exhaustiveConditionLearner(SamplerPtr expressionsSampler);
+extern SolverPtr treeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit = 2, size_t maxDepth = 0);
+
 class IterativeSolver : public Solver
 {
 public:

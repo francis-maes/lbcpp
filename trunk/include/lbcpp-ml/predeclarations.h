@@ -36,6 +36,9 @@ typedef ReferenceCountedObjectPtr<StochasticObjective> StochasticObjectivePtr;
 class SupervisedLearningObjective;
 typedef ReferenceCountedObjectPtr<SupervisedLearningObjective> SupervisedLearningObjectivePtr;
 
+class SplittingCriterion;
+typedef ReferenceCountedObjectPtr<SplittingCriterion> SplittingCriterionPtr;
+
 class FitnessLimits;
 typedef ReferenceCountedObjectPtr<FitnessLimits> FitnessLimitsPtr;
 

@@ -14,6 +14,7 @@ GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.c
 GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Loader/LoaderLibrary.xml LoaderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SplittingCriterion/SplittingCriterionLibrary.xml SplittingCriterionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learner/LearnerLibrary.xml LearnerLibrary.cpp)
 
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
@@ -64,6 +65,7 @@ SET(LBCPP_ML_SAMPLER_SOURCES
   Sampler/RandomSearchSampler.h
   Sampler/LogLinearActionCodeSearchSampler.h
   Sampler/BinaryMixtureSampler.h
+  Sampler/SubsetVectorSampler.h
   Sampler/SamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )
@@ -103,6 +105,7 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
 SET(LBCPP_ML_EXPRESSION_SAMPLER_SOURCES
   Expression/FullExpressionSampler.h
   Expression/GrowExpressionSampler.h
+  Expression/ScalarExpressionVectorSampler.h
 )
 
 SET(LBCPP_ML_EXPRESSION_PERTURBATOR_SOURCES
@@ -141,11 +144,18 @@ SET(LBCPP_ML_LOADER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LoaderLibrary.cpp
 )
 
-SET(LBCPP_ML_SPLITTING_CRITERION
+SET(LBCPP_ML_SPLITTING_CRITERION_SOURCES
   SplittingCriterion/InformationGainSplittingCriterion.h
   SplittingCriterion/SplittingCriterion.cpp
   SplittingCriterion/SplittingCriterionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SplittingCriterionLibrary.cpp
+)
+
+SET(LBCPP_ML_LEARNER_SOURCES
+  Learner/ExhaustiveConditionLearner.h
+  Learner/TreeLearner.h
+  Learner/LearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LearnerLibrary.cpp
 )
 
 SET(LBCPP_ML_TOPLEVEL_SOURCES
@@ -178,7 +188,8 @@ SET(LBCPP_ML_SOURCES
     ${LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES}
   ${LBCPP_ML_SEARCH_SOURCES}
   ${LBCPP_ML_LOADER_SOURCES}
-  ${LBCPP_ML_SPLITTING_CRITERION}
+  ${LBCPP_ML_SPLITTING_CRITERION_SOURCES}
+  ${LBCPP_ML_LEARNER_SOURCES}
 
   ${LBCPP_ML_TOPLEVEL_SOURCES}
   ${LBCPP_ML_MAIN_SOURCES}
@@ -198,7 +209,8 @@ SOURCE_SUB_GROUP(Expression Search FILES ${LBCPP_ML_EXPRESSION_SEARCH_SOURCES})
 SOURCE_SUB_GROUP(Expression Objective FILES ${LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES})
 SOURCE_GROUP(Search FILES ${LBCPP_ML_SEARCH_SOURCES})
 SOURCE_GROUP(Loader FILES ${LBCPP_ML_LOADER_SOURCES})
-SOURCE_GROUP(SplittingCriterion FILES ${LBCPP_ML_SPLITTING_CRITERION})
+SOURCE_GROUP(SplittingCriterion FILES ${LBCPP_ML_SPLITTING_CRITERION_SOURCES})
+SOURCE_GROUP(Learner FILES ${LBCPP_ML_LEARNER_SOURCES})
 
 SOURCE_GROUP(Main FILES ${LBCPP_ML_MAIN_SOURCES})
 

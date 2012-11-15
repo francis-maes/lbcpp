@@ -16,6 +16,8 @@
 namespace lbcpp
 {
 
+extern SamplerPtr scalarExpressionVectorSampler();
+
 class ExpressionSampler : public Sampler
 {
 public:

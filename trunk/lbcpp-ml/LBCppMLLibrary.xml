@@ -11,6 +11,7 @@
   <import name="Expression"/>
   <import name="Loader"/>
   <import name="SplittingCriterion"/>
+  <import name="Learner"/>
 
   <include file="lbcpp-ml/Problem.h"/>
   <include file="lbcpp-ml/Perturbator.h"/>
@@ -37,7 +38,11 @@
   <class name="ContinuousDomain" base="Domain">
     <variable type="Vector[Pair[Double,Double]]" name="limits"/>
   </class>
-
+  <class name="VectorDomain" base="Domain">
+    <constructor arguments="DomainPtr elementsDomain"/>
+    <variable type="Domain" name="elementsDomain"/>
+  </class>
+  
   <!-- Fitness -->
   <class name="FitnessLimits" base="ContinuousDomain"/>
 

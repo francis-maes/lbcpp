@@ -79,6 +79,23 @@ protected:
   std::vector< std::pair<double, double> > limits;
 };
 
+class VectorDomain : public Domain
+{
+public:
+  VectorDomain(DomainPtr elementsDomain = DomainPtr())
+    : elementsDomain(elementsDomain) {}
+
+  DomainPtr getElementsDomain() const
+    {return elementsDomain;}
+
+protected:
+  friend class VectorDomainClass;
+
+  DomainPtr elementsDomain;
+};
+
+extern DomainPtr vectorDomain(DomainPtr elementsDomain);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_DOMAIN_H_
