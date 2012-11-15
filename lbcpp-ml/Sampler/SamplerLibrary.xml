@@ -15,6 +15,12 @@
     <variable type="Probability" name="probability"/>
   </class>
 
+  <class name="SubsetVectorSampler" base="Sampler">
+    <constructor arguments="SamplerPtr vectorSampler, size_t subsetSize"/>
+    <variable type="Sampler" name="vectorSampler"/>
+    <variable type="PositiveInteger" name="subsetSize"/>
+  </class>
+  
   <!-- Continuous Samplers -->
   <class name="UniformContinuousSampler" base="Sampler">
     <constructor/>

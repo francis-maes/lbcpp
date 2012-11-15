@@ -56,7 +56,11 @@
   <class name="GrowExpressionSampler" base="DepthControlledExpressionSampler">
     <constructor arguments="size_t minDepth, size_t maxDepth"/>
   </class>
-
+  
+  <class name="ScalarExpressionVectorSampler" base="Sampler">
+    <constructor/>
+  </class>
+  
   <!-- Expression Perturbators -->
   <class name="ExpressionPerturbator" base="Perturbator" abstract="yes"/>
   <class name="ShrinkExpressionPerturbator" base="ExpressionPerturbator">

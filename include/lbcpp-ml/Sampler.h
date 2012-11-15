@@ -40,6 +40,7 @@ extern SamplerPtr diagonalGaussianSampler();
 extern SamplerPtr diagonalGaussianDistributionSampler();
 
 extern SamplerPtr binaryMixtureSampler(SamplerPtr sampler1, SamplerPtr sampler2, double probability = 0.5);
+extern SamplerPtr subsetVectorSampler(SamplerPtr vectorSampler, size_t subsetSize);
 
 class DecoratorSampler : public Sampler
 {
