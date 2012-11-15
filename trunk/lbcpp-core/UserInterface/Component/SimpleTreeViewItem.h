@@ -73,6 +73,25 @@ protected:
   bool hasBeenOpened;
 };
 
+class GenericTreeView : public juce::TreeView, public ObjectSelector, public ComponentWithPreferedSize
+{
+public:
+  GenericTreeView(ObjectPtr object, const string& name)
+    : object(object), name(name)
+  {
+    setColour(backgroundColourId, Colours::white);
+  }
+
+  virtual int getDefaultWidth() const
+    {return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 4;}
+
+  juce_UseDebuggingNewOperator
+
+protected:
+  ObjectPtr object;
+  string name;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_USER_INTERFACE_SIMPLE_TREE_VIEW_ITEM_H_

@@ -20,7 +20,7 @@ using juce::Colour;
 ** ExecutionTraceTreeView
 */
 ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context)
-  : trace(trace), isSelectionUpToDate(false), isTreeUpToDate(true)
+  : GenericTreeView(trace, name), isSelectionUpToDate(false), isTreeUpToDate(true)
 {
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
   DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
@@ -35,7 +35,6 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const st
   setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode(), 0));
   getRootItem()->setOpen(true);
   setRootItemVisible(false);
-  setColour(backgroundColourId, Colours::white);
   setMultiSelectEnabled(true);
 }
 
@@ -216,9 +215,6 @@ void ExecutionTraceTreeView::invalidateSelection()
 
 void ExecutionTraceTreeView::invalidateTree()
   {isTreeUpToDate = false;}
-
-int ExecutionTraceTreeView::getDefaultWidth() const
-  {return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 3;}
 
 #include "../../Execution/Callback/MakeTraceExecutionCallback.h"
 

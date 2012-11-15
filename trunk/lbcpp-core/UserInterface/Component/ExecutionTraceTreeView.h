@@ -33,7 +33,7 @@ protected:
   ExecutionCallbackPtr target;
 };
  
-class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback, public ObjectSelector, public ComponentWithPreferedSize
+class ExecutionTraceTreeView : public GenericTreeView, public DelayToUserInterfaceExecutionCallback
 {
 public:
   ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context = ExecutionContextPtr());
@@ -46,10 +46,8 @@ public:
   void invalidateTree();
   void invalidateSelection();
 
-  virtual int getDefaultWidth() const;
-
   const ExecutionTracePtr& getTrace() const
-    {return trace;}
+    {return object.staticCast<ExecutionTrace>();}
 
   virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& name);
 
