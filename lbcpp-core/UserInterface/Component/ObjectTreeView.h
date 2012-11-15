@@ -28,7 +28,7 @@ struct ObjectTreeOptions
   bool makeRootNodeVisible;
 };
 
-class ObjectTreeView : public juce::TreeView, public ObjectSelector, public juce::Timer, public ComponentWithPreferedSize
+class ObjectTreeView : public GenericTreeView, public juce::Timer
 {
 public:
   ObjectTreeView(const ObjectPtr& object, const string& name, const ObjectTreeOptions& options = ObjectTreeOptions());
@@ -39,17 +39,12 @@ public:
   void clearTree();
   void buildTree();
 
-  virtual void paint(juce::Graphics& g);
   virtual void timerCallback();
   void invalidateSelection();
-
-  virtual int getDefaultWidth() const;
 
   juce_UseDebuggingNewOperator
 
 protected:
-  ObjectPtr object;
-  string name;
   ObjectTreeOptions options;
   ObjectTreeViewItem* root;
   bool isSelectionUpToDate;

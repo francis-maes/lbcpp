@@ -246,7 +246,7 @@ protected:
 ** ObjectTreeView
 */
 ObjectTreeView::ObjectTreeView(const ObjectPtr& object, const string& name, const ObjectTreeOptions& options)
-  : object(object), name(name), options(options), root(NULL), isSelectionUpToDate(false)
+  : GenericTreeView(object, name), options(options), root(NULL), isSelectionUpToDate(false)
 {
   setRootItemVisible(options.makeRootNodeVisible);
   setWantsKeyboardFocus(true);
@@ -285,12 +285,6 @@ void ObjectTreeView::buildTree()
   root->setOpen(true);
 }
 
-void ObjectTreeView::paint(Graphics& g)
-{
-  g.fillAll(Colours::white);
-  juce::TreeView::paint(g);
-}
-
 void ObjectTreeView::timerCallback()
 {
   if (!isSelectionUpToDate)
@@ -316,15 +310,4 @@ void ObjectTreeView::timerCallback()
 
 void ObjectTreeView::invalidateSelection()
   {isSelectionUpToDate = false;}
-
-int ObjectTreeView::getDefaultWidth() const
-{
-  return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 5;
-  /*
-  int numFields = 1;
-  if (options.showTypes) ++numFields;
-  if (options.showShortSummaries) ++numFields;
-  return numFields * 200
-  */
-}
 

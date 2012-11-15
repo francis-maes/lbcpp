@@ -62,12 +62,16 @@ public:
     learner->setVerbosity((SolverVerbosity)verbosity);
 
     // learn
-    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
-    SolverCallbackPtr callback = fillParetoFrontSolverCallback(front);
-    learner->solve(context, problem, callback);
-    context.resultCallback("front", front);
+    ExpressionPtr model;
+    FitnessPtr fitness;
+    learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+    context.resultCallback("model", model);
+    context.resultCallback("fitness", fitness);
 
     // evaluate
+    ObjectivePtr testingObjective = multiClassAccuracyObjective(testingData, supervision);
+    double testingScore = testingObjective->evaluate(context, model);
+    context.resultCallback("testingScore", testingScore);
 
     return new Boolean(true);
   }
