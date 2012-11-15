@@ -18,7 +18,7 @@ class AccuracyObjective : public SupervisedLearningObjective
 {
 public:
   AccuracyObjective(TablePtr data, VariableExpressionPtr supervision)
-    : SupervisedLearningObjective(data, supervision) {}
+    {configure(data, supervision);}
   AccuracyObjective() {}
 
   virtual void getObjectiveRange(double& worst, double& best) const
@@ -29,7 +29,7 @@ class BinaryAccuracyObjective : public AccuracyObjective
 {
 public:
   BinaryAccuracyObjective(TablePtr data, VariableExpressionPtr supervision)
-    : AccuracyObjective(data, supervision) {}
+    {configure(data, supervision);}
   BinaryAccuracyObjective() {}
 
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
@@ -57,7 +57,7 @@ class MultiClassAccuracyObjective : public AccuracyObjective
 {
 public:
   MultiClassAccuracyObjective(TablePtr data, VariableExpressionPtr supervision)
-    : AccuracyObjective(data, supervision) {}
+    {configure(data, supervision);}
   MultiClassAccuracyObjective() {}
 
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
@@ -65,17 +65,32 @@ public:
     // retrieve predictions and supervisions
     ExpressionPtr expression = object.staticCast<Expression>();
     DataVectorPtr predictions = computePredictions(context, expression);
-    VectorPtr supervisions = getSupervisions();
+    IVectorPtr supervisions = getSupervisions().staticCast<IVector>();
     
     // compute num successes
     size_t numSuccesses = 0;
-    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    if (predictions->getElementsType()->inheritsFrom(integerClass))
     {
-      int sup = (int)Integer::get(supervisions->getElement(it.getIndex()));
-      int pred = it.getRawInteger();
-      if (sup == pred)
-        ++numSuccesses;
+      for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+      {
+        int sup = (int)supervisions->get(it.getIndex());
+        int pred = it.getRawInteger();
+        if (sup == pred)
+          ++numSuccesses;
+      }
     }
+    else if (predictions->getElementsType()->inheritsFrom(denseDoubleVectorClass()))
+    {
+      for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+      {
+        int sup = (int)supervisions->get(it.getIndex());
+        int pred = it.getRawObject().staticCast<DenseDoubleVector>()->getIndexOfMaximumValue();
+        if (sup == pred)
+          ++numSuccesses;
+      }
+    }
+    else
+      jassertfalse;
 
     return numSuccesses / (double)supervisions->getNumElements();
   }

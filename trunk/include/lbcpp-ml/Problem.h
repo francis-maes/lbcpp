@@ -19,6 +19,12 @@ namespace lbcpp
 class Problem : public Object
 {
 public:
+  Problem(DomainPtr domain, ObjectivePtr objective)
+    : domain(domain), objectives(1, objective) {}
+  Problem(DomainPtr domain)
+    : domain(domain) {}
+  Problem() {}
+
   /*
   ** Domain
   */

@@ -10,6 +10,7 @@
   <import name="Function"/>
   <import name="Expression"/>
   <import name="Loader"/>
+  <import name="SplittingCriterion"/>
 
   <include file="lbcpp-ml/Problem.h"/>
   <include file="lbcpp-ml/Perturbator.h"/>

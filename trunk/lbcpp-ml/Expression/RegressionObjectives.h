@@ -18,7 +18,7 @@ class MSERegressionObjective : public SupervisedLearningObjective
 {
 public:
   MSERegressionObjective(TablePtr data, VariableExpressionPtr supervision)
-    : SupervisedLearningObjective(data, supervision) {}
+    {configure(data, supervision);}
   MSERegressionObjective() {}
 
   virtual void getObjectiveRange(double& worst, double& best) const

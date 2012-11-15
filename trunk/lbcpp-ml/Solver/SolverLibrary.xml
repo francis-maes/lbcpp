@@ -18,6 +18,13 @@
   <class name="StoreBestFitnessSolverCallback" base="SolverCallback">
     <constructor arguments="FitnessPtr&amp; bestFitness"/>
   </class>
+  <class name="StoreBestSolutionSolverCallback" base="SolverCallback">
+    <constructor arguments="ObjectPtr&amp; bestSolution"/>
+  </class>
+  <class name="StoreBestSolverCallback" base="SolverCallback">
+    <constructor arguments="ObjectPtr&amp; bestSolution, FitnessPtr&amp; bestFitness"/>
+  </class>
+  
   <class name="FillParetoFrontSolverCallback" base="SolverCallback">
     <constructor arguments="ParetoFrontPtr front"/>
     <variable type="ParetoFront" name="front"/>

@@ -1216,6 +1216,25 @@ void DenseDoubleVector::setElement(size_t index, const ObjectPtr& value)
   {(*values)[index] = doubleObjectToDouble(value);}
 
 // Object
+string DenseDoubleVector::toShortString() const
+{
+  string res = T("[");
+  size_t n = getNumElements();
+  bool tooLong = (n > 20);
+  if (tooLong)
+    n = 20;
+  for (size_t i = 0; i < n; ++i)
+  {
+    res += getElement(i)->toShortString();
+    if (i < n - 1)
+      res += " ";
+  }
+  if (tooLong)
+    res += T("...");
+  res += T("]");
+  return res;
+}
+
 void DenseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const DenseDoubleVectorPtr& target = t.staticCast<DenseDoubleVector>();

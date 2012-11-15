@@ -13,6 +13,7 @@ GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Loader/LoaderLibrary.xml LoaderLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(SplittingCriterion/SplittingCriterionLibrary.xml SplittingCriterionLibrary.cpp)
 
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
@@ -32,6 +33,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/ExpressionDomain.h
   ../include/lbcpp-ml/ExpressionSampler.h
   ../include/lbcpp-ml/BanditPool.h
+  ../include/lbcpp-ml/SplittingCriterion.h
 )
 
 
@@ -139,6 +141,13 @@ SET(LBCPP_ML_LOADER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LoaderLibrary.cpp
 )
 
+SET(LBCPP_ML_SPLITTING_CRITERION
+  SplittingCriterion/InformationGainSplittingCriterion.h
+  SplittingCriterion/SplittingCriterion.cpp
+  SplittingCriterion/SplittingCriterionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SplittingCriterionLibrary.cpp
+)
+
 SET(LBCPP_ML_TOPLEVEL_SOURCES
   SolutionContainer.cpp
   SolutionContainerComponent.h
@@ -169,6 +178,8 @@ SET(LBCPP_ML_SOURCES
     ${LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES}
   ${LBCPP_ML_SEARCH_SOURCES}
   ${LBCPP_ML_LOADER_SOURCES}
+  ${LBCPP_ML_SPLITTING_CRITERION}
+
   ${LBCPP_ML_TOPLEVEL_SOURCES}
   ${LBCPP_ML_MAIN_SOURCES}
 )
@@ -187,6 +198,8 @@ SOURCE_SUB_GROUP(Expression Search FILES ${LBCPP_ML_EXPRESSION_SEARCH_SOURCES})
 SOURCE_SUB_GROUP(Expression Objective FILES ${LBCPP_ML_EXPRESSION_OBJECTIVE_SOURCES})
 SOURCE_GROUP(Search FILES ${LBCPP_ML_SEARCH_SOURCES})
 SOURCE_GROUP(Loader FILES ${LBCPP_ML_LOADER_SOURCES})
+SOURCE_GROUP(SplittingCriterion FILES ${LBCPP_ML_SPLITTING_CRITERION})
+
 SOURCE_GROUP(Main FILES ${LBCPP_ML_MAIN_SOURCES})
 
 IF (UNIX)

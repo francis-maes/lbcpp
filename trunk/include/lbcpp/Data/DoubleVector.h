@@ -301,6 +301,7 @@ public:
   virtual void setElement(size_t index, const ObjectPtr& value);
 
   // Object
+  virtual string toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   void saveToXml(XmlExporter& exporter) const;
   bool loadFromXml(XmlImporter& importer);

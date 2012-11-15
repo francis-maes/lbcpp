@@ -63,12 +63,52 @@ public:
 
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
-    if (fitness->strictlyDominates(res))
+    if (!res || fitness->strictlyDominates(res))
       res = fitness;
   }
 
 protected:
   FitnessPtr& res;
+};
+
+class StoreBestSolutionSolverCallback : public SolverCallback
+{
+public:
+  StoreBestSolutionSolverCallback(ObjectPtr& bestSolution) : res(res) {}
+  StoreBestSolutionSolverCallback() : res(*(ObjectPtr* )0) {}
+
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  {
+    if (!bestFitness || fitness->strictlyDominates(bestFitness))
+    {
+      bestFitness = fitness;
+      res = object;
+    }
+  }
+
+protected:
+  FitnessPtr bestFitness;
+  ObjectPtr& res;
+};
+
+class StoreBestSolverCallback : public SolverCallback
+{
+public:
+  StoreBestSolverCallback(ObjectPtr& bestSolution, FitnessPtr& bestFitness) : bestSolution(bestSolution), bestFitness(bestFitness) {}
+  StoreBestSolverCallback() : bestSolution(*(ObjectPtr* )0), bestFitness(*(FitnessPtr* )0) {}
+
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  {
+    if (!bestFitness || fitness->strictlyDominates(bestFitness))
+    {
+      bestFitness = fitness;
+      bestSolution = object;
+    }
+  }
+
+protected:
+  FitnessPtr& bestFitness;
+  ObjectPtr& bestSolution;
 };
 
 class FillParetoFrontSolverCallback : public SolverCallback

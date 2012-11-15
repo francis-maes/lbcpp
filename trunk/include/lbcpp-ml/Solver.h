@@ -30,6 +30,9 @@ public:
 };
 
 extern SolverCallbackPtr storeBestFitnessSolverCallback(FitnessPtr& bestFitness);
+extern SolverCallbackPtr storeBestSolutionSolverCallback(ObjectPtr& bestSolution);
+extern SolverCallbackPtr storeBestSolverCallback(ObjectPtr& bestSolution, FitnessPtr& bestFitness);
+
 extern SolverCallbackPtr fillParetoFrontSolverCallback(ParetoFrontPtr front);
 extern SolverCallbackPtr maxEvaluationsSolverCallback(size_t maxEvaluations);
 
