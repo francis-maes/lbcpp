@@ -57,8 +57,16 @@ bool DifferentiableObjective::testDerivative(ExecutionContext& context, const De
 }
 
 DataVectorPtr LearningObjective::computePredictions(ExecutionContext& context, ExpressionPtr expression) const
-  {return expression->compute(context, data);}
+  {return expression->compute(context, data, indices);}
 
+void SupervisedLearningObjective::configure(const TablePtr& data, const VariableExpressionPtr& supervision, const DenseDoubleVectorPtr& weights, const IndexSetPtr& indices)
+{
+  this->data = data;
+  this->supervision = supervision;
+  this->weights = weights;
+  this->indices = indices ? indices : data->getAllIndices();
+}
+  
 VectorPtr SupervisedLearningObjective::getSupervisions() const
   {return data->getDataByKey(supervision);}
 

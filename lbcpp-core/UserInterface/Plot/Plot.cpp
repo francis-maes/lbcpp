@@ -40,7 +40,7 @@ Plot::Plot(TablePtr data)
     if (columnType->isConvertibleToDouble())
     {
       size_t index = variables.size();
-      variables.push_back(new PlotVariable(data->getKey(i), index > 0, index < numDefaultColours ? defaultColours[index] : randomColour()));
+      variables.push_back(new PlotVariable(data->getKey(i), index > 0 && data->getKey(i)->toShortString() != T("returnValue"), index < numDefaultColours ? defaultColours[index] : randomColour()));
     }
   }
 }

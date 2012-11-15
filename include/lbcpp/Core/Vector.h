@@ -192,6 +192,8 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
+typedef ReferenceCountedObjectPtr<IVector> IVectorPtr;
+
 class DVector : public VectorT<DVector, double>
 {
 public:

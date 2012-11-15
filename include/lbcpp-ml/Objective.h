@@ -69,14 +69,23 @@ public:
 class LearningObjective : public StochasticObjective
 {
 public:
-  LearningObjective(TablePtr data = TablePtr())
-    : data(data) {}
-
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {jassertfalse; return 0.0;}
   
   virtual size_t getNumInstances() const
+    {return getIndices()->size();}
+
+  const TablePtr& getData() const
+    {return data;}
+
+  const IndexSetPtr& getIndices() const
+    {return indices;}
+
+  size_t getNumSamples() const
     {return data->getNumRows();}
+
+  double getWeight(size_t index) const
+    {return weights ? weights->getValue(index) : 1.0;}
 
   DataVectorPtr computePredictions(ExecutionContext& context, ExpressionPtr expression) const;
 
@@ -86,14 +95,17 @@ protected:
   friend class LearningObjectiveClass;
 
   TablePtr data;
+  IndexSetPtr indices;
+  DenseDoubleVectorPtr weights;
 };
 
 class SupervisedLearningObjective : public LearningObjective
 {
 public:
-  SupervisedLearningObjective(TablePtr data, VariableExpressionPtr supervision)
-    : LearningObjective(data), supervision(supervision) {}
-  SupervisedLearningObjective() {}
+  virtual void configure(const TablePtr& data, const VariableExpressionPtr& supervision, const DenseDoubleVectorPtr& weights = DenseDoubleVectorPtr(), const IndexSetPtr& indices = IndexSetPtr());
+  
+  VariableExpressionPtr getSupervision() const
+    {return supervision;}
 
   VectorPtr getSupervisions() const;
 
