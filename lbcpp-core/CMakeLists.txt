@@ -215,6 +215,8 @@ IF(LBCPP_USER_INTERFACE)
 	UserInterface/TreeView/GenericTreeView.cpp
 	UserInterface/TreeView/ObjectTreeView.h
 	UserInterface/TreeView/FileTreeView.h
+	UserInterface/TreeView/XmlTreeView.h
+	UserInterface/TreeView/ResultsTreeView.h
     UserInterface/TreeView/ExecutionTraceTreeView.h
     UserInterface/TreeView/ExecutionTraceTreeView.cpp
 	UserInterface/TreeView/UserInterfaceTreeViewLibrary.xml

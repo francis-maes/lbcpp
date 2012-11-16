@@ -325,14 +325,6 @@ public:
     }
   }
 
-  virtual Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& tabName)
-  {
-    if (tabName == T("Results"))
-      return userInterfaceManager().createObjectTreeView(context, object, tabName, false);
-    else
-      return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getTabSubObject(object, tabName), tabName);
-  }
-
 protected:
   TablePtr table;
   ObjectPtr results;

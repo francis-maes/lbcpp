@@ -72,15 +72,9 @@ class ObjectTreeView : public GenericTreeView
 {
 public:
   ObjectTreeView(const ObjectPtr& object, const string& name, bool makeRootNodeVisible)
-    : GenericTreeView(object, name)
-  {
-    setRootItemVisible(makeRootNodeVisible);
-    buildTree();
-  }
+    : GenericTreeView(object, name, makeRootNodeVisible)
+    {buildTree();}
   
-  juce_UseDebuggingNewOperator
-
-protected:
   virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name)
     {return new ObjectTreeViewItem(this, name, object);}
 
@@ -109,6 +103,8 @@ protected:
     }
     return res;
   }
+
+  juce_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */
