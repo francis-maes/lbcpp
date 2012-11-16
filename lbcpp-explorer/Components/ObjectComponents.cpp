@@ -26,21 +26,13 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
   if (!object)
     return NULL;
   
-  if (object.isInstanceOf<File>())
+  if (object.isInstanceOf<File>() && !object.isInstanceOf<Directory>())
   {
-    juce::File file = File::get(object);
-
-    // if it is a directory, display another tree view
-    if (file.isDirectory())
-      return userInterfaceManager().createObjectTreeView(context, object, name, false, false);
-
     // if it is a file, try to open it
+    juce::File file = File::get(object);
     ObjectPtr object = Object::createFromFile(context, file);
     flushErrorAndWarningMessages("Load file " + file.getFullPathName());
-    if (object)
-      return createComponentForObjectImpl(context, object, file.getFileName());
-  
-    return NULL;
+    return object ? createComponentForObjectImpl(context, object, file.getFileName()) : NULL;
   }
 
   // try to create a custom UI component
@@ -56,7 +48,7 @@ Component* createComponentForObjectImpl(ExecutionContext& context, const ObjectP
   else
   {
     // generic component for objects
-    return userInterfaceManager().createObjectTreeView(context, object, name, true, true, false); 
+    return userInterfaceManager().createObjectTreeView(context, object, name, true); 
   }
 }
 

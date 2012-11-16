@@ -10,44 +10,22 @@
 # define EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 
 # include <lbcpp/UserInterface/ObjectComponent.h>
-# include "SimpleTreeViewItem.h"
-
-class ObjectTreeViewItem;
+# include "GenericTreeView.h"
 
 namespace lbcpp
 {
 
-struct ObjectTreeOptions
-{
-  ObjectTreeOptions(bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true)
-    : showTypes(showTypes), showShortSummaries(showShortSummaries), showMissingVariables(showMissingVariables), makeRootNodeVisible(makeRootNodeVisible) {}
-
-  bool showTypes;
-  bool showShortSummaries;
-  bool showMissingVariables;
-  bool makeRootNodeVisible;
-};
-
-class ObjectTreeView : public GenericTreeView, public juce::Timer
+class ObjectTreeView : public GenericTreeView
 {
 public:
-  ObjectTreeView(const ObjectPtr& object, const string& name, const ObjectTreeOptions& options = ObjectTreeOptions());
-  virtual ~ObjectTreeView();
-
-  virtual bool keyPressed(const juce::KeyPress& key);
-
-  void clearTree();
-  void buildTree();
-
-  virtual void timerCallback();
-  void invalidateSelection();
-
+  ObjectTreeView(const ObjectPtr& object, const string& name, bool makeRootNodeVisible);
+  
   juce_UseDebuggingNewOperator
 
 protected:
-  ObjectTreeOptions options;
-  ObjectTreeViewItem* root;
-  bool isSelectionUpToDate;
+  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name);
+  virtual bool mightHaveSubObjects(const ObjectPtr& object);
+  virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object);
 };
 
 }; /* namespace lbcpp */

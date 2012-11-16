@@ -200,11 +200,12 @@ IF(LBCPP_USER_INTERFACE)
   )
 
   SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
-    UserInterface/Component/ObjectTreeView.h
+	UserInterface/Component/GenericTreeView.h
+	UserInterface/Component/GenericTreeView.cpp
+	UserInterface/Component/ObjectTreeView.h
     UserInterface/Component/ObjectTreeView.cpp
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
-    UserInterface/Component/SimpleTreeViewItem.h
     UserInterface/Component/ExecutionTraceTreeViewItem.h
     UserInterface/Component/ExecutionTraceTreeViewItem.cpp
     UserInterface/Component/ExecutionTraceTreeView.h

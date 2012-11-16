@@ -21,8 +21,7 @@ public:
   juce::Image* getImage(const string& fileName) const;
   juce::Image* getImage(const string& fileName, int width, int height) const;
 
-  juce::TreeView* createObjectTreeView(ExecutionContext& context, const ObjectPtr& object, const string& name = string::empty,
-                                          bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true) const;
+  juce::TreeView* createObjectTreeView(ExecutionContext& context, const ObjectPtr& object, const string& name = string::empty, bool makeRootNodeVisible = true) const;
   juce::TreeView* createExecutionTraceInteractiveTreeView(ExecutionContext& context, ExecutionTracePtr trace, ExecutionContextPtr traceContext) const;
 };
 
