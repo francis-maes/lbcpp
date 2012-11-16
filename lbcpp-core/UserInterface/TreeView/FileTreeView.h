@@ -33,6 +33,21 @@ public:
       res[i] = std::make_pair(files[i]->toShortString(), files[i]);
     return res;
   }
+
+  virtual size_t getNumDataColumns()
+    {return 2;}
+
+  virtual std::vector<ObjectPtr> getObjectData(const ObjectPtr& object)
+  {
+    std::vector<ObjectPtr> res(2);
+    FilePtr file = object.staticCast<File>();
+    LoaderPtr loader = lbcpp::getTopLevelLibrary()->findLoaderForFile(defaultExecutionContext(), file->get());
+    if (loader)
+      res[0] = new String(loader->getTargetClass()->getName());
+    if (!file.isInstanceOf<Directory>())
+      res[1] = new MemorySize((size_t)file->get().getSize());
+    return res;
+  }
 };
 
 }; /* namespace lbcpp */

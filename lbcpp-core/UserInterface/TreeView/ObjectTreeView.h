@@ -13,60 +13,6 @@
 
 namespace lbcpp
 {
-  
-class ObjectTreeViewItem : public GenericTreeViewItem
-{
-public:
-  ObjectTreeViewItem(GenericTreeView* owner, const string& name, const ObjectPtr& object)
-    : GenericTreeViewItem(owner, object, name), typeName(object->getClassName()), shortString(object->toShortString()) {}
-
-  virtual const string getTooltip()
-  {
-    string res = T("Name: ") + getUniqueName() +
-      T("\nType: ") + typeName +
-      T("\nValue: ") + shortString;
-    if (getNumSubItems())
-      res += T("\nNum sub variables: ") + string((int)getNumSubItems());
-    return res;
-  }
-
-  virtual void paintItem(Graphics& g, int width, int height)
-  {
-    if (isSelected())
-      g.fillAll(Colours::lightgrey);
-    g.setColour(Colours::black);
-    int x1 = 0;
-    if (iconToUse)
-    {
-      g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
-      x1 += iconToUse->getWidth() + 5;
-    }
-
-    int typeAndNameLength;
-    enum {wantedLength = 400, numFields = 3};
-    int remainingWidth = width - x1;
-    if (remainingWidth >= numFields * wantedLength)
-      typeAndNameLength = wantedLength;
-    else
-      typeAndNameLength = remainingWidth / numFields;
-
-    g.setFont(juce::Font(12, juce::Font::bold));
-    g.drawText(getUniqueName(), x1, 0, typeAndNameLength - 5, height, juce::Justification::centredLeft, true);
-    x1 += typeAndNameLength;
-    g.setFont(juce::Font(12, juce::Font::italic));
-    g.drawText(typeName, x1, 0, typeAndNameLength - 5, height, juce::Justification::centredLeft, true);
-    x1 += typeAndNameLength;
-
-    g.setFont(juce::Font(12));
-    g.drawText(shortString, x1, 0, width - x1 - 2, height, juce::Justification::centredLeft, true);
-  }
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  string typeName;
-  string shortString;
-};
 
 class ObjectTreeView : public GenericTreeView
 {
@@ -75,9 +21,6 @@ public:
     : GenericTreeView(object, name, makeRootNodeVisible)
     {buildTree();}
   
-  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name)
-    {return new ObjectTreeViewItem(this, name, object);}
-
   virtual bool mightHaveSubObjects(const ObjectPtr& object)
     {return object->getNumVariables() > 0 || object.isInstanceOf<Vector>();}
 
@@ -101,6 +44,24 @@ public:
       for (size_t i = 0; i < count; ++i)
         res.push_back(std::make_pair(string((int)i), vector->getElement(i)));
     }
+    return res;
+  }
+  
+  virtual string getObjectTooltip(const string& name, const ObjectPtr& object)
+  {
+    return T("Name: ") + name +
+      T("\nClass: ") + object->getClassName() +
+      T("\nValue: ") + object->toShortString();
+  }
+
+  virtual size_t getNumDataColumns()
+    {return 2;}
+
+  virtual std::vector<ObjectPtr> getObjectData(const ObjectPtr& object)
+  {
+    std::vector<ObjectPtr> res(2);
+    res[0] = new String(object->toShortString());
+    res[1] = new String(object->getClassName());
     return res;
   }
 

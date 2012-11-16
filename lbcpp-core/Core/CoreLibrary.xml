@@ -133,6 +133,7 @@
     </code>
   </class>
   <class name="PositiveInteger" base="Integer"/>
+  <class name="MemorySize" base="PositiveInteger"/>
   <class name="EnumValue" base="PositiveInteger"/>
   <class name="Double">
     <code>

@@ -25,6 +25,9 @@ public:
     
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object)
   {
+    if (object != this->object)
+      return std::vector< std::pair<string, ObjectPtr> >();
+
     OVectorPtr vector = object.staticCast<OVector>();
     std::vector< std::pair<string, ObjectPtr> > res(vector->getNumElements());
     for (size_t i = 0; i < res.size(); ++i)
@@ -34,6 +37,12 @@ public:
     }
     return res;
   }
+
+  virtual size_t getNumDataColumns()
+    {return 1;}
+
+  virtual std::vector<ObjectPtr> getObjectData(const ObjectPtr& object)
+    {return std::vector<ObjectPtr>(1, object);}
 };
 
 }; /* namespace lbcpp */

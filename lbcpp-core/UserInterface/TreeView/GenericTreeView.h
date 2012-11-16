@@ -28,7 +28,9 @@ public:
   virtual void paintItem(juce::Graphics& g, int width, int height);
   virtual void itemOpennessChanged(bool isNowOpen);
   virtual void itemSelectionChanged(bool isNowSelected);
-  
+  virtual const string getTooltip();
+  virtual int getItemHeight() const;
+
   void setIcon(const string& name);
 
   bool hasBeenOpenedOnce() const
@@ -41,7 +43,10 @@ public:
     {return object;}
   
   virtual ObjectPtr getTargetObject(ExecutionContext& context) const;
-  
+  virtual int getMaximumColumnWidth(size_t columnNumber) const
+    {return 200;}
+  virtual void paintColumn(Graphics& g, size_t columnNumber, ObjectPtr data, int x, int y, int width, int height) const;
+
   void createSubItems();
 
 protected:
@@ -50,6 +55,9 @@ protected:
   string uniqueName;
   juce::Image* iconToUse;
   bool hasBeenOpened;
+  int numLines;
+
+  void paintIcon(Graphics& g, int width, int height);
 };
 
 class GenericTreeView : public juce::TreeView, public ObjectSelector, public ComponentWithPreferedSize, public juce::Timer
@@ -77,6 +85,14 @@ public:
 
   virtual bool mightHaveSubObjects(const ObjectPtr& object) = 0;
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object) = 0;
+  virtual string getObjectTooltip(const string& name, const ObjectPtr& object)
+    {return object->toShortString();}
+
+  virtual size_t getNumDataColumns()
+    {return 0;}
+
+  virtual std::vector<ObjectPtr> getObjectData(const ObjectPtr& object)
+    {return std::vector<ObjectPtr>();}
 
   juce_UseDebuggingNewOperator
 

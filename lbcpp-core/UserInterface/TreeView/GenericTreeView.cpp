@@ -50,6 +50,10 @@ GenericTreeViewItem::GenericTreeViewItem(GenericTreeView* owner, ObjectPtr objec
   string icon = getIconForObject(object);
   if (icon.isNotEmpty())
     iconToUse = userInterfaceManager().getImage(icon, defaultIconSize, defaultIconSize);
+  numLines = 1;
+  for (int i = 0; i < uniqueName.length() - 1; ++i)
+    if (uniqueName[i] == '\n')
+      ++numLines;
 }
      
 bool GenericTreeViewItem::mightContainSubItems()
@@ -58,19 +62,98 @@ bool GenericTreeViewItem::mightContainSubItems()
 const string GenericTreeViewItem::getUniqueName() const
   {return uniqueName;}
 
+const string GenericTreeViewItem::getTooltip()
+  {return owner->getObjectTooltip(getUniqueName(), object);}
+
+int GenericTreeViewItem::getItemHeight() const
+  {return 20 * numLines;}
+
 void GenericTreeViewItem::paintItem(juce::Graphics& g, int width, int height)
 {
   if (isSelected())
     g.fillAll(juce::Colours::lightgrey);
-  g.setColour(juce::Colours::black);
-  int x1 = 0;
-  if (iconToUse)
+  --height; // 1 px margin
+  paintIcon(g, width, height);
+  
+  int x1 = iconToUse ? iconToUse->getWidth() + 5 : 0;
+  int remainingWidth = width - x1;
+  
+  enum {minColumnSize = 25, minNameSize = 150};
+  int nameWidth;
+  std::vector<int> columnWidths;
+  size_t numColumns = owner->getNumDataColumns();
+  if (numColumns > 0)
   {
-    g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
-    x1 += iconToUse->getWidth() + 5;
+    int maxSize = 0;
+    for (size_t i = 0; i < numColumns; ++i)
+      maxSize += getMaximumColumnWidth(i);
+
+    if ((int)maxSize + minNameSize <= remainingWidth)
+    {
+      columnWidths.resize(numColumns);
+      for (size_t i = 0; i < numColumns; ++i)
+      {
+        columnWidths[i] = getMaximumColumnWidth(i);
+        remainingWidth -= columnWidths[i];
+      }
+      nameWidth = remainingWidth;
+    }
+    else if (remainingWidth < minNameSize)
+      nameWidth = remainingWidth;
+    else
+    {
+      for (int numDisplayedColumns = numColumns; numDisplayedColumns >= 0; --numDisplayedColumns)
+      {
+        bool ok = true;
+        columnWidths.resize(numDisplayedColumns);
+        for (size_t i = 0; i < columnWidths.size(); ++i)
+        {
+          columnWidths[i] = (remainingWidth - minNameSize) * getMaximumColumnWidth(i) / maxSize;
+          ok &= (columnWidths[i] > minColumnSize);
+        }
+        if (ok)
+          break;
+      }
+      nameWidth = minNameSize;
+    }
   }
+  else
+    nameWidth = remainingWidth;
+  
+  string str = getUniqueName();
+  StringArray lines;
+  lines.addTokens(str, T("\n"), NULL);
+  g.setColour(Colours::black);
   g.setFont(juce::Font(12));
-  g.drawText(getUniqueName(), x1, 0, width - x1, height, juce::Justification::centredLeft, true);
+  for (int i = 0; i < lines.size(); ++i)
+    g.drawText(lines[i], x1, 20 * i, nameWidth, 20, juce::Justification::centredLeft, true);
+  x1 += nameWidth;
+
+  if (columnWidths.size())
+  {
+    std::vector<ObjectPtr> columnData = owner->getObjectData(object);
+    jassert(columnWidths.size() <= columnData.size());
+    for (size_t i = 0; i < columnWidths.size(); ++i)
+    {
+      ObjectPtr data = columnData[i];
+      if (data)
+        paintColumn(g, (size_t)i, data, x1 + 2, 0, columnWidths[i] - 4, height);
+      x1 += columnWidths[i];
+    }
+  }
+}
+
+void GenericTreeViewItem::paintColumn(Graphics& g, size_t columnNumber, ObjectPtr data, int x, int y, int width, int height) const
+{
+  g.setColour(Colours::grey);
+  g.drawText(data->toShortString(), x + 2, y, width - 4, height, juce::Justification::centredLeft, true);
+}
+
+void GenericTreeViewItem::paintIcon(Graphics& g, int width, int height)
+{
+  g.setColour(Colours::black);
+  if (iconToUse)
+    g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
 }
 
 void GenericTreeViewItem::createSubItems()
@@ -89,7 +172,11 @@ void GenericTreeViewItem::itemOpennessChanged(bool isNowOpen)
   if (isNowOpen && !hasBeenOpened)
   {
     hasBeenOpened = true;
-    createSubItems();
+    if (owner->getSubObjects(object).size() != (size_t)getNumSubItems())
+    {
+      clearSubItems();
+      createSubItems();
+    }
   }
 }
 

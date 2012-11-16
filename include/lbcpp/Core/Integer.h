@@ -71,6 +71,18 @@ public:
 };
 
 extern ClassPtr positiveIntegerClass;
+extern ClassPtr memorySizeClass;
+
+class MemorySize : public PositiveInteger
+{
+public:
+  MemorySize(ClassPtr thisClass, size_t value = 0)
+    : PositiveInteger(thisClass, value) {}
+  MemorySize(size_t value = 0)
+    : PositiveInteger(memorySizeClass, value) {}
+
+  virtual string toShortString() const;
+};
 
 class EnumValue : public PositiveInteger
 {
