@@ -4,6 +4,7 @@
 
   <import name="UserInterfaceComponent"/>
   <import name="UserInterfacePlot"/>
+  <import name="UserInterfaceTreeView"/>
 
   <include file="lbcpp/UserInterface/Plot.h"/>
   <include file="lbcpp/UserInterface/Histogram.h"/>
