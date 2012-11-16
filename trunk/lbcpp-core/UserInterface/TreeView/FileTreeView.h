@@ -21,9 +21,6 @@ public:
     : GenericTreeView(file, name)
     {buildTree();}
 
-  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name)
-    {return new GenericTreeViewItem(this, object, name);}
-
   virtual bool mightHaveSubObjects(const ObjectPtr& object)
     {return object.isInstanceOf<Directory>();}
 

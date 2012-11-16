@@ -55,7 +55,7 @@ protected:
 class GenericTreeView : public juce::TreeView, public ObjectSelector, public ComponentWithPreferedSize, public juce::Timer
 {
 public:
-  GenericTreeView(ObjectPtr object, const string& name);
+  GenericTreeView(ObjectPtr object, const string& name, bool rootNodeVisible = true);
   ~GenericTreeView();
 
   virtual int getDefaultWidth() const;
@@ -72,7 +72,9 @@ public:
     {isTreeUpToDate = false;}
 
   // to override
-  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name) = 0;
+  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name)
+    {return new GenericTreeViewItem(this, object, name);}
+
   virtual bool mightHaveSubObjects(const ObjectPtr& object) = 0;
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object) = 0;
 

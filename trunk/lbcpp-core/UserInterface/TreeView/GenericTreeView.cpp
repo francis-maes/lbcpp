@@ -105,12 +105,13 @@ ObjectPtr GenericTreeViewItem::getTargetObject(ExecutionContext& context) const
 /*
 ** GenericTreeView
 */
-GenericTreeView::GenericTreeView(ObjectPtr object, const string& name)
+GenericTreeView::GenericTreeView(ObjectPtr object, const string& name, bool rootNodeVisible)
   : object(object), name(name), root(NULL), isSelectionUpToDate(false), isTreeUpToDate(true)
 {
   setColour(backgroundColourId, Colours::white);
   setMultiSelectEnabled(true);
   setWantsKeyboardFocus(true);
+  setRootItemVisible(rootNodeVisible);
   startTimer(100);
 }
 

@@ -1,11 +1,6 @@
 
- * Classe de base pour faire des arbres
-    
-* XmlTree (XmlElement)
-* ResultsTree (Vector[Pair[String,Object]])
-* ExpressionTree (Expression)
-
-
+* Systeme de collones => result tree, afficher le shortString
+* Voir comment améliorer l'affichage des Expression trees
 
 Explorer:
  * Cassé: LuaCodeEditor/StringComponent/LuaCodeEditor

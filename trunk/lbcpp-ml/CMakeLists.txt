@@ -98,6 +98,7 @@ SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/ExpressionDomain.cpp
   Expression/ExpressionSampler.cpp
   Expression/PostfixExpression.cpp
+  Expression/ExpressionTreeView.h
   Expression/ExpressionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
 )
