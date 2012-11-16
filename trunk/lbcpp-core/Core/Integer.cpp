@@ -20,6 +20,8 @@ IntegerPtr Integer::create(ClassPtr type, juce::int64 value)
     return new EnumValue(type.staticCast<Enumeration>(), (size_t)value);
   else if (type == positiveIntegerClass)
     return new PositiveInteger(type, (size_t)value);
+  else if (type == memorySizeClass)
+    return new MemorySize(type, (size_t)value);
   else
     return new Integer(type, value);
 }
@@ -58,6 +60,31 @@ bool Integer::loadFromXml(XmlImporter& importer)
 
 void Integer::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
+
+/*
+** MemorySize
+*/
+static inline string formatDoubleWithOneDigit(double value)
+{
+  int val = (int)(value * 10 + 0.5);
+  return string(val / 10) + ((val % 10) ? "." + string(val % 10) : "");
+}
+
+string MemorySize::toShortString() const
+{
+  if (value == 0)
+    return string("empty");
+  if (value < 1024)
+    return string(value) + " B";
+  double size = value / 1024.0;
+  if (size < 1024.0)
+    return formatDoubleWithOneDigit(size) + " KB";
+  size /= 1024.0;
+  if (size < 1024.0)
+    return formatDoubleWithOneDigit(size) + " MB";
+  size /= 1024.0;
+  return formatDoubleWithOneDigit(size) + " GB";
+}
 
 /*
 ** EnumValue

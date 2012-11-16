@@ -49,6 +49,8 @@ protected:
 };
 
 extern ClassPtr doubleClass;
+extern ClassPtr timeClass;
+extern ClassPtr probabilityClass;
 
 class Probability : public Double
 {
@@ -56,13 +58,11 @@ public:
   Probability(ClassPtr thisClass, double value = 0.0)
     : Double(thisClass, value) {}
   Probability(double value = 0.0)
-    : Double(value) {}
+    : Double(probabilityClass, value) {}
 
   virtual string toShortString() const;
   virtual bool toBoolean() const;
 };
-
-extern ClassPtr probabilityClass;
 
 class Time : public Double
 {
@@ -70,15 +70,13 @@ public:
   Time(ClassPtr thisClass, double value = 0.0)
     : Double(thisClass, value) {}
   Time(double value = 0.0)
-    : Double(value) {}
+    : Double(timeClass, value) {}
 
   virtual string toShortString() const;
 
   static double getHighResolutionCounter()
     {return juce::Time::getMillisecondCounterHiRes() / 1000.0;}
 };
-
-extern ClassPtr timeClass;
 
 }; /* namespace lbcpp */
 

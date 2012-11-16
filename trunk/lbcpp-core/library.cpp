@@ -200,11 +200,7 @@ public:
     ObjectCountsMap sortedCounts;
     size_t totalSize = 0;
     getSortedCounts(sortedCounts, totalSize);
-    string res = T("Total size: ");
-    if (totalSize > 1024 * 1024)
-      res += string((int)totalSize / (1024 * 1024)) + T(" Mb\n");
-    else
-      res += string((int)totalSize / 1024) + T(" Kb\n");      
+    string res = T("Total size: ") + ObjectPtr(new MemorySize(totalSize))->toShortString() + T("\n");
     res += T("Most allocated objects:\n");
     size_t i = 0;
     

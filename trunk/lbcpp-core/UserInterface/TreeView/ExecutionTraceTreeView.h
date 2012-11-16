@@ -16,50 +16,20 @@
 namespace lbcpp
 {
   
-class ExecutionTraceTreeView;
 class ExecutionTraceTreeViewItem : public GenericTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
+  ExecutionTraceTreeViewItem(GenericTreeView* owner, const ExecutionTraceItemPtr& trace);
 
-  static ExecutionTraceTreeViewItem* create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
-
-  enum
-  {
-    minWidthToDisplayTimes = 300,
-    minWidthToDisplayProgression = 150,
-    progressionColumnWidth = 150,
-    labelX = 23,
-    timeColumnWidth = 100,
-  };
- 
-  void paintProgression(juce::Graphics& g, ProgressionStatePtr progression, int x, int width, int height);
-  void paintIcon(juce::Graphics& g, int width, int height);
-  void paintIconTextAndProgression(juce::Graphics& g, int width, int height);
-
-  virtual void paintItem(juce::Graphics& g, int width, int height);
-  
-  virtual int getItemHeight() const
-    {return 20 * numLines;}
+  virtual int getMaximumColumnWidth(size_t columnNumber) const;
+  virtual void paintColumn(Graphics& g, size_t columnNumber, ObjectPtr data, int x, int y, int width, int height) const;
+  virtual ObjectPtr getTargetObject(ExecutionContext& context) const;
 
   const ExecutionTraceItemPtr& getTrace() const
     {return object.staticCast<ExecutionTraceItem>();}
-
-protected:
-  int numLines;
-};
-
-class ExecutionTraceTreeViewNode : public ExecutionTraceTreeViewItem
-{
-public:
-  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace);
-
-  const ExecutionTraceNodePtr& getTraceNode() const
-    {return object.staticCast<ExecutionTraceNode>();}
-
-  virtual void itemOpennessChanged(bool isNowOpen);
-
-  virtual ObjectPtr getTargetObject(ExecutionContext& context) const;
+  
+  ExecutionTraceNodePtr getTraceNode() const
+    {return object.dynamicCast<ExecutionTraceNode>();}
 };
 
 class ExecutionTraceTreeView : public GenericTreeView, public ExecutionCallback
@@ -68,7 +38,7 @@ public:
   ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context = ExecutionContextPtr());
   virtual ~ExecutionTraceTreeView();
 
-  ExecutionTraceTreeViewNode* getNodeFromStack(const ExecutionStackPtr& stack) const;
+  ExecutionTraceTreeViewItem* getNodeFromStack(const ExecutionStackPtr& stack) const;
 
   virtual void timerCallback();
 
@@ -94,6 +64,8 @@ protected:
   virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name);
   virtual bool mightHaveSubObjects(const ObjectPtr& object);
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object);
+  virtual size_t getNumDataColumns();
+  virtual std::vector<ObjectPtr> getObjectData(const ObjectPtr& object);
 };
 
 }; /* namespace lbcpp */

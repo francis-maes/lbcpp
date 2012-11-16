@@ -1,7 +1,4 @@
 
-* Systeme de collones => result tree, afficher le shortString
-* Voir comment améliorer l'affichage des Expression trees
-
 Explorer:
  * Cassé: LuaCodeEditor/StringComponent/LuaCodeEditor
 
@@ -13,4 +10,4 @@ Explorer:
  * Cleaner
    * Transformer le HexadecimalFileComponent en MemoryBlock + MemoryBlockComponent
    * Enlever le repertoire "Components"
-   
+  
