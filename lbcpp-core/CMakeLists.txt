@@ -19,6 +19,7 @@ GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml Execut
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/UserInterfaceLibrary.xml UserInterfaceLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(UserInterface/TreeView/UserInterfaceTreeViewLibrary.xml UserInterfaceTreeViewLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(UserInterface/Plot/UserInterfacePlotLibrary.xml UserInterfacePlotLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
 
@@ -200,23 +201,26 @@ IF(LBCPP_USER_INTERFACE)
   )
 
   SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
-	UserInterface/Component/GenericTreeView.h
-	UserInterface/Component/GenericTreeView.cpp
-	UserInterface/Component/ObjectTreeView.h
-    UserInterface/Component/ObjectTreeView.cpp
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
-    UserInterface/Component/ExecutionTraceTreeViewItem.h
-    UserInterface/Component/ExecutionTraceTreeViewItem.cpp
-    UserInterface/Component/ExecutionTraceTreeView.h
-    UserInterface/Component/ExecutionTraceTreeView.cpp
     UserInterface/Component/ConfusionMatrixComponent.h
     UserInterface/Component/PieChartComponent.h
     UserInterface/Component/HistogramComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
   )
-  
+
+  SET(LBCPP_USER_INTERFACE_TREE_VIEW_SOURCES
+	UserInterface/TreeView/GenericTreeView.h
+	UserInterface/TreeView/GenericTreeView.cpp
+	UserInterface/TreeView/ObjectTreeView.h
+	UserInterface/TreeView/FileTreeView.h
+    UserInterface/TreeView/ExecutionTraceTreeView.h
+    UserInterface/TreeView/ExecutionTraceTreeView.cpp
+	UserInterface/TreeView/UserInterfaceTreeViewLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceTreeViewLibrary.cpp
+  )
+
   SET(LBCPP_USER_INTERFACE_PLOT_SOURCES
 	UserInterface/Plot/Plot.cpp
     UserInterface/Plot/TwoDimensionalPlotDrawable.h
@@ -280,6 +284,7 @@ SET(LBCPP_SOURCES
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
     ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
+	${LBCPP_USER_INTERFACE_TREE_VIEW_SOURCES}
     ${LBCPP_USER_INTERFACE_PLOT_SOURCES}
     ${LBCPP_USER_INTERFACE_DATA_FILES}
 )
@@ -308,6 +313,7 @@ SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Component FILES ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES})
+SOURCE_SUB_GROUP(UserInterface TreeView FILES ${LBCPP_USER_INTERFACE_TREE_VIEW_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Plot FILES ${LBCPP_USER_INTERFACE_PLOT_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Data FILES ${LBCPP_USER_INTERFACE_DATA_FILES})
 

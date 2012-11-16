@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_USER_INTERFACE_COMPONENT_GENERIC_TREE_VIEW_H_
-# define LBCPP_USER_INTERFACE_COMPONENT_GENERIC_TREE_VIEW_H_
+#ifndef LBCPP_USER_INTERFACE_TREE_VIEW_GENERIC_H_
+# define LBCPP_USER_INTERFACE_TREE_VIEW_GENERIC_H_
 
 # include <lbcpp/UserInterface/UserInterfaceManager.h>
 # include <lbcpp/UserInterface/ObjectComponent.h>
@@ -87,30 +87,6 @@ protected:
   bool isTreeUpToDate;
 };
 
-class FileTreeView : public GenericTreeView
-{
-public:
-  FileTreeView(FilePtr file, const string& name)
-    : GenericTreeView(file, name)
-    {buildTree();}
-
-  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name)
-    {return new GenericTreeViewItem(this, object, name);}
-
-  virtual bool mightHaveSubObjects(const ObjectPtr& object)
-    {return object.isInstanceOf<Directory>();}
-
-  virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object)
-  {
-    DirectoryPtr directory = object.staticCast<Directory>();
-    std::vector<FilePtr> files = directory->findFiles();
-    std::vector< std::pair<string, ObjectPtr> > res(files.size());
-    for (size_t i = 0; i < res.size(); ++i)
-      res[i] = std::make_pair(files[i]->toShortString(), files[i]);
-    return res;
-  }
-};
-
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_USER_INTERFACE_COMPONENT_GENERIC_TREE_VIEW_H_
+#endif // !LBCPP_USER_INTERFACE_TREE_VIEW_GENERIC_H_

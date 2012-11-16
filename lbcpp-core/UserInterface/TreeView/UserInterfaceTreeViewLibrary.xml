@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="UserInterfaceTreeView" directory="UserInterface/TreeView">
+
+  <uicomponent name="ExecutionTraceTreeView" type="ExecutionTrace"/>
+  <uicomponent name="FileTreeView" type="File"/>
+
+</library>

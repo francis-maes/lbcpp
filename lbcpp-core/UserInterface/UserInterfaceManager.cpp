@@ -44,8 +44,8 @@ Image* UserInterfaceManager::getImage(const string& fileName, int width, int hei
   return res;
 }
 
-#include "Component/ObjectTreeView.h"
-#include "Component/ExecutionTraceTreeView.h"
+#include "TreeView/ObjectTreeView.h"
+#include "TreeView/ExecutionTraceTreeView.h"
 
 juce::TreeView* UserInterfaceManager::createObjectTreeView(ExecutionContext& context, const ObjectPtr& object, const string& name, bool makeRootNodeVisible) const
 {
