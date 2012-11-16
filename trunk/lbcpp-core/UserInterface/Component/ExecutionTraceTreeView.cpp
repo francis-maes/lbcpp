@@ -20,34 +20,65 @@ using juce::Colour;
 ** ExecutionTraceTreeView
 */
 ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context)
-  : GenericTreeView(trace, name), isSelectionUpToDate(false), isTreeUpToDate(true)
+  : GenericTreeView(trace, name)
 {
-  DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
-  DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
-  ExecutionCallbackPtr pthis((DelayToUserInterfaceExecutionCallback* )this);
-
   if (context)
   {
     this->context = context;
+    notificationQueue = new NotificationQueue();
+    targetCallback = createTreeBuilderCallback();
+    ExecutionCallback::setStaticAllocationFlag();
+    ExecutionCallbackPtr pthis((ExecutionCallback* )this);
     context->appendCallback(pthis);
   }
 
-  setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode(), 0));
-  getRootItem()->setOpen(true);
+  buildTree();
   setRootItemVisible(false);
-  setMultiSelectEnabled(true);
 }
 
 ExecutionTraceTreeView::~ExecutionTraceTreeView()
 {
   if (context)
   {
-    ExecutionCallbackPtr pthis((DelayToUserInterfaceExecutionCallback* )this);
+    ExecutionCallbackPtr pthis((ExecutionCallback* )this);
     context->removeCallback(pthis);
     context = ExecutionContextPtr();
   }
-  deleteRootItem();
 }
+
+GenericTreeViewItem* ExecutionTraceTreeView::createItem(const ObjectPtr& object, const string& name)
+{
+  ExecutionTraceItemPtr item = object.dynamicCast<ExecutionTraceItem>();
+  if (item)
+    return ExecutionTraceTreeViewItem::create(this, object.staticCast<ExecutionTraceItem>());
+  else
+  {
+    jassert(object.isInstanceOf<ExecutionTrace>());
+    return new ExecutionTraceTreeViewNode(this, object.staticCast<ExecutionTrace>()->getRootNode());
+  }
+}
+
+bool ExecutionTraceTreeView::mightHaveSubObjects(const ObjectPtr& object)
+{
+  ExecutionTraceNodePtr node = object.dynamicCast<ExecutionTraceNode>();
+  return node && node->getNumSubItems() > 0;
+}
+
+std::vector< std::pair<string, ObjectPtr> > ExecutionTraceTreeView::getSubObjects(const ObjectPtr& object)
+{
+  ExecutionTraceNodePtr node = object.dynamicCast<ExecutionTraceNode>();
+  if (node)
+  {
+    std::vector<ExecutionTraceItemPtr> subItems = node->getSubItems();
+    std::vector< std::pair<string, ObjectPtr> > res(subItems.size());
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = std::make_pair(subItems[i]->toShortString(), subItems[i]);
+    return res;
+  }
+  else
+    return std::vector< std::pair<string, ObjectPtr> >();
+}
+  
 
 ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const ExecutionStackPtr& stack) const
 {
@@ -135,7 +166,7 @@ public:
   virtual Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& tabName)
   {
     if (tabName == T("Results"))
-      return userInterfaceManager().createObjectTreeView(context, object, tabName, true, true, false, false);
+      return userInterfaceManager().createObjectTreeView(context, object, tabName, false);
     else
       return lbcpp::getTopLevelLibrary()->createUIComponentIfExists(context, getTabSubObject(object, tabName), tabName);
   }
@@ -153,68 +184,16 @@ juce::Component* ExecutionTraceTreeView::createComponentForObject(ExecutionConte
   PairPtr pair = object.dynamicCast<Pair>();
   if (pair)
     return new TabbedExecutionTraceResultsSelectorComponent(pair);
-  return userInterfaceManager().createObjectTreeView(context, object, name, true, true, false, false);
+  return userInterfaceManager().createObjectTreeView(context, object, name, false);
 }
 
 void ExecutionTraceTreeView::timerCallback()
 {
   if (!context)
     context = &defaultExecutionContext();
-  DelayToUserInterfaceExecutionCallback::timerCallback();
-  if (!isSelectionUpToDate)
-  {
-    std::vector<ObjectPtr> selectedObjects;
-    selectedObjects.reserve(getNumSelectedItems());
-    string selectionName;
-    for (int i = 0; i < getNumSelectedItems(); ++i)
-    {
-      ExecutionTraceTreeViewItem* item = dynamic_cast<ExecutionTraceTreeViewItem* >(getSelectedItem(i));
-      if (item && item != getRootItem())
-      {
-        ExecutionTraceNodePtr trace = item->getTrace().dynamicCast<ExecutionTraceNode>();
-        if (trace)
-        {
-          bool hasResults = trace->getResults().size() > 0;//(size_t)(trace->getReturnValue().exists() ? 1 : 0);
-          bool hasSubItems = trace->getNumSubItems() > 0;
-          if (!hasResults && !hasSubItems)
-            continue;
-          
-          VectorPtr results;
-          TablePtr table;
-          if (hasResults)
-            results = trace->getResultsVector(*context);
-
-          if (hasSubItems)
-          {
-            table = trace->getChildrenResultsTable(*context);
-            if (table && table->getNumColumns() == 1)
-              table = TablePtr(); // do not display tables that have only one column
-          }
-
-          if (results || table)
-            selectedObjects.push_back(new Pair(results, table));
-        
-          if (!selectionName.isEmpty())
-            selectionName += T(", ");
-          selectionName += trace->toString();
-        }
-      }
-    }
-    sendSelectionChanged(selectedObjects, selectionName);
-    isSelectionUpToDate = true;
-  }
-  if (!isTreeUpToDate)
-  {
-    repaint();
-    isTreeUpToDate = true;
-  }
+  notificationQueue->flush(targetCallback);
+  GenericTreeView::timerCallback();
 }
-
-void ExecutionTraceTreeView::invalidateSelection()
-  {isSelectionUpToDate = false;}
-
-void ExecutionTraceTreeView::invalidateTree()
-  {isTreeUpToDate = false;}
 
 #include "../../Execution/Callback/MakeTraceExecutionCallback.h"
 
@@ -260,7 +239,7 @@ protected:
     ExecutionTraceTreeViewNode* parent = stack.back();
     if (parent && parent->hasBeenOpenedOnce())
     {
-      ExecutionTraceTreeViewItem* newItem = ExecutionTraceTreeViewItem::create(tree, item, parent->getDepth() + 1);
+      ExecutionTraceTreeViewItem* newItem = ExecutionTraceTreeViewItem::create(tree, item);
       stack.back()->addSubItem(newItem);
       if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
         tree->scrollToKeepItemVisible(newItem);

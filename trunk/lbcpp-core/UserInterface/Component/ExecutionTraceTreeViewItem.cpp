@@ -9,6 +9,7 @@
 #include "ExecutionTraceTreeViewItem.h"
 #include "ExecutionTraceTreeView.h"
 #include <lbcpp/Execution/ExecutionStack.h>
+#include <lbcpp/Data/Table.h>
 using namespace lbcpp;
 using juce::Graphics;
 using juce::Colour;
@@ -16,8 +17,8 @@ using juce::Colour;
 /*
 ** ExecutionTraceTreeViewItem
 */
-ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth)
-  : SimpleTreeViewItem(trace->toShortString(), trace->getPreferedIcon(), false), owner(owner), trace(trace), depth(depth)
+ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace)
+  : GenericTreeViewItem(owner, trace, trace->toShortString())
 {
   string str = getUniqueName();
   numLines = 1;
@@ -26,17 +27,14 @@ ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* o
       ++numLines;
 }
 
-ExecutionTraceTreeViewItem* ExecutionTraceTreeViewItem::create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& item, size_t depth)
+ExecutionTraceTreeViewItem* ExecutionTraceTreeViewItem::create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& item)
 {
   ExecutionTraceNodePtr node = item.dynamicCast<ExecutionTraceNode>();
   if (node)
-    return new ExecutionTraceTreeViewNode(owner, node, depth);
+    return new ExecutionTraceTreeViewNode(owner, node);
   else
-    return new ExecutionTraceTreeViewItem(owner, item, depth);
+    return new ExecutionTraceTreeViewItem(owner, item);
 }
-
-void ExecutionTraceTreeViewItem::itemSelectionChanged(bool isNowSelected)
-  {owner->invalidateSelection();}
 
 void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, ProgressionStatePtr progression, int x, int width, int height)
 {
@@ -100,6 +98,7 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     g.setColour(Colours::grey);
     g.setFont(12);
 
+    ExecutionTraceItemPtr trace = getTrace();
     ExecutionTraceNodePtr node = trace.dynamicCast<ExecutionTraceNode>();
     if (node)
     {
@@ -123,25 +122,18 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
 /*
 ** ExecutionTraceTreeViewNode
 */
-ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace, size_t depth)
-  : ExecutionTraceTreeViewItem(owner, trace, depth)
+ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace)
+  : ExecutionTraceTreeViewItem(owner, trace)
 {
   WorkUnitPtr workUnit = trace->getWorkUnit();
   if (workUnit)
   {
     // online
     CompositeWorkUnitPtr compositeWorkUnit = trace->getWorkUnit().dynamicCast<CompositeWorkUnit>();
-    setOpen((!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10) && depth < 3);
+    setOpen((!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10));
   }
   else
-    setOpen(trace->getNumSubItems() < 10 && trace->getTimeLength() > 1 && depth < 3); // open nodes that took more than 1 seconds and that have less than 10 childs
-}
-
-void ExecutionTraceTreeViewNode::createSubItems()
-{
-  std::vector<ExecutionTraceItemPtr> subItems = getTraceNode()->getSubItems();
-  for (size_t i = 0; i < subItems.size(); ++i)
-    addSubItem(ExecutionTraceTreeViewItem::create(owner, subItems[i], depth + 1));
+    setOpen(trace->getNumSubItems() < 10 && trace->getTimeLength() > 1); // open nodes that took more than 1 seconds and that have less than 10 childs
 }
 
 void ExecutionTraceTreeViewNode::itemOpennessChanged(bool isNowOpen)
@@ -158,7 +150,28 @@ void ExecutionTraceTreeViewNode::itemOpennessChanged(bool isNowOpen)
   }
 }
 
-bool ExecutionTraceTreeViewNode::mightContainSubItems()
+ObjectPtr ExecutionTraceTreeViewNode::getTargetObject(ExecutionContext& context) const
 {
-  return getTraceNode()->getNumSubItems() > 0;
+  ExecutionTraceNodePtr trace = getTraceNode();
+  bool hasResults = trace->getResults().size() > 0;//(size_t)(trace->getReturnValue().exists() ? 1 : 0);
+  bool hasSubItems = trace->getNumSubItems() > 0;
+  if (!hasResults && !hasSubItems)
+    return ObjectPtr();
+          
+  VectorPtr results;
+  TablePtr table;
+  if (hasResults)
+    results = trace->getResultsVector(context);
+
+  if (hasSubItems)
+  {
+    table = trace->getChildrenResultsTable(context);
+    if (table && table->getNumColumns() == 1)
+      table = TablePtr(); // do not display tables that have only one column
+  }
+
+  if (results || table)
+    return new Pair(results, table);
+  else
+    return ObjectPtr();
 }

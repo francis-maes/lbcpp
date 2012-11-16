@@ -15,25 +15,7 @@
 namespace lbcpp
 {
 
-class DelayToUserInterfaceExecutionCallback : public ExecutionCallback, public juce::Timer
-{
-public:
-  DelayToUserInterfaceExecutionCallback(ExecutionCallbackPtr target = ExecutionCallbackPtr())
-    : notifications(new NotificationQueue()), target(target)
-    {startTimer(100);}
-
-  virtual void notificationCallback(const NotificationPtr& notification)
-    {notifications->push(notification);}
-
-  virtual void timerCallback()
-    {notifications->flush(target);}
-
-protected:
-  NotificationQueuePtr notifications;
-  ExecutionCallbackPtr target;
-};
- 
-class ExecutionTraceTreeView : public GenericTreeView, public DelayToUserInterfaceExecutionCallback
+class ExecutionTraceTreeView : public GenericTreeView, public ExecutionCallback
 {
 public:
   ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context = ExecutionContextPtr());
@@ -43,23 +25,28 @@ public:
 
   virtual void timerCallback();
 
-  void invalidateTree();
-  void invalidateSelection();
-
   const ExecutionTracePtr& getTrace() const
     {return object.staticCast<ExecutionTrace>();}
 
   virtual juce::Component* createComponentForObject(ExecutionContext& context, const ObjectPtr& object, const string& name);
+
+  virtual void notificationCallback(const NotificationPtr& notification)
+    {notificationQueue->push(notification);}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
   ExecutionTracePtr trace;
   ExecutionContextPtr context;
-  bool isSelectionUpToDate;
-  bool isTreeUpToDate;
+
+  NotificationQueuePtr notificationQueue;
+  ExecutionCallbackPtr targetCallback;
 
   ExecutionCallbackPtr createTreeBuilderCallback();
+
+  virtual GenericTreeViewItem* createItem(const ObjectPtr& object, const string& name);
+  virtual bool mightHaveSubObjects(const ObjectPtr& object);
+  virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object);
 };
 
 }; /* namespace lbcpp */

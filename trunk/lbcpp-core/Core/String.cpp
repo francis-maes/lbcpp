@@ -88,3 +88,17 @@ bool File::loadFromString(ExecutionContext& context, const string& str)
   set(file);
   return true;
 }
+
+/*
+** Directory
+*/
+std::vector<FilePtr> Directory::findFiles(bool includeFiles, bool includeDirectories, bool recursively, const string& wildCardPattern)
+{
+  juce::File file = get();
+  juce::OwnedArray<juce::File> files;
+  file.findChildFiles(files, (includeFiles ? juce::File::findFiles : 0) | (includeDirectories ? juce::File::findDirectories : 0), recursively, wildCardPattern);
+  std::vector<FilePtr> res(files.size());
+  for (size_t i = 0; i < res.size(); ++i)
+    res[i] = File::create(*files[i]);
+  return res;
+}

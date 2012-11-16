@@ -11,7 +11,7 @@
 
 # include <lbcpp/UserInterface/ObjectComponent.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
-# include "SimpleTreeViewItem.h"
+# include "GenericTreeView.h"
 
 using juce::Component;
 using juce::DocumentWindow;
@@ -27,12 +27,12 @@ namespace lbcpp
 {
 
 class ExecutionTraceTreeView;
-class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
+class ExecutionTraceTreeViewItem : public GenericTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth);
+  ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
 
-  static ExecutionTraceTreeViewItem* create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth);
+  static ExecutionTraceTreeViewItem* create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
 
   enum
   {
@@ -53,34 +53,23 @@ public:
     {return 20 * numLines;}
 
   const ExecutionTraceItemPtr& getTrace() const
-    {return trace;}
-
-  virtual void itemSelectionChanged(bool isNowSelected);
-  
-  ExecutionTraceTreeView* getOwner() const
-    {return owner;}
-
-  size_t getDepth() const
-    {return depth;}
+    {return object.staticCast<ExecutionTraceItem>();}
 
 protected:
-  ExecutionTraceTreeView* owner;
-  ExecutionTraceItemPtr trace;
   int numLines;
-  size_t depth;
 };
 
 class ExecutionTraceTreeViewNode : public ExecutionTraceTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace, size_t depth);
+  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace);
 
   const ExecutionTraceNodePtr& getTraceNode() const
-    {return trace.staticCast<ExecutionTraceNode>();}
+    {return object.staticCast<ExecutionTraceNode>();}
 
-  virtual void createSubItems();
   virtual void itemOpennessChanged(bool isNowOpen);
-  virtual bool mightContainSubItems();
+
+  virtual ObjectPtr getTargetObject(ExecutionContext& context) const;
 };
 
 }; /* namespace lbcpp */

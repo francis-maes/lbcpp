@@ -7,5 +7,6 @@
   <uicomponent name="PieChartComponent" type="PieChart"/>
   <uicomponent name="HistogramComponent" type="Histogram"/>
   <uicomponent name="ExecutionTraceTreeView" type="ExecutionTrace"/>
-               
+  <uicomponent name="FileTreeView" type="File"/>
+  
 </library>

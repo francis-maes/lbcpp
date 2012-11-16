@@ -65,6 +65,9 @@ typedef ReferenceCountedObjectPtr<String> StringPtr;
 class File;
 typedef ReferenceCountedObjectPtr<File> FilePtr;
 
+class Directory;
+typedef ReferenceCountedObjectPtr<Directory> DirectoryPtr;
+
 class VariableSignature;
 typedef ReferenceCountedObjectPtr<VariableSignature> VariableSignaturePtr;
 

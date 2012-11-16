@@ -84,6 +84,8 @@ public:
   Directory(const juce::File& file)
     : File(file.getFullPathName()) {}
   Directory() {}
+
+  std::vector<FilePtr> findFiles(bool includeFiles = true, bool includeDirectories = true, bool recursively = false, const string& wildCardPattern = "*");
 };
 
 extern ClassPtr directoryClass;
