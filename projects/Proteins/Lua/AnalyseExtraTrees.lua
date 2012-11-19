@@ -83,6 +83,26 @@ local function getComplexity(traces)
   return res
 end
 
+
+local function getOne(scoreObject)
+  return scoreObject.accuracyOne
+end
+local function getTwo(scoreObject)
+  return scoreObject.accuracyTwo
+end
+local function getThree(scoreObject)
+  return scoreObject.accuracyThree
+end
+local function getFour(scoreObject)
+  return scoreObject.accuracyFour
+end
+local function getFive(scoreObject)
+  return scoreObject.accuracyFive
+end
+local function getMore(scoreObject)
+  return scoreObject.accuracyMore
+end
+
 -- file name: filePrefix .. varValues[.] .. filePostfix .. "_Foldx.trace"
 local function main(varName, varValues, filePrefix, filePostfix, numFolds)
   local scoresOfInterest = {}
@@ -100,6 +120,13 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 --  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
   scoresOfInterest["Q2"] = {index = 1, getScore = getScoreToMaximize}
+--  scoresOfInterest["One"] = {index = 1, getScore = getOne}
+--  scoresOfInterest["Two"] = {index = 1, getScore = getTwo}
+--  scoresOfInterest["Three"] = {index = 1, getScore = getThree}
+--  scoresOfInterest["Four"] = {index = 1, getScore = getFour}
+--  scoresOfInterest["Five"] = {index = 1, getScore = getFive}
+--  scoresOfInterest["More"] = {index = 1, getScore = getMore}
+
 --  scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
 --  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
   for i = 1,#varValues do
@@ -147,6 +174,7 @@ dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CB
 
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/"
+
 --main("CBP", {"hgpssm", "hgpssm_hgaa"}, dir .. "FeatureEvaluation-Kmax/", ".param.x3.Kmax.fold", numFolds)
 --main("CBS", {"wpssm11", "wpssm11_hgpssm", "wpssm11_hgpssm_nc", "wpssm11_hgpssm_nc_hgaa"}, dir, ".param.x3.fold", numFolds)
 
@@ -164,8 +192,8 @@ dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-Pl
 
 --main("SPXC - CSBToCBP", {""}, dir .. "MultiTask/SPXC/CBSToCBP/SPXC-CBSToCBP.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
 
-main("SPXC - CBS-CBP-ODSB", {""}, dir .. "MultiTask/SPXC/CBS-CBP-ODSB/SPXC-CBS-CBP-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
-main("SPXC - aCBS-CBP-ODSB", {""}, dir .. "MultiTask/SPXC/ActualCBS-CBP-ODSB/SPXC-ActualCBS-CBP-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
+--main("SPXC - CBS-CBP-ODSB", {""}, dir .. "MultiTask/SPXC/CBS-CBP-ODSB/SPXC-CBS-CBP-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
+--main("SPXC - aCBS-CBP-ODSB", {""}, dir .. "MultiTask/SPXC/ActualCBS-CBP-ODSB/SPXC-ActualCBS-CBP-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
 
 
 --main("CBP > K", {1,2,5,10,20,25}, dir .. "K/hgpssm_nc.K", ".x3.fold", numFolds)
