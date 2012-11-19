@@ -297,7 +297,10 @@ string Object::defaultToStringImplementation(bool useShortString) const
   for (size_t i = 0; i < n; ++i)
   {
     ObjectPtr value = getVariable(i);
-    res += (useShortString ? value->toShortString() : value->toString());
+    if (value)
+      res += (useShortString ? value->toShortString() : value->toString());
+    else
+      res += "<missing>";
     if (i < n - 1)
       res += T(", ");
   }

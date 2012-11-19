@@ -123,8 +123,13 @@ protected:
     int cy = plot->getData()->findColumnByKey(plot->getPlotVariable(columnY)->getKey());
     jassert(cx >= 0 && cy >= 0);
 
-    x = (float)plot->getData()->getElement(order[row], (size_t)cx)->toDouble();
-    y = (float)plot->getData()->getElement(order[row], (size_t)cy)->toDouble();
+    ObjectPtr ox = plot->getData()->getElement(order[row], (size_t)cx);
+    ObjectPtr oy = plot->getData()->getElement(order[row], (size_t)cy);
+    if (!ox || !oy)
+      return false;
+    
+    x = (float)ox->toDouble();
+    y = (float)oy->toDouble();
     transform.transformPoint(x, y);
     return true;
   }
@@ -135,11 +140,15 @@ protected:
     jassert(c >= 0);
     for (size_t i = 0; i < plot->getData()->getNumRows(); ++i)
     {
-      double value = plot->getData()->getElement(i, c)->toDouble();
-      if (value > maxValue)
-        maxValue = value;
-      if (value < minValue)
-        minValue = value;
+      ObjectPtr v = plot->getData()->getElement(i, c);
+      if (v)
+      {
+        double value = v->toDouble();
+        if (value > maxValue)
+          maxValue = value;
+        if (value < minValue)
+          minValue = value;
+      }
     }
   }
 

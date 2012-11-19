@@ -42,7 +42,7 @@ int ExecutionTraceTreeViewItem::getMaximumColumnWidth(size_t columnNumber) const
   if (columnNumber == 1)
     return 120;
   if (columnNumber == 2)
-    return 60;
+    return 80;
   else
     return 200;
 }
