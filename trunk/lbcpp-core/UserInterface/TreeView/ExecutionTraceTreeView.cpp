@@ -285,7 +285,8 @@ void ExecutionTraceTreeView::timerCallback()
 {
   if (!context)
     context = &defaultExecutionContext();
-  notificationQueue->flush(targetCallback);
+  if (notificationQueue)
+    notificationQueue->flush(targetCallback);
   GenericTreeView::timerCallback();
 }
 
