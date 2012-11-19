@@ -17,6 +17,8 @@
 namespace lbcpp
 {
 
+ClassPtr vectorClass(ClassPtr type1);
+    
 class Vector : public Object
 {
 public:

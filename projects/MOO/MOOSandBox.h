@@ -206,7 +206,7 @@ protected:
     DVectorPtr cpuTimes = new DVector();
     DVectorPtr hyperVolumes = new DVector();
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
-    ParetoFrontPtr front = new ParetoFront();
+    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     SolverCallbackPtr callback = compositeSolverCallback(
       fillParetoFrontSolverCallback(front),
       hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),

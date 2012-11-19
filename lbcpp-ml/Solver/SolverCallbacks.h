@@ -229,7 +229,7 @@ public:
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
   {
     EvaluatorSolverCallback::solverStarted(context, solver);
-    front = new ParetoFront();
+    front = new ParetoFront(solver->getProblem()->getFitnessLimits());
   }
 
   virtual void evaluate(ExecutionContext& context, SolverPtr solver)
