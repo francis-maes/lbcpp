@@ -317,24 +317,29 @@ class CountCysteinesWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory, 0, T("Loading training proteins"));
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory, 0, T("Loading proteins"));
 
     size_t numCys = 0;
     size_t numBonded = 0;
+    ScalarVariableMeanAndVariance stat;
     for (size_t i = 0; i < proteins->getNumElements(); ++i)
     {
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>(context);
       const size_t n = protein->getCysteinIndices().size();
       numCys += n;
+
+      size_t bonds = 0;
       SymmetricMatrixPtr matrix = protein->getDisulfideBonds(context);
       for (size_t j = 0; j < n; ++j)
         for (size_t jj = j + 1; jj < n; ++jj)
-          numBonded += matrix->getElement(j, jj).getDouble() * 2;
+          bonds += matrix->getElement(j, jj).getDouble() * 2;
+      stat.push(bonds);
+      numBonded += bonds;
     }
     
     std::cout << "Num. Cysteines: " << numCys << std::endl;
     std::cout << "Num. Bonded:    " << numBonded << std::endl;
-    
+    std::cout << "Avg. Bonds:     " << stat.toString() << std::endl;
     return true;
   }
 
