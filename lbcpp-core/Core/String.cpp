@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: string.cpp                     | string                          |
+| Filename: String.cpp                     | string                          |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/11/2012 17:44               |                                 |
 `------------------------------------------/                                 |
@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Core/Class.h>
-#include <lbcpp/Core/string.h>
+#include <lbcpp/Core/String.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
@@ -15,7 +15,7 @@ using namespace lbcpp;
 /*
 ** String
 */
-StringPtr String::create(ClassPtr type, const string& value)
+lbcpp::StringPtr String::create(ClassPtr type, const string& value)
 {
   if (type == fileClass || type == directoryClass)
     return File::create(value);

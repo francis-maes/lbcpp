@@ -107,8 +107,8 @@ public:
   }
 
 protected:
-  FitnessPtr& bestFitness;
   ObjectPtr& bestSolution;
+  FitnessPtr& bestFitness;
 };
 
 class FillParetoFrontSolverCallback : public SolverCallback

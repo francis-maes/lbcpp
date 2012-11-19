@@ -40,8 +40,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Integer.cpp
   ../include/lbcpp/Core/Double.h
   Core/Double.cpp
-  ../include/lbcpp/Core/string.h
-  Core/string.cpp
+  ../include/lbcpp/Core/String.h
+  Core/String.cpp
   ../include/lbcpp/Core/ClassManager.h
   Core/ClassManager.cpp
   ../include/lbcpp/Core/Signature.h

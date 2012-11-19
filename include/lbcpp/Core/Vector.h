@@ -71,6 +71,9 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
+extern ClassPtr vectorClass(ClassPtr elementsType = objectClass);
+extern VectorPtr vector(ClassPtr elementsType, size_t initialSize = 0);
+
 template<class ExactClass, class NativeType>
 class VectorT : public Vector
 {
@@ -283,9 +286,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<OVector> OVectorPtr;
-
-extern ClassPtr vectorClass(ClassPtr elementsType = objectClass);
-extern VectorPtr vector(ClassPtr elementsType, size_t initialSize = 0);
 
 }; /* namespace lbcpp */
 
