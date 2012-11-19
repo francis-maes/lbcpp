@@ -509,7 +509,7 @@ DataVectorPtr SequenceExpression::computeSamples(ExecutionContext& context, cons
 
 void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<TablePtr>& cachesToUpdate)
 {
-  size_t index = nodes.size();
+  //size_t index = nodes.size();
   jassert(node);
   nodes.push_back(node);
 
@@ -568,9 +568,10 @@ void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const DataVect
     if (value == DVector::missingValue)
       value = 0.0;
     if (computeAverage && newNodeIndex > 0)
-      *dest++ = (*dest * (newNodeIndex - 1) + value) / (double)newNodeIndex;
+      *dest = (*dest * (newNodeIndex - 1) + value) / (double)newNodeIndex;
     else
-      *dest++ += value;
+      *dest += value;
+    ++dest;
   }
 }
 

@@ -9,7 +9,8 @@
 #include <lbcpp/Core/Boolean.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
-using namespace lbcpp;
+
+namespace lbcpp { // compilation problem under macosx, since there is a name conflict with "Boolean" in mactypes.h
 
 string Boolean::toShortString() const
   {return value ? "true" : "false";}
@@ -57,3 +58,5 @@ bool Boolean::loadFromXml(XmlImporter& importer)
 
 void Boolean::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
+  
+}; /* namespace lbcpp */

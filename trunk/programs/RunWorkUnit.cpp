@@ -121,7 +121,7 @@ bool checkIsAWorkUnit(ExecutionContext& context, const ObjectPtr& object)
 
 bool runWorkUnit(ExecutionContext& context, WorkUnitPtr workUnit)
 {
-  BooleanPtr result = context.run(workUnit).dynamicCast<Boolean>();
+  BooleanPtr result = context.run(workUnit).dynamicCast<lbcpp::Boolean>();
   return !result || result->get();
 }
 

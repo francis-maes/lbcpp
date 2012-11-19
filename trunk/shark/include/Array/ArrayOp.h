@@ -571,15 +571,15 @@ inline bool operator != (const ArrayReference< T > v, const ArrayReference< T > 
  *      stable
  *
  */
-template < class T >
-inline Array< T > innerProduct(const Array< T >& v, const Array< T >& w)
+template < class TT >
+inline Array< TT > innerProduct(const Array< TT >& v, const Array< TT >& w)
 {
 	unsigned vd = v.ndim();
 	unsigned wd = w.ndim();
 	unsigned zd = vd + wd - 2;
 	unsigned i, j, k;
-	T        t;
-	Array< T > z;
+	TT        t;
+	Array< TT > z;
 
 	//
 	// handle scalar values
@@ -592,7 +592,7 @@ inline Array< T > innerProduct(const Array< T >& v, const Array< T >& w)
 			return w.elem(0) * v;
 		}
 		else {
-			return Array< T >();
+			return Array< TT >();
 		}
 	}
 	// two vectors (the "original" inner product):
@@ -600,7 +600,7 @@ inline Array< T > innerProduct(const Array< T >& v, const Array< T >& w)
 		t = scalarProduct(v, w);
 		z.resize(1);
 		z(0) = t;
-		return Array< T >(z, true);
+		return Array< TT >(z, true);
 	}
 
 	SIZE_CHECK(v.dim(vd - 1) == w.dim(0))
@@ -620,7 +620,7 @@ inline Array< T > innerProduct(const Array< T >& v, const Array< T >& w)
 	do {
 		for (i = j = 0; j < vd - 1; vdim[ j++ ] = zdim[ i++ ]) ;
 		for (j = 1; j < wd  ; wdim[ j++ ] = zdim[ i++ ]) ;
-		for (t = T(0), k = 0; k < w.dim(0); k++) {
+		for (t = TT(0), k = 0; k < w.dim(0); k++) {
 			vdim[ vd-1 ] = wdim[ 0 ] = k;
 			t += v(vdim) * w(wdim);
 		}
@@ -630,7 +630,7 @@ inline Array< T > innerProduct(const Array< T >& v, const Array< T >& w)
 	}
 	while (i < zd);
 
-	return Array< T >(z, true);
+	return Array< TT >(z, true);
 }
 
 

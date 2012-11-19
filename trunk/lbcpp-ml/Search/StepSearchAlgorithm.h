@@ -29,8 +29,7 @@ protected:
   {
     SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actions = state->getActionDomain();
-    size_t n = actions->getNumElements();
-
+    
     SolverCallbackPtr previousCallback = callback;
     ParetoFrontPtr front = new ParetoFront();
     callback = compositeSolverCallback(fillParetoFrontSolverCallback(front), previousCallback);
