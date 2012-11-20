@@ -95,6 +95,8 @@ extern SolverPtr beamNRPASolver(SamplerPtr sampler, size_t level, size_t numIter
 // learners
 extern SolverPtr exhaustiveConditionLearner(SamplerPtr expressionsSampler);
 extern SolverPtr treeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit = 2, size_t maxDepth = 0);
+extern SolverPtr ensembleLearner(const SolverPtr& baseLearner, size_t ensembleSize);
+extern SolverPtr baggingLearner(const SolverPtr& baseLearner, size_t ensembleSize);
 
 class IterativeSolver : public Solver
 {

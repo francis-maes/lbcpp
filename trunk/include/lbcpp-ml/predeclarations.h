@@ -102,6 +102,9 @@ typedef ReferenceCountedObjectPtr<SearchNode> SearchNodePtr;
 /*
 ** Expression
 */
+class DataVector;
+typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
+
 class Expression;
 typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
 

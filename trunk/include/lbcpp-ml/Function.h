@@ -15,9 +15,6 @@
 namespace lbcpp
 {
 
-class DataVector;
-typedef ReferenceCountedObjectPtr<DataVector> DataVectorPtr;
-
 class Function : public Object
 {
 public:

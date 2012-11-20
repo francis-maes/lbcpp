@@ -10,6 +10,7 @@ GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Solver/SolverLibrary.xml SolverLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Aggregator/AggregatorLibrary.xml AggregatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Loader/LoaderLibrary.xml LoaderLibrary.cpp)
@@ -29,6 +30,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Solver.h
   ../include/lbcpp-ml/Search.h
   ../include/lbcpp-ml/Function.h
+  ../include/lbcpp-ml/Aggregator.h
   ../include/lbcpp-ml/Expression.h
   ../include/lbcpp-ml/PostfixExpression.h
   ../include/lbcpp-ml/ExpressionDomain.h
@@ -93,6 +95,12 @@ SET(LBCPP_ML_FUNCTION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
 
+SET(LBCPP_ML_AGGREGATOR_SOURCES
+  Aggregator/MeanDoubleVectorAggregator.h
+  Aggregator/AggregatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/AggregatorLibrary.cpp
+)
+
 SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/Expression.cpp
   Expression/ExpressionDomain.cpp
@@ -155,6 +163,7 @@ SET(LBCPP_ML_SPLITTING_CRITERION_SOURCES
 SET(LBCPP_ML_LEARNER_SOURCES
   Learner/ExhaustiveConditionLearner.h
   Learner/TreeLearner.h
+  Learner/EnsembleLearner.h
   Learner/LearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LearnerLibrary.cpp
 )
@@ -182,6 +191,7 @@ SET(LBCPP_ML_SOURCES
   ${LBCPP_ML_SAMPLER_SOURCES}
   ${LBCPP_ML_COMPARATOR_SOURCES}
   ${LBCPP_ML_FUNCTION_SOURCES}
+  ${LBCPP_ML_AGGREGATOR_SOURCES}
   ${LBCPP_ML_EXPRESSION_SOURCES}
     ${LBCPP_ML_EXPRESSION_SAMPLER_SOURCES}
     ${LBCPP_ML_EXPRESSION_PERTURBATOR_SOURCES}
@@ -203,6 +213,7 @@ SOURCE_GROUP(Optimizer FILES ${LBCPP_ML_OPTIMIZER_SOURCES})
 SOURCE_GROUP(Sampler FILES ${LBCPP_ML_SAMPLER_SOURCES})
 SOURCE_GROUP(Comparator FILES ${LBCPP_ML_COMPARATOR_SOURCES})
 SOURCE_GROUP(Function FILES ${LBCPP_ML_FUNCTION_SOURCES})
+SOURCE_GROUP(Aggregator FILES ${LBCPP_ML_AGGREGATOR_SOURCES})
 SOURCE_GROUP(Expression FILES ${LBCPP_ML_EXPRESSION_SOURCES})
 SOURCE_SUB_GROUP(Expression Sampler FILES ${LBCPP_ML_EXPRESSION_SAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Expression Perturbator FILES ${LBCPP_ML_EXPRESSION_PERTURBATOR_SOURCES})

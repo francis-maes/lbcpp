@@ -513,11 +513,11 @@ void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr
   jassert(node);
   nodes.push_back(node);
 
-  jassertfalse; // broken
 #if 0
   // update caches
   for (size_t i = 0; i < cachesToUpdate.size(); ++i)
   {
+    jassertfalse; // broken
     TablePtr cache = cachesToUpdate[i];
     //size_t n = cache->getNumSamples();
     VectorPtr outputs = cache->getNodeCache(this);

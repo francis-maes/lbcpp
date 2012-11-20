@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_NODE_H_
-# define LBCPP_LUAPE_NODE_H_
+#ifndef LBCPP_ML_EXPRESSION_H_
+# define LBCPP_ML_EXPRESSION_H_
 
 # include "Function.h"
 # include <lbcpp/Data/Table.h>
@@ -475,4 +475,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_H_
+#endif // !LBCPP_ML_EXPRESSION_H_
