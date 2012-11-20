@@ -21,17 +21,10 @@
     <variable type="Function" name="function"/>
     <variable type="Vector[Expression]" name="arguments"/>
   </class>
-  <class name="SequenceExpression" base="Expression" abstract="yes">
+  <class name="AggregatorExpression" base="Expression">
+    <variable type="Aggregator" name="aggregator"/>
     <variable type="Vector[Expression]" name="nodes"/>
   </class>
-  <class name="ScalarSumExpression" base="SequenceExpression">
-    <variable type="Boolean" name="convertToProbabilities"/>
-    <variable type="Boolean" name="computeAverage"/>
-  </class>
-  <class name="VectorSumExpression" base="SequenceExpression">
-    <variable type="Boolean" name="convertToProbabilities"/>
-  </class>
-  <class name="CreateSparseVectorExpression" base="SequenceExpression"/>
   <class name="TestExpression" base="Expression">
     <variable type="Expression" name="conditionNode"/>
     <variable type="Expression" name="failureNode"/>

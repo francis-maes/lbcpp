@@ -10,6 +10,7 @@
 # define LBCPP_ML_EXPRESSION_H_
 
 # include "Function.h"
+# include "Aggregator.h"
 # include <lbcpp/Data/Table.h>
 # include <lbcpp/Data/DoubleVector.h>
 
@@ -319,6 +320,57 @@ protected:
 extern ClassPtr functionExpressionClass;
 
 /*
+** Aggregator Expression
+*/
+class AggregatorExpression : public Expression
+{
+public:
+  AggregatorExpression(AggregatorPtr aggregator, const std::vector<ExpressionPtr>& nodes);
+  AggregatorExpression(AggregatorPtr aggregator, ClassPtr type);
+  AggregatorExpression() {}
+
+  virtual string toShortString() const;
+
+  virtual size_t getNumSubNodes() const
+    {return nodes.size();}
+    
+  virtual const ExpressionPtr& getSubNode(size_t index) const
+    {return nodes[index];}
+  
+  void clearNodes()
+    {nodes.clear();}
+
+  void reserveNodes(size_t size)
+    {nodes.reserve(size);}
+
+  void pushNode(const ExpressionPtr& node)
+    {nodes.push_back(node);}
+
+  const std::vector<ExpressionPtr>& getNodes() const
+    {return nodes;}
+
+  void setNodes(const std::vector<ExpressionPtr>& nodes)
+    {this->nodes = nodes;}
+
+  void setNode(size_t index, const ExpressionPtr& node)
+    {jassert(index < nodes.size()); nodes[index] = node;}
+  
+  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
+  
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class AggregatorExpressionClass;
+
+  AggregatorPtr aggregator;
+  std::vector<ExpressionPtr> nodes;
+
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
+};
+
+typedef ReferenceCountedObjectPtr<AggregatorExpression> AggregatorExpressionPtr;
+
+/*
 ** Test
 */
 class TestExpression : public Expression
@@ -370,107 +422,6 @@ protected:
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   DataVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const;
-};
-
-/*
-** Sequence
-*/
-class SequenceExpression : public Expression
-{
-public:
-  SequenceExpression(ClassPtr type, const std::vector<ExpressionPtr>& nodes);
-  SequenceExpression(ClassPtr type) : Expression(type) {}
-  SequenceExpression() {}
-
-  virtual string toShortString() const;
-
-  virtual size_t getNumSubNodes() const
-    {return nodes.size();}
-    
-  virtual const ExpressionPtr& getSubNode(size_t index) const
-    {return nodes[index];}
-  
-  void pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<TablePtr>& cachesToUpdate = std::vector<TablePtr>());
-
-  void clearNodes()
-    {nodes.clear();}
-
-  void reserveNodes(size_t size)
-    {nodes.reserve(size);}
-
-  const std::vector<ExpressionPtr>& getNodes() const
-    {return nodes;}
-
-  void setNodes(const std::vector<ExpressionPtr>& nodes)
-    {this->nodes = nodes;}
-
-  void setNode(size_t index, const ExpressionPtr& node)
-    {jassert(index < nodes.size()); nodes[index] = node;}
-
-protected:
-  friend class SequenceExpressionClass;
-
-  std::vector<ExpressionPtr> nodes;
-
-  virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
-  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
-};
-
-typedef ReferenceCountedObjectPtr<SequenceExpression> SequenceExpressionPtr;
-
-/*
-** Sum
-*/
-class ScalarSumExpression : public SequenceExpression
-{
-public:
-  ScalarSumExpression(const std::vector<ExpressionPtr>& nodes, bool convertToProbabilities, bool computeAverage);
-  ScalarSumExpression(bool convertToProbabilities = false, bool computeAverage = true);
-
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-
-protected:
-  friend class ScalarSumExpressionClass;
-
-  bool convertToProbabilities;
-  bool computeAverage;
-
-  virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
-};
-
-class VectorSumExpression : public SequenceExpression
-{
-public:
-  VectorSumExpression(EnumerationPtr enumeration, bool convertToProbabilities);
-  VectorSumExpression() {}
-
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-
-protected:
-  friend class VectorSumExpressionClass;
-
-  bool convertToProbabilities;
-
-  virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
-
-  DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
-};
-
-class CreateSparseVectorExpression : public SequenceExpression
-{
-public:
-  CreateSparseVectorExpression(const std::vector<ExpressionPtr>& nodes);
-  CreateSparseVectorExpression();
-    
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
-
-protected:
-  virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const DataVectorPtr& newNodeValues, size_t newNodeIndex) const;
 };
 
 }; /* namespace lbcpp */
