@@ -47,6 +47,18 @@ public:
     {objectives.push_back(objective);}
 
   /*
+  ** Validation Objectives
+  */
+  size_t getNumValidationObjectives() const
+    {return validationObjectives.size();}
+
+  ObjectivePtr getValidationObjective(size_t index) const
+    {jassert(index < validationObjectives.size()); return validationObjectives[index];}
+  
+  void addValidationObjective(ObjectivePtr objective)
+    {validationObjectives.push_back(objective);}
+
+  /*
   ** Initial Guess
   */
   ObjectPtr getInitialGuess() const
@@ -72,6 +84,7 @@ public:
 protected:
   DomainPtr domain;
   std::vector<ObjectivePtr> objectives;
+  std::vector<ObjectivePtr> validationObjectives;
   ObjectPtr initialGuess;
 
   virtual void initialize(ExecutionContext& context) {}

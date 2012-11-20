@@ -72,6 +72,9 @@ public:
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
     {jassertfalse; return 0.0;}
   
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+    {return StochasticObjective::evaluate(context, object);}
+
   virtual size_t getNumInstances() const
     {return getIndices()->size();}
 

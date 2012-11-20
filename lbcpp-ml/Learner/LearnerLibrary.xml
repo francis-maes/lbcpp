@@ -2,11 +2,23 @@
 
 <library name="Learner" directory="Learner">
 
+  <!-- Condition Learners -->
   <class name="ExhaustiveConditionLearner" base="Solver">
     <constructor arguments="SamplerPtr expressionsSampler"/>
     <variable type="Sampler" name="expressionsSampler"/>
   </class>
 
+  <!-- Meta Learners -->
+  <class name="EnsembleLearner" base="Solver">
+    <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize"/>
+    <variable type="Solver" name="baseLearner"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+  </class>
+
+  <class name="BaggingLearner" base="Solver">
+    <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
+  </class>
+  
   <class name="TreeLearner" base="Solver">
     <constructor arguments="SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
     <variable type="SplittingCriterion" name="splittingCriterion"/>

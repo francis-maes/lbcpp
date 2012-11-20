@@ -57,20 +57,23 @@ public:
     // make learner
     SamplerPtr expressionVectorSampler = subsetVectorSampler(scalarExpressionVectorSampler(), (size_t)(sqrt((double)numVariables) + 0.5));
     SolverPtr conditionLearner = exhaustiveConditionLearner(expressionVectorSampler);
-    conditionLearner->setVerbosity((SolverVerbosity)verbosity);
+    //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
     SolverPtr learner = treeLearner(informationGainSplittingCriterion(true), conditionLearner);
+    //learner->setVerbosity((SolverVerbosity)verbosity);
+    learner = ensembleLearner(learner, 100);
     learner->setVerbosity((SolverVerbosity)verbosity);
 
     // learn
     ExpressionPtr model;
     FitnessPtr fitness;
+    context.enterScope("Learning");
     learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+    context.leaveScope();
     context.resultCallback("model", model);
     context.resultCallback("fitness", fitness);
 
     // evaluate
-    ObjectivePtr testingObjective = multiClassAccuracyObjective(testingData, supervision);
-    double testingScore = testingObjective->evaluate(context, model);
+    double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
     context.resultCallback("testingScore", testingScore);
 
     return new Boolean(true);
@@ -119,7 +122,7 @@ private:
 
     res->setDomain(domain);
     res->addObjective(multiClassAccuracyObjective(trainingData, supervision));
-    // todo: addValidationObjective(...)
+    res->addValidationObjective(multiClassAccuracyObjective(testingData, supervision));
     return res;
   }
 };

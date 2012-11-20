@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Aggregator" directory="Aggregator">
+
+  <!-- Base class -->
+  <class name="Aggregator" abstract="yes"/>
+
+  <!-- DoubleVector -->
+  <class name="MeanDoubleVectorAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+  
+</library>

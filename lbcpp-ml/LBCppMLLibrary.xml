@@ -8,6 +8,7 @@
   <import name="Optimizer"/>
   <import name="Search"/>
   <import name="Function"/>
+  <import name="Aggregator"/>
   <import name="Expression"/>
   <import name="Loader"/>
   <import name="SplittingCriterion"/>

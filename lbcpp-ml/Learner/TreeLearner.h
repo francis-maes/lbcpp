@@ -39,7 +39,7 @@ public:
       context.resultCallback(T("treeSize"), numNodes);
       context.resultCallback(T("conditionSize"), nodeSizeStats);
       context.resultCallback(T("meanConditionSize"), nodeSizeStats->getMean());
-      context.informationCallback(T("Tree depth = ") + string((int)treeDepth) + T(" size = ") + string((int)numNodes));
+      //context.informationCallback(T("Tree depth = ") + string((int)treeDepth) + T(" size = ") + string((int)numNodes));
     }
     evaluate(context, res);
   }
