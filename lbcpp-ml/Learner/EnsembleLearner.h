@@ -25,7 +25,8 @@ public:
   {
     SupervisedLearningObjectivePtr objective = problem->getObjective(0).staticCast<SupervisedLearningObjective>();
     ClassPtr supervisionType = objective->getSupervision()->getType();
-    SequenceExpressionPtr res = createSequenceExpression(supervisionType); 
+    std::pair<AggregatorPtr, ClassPtr> aggregatorAndOutputType = createAggregator(supervisionType);
+    AggregatorExpressionPtr res = new AggregatorExpression(aggregatorAndOutputType.first, aggregatorAndOutputType.second);
     res->reserveNodes(ensembleSize);
 
     for (size_t i = 0; i < ensembleSize; ++i)
@@ -40,13 +41,11 @@ public:
       ExpressionPtr expression;
       baseLearner->solve(context, problem, storeBestSolutionSolverCallback(*(ObjectPtr* )&expression));
       if (expression)
-      {
-        // FIXME: caches to update
-        res->pushNode(context, expression);
-      }
+        res->pushNode(expression);
 
       if (verbosity >= verbosityDetailed)
       {
+        // FIXME: incremental calculation of these quantities
         double trainingScore = objective->evaluate(context, res);
         context.resultCallback("trainingScore", trainingScore);
         if (problem->getNumValidationObjectives())
@@ -69,14 +68,14 @@ protected:
   virtual IndexSetPtr getSubIndices(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& indices) const
     {return indices;}
 
-  SequenceExpressionPtr createSequenceExpression(ClassPtr supervisionType)
+  std::pair<AggregatorPtr, ClassPtr> createAggregator(ClassPtr supervisionType)
   {
     if (supervisionType.isInstanceOf<Enumeration>())
-      return new VectorSumExpression(supervisionType.staticCast<Enumeration>(), false);
+      return std::make_pair(meanDoubleVectorAggregator(), denseDoubleVectorClass(supervisionType.staticCast<Enumeration>(), doubleClass));
     else
     {
       jassertfalse; // not implemented yet
-      return SequenceExpressionPtr();
+      return std::make_pair(AggregatorPtr(), ClassPtr());
     }
   }
 };
