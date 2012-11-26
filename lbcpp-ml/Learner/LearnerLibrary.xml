@@ -9,14 +9,19 @@
   </class>
 
   <!-- Meta Learners -->
-  <class name="EnsembleLearner" base="Solver">
-    <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize"/>
-    <variable type="Solver" name="baseLearner"/>
+
+  <class name="EnsembleLearner" base="Solver" abstract="yes">
     <variable type="PositiveInteger" name="ensembleSize"/>
   </class>
 
-  <class name="BaggingLearner" base="Solver">
+  <class name="SimpleEnsembleLearner" base="EnsembleLearner">
     <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
+    <variable type="Solver" name="baseLearner"/>
+  </class>
+
+  <class name="BaggingLearner" base="EnsembleLearner">
+    <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
+    <variable type="Solver" name="baseLearner"/>
   </class>
   
   <class name="TreeLearner" base="Solver">

@@ -35,14 +35,19 @@ void Solver::solve(ExecutionContext& context, ProblemPtr problem, SolverCallback
   stopSolver(context);
 }
 
-FitnessPtr Solver::evaluate(ExecutionContext& context, const ObjectPtr& object)
+void Solver::addSolution(ExecutionContext& context, const ObjectPtr& object, const FitnessPtr& fitness)
 {
-  jassert(problem && callback);
-  FitnessPtr fitness = problem->evaluate(context, object);
   for (size_t i = 0; i < fitness->getNumValues(); ++i)
     jassert(isNumberValid(fitness->getValue(i)));
   jassert(fitness->getNumValues() == problem->getFitnessLimits()->getNumDimensions());
   callback->solutionEvaluated(context, refCountedPointerFromThis(this), object, fitness);
+}
+
+FitnessPtr Solver::evaluate(ExecutionContext& context, const ObjectPtr& object)
+{
+  jassert(problem && callback);
+  FitnessPtr fitness = problem->evaluate(context, object);
+  addSolution(context, object, fitness);
   return fitness;
 }
 

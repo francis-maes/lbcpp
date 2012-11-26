@@ -17,18 +17,34 @@ namespace lbcpp
 class EnsembleLearner : public Solver
 {
 public:
-  EnsembleLearner(const SolverPtr& baseLearner, size_t ensembleSize)
-    : baseLearner(baseLearner), ensembleSize(ensembleSize) {}
-  EnsembleLearner() : ensembleSize(0) {}
+  EnsembleLearner(size_t ensembleSize = 0)
+    : ensembleSize(ensembleSize) {}
+
+  virtual ExpressionPtr makeExpression(ExecutionContext& context, size_t iter) = 0;
 
   virtual void runSolver(ExecutionContext& context)
   {
+    // get training and validation objectives
     SupervisedLearningObjectivePtr objective = problem->getObjective(0).staticCast<SupervisedLearningObjective>();
+    SupervisedLearningObjectivePtr validationObjective;
+    if (problem->getNumValidationObjectives())
+      validationObjective = problem->getValidationObjective(0).staticCast<SupervisedLearningObjective>();
+    
+    // create aggregator and aggregator expressions
     ClassPtr supervisionType = objective->getSupervision()->getType();
     std::pair<AggregatorPtr, ClassPtr> aggregatorAndOutputType = createAggregator(supervisionType);
-    AggregatorExpressionPtr res = new AggregatorExpression(aggregatorAndOutputType.first, aggregatorAndOutputType.second);
+    AggregatorPtr aggregator = aggregatorAndOutputType.first;
+    ClassPtr outputType = aggregatorAndOutputType.second;
+    AggregatorExpressionPtr res = new AggregatorExpression(aggregator, outputType);
     res->reserveNodes(ensembleSize);
-
+    
+    // start aggregations for training and validation data
+    ObjectPtr trainingData = aggregator->startAggregation(objective->getIndices(), outputType);
+    ObjectPtr validationData;
+    if (validationObjective && verbosity >= verbosityDetailed)
+      validationData = aggregator->startAggregation(validationObjective->getIndices(), outputType);
+    
+    // build ensemble
     for (size_t i = 0; i < ensembleSize; ++i)
     {
       if (verbosity >= verbosityDetailed)
@@ -36,37 +52,43 @@ public:
         context.enterScope(T("Iteration ") + string((int)i));
         context.resultCallback(T("iteration"), i);
       }
-      IndexSetPtr indices = getSubIndices(context, i, objective->getIndices());
-
-      ExpressionPtr expression;
-      baseLearner->solve(context, problem, storeBestSolutionSolverCallback(*(ObjectPtr* )&expression));
+      
+      ExpressionPtr expression = makeExpression(context, i);
       if (expression)
+      {
         res->pushNode(expression);
+        aggregator->updateAggregation(trainingData, expression->compute(context, objective->getData(), objective->getIndices()));
+        if (validationData)
+          aggregator->updateAggregation(validationData, expression->compute(context, validationObjective->getData(), validationObjective->getIndices()));
+      }
 
       if (verbosity >= verbosityDetailed)
       {
-        // FIXME: incremental calculation of these quantities
-        double trainingScore = objective->evaluate(context, res);
+        DataVectorPtr trainingPredictions = aggregator->finalizeAggregation(trainingData);
+        double trainingScore = objective->evaluatePredictions(context, trainingPredictions);
         context.resultCallback("trainingScore", trainingScore);
-        if (problem->getNumValidationObjectives())
-          context.resultCallback("validationScore", problem->getValidationObjective(0)->evaluate(context, res));
+        if (validationObjective)
+        {
+          DataVectorPtr validationPredictions = aggregator->finalizeAggregation(validationData);
+          double validationScore = validationObjective->evaluatePredictions(context, validationPredictions);
+          context.resultCallback("validationScore", validationScore);
+        }
         context.leaveScope();
       }
       if (verbosity >= verbosityProgressAndResult)
         context.progressCallback(new ProgressionState(i + 1, ensembleSize, T(" base models")));
     }
 
-    evaluate(context, res);
+    // set the solution
+    DataVectorPtr trainingPredictions = aggregator->finalizeAggregation(trainingData);
+    double trainingScore = objective->evaluatePredictions(context, trainingPredictions);
+    addSolution(context, res, new Fitness(trainingScore, problem->getFitnessLimits()));
   }
 
 protected:
   friend class EnsembleLearnerClass;
 
-  SolverPtr baseLearner;
   size_t ensembleSize;
-
-  virtual IndexSetPtr getSubIndices(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& indices) const
-    {return indices;}
 
   std::pair<AggregatorPtr, ClassPtr> createAggregator(ClassPtr supervisionType)
   {
@@ -80,15 +102,48 @@ protected:
   }
 };
 
+class SimpleEnsembleLearner : public EnsembleLearner
+{
+public:
+  SimpleEnsembleLearner(const SolverPtr& baseLearner, size_t ensembleSize)
+    : EnsembleLearner(ensembleSize), baseLearner(baseLearner) {}
+  SimpleEnsembleLearner() {}
+
+  virtual ExpressionPtr makeExpression(ExecutionContext& context, size_t iter)
+  {
+    ExpressionPtr expression;
+    baseLearner->solve(context, problem, storeBestSolutionSolverCallback(*(ObjectPtr* )&expression));
+    return expression;
+  }
+  
+protected:
+  friend class SimpleEnsembleLearnerClass;
+  
+  SolverPtr baseLearner;
+};
+
 class BaggingLearner : public EnsembleLearner
 {
 public:
   BaggingLearner(const SolverPtr& baseLearner, size_t ensembleSize)
-    : EnsembleLearner(baseLearner, ensembleSize) {}
+    : EnsembleLearner(ensembleSize), baseLearner(baseLearner) {}
   BaggingLearner() {}
+  
+  virtual ExpressionPtr makeExpression(ExecutionContext& context, size_t iter)
+  {
+    SupervisedLearningObjectivePtr objective = problem->getObjective(0).staticCast<SupervisedLearningObjective>();
+    IndexSetPtr oldIndices = objective->getIndices();
+    objective->setIndices(objective->getIndices()->sampleBootStrap(context.getRandomGenerator()));
+    ExpressionPtr expression;
+    baseLearner->solve(context, problem, storeBestSolutionSolverCallback(*(ObjectPtr* )&expression));
+    objective->setIndices(oldIndices);
+    return expression;
+  }
 
-  virtual IndexSetPtr getSubIndices(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& indices) const
-    {return indices->sampleBootStrap(context.getRandomGenerator());}
+protected:
+  friend class BaggingLearnerClass;
+  
+  SolverPtr baseLearner;    
 };
 
 }; /* namespace lbcpp */

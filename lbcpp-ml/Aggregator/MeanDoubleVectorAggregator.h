@@ -37,44 +37,63 @@ public:
     return res;
   }
 
-  virtual DataVectorPtr initializeOutputs(const IndexSetPtr& indices, ClassPtr outputType) const
+  struct AccumulatorData : public Object
   {
-    OVectorPtr res = new OVector(outputType, indices->size());
-    for (size_t i = 0; i < indices->size(); ++i)
-      res->set(i, new DenseDoubleVector(outputType));
-    return new DataVector(indices, res);
-  }
+    AccumulatorData(IndexSetPtr indices, EnumerationPtr elementsEnumeration)
+    : indices(indices), elementsEnumeration(elementsEnumeration), v(elementsEnumeration->getNumElements() * indices->size(), 0.0), count(0) {}
+    
+    IndexSetPtr indices;
+    EnumerationPtr elementsEnumeration;
+    std::vector<double> v;
+    size_t count;
+  };
+  typedef ReferenceCountedObjectPtr<AccumulatorData> AccumulatorDataPtr;
 
-  virtual void updateOutputs(const DataVectorPtr& outputs, const DataVectorPtr& inputs) const
+  virtual ObjectPtr startAggregation(const IndexSetPtr& indices, ClassPtr outputType) const
+    {return new AccumulatorData(indices, DoubleVector::getElementsEnumeration(outputType));}
+
+  virtual void updateAggregation(const ObjectPtr& d, const DataVectorPtr& inputs) const
   {
-    const OVectorPtr& a = outputs->getVector().staticCast<OVector>();
-    jassert(inputs->size() == a->getNumElements());
+    const AccumulatorDataPtr& data = d.staticCast<AccumulatorData>();
+    
+    jassert(data->indices == inputs->getIndices());
     jassert(inputs->getElementsType()->inheritsFrom(denseDoubleVectorClass()));
-    size_t i = 0;
-    for (DataVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it, ++i)
+    
+    double* dest = &data->v[0];
+    for (DataVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)
     {
       const DenseDoubleVectorPtr& input = it.getRawObject().staticCast<DenseDoubleVector>();
       if (input)
       {
-        DenseDoubleVectorPtr target = a->get(i).staticCast<DenseDoubleVector>();
-        input->addTo(target);
-  #ifdef JUCE_DEBUG
-        for (size_t j = 0; j < target->getNumValues(); ++j)
-          jassert(isNumberValid(target->getValue(j)));
-  #endif // JUCE_DBEUG
+        jassert(data->elementsEnumeration->getNumElements() == input->getNumValues());
+        for (size_t j = 0; j < input->getNumValues(); ++j)
+        {
+          double value = input->getValue(j);
+          jassert(isNumberValid(value));
+          *dest++ += value;
+        }
       }
+      else
+        dest += data->elementsEnumeration->getNumElements();
     }
+    data->count++;
   }
 
-  virtual void finalizeOutputs(const DataVectorPtr& outputs, size_t numAggregatedElements) const
+  virtual DataVectorPtr finalizeAggregation(const ObjectPtr& d) const
   {
-    const OVectorPtr& a = outputs->getVector().staticCast<OVector>();
-    double invZ = 1.0 / (double)numAggregatedElements;
-    for (size_t i = 0; i < a->getNumElements(); ++i)
+    const AccumulatorDataPtr& data = d.staticCast<AccumulatorData>();
+    ClassPtr dvClass = denseDoubleVectorClass(data->elementsEnumeration, doubleClass);
+    const OVectorPtr& res = new OVector(dvClass, data->indices->size());
+    double invZ = 1.0 / (double)data->count;
+    double* ptr = &data->v[0];
+    for (size_t i = 0; i < res->getNumElements(); ++i)
     {
-      DenseDoubleVectorPtr output = a->get(i).staticCast<DenseDoubleVector>();
-      output->multiplyByScalar(invZ);
+      DenseDoubleVectorPtr means = new DenseDoubleVector(dvClass);
+      for (size_t j = 0; j < means->getNumValues(); ++j)
+        means->setValue(j, *ptr++ * invZ);
+      res->set(i, means);
     }
+    return new DataVector(data->indices, res);
   }
 };
 

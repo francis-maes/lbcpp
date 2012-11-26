@@ -24,11 +24,8 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = DBL_MAX; best = 0.0;}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
   {
-     // retrieve predictions and supervisions
-    ExpressionPtr expression = object.staticCast<Expression>();
-    DataVectorPtr predictions = computePredictions(context, expression);
     DVectorPtr supervisions = getSupervisions().staticCast<DVector>();
     
     // compute mean absolute error
@@ -53,8 +50,8 @@ public:
     : MSERegressionObjective(data, supervision) {}
   RMSERegressionObjective() {}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
-    {return sqrt(MSERegressionObjective::evaluate(context, object));}
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+    {return sqrt(MSERegressionObjective::evaluatePredictions(context, predictions));}
 };
 
 class NormalizedRMSERegressionObjective : public RMSERegressionObjective
@@ -67,9 +64,9 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = 1.0;}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
   {
-    double rmse = RMSERegressionObjective::evaluate(context, object);
+    double rmse = RMSERegressionObjective::evaluatePredictions(context, predictions);
     return 1.0 / (1.0 + rmse);
   }
 };
