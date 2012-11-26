@@ -90,7 +90,7 @@ protected:
     // check condition and update importance values
     if (!conditionNode || conditionNode.isInstanceOf<ConstantExpression>())
       return new ConstantExpression(splittingCriterion->computeVote(indices));
-    conditionNode->addImportance(conditionFitness->getValue(0) * indices->size() / objective->getNumSamples());
+    conditionNode->addImportance(conditionFitness->getValue(0) * indices->size() / objective->getData()->getNumRows());
     if (verbosity >= verbosityDetailed)
       context.informationCallback(conditionNode->toShortString() + T(" [") + string(conditionNode->getSubNode(0)->getImportance()) + T("]"));
 

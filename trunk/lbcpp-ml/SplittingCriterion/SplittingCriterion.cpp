@@ -31,9 +31,9 @@ void SplittingCriterion::ensureIsUpToDate()
   }
 }
 
-double SplittingCriterion::evaluate(ExecutionContext& context, const ObjectPtr& object)
+double SplittingCriterion::evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
 {
-  setPredictions(computePredictions(context, object.staticCast<Expression>()));
+  setPredictions(predictions);
   return computeCriterion();
 }
 

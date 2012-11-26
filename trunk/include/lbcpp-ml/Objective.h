@@ -66,26 +66,26 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-class LearningObjective : public StochasticObjective
+class LearningObjective : public Objective
 {
 public:
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
-    {jassertfalse; return 0.0;}
-  
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
-    {return StochasticObjective::evaluate(context, object);}
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) = 0;
 
-  virtual size_t getNumInstances() const
-    {return getIndices()->size();}
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    ExpressionPtr expression = object.staticCast<Expression>();
+    DataVectorPtr predictions = computePredictions(context, expression);
+    return evaluatePredictions(context, predictions);
+  }
 
   const TablePtr& getData() const
     {return data;}
 
   const IndexSetPtr& getIndices() const
     {return indices;}
-
-  size_t getNumSamples() const
-    {return data->getNumRows();}
+    
+  void setIndices(const IndexSetPtr& indices)
+    {this->indices = indices;}
 
   double getWeight(size_t index) const
     {return weights ? weights->getValue(index) : 1.0;}

@@ -168,7 +168,6 @@ const std::map<ObjectPtr, size_t>& ExpressionDomain::getSymbolMap() const
   if (symbolMap.empty())
   {
     ExpressionDomain* pthis = const_cast<ExpressionDomain* >(this);
-    size_t index = 0;
     for (size_t i = 0; i < inputs.size(); ++i)
       pthis->addSymbol(inputs[i]);
     for (size_t i = 0; i < constants.size(); ++i)

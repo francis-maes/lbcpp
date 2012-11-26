@@ -32,8 +32,8 @@ public:
   void invalidate()
     {upToDate = false;}
 
-  // Objective
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object);
+  // LearningObjective
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions);
 
 protected:
   bool upToDate;

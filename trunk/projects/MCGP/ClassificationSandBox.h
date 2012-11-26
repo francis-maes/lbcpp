@@ -60,7 +60,7 @@ public:
     //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
     SolverPtr learner = treeLearner(informationGainSplittingCriterion(true), conditionLearner);
     //learner->setVerbosity((SolverVerbosity)verbosity);
-    learner = ensembleLearner(learner, 100);
+    learner = simpleEnsembleLearner(learner, 100);
     learner->setVerbosity((SolverVerbosity)verbosity);
 
     // learn
