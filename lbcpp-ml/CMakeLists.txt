@@ -96,6 +96,7 @@ SET(LBCPP_ML_FUNCTION_SOURCES
 )
 
 SET(LBCPP_ML_AGGREGATOR_SOURCES
+  Aggregator/MeanDoubleAggregator.h
   Aggregator/MeanDoubleVectorAggregator.h
   Aggregator/AggregatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/AggregatorLibrary.cpp
@@ -163,6 +164,7 @@ SET(LBCPP_ML_SPLITTING_CRITERION_SOURCES
 
 SET(LBCPP_ML_LEARNER_SOURCES
   Learner/ExhaustiveConditionLearner.h
+  Learner/RandomSplitConditionLearner.h
   Learner/TreeLearner.h
   Learner/EnsembleLearner.h
   Learner/LearnerLibrary.xml

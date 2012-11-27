@@ -35,6 +35,11 @@ void Solver::solve(ExecutionContext& context, ProblemPtr problem, SolverCallback
   stopSolver(context);
 }
 
+void Solver::addSolution(ExecutionContext& context, const ObjectPtr& object, double fitness)
+{
+  addSolution(context, object, new Fitness(fitness, problem->getFitnessLimits()));
+}
+
 void Solver::addSolution(ExecutionContext& context, const ObjectPtr& object, const FitnessPtr& fitness)
 {
   for (size_t i = 0; i < fitness->getNumValues(); ++i)

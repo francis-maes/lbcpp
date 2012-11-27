@@ -36,6 +36,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<Aggregator> AggregatorPtr;
 
+extern AggregatorPtr meanDoubleAggregator();
 extern AggregatorPtr meanDoubleVectorAggregator();
 
 }; /* namespace lbcpp */

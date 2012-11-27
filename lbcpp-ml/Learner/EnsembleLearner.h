@@ -92,7 +92,9 @@ protected:
 
   std::pair<AggregatorPtr, ClassPtr> createAggregator(ClassPtr supervisionType)
   {
-    if (supervisionType.isInstanceOf<Enumeration>())
+    if (supervisionType->inheritsFrom(doubleClass))
+      return std::make_pair(meanDoubleAggregator(), supervisionType);
+    else if (supervisionType.isInstanceOf<Enumeration>())
       return std::make_pair(meanDoubleVectorAggregator(), denseDoubleVectorClass(supervisionType.staticCast<Enumeration>(), doubleClass));
     else
     {

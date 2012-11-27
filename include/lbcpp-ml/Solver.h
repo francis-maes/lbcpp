@@ -78,16 +78,18 @@ public:
 
   SolverCallbackPtr getCallback() const
     {return callback;}
-  
+
+  // utility functions to be called during solving
+  FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
+  void addSolution(ExecutionContext& context, const ObjectPtr& object, double fitness);  
+  void addSolution(ExecutionContext& context, const ObjectPtr& object, const FitnessPtr& fitness);  
+
 protected:
   typedef std::pair<ObjectPtr, FitnessPtr> SolutionAndFitnessPair;
 
   ProblemPtr problem;
   SolverCallbackPtr callback;
   SolverVerbosity verbosity;
-  
-  FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
-  void addSolution(ExecutionContext& context, const ObjectPtr& object, const FitnessPtr& fitness);  
 };
 
 extern SolverPtr nrpaSolver(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel);
@@ -95,9 +97,12 @@ extern SolverPtr beamNRPASolver(SamplerPtr sampler, size_t level, size_t numIter
 
 // learners
 extern SolverPtr exhaustiveConditionLearner(SamplerPtr expressionsSampler);
-extern SolverPtr treeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit = 2, size_t maxDepth = 0);
+extern SolverPtr randomSplitConditionLearner(SamplerPtr expressionsSampler);
+
 extern SolverPtr simpleEnsembleLearner(const SolverPtr& baseLearner, size_t ensembleSize);
 extern SolverPtr baggingLearner(const SolverPtr& baseLearner, size_t ensembleSize);
+
+extern SolverPtr treeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit = 2, size_t maxDepth = 0);
 
 class IterativeSolver : public Solver
 {

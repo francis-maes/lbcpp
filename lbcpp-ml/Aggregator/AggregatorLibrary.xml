@@ -5,6 +5,11 @@
   <!-- Base class -->
   <class name="Aggregator" abstract="yes"/>
 
+  <!-- Double -->
+  <class name="MeanDoubleAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+
   <!-- DoubleVector -->
   <class name="MeanDoubleVectorAggregator" base="Aggregator">
     <constructor/>

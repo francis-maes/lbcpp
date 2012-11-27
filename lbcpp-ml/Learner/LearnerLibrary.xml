@@ -8,8 +8,12 @@
     <variable type="Sampler" name="expressionsSampler"/>
   </class>
 
-  <!-- Meta Learners -->
+  <class name="RandomSplitConditionLearner" base="Solver">
+    <constructor arguments="SamplerPtr expressionsSampler"/>
+    <variable type="Sampler" name="expressionsSampler"/>
+  </class>
 
+  <!-- Ensemble Learners -->
   <class name="EnsembleLearner" base="Solver" abstract="yes">
     <variable type="PositiveInteger" name="ensembleSize"/>
   </class>
@@ -24,6 +28,7 @@
     <variable type="Solver" name="baseLearner"/>
   </class>
   
+  <!-- Tree Learner -->
   <class name="TreeLearner" base="Solver">
     <constructor arguments="SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
     <variable type="SplittingCriterion" name="splittingCriterion"/>

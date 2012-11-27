@@ -49,7 +49,7 @@ public:
     FitnessPtr fitness = problem->evaluate(context, solution);
     jassert(fitness);
     value = fitness->getValues();
-    solver->getCallback()->solutionEvaluated(context, solver, solution, fitness);
+    solver->addSolution(context, solution, fitness);
 	  m_timesCalled++;
   }
   
