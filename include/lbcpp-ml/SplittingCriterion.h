@@ -43,6 +43,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SplittingCriterion> SplittingCriterionPtr;
 
+extern SplittingCriterionPtr stddevReductionSplittingCriterion();
+
 class ClassificationSplittingCriterion : public SplittingCriterion
 {
 public:
