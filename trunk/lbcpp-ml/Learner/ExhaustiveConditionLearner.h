@@ -39,7 +39,7 @@ public:
     {
       ExpressionPtr expression = expressions->getElement(i).staticCast<Expression>();
       std::pair<double, ExpressionPtr> p = computeCriterionWithEventualStump(context, splittingCriterion, expression);
-      callback->solutionEvaluated(context, refCountedPointerFromThis(this), p.second, new Fitness(p.first, problem->getFitnessLimits()));
+      addSolution(context, p.second, p.first);
     }
   }
 
@@ -80,10 +80,12 @@ protected:
       return std::make_pair(splittingCriterion->evaluate(context, booleanOrScalar), booleanOrScalar);
     else
     {
+      // FIXME: cache sortedDoubleValues when possible
+    
       jassert(booleanOrScalar->getType()->isConvertibleToDouble());
       double criterion;
       DataVectorPtr values = splittingCriterion->computePredictions(context, booleanOrScalar);
-      SparseDoubleVectorPtr sortedDoubleValues = sortDoubleValues(values); // FIXME: cache sortedDoubleValues when possible
+      SparseDoubleVectorPtr sortedDoubleValues = sortDoubleValues(values); 
       double threshold = findBestThreshold(context, splittingCriterion, booleanOrScalar, sortedDoubleValues, criterion);
       return std::make_pair(criterion, new FunctionExpression(stumpFunction(threshold), booleanOrScalar));
     }

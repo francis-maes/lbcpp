@@ -54,7 +54,7 @@ public:
     DoubleVectorPtr gradient;
     DifferentiableObjectivePtr objective = problem->getObjective(0).staticCast<DifferentiableObjective>();
     objective->evaluate(context, parameters, &value, &gradient);
-    callback->solutionEvaluated(context, refCountedPointerFromThis(this), parameters, new Fitness(value, problem->getFitnessLimits()));
+    addSolution(context, parameters, value);
     DenseDoubleVectorPtr denseGradient = gradient->toDenseDoubleVector();
     int res = lbfgsStep(parameters->getValuePointer(0), value, denseGradient->getValuePointer(0));
     return (res == 1);

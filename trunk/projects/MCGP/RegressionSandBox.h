@@ -30,7 +30,7 @@ public:
 
     // make learner
     SamplerPtr expressionVectorSampler = scalarExpressionVectorSampler();
-    SolverPtr conditionLearner = exhaustiveConditionLearner(expressionVectorSampler);
+    SolverPtr conditionLearner = randomSplitConditionLearner(expressionVectorSampler);
     //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
     SolverPtr learner = treeLearner(stddevReductionSplittingCriterion(), conditionLearner); 
     //learner->setVerbosity((SolverVerbosity)verbosity);
@@ -49,6 +49,23 @@ public:
     // evaluate
     double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
     context.resultCallback("testingScore", testingScore);
+
+    // make curve
+    context.enterScope("test");
+    for (double x = -1.0; x <= 1.0; x += 0.01)
+    {
+      context.enterScope(string(x));
+      context.resultCallback("x", x);
+      context.resultCallback("supervision", x * x * x + x * x + x);
+      
+      ObjectPtr input = new Double(x);
+      ObjectPtr prediction = model->compute(context, &input);
+      
+      context.resultCallback("prediction", prediction);
+      context.leaveScope();
+    }
+    context.leaveScope();
+    
 
     return new Boolean(true);
   }
