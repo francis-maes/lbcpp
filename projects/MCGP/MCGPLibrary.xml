@@ -192,5 +192,9 @@
   </class>
   
   <class name="RegressionSandBox" base="WorkUnit"/>
+  
+  <class name="SurrogateQuarticSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="ensembleSize"/>
+  </class>
 
 </library>

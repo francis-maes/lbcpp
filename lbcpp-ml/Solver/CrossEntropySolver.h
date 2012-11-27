@@ -41,6 +41,14 @@ public:
     if (currentParents)
       population->insertSolutions(currentParents);
     SolutionVectorPtr selectedPopulation = select(population, numTrainingSamples);
+    if (verbosity >= verbosityDetailed && selectedPopulation->getNumSolutions())
+    {
+      ObjectPtr bestSolution = selectedPopulation->getSolution(0);
+      context.resultCallback("bestSolution", bestSolution);
+      context.resultCallback("bestFitness", selectedPopulation->getFitness(0));
+      if (problem->getNumValidationObjectives())
+        context.resultCallback("bestSolutionValidation", problem->getValidationObjective(0)->evaluate(context, bestSolution));
+    }
 
     currentSampler = currentSampler->cloneAndCast<Sampler>();
     learnSampler(context, selectedPopulation, currentSampler);

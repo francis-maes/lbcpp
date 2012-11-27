@@ -74,7 +74,7 @@ public:
     if (predictions->size())
       res /= (double)predictions->size();
     double currentVariance = all.getVariance(); 
-    jassert(res <= currentVariance);
+    jassert(res <= currentVariance + 1e-9);
     return (currentVariance - res) / currentVariance;
   }
   
