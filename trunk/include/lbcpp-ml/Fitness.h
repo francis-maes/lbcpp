@@ -66,6 +66,8 @@ public:
 
   static FitnessPtr makeWorstCombination(const FitnessPtr& fitness1, const FitnessPtr& fitness2);
 
+  virtual double toDouble() const;
+  
 protected:
   friend class FitnessClass;
 

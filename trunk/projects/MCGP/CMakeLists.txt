@@ -24,6 +24,7 @@ SET(LBCPP_MCGP_SOURCES
   MCGPSandBox.h
   RegressionSandBox.h
   ClassificationSandBox.h
+  SurrogateQuarticSandBox.h
   MCGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MCGPLibrary.cpp
 )

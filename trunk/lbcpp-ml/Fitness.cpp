@@ -137,6 +137,14 @@ string Fitness::toShortString() const
   return res;
 }
 
+double Fitness::toDouble() const
+{
+  double res = 0.0;
+  for (size_t i = 0; i < values.size(); ++i)
+    res += values[i];
+  return res;
+}
+
 std::vector<double> Fitness::getValuesToBeMinimized() const
 {
   std::vector<double> res = getValues();

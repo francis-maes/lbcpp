@@ -19,9 +19,6 @@ namespace lbcpp
 class Domain : public Object
 {
 public:
-  virtual SamplerPtr createDefaultSampler() const
-    {return SamplerPtr();}
-
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
     {return object;}
 };
@@ -55,6 +52,9 @@ public:
 
   size_t getNumDimensions() const
     {return limits.size();}
+
+  void addDimension(double lowerLimit, double upperLimit)
+    {limits.push_back(std::make_pair(lowerLimit, upperLimit));}
 
   double getLowerLimit(size_t dimension) const
     {jassert(dimension < limits.size()); return limits[dimension].first;}

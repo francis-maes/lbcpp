@@ -48,6 +48,10 @@
   <class name="FitnessLimits" base="ContinuousDomain"/>
 
   <class name="Fitness">
+    <code>
+      virtual bool isConvertibleToDouble() const
+        {return true;}
+    </code>
     <variable type="Vector[Double]" name="values"/>
     <variable type="FitnessLimits" name="limits"/>
   </class>
