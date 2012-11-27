@@ -22,6 +22,7 @@ SET(LBCPP_MCGP_SOURCES
   TreeGPSamplers.h
   ${LBCPP_MCGP_PROBLEM_SOURCES}
   MCGPSandBox.h
+  RegressionSandBox.h
   ClassificationSandBox.h
   MCGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MCGPLibrary.cpp

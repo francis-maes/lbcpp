@@ -190,5 +190,7 @@
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="verbosity"/>
   </class>
+  
+  <class name="RegressionSandBox" base="WorkUnit"/>
 
 </library>
