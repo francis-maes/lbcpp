@@ -136,8 +136,7 @@ protected:
   {
     size_t numLeafs = 1;
     size_t size = 0;
-    size_t n = probabilities.size() / 2;
-    jassert(n == countPerArity.size() + 1);
+    jassert(probabilities.size() / 2 == countPerArity.size() + 1);
     while (numLeafs > 0)
     {
       jassert(maxSize >= size + numLeafs);

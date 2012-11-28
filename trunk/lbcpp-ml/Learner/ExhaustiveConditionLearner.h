@@ -25,6 +25,9 @@ public:
     : expressionsSampler(expressionsSampler) {}
   ExhaustiveConditionLearner() {}
 
+  virtual void stopBatch(ExecutionContext& context)
+    {sortedValuesCache.clear();}
+
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     Solver::startSolver(context, problem, callback, startingSolution);
@@ -34,12 +37,23 @@ public:
   virtual void runSolver(ExecutionContext& context)
   {
     SplittingCriterionPtr splittingCriterion = problem->getObjective(0).staticCast<SplittingCriterion>();
+
+    IndexSetPtr allIndices = splittingCriterion->getData()->getAllIndices();
+    IndexSetPtr indices = splittingCriterion->getIndices();
+
+    // flags[i] is true if i is included in indices and false otherwise
+    // note that we use std::vector<int> which is faster than std::vector<bool>
+    std::vector<int> flags(allIndices->size(), 0);
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+      flags[*it] = 1;
+    
     OVectorPtr expressions = expressionsSampler->sample(context).staticCast<OVector>();
     for (size_t i = 0; i < expressions->getNumElements(); ++i)
     {
       ExpressionPtr expression = expressions->getElement(i).staticCast<Expression>();
-      std::pair<double, ExpressionPtr> p = computeCriterionWithEventualStump(context, splittingCriterion, expression);
-      addSolution(context, p.second, p.first);
+      std::pair<double, ExpressionPtr> p = computeCriterionWithEventualStump(context, splittingCriterion, flags, expression);
+      if (p.first >= -DBL_MAX)
+        addSolution(context, p.second, p.first);
     }
   }
 
@@ -47,47 +61,18 @@ protected:
   friend class ExhaustiveConditionLearnerClass;
 
   SamplerPtr expressionsSampler;
-  
-  struct SortDoubleValuesOperator
-  {
-    static double transformIntoValidNumber(double input)
-      {return input;}
 
-    bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
-      {return a.second == b.second ? a.first < b.first : a.second < b.second;}
-  };
-
-  static SparseDoubleVectorPtr sortDoubleValues(const DataVectorPtr& data)
-  {
-    size_t n = data->size();
-    SparseDoubleVectorPtr res = new SparseDoubleVector(n);
-    std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
-  
-    bool isDouble = (data->getElementsType() == doubleClass);
-    for (DataVector::const_iterator it = data->begin(); it != data->end(); ++it)
-    {
-      double value = isDouble ? it.getRawDouble() : it.getRawObject()->toDouble();
-      if (value != DVector::missingValue)
-        v.push_back(std::make_pair(it.getIndex(), value));
-    }
-    std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
-    return res;
-  }
-
-  std::pair<double, ExpressionPtr> computeCriterionWithEventualStump(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const ExpressionPtr& booleanOrScalar)
+  std::pair<double, ExpressionPtr> computeCriterionWithEventualStump(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<int>& flags, const ExpressionPtr& booleanOrScalar)
   {
      if (booleanOrScalar->getType() == booleanClass)
       return std::make_pair(splittingCriterion->evaluate(context, booleanOrScalar), booleanOrScalar);
     else
     {
-      // FIXME: cache sortedDoubleValues when possible
-    
       jassert(booleanOrScalar->getType()->isConvertibleToDouble());
-      double criterion;
-      DataVectorPtr values = splittingCriterion->computePredictions(context, booleanOrScalar);
-      SparseDoubleVectorPtr sortedDoubleValues = sortDoubleValues(values); 
-      double threshold = findBestThreshold(context, splittingCriterion, booleanOrScalar, sortedDoubleValues, criterion);
-      return std::make_pair(criterion, new FunctionExpression(stumpFunction(threshold), booleanOrScalar));
+      double value;
+      SparseDoubleVectorPtr sortedValues = getSortedValues(context, splittingCriterion, flags, booleanOrScalar);
+      double threshold = findBestThreshold(context, splittingCriterion, booleanOrScalar, sortedValues, value);
+      return std::make_pair(value, new FunctionExpression(stumpFunction(threshold), booleanOrScalar));
     }
   }
   
@@ -146,6 +131,68 @@ protected:
       context.leaveScope(PairPtr(new Pair(new Double(bestThresholds.size() ? bestThresholds[0] : 0.0), new Double(bestScore))));
 
     return bestThresholds.size() ? bestThresholds[bestThresholds.size() / 2] : 0; // median value
+  }
+  
+private:
+  typedef std::map<ExpressionPtr, SparseDoubleVectorPtr> SortedValuesCacheMap;
+  SortedValuesCacheMap sortedValuesCache;
+  
+  struct SortDoubleValuesOperator
+  {
+    static double transformIntoValidNumber(double input)
+      {return input;}
+
+    bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
+      {return a.second == b.second ? a.first < b.first : a.second < b.second;}
+  };
+
+  static SparseDoubleVectorPtr sortDoubleValues(const DataVectorPtr& data)
+  {
+    size_t n = data->size();
+    SparseDoubleVectorPtr res = new SparseDoubleVector(n);
+    std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
+  
+    bool isDouble = (data->getElementsType() == doubleClass);
+    for (DataVector::const_iterator it = data->begin(); it != data->end(); ++it)
+    {
+      double value = isDouble ? it.getRawDouble() : it.getRawObject()->toDouble();
+      if (value != DVector::missingValue)
+        v.push_back(std::make_pair(it.getIndex(), value));
+    }
+    std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
+    return res;
+  }
+
+  static SparseDoubleVectorPtr computeSortedValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& allIndices, const IndexSetPtr& indices, const std::vector<int>& flags)
+  {
+    SparseDoubleVectorPtr res = new SparseDoubleVector(indices->size());
+    std::vector<std::pair<size_t, double> >& resValues = res->getValuesVector();
+    for (size_t i = 0; i < allValues->getNumValues(); ++i)
+      if (flags[allValues->getValue(i).first] > 0)
+        resValues.push_back(allValues->getValue(i));
+    jassert(resValues.size() <= indices->size()); // there may be missing values
+    return res;
+  }
+
+  SparseDoubleVectorPtr getSortedValues(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<int>& flags, const ExpressionPtr& expression)
+  {
+    SparseDoubleVectorPtr allValues;
+    IndexSetPtr allIndices = splittingCriterion->getData()->getAllIndices();
+    
+    SortedValuesCacheMap::const_iterator it = sortedValuesCache.find(expression);
+    if (it == sortedValuesCache.end())
+    {    
+      DataVectorPtr values = expression->compute(context, splittingCriterion->getData(), allIndices);
+      allValues = sortDoubleValues(values); 
+      sortedValuesCache[expression] = allValues;
+    }
+    else
+      allValues = it->second;
+      
+    if (splittingCriterion->getIndices() == allIndices)
+      return allValues;
+    else
+      return computeSortedValuesSubset(allValues, allIndices, splittingCriterion->getIndices(), flags);
   }
 };
 
