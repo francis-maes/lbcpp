@@ -69,6 +69,9 @@ public:
 
   void solve(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution = ObjectPtr());
 
+  virtual void startBatch(ExecutionContext& context) {}
+  virtual void stopBatch(ExecutionContext& context) {}
+
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution = ObjectPtr());
   virtual void runSolver(ExecutionContext& context) = 0;
   virtual void stopSolver(ExecutionContext& context);

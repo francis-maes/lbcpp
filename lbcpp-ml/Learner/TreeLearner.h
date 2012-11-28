@@ -21,15 +21,32 @@ class TreeLearner : public Solver
 {
 public:
   TreeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
-    : splittingCriterion(splittingCriterion), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
-  TreeLearner() {}
+    : splittingCriterion(splittingCriterion), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth), isInBatch(false) {}
+  TreeLearner() : isInBatch(false) {}
+
+  virtual void startBatch(ExecutionContext& context)
+  {
+    isInBatch = true;
+    conditionLearner->startBatch(context);
+  }
+    
+  virtual void stopBatch(ExecutionContext& context)
+  {
+    conditionLearner->stopBatch(context);
+    isInBatch = false;
+  }
 
   virtual void runSolver(ExecutionContext& context)
   {
     SupervisedLearningObjectivePtr objective = problem->getObjective(0).staticCast<SupervisedLearningObjective>();
     TablePtr data = objective->getData();
 
+    if (!isInBatch)
+      conditionLearner->startBatch(context);
     ExpressionPtr res = makeTreeScope(context, objective, objective->getIndices(), 1);
+    if (!isInBatch)
+      conditionLearner->stopBatch(context);
+    
     if (verbosity >= verbosityProgressAndResult)
     {
       size_t treeDepth = 0;
@@ -52,15 +69,30 @@ protected:
   size_t minExamplesToSplit;
   size_t maxDepth;
 
+  bool isInBatch;
+
   bool isConstant(const VectorPtr& data, const IndexSetPtr& indices) const
   {
     if (indices->size() <= 1)
       return true;
-    IndexSet::const_iterator it = indices->begin();
-    ObjectPtr value = data->getElement(*it);
-    for (++it; it != indices->end(); ++it)
-      if (!Object::equals(value, data->getElement(*it)))
-        return false;
+    
+    if (data.isInstanceOf<DVector>())
+    {
+      DVectorPtr d = data.staticCast<DVector>();
+      IndexSet::const_iterator it = indices->begin();
+      double value = d->get(*it);
+      for (++it; it != indices->end(); ++it)
+        if (fabs(value - d->get(*it)) > 1e-9)
+          return false;
+    }
+    else
+    {
+      IndexSet::const_iterator it = indices->begin();
+      ObjectPtr value = data->getElement(*it);
+      for (++it; it != indices->end(); ++it)
+        if (!Object::equals(value, data->getElement(*it)))
+          return false;
+    }
     return true;
   }
   
@@ -86,9 +118,11 @@ protected:
     ExpressionPtr conditionNode;
     FitnessPtr conditionFitness;
     conditionLearner->solve(context, conditionProblem, storeBestSolverCallback(*(ObjectPtr* )&conditionNode, conditionFitness));
+    double worstFitness, bestFitness;
+    splittingCriterion->getObjectiveRange(worstFitness, bestFitness);
 
     // check condition and update importance values
-    if (!conditionNode || conditionNode.isInstanceOf<ConstantExpression>())
+    if (!conditionNode || conditionNode.isInstanceOf<ConstantExpression>() || fabs(conditionFitness->getValue(0) - worstFitness) < 1e-9)
       return new ConstantExpression(splittingCriterion->computeVote(indices));
     conditionNode->addImportance(conditionFitness->getValue(0) * indices->size() / objective->getData()->getNumRows());
     if (verbosity >= verbosityDetailed)

@@ -111,24 +111,31 @@ public:
     : EnsembleLearner(ensembleSize), baseLearner(baseLearner) {}
   SimpleEnsembleLearner() {}
 
+  virtual void runSolver(ExecutionContext& context)
+  {
+    baseLearner->startBatch(context);
+    EnsembleLearner::runSolver(context);
+    baseLearner->stopBatch(context);
+  }
+
   virtual ExpressionPtr makeExpression(ExecutionContext& context, size_t iter)
   {
     ExpressionPtr expression;
     baseLearner->solve(context, problem, storeBestSolutionSolverCallback(*(ObjectPtr* )&expression));
     return expression;
   }
-  
+
 protected:
   friend class SimpleEnsembleLearnerClass;
   
   SolverPtr baseLearner;
 };
 
-class BaggingLearner : public EnsembleLearner
+class BaggingLearner : public SimpleEnsembleLearner
 {
 public:
   BaggingLearner(const SolverPtr& baseLearner, size_t ensembleSize)
-    : EnsembleLearner(ensembleSize), baseLearner(baseLearner) {}
+    : SimpleEnsembleLearner(baseLearner, ensembleSize) {}
   BaggingLearner() {}
   
   virtual ExpressionPtr makeExpression(ExecutionContext& context, size_t iter)
@@ -136,16 +143,10 @@ public:
     SupervisedLearningObjectivePtr objective = problem->getObjective(0).staticCast<SupervisedLearningObjective>();
     IndexSetPtr oldIndices = objective->getIndices();
     objective->setIndices(objective->getIndices()->sampleBootStrap(context.getRandomGenerator()));
-    ExpressionPtr expression;
-    baseLearner->solve(context, problem, storeBestSolutionSolverCallback(*(ObjectPtr* )&expression));
+    ExpressionPtr res = SimpleEnsembleLearner::makeExpression(context, iter);
     objective->setIndices(oldIndices);
-    return expression;
+    return res;
   }
-
-protected:
-  friend class BaggingLearnerClass;
-  
-  SolverPtr baseLearner;    
 };
 
 }; /* namespace lbcpp */

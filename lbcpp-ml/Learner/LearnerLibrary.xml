@@ -23,9 +23,8 @@
     <variable type="Solver" name="baseLearner"/>
   </class>
 
-  <class name="BaggingLearner" base="EnsembleLearner">
+  <class name="BaggingLearner" base="SimpleEnsembleLearner">
     <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
-    <variable type="Solver" name="baseLearner"/>
   </class>
   
   <!-- Tree Learner -->
