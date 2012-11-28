@@ -14,6 +14,10 @@
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
 # include <lbcpp-ml/SolutionContainer.h>
+
+# include <lbcpp-ml/SplittingCriterion.h>
+# include <lbcpp-ml/ExpressionSampler.h>
+
 # include "SharkProblems.h"
 
 namespace lbcpp
@@ -26,10 +30,22 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    //testSingleObjectiveOptimizers(context);
-    testBiObjectiveOptimizers(context);
+    testSingleObjectiveOptimizers(context);
+    //testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
     return ObjectPtr();
+  }
+
+  SolverPtr createRegressionExtraTreeLearner()
+  {
+    SamplerPtr expressionVectorSampler = scalarExpressionVectorSampler();
+    SolverPtr conditionLearner = randomSplitConditionLearner(expressionVectorSampler);
+    //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
+    SolverPtr learner = treeLearner(stddevReductionSplittingCriterion(), conditionLearner); 
+    //learner->setVerbosity((SolverVerbosity)verbosity);
+    learner = simpleEnsembleLearner(learner, 10);
+    learner->setVerbosity(verbosityDetailed);
+    return learner;
   }
 
 protected:
@@ -44,11 +60,11 @@ protected:
   void testSingleObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<ProblemPtr> problems;
-    problems.push_back(new AckleyProblem());
-    problems.push_back(new GriewangkProblem());
-    problems.push_back(new RastriginProblem());
-    problems.push_back(new RosenbrockProblem());
-    problems.push_back(new RosenbrockRotatedProblem());
+    problems.push_back(new AckleyProblem(6));
+    problems.push_back(new GriewangkProblem(6));
+    problems.push_back(new RastriginProblem(6));
+    problems.push_back(new RosenbrockProblem(6));
+    problems.push_back(new RosenbrockRotatedProblem(6));
 
 #if 0
     for (size_t numTrainingSamples = 10; numTrainingSamples < 100; numTrainingSamples += 5)
@@ -75,27 +91,12 @@ protected:
       solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformContinuousSampler(), numEvaluations));
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100));
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      
+      SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), 100, 30, 10);
+      ceSolver->setVerbosity((SolverVerbosity)verbosity);
+      SolverPtr sbSolver = surrogateBasedSolver(uniformContinuousSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, numEvaluations);
+      solveWithSingleObjectiveOptimizer(context, problem, sbSolver);
 
-      /*
-      double explorationCoefficient = 5.0;
-      IterativeSolverPtr baseOptimizer = crossEntropySolver(diagonalGaussianSampler(), 100, 50, 0, true);
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 20, explorationCoefficient, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 50, explorationCoefficient, numEvaluations / 100));*/
-/*
-
-      for (double r = -5.5; r <= -0.5; r += 1.0)
-        solveWithSingleObjectiveOptimizer(context, problem, new NRPASolver(new DiagonalGaussianSampler(pow(10, r)), 1, numEvaluations));
-
-      for (double r = -5.5; r <= -0.5; r += 1.0)
-        solveWithSingleObjectiveOptimizer(context, problem, new NRPASolver(new DiagonalGaussianSampler(pow(10, r)), 2, (size_t)(sqrt((double)numEvaluations))));
-
-      double r = 0.2;
-      for (size_t l = 1; l <= 5; ++l)
-        solveWithSingleObjectiveOptimizer(context, problem, new NRPASolver(new DiagonalGaussianSampler(r), l, 10));
-*/
       context.leaveScope(); 
     }
   }
