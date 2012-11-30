@@ -112,6 +112,25 @@ protected:
   double max;
 };
 
+struct SphereProblem : public ProblemFromSharkObjectiveFunction
+{
+  SphereProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Sphere((unsigned)numDimensions)), numDimensions(numDimensions)
+    {initialize(defaultExecutionContext());}
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = 4.0 * numDimensions; best = 0.0;}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    ProblemFromSharkObjectiveFunction::initialize(context);
+  }
+  
+protected:
+  size_t numDimensions;
+};
+
+
 struct AckleyProblem : public ProblemFromSharkObjectiveFunction
 {
   AckleyProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Ackley((unsigned)numDimensions))

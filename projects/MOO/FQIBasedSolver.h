@@ -28,7 +28,7 @@ public:
     : PopulationBasedSolver(populationSize, numGenerations) {}
 
   virtual SearchStatePtr createInitialState(DomainPtr domain) = 0;
-  virtual std::pair<ObjectPtr, double> optimizeActionWrtRegressor(ExecutionContext& context, ExpressionPtr regressor, SearchStatePtr state) = 0;
+  virtual std::pair<ObjectPtr, double> optimizeActionWrtRegressor(ExecutionContext& context, ExpressionPtr regressor, SearchStatePtr state, bool approximate) = 0;
   virtual ExpressionDomainPtr createRegressionDomain(ExecutionContext& context, size_t stepNumber) = 0;
   virtual std::vector<ObjectPtr> makeRegressionInput(SearchStatePtr state, ObjectPtr action) = 0;
 
@@ -135,11 +135,16 @@ protected:
         {
           jassert(nextRegressor);
           // Q^t(s,a) = max_{a'} Q^{t+1}(s',a') with s'=f(s,a)
-          std::pair<ObjectPtr, double> bestActionAndScore = optimizeActionWrtRegressor(context, nextRegressor, trajectory->getState(stepNumber + 1));
+          std::pair<ObjectPtr, double> bestActionAndScore = optimizeActionWrtRegressor(context, nextRegressor, trajectory->getState(stepNumber + 1), false);
           y = bestActionAndScore.second;
         }
         else
-          y = examples[i].second->getValue(0);  // last step: fitness value        
+        {
+          y = examples[i].second->getValue(0);  // last step: fitness value
+          if (!this->problem->getFitnessLimits()->shouldObjectiveBeMaximised(0))
+            y = -y;
+          // in the tree, we treat the problem as maximization
+        }
         
         input.push_back(new Double(y));
         data->addRow(input);
@@ -170,7 +175,7 @@ protected:
     SamplerPtr expressionVectorSampler = scalarExpressionVectorSampler();
     SolverPtr conditionLearner = randomSplitConditionLearner(expressionVectorSampler);
     //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
-    SolverPtr learner = treeLearner(stddevReductionSplittingCriterion(), conditionLearner, 5); 
+    SolverPtr learner = treeLearner(stddevReductionSplittingCriterion(), conditionLearner); 
     //learner->setVerbosity((SolverVerbosity)verbosity);
     learner = simpleEnsembleLearner(learner, 10);
     learner->setVerbosity(verbosityDetailed);
@@ -188,11 +193,11 @@ protected:
       DomainPtr actionDomain = state->getActionDomain();
       size_t stepNumber = trajectory->getLength();
       jassert(stepNumber < randomForests.size());
-      AggregatorExpressionPtr randomForest = randomForests[stepNumber].staticCast<AggregatorExpression>();
+      /*AggregatorExpressionPtr randomForest = randomForests[stepNumber].staticCast<AggregatorExpression>();
       size_t modelNumber = context.getRandomGenerator()->sampleSize(randomForest->getNumSubNodes());
-      ExpressionPtr regressor = randomForest->getSubNode(modelNumber);
-      //ExpressionPtr regressor = randomForests[stepNumber];
-      return owner->optimizeActionWrtRegressor(context, regressor, state).first;
+      ExpressionPtr regressor = randomForest->getSubNode(modelNumber);*/
+      ExpressionPtr regressor = randomForests[stepNumber];
+      return owner->optimizeActionWrtRegressor(context, regressor, state, true).first;
     }
     
   protected:
@@ -248,42 +253,176 @@ public:
   virtual SearchStatePtr createInitialState(DomainPtr domain)
     {return new ScalarVectorSearchState(domain.staticCast<ScalarVectorDomain>());}
 
-  virtual std::pair<ObjectPtr, double> optimizeActionWrtRegressor(ExecutionContext& context, ExpressionPtr regressor, SearchStatePtr state)
+#if 0
+  struct DTNode
+  {
+    DTNode() : value(0.0), threshold(0.0), left(NULL), right(NULL) {}
+    ~DTNode()
+      {if (left) delete left; if (right) delete right;}
+    
+    // leaf and internal nodes
+    double value;
+    
+    // internal node
+    double threshold;
+    DTNode* left;
+    DTNode* right;
+    
+    bool isInternal() const
+      {return left && right;}
+  };
+
+  DTNode* projectTree(ExecutionContext& context, ExpressionPtr tree, const DenseDoubleVectorPtr& fixedValues)
+  {
+    TestExpressionPtr testNode = tree.dynamicCast<TestExpression>();
+    if (testNode)
+    {
+      FunctionExpressionPtr testCondition = testNode->getCondition().staticCast<FunctionExpression>();
+      double threshold = Double::get(testCondition->getFunction()->getVariable(0));
+      VariableExpressionPtr testVariable = testCondition->getSubNode(0).staticCast<VariableExpression>();
+      if (testVariable->getInputIndex() < fixedValues->getNumValues())
+      {
+        bool success = (fixedValues->getValue(testVariable->getInputIndex()) >= threshold);
+        return projectTree(context, success ? testNode->getSuccess() : testNode->getFailure(), fixedValues);
+      }
+      else
+      {
+        jassert(testVariable->getInputIndex() == fixedValues->getNumValues());
+        DTNode* res = new DTNode();
+        res->threshold = threshold;
+        res->left = projectTree(context, testNode->getFailure(), fixedValues);
+        res->right = projectTree(context, testNode->getSuccess(), fixedValues);
+        res->value = juce::jmax(res->left->value, res->right->value);
+        return res;
+      }
+    }
+    else
+    {
+      ConstantExpressionPtr constantNode = tree.staticCast<ConstantExpression>();
+      DTNode* res = new DTNode();
+      res->value = Double::get(constantNode->getValue());
+      return res;
+    }
+  }
+#endif // 0
+
+  virtual std::pair<ObjectPtr, double> optimizeActionWrtRegressor(ExecutionContext& context, ExpressionPtr regressor, SearchStatePtr state, bool approximate)
   {
     ScalarDomainPtr domain = state->getActionDomain().staticCast<ScalarDomain>();
-    
-    double worst, best;
-    problem->getObjective(0)->getObjectiveRange(worst, best);
+
+    double score;
     std::vector<ObjectPtr> bestActions;
-    double bestScore = best < worst ? DBL_MAX : -DBL_MAX;
+    /*
+    if (approximate)
+    {
+      AggregatorExpressionPtr randomForest = regressor.staticCast<AggregatorExpression>();
+      ExpressionPtr decisionTree = randomForest->getSubNode(context.getRandomGenerator()->sampleSize(randomForest->getNumSubNodes()));
+      DenseDoubleVectorPtr fixedValues = state->getConstructedObject().staticCast<DenseDoubleVector>();
+      DTNode* node = projectTree(context, decisionTree, fixedValues);
+      
+      DTNode* ptr = node;
+      double lowerLimit = domain->getLowerLimit();
+      double upperLimit = domain->getUpperLimit();
+      while (ptr->isInternal())
+      {
+        DTNode* next;
+        //if (context.getRandomGenerator()->sampleBool(0.9))
+          next = (ptr->left->value > ptr->right->value ? ptr->left : ptr->right);
+        //else
+        //  next = (ptr->left->value > ptr->right->value ? ptr->right : ptr->left);
+        if (next == ptr->left)
+          upperLimit = ptr->threshold;
+        else
+          lowerLimit = ptr->threshold;
+        ptr = next;
+      }
+      score = ptr->value;
+      action = (lowerLimit + upperLimit) / 2.0;    
+      delete node;
+    }
+    */
+    //if (!approximate)
+      score = -DBL_MAX;
     context.enterScope("Optimize regressor");
     context.resultCallback("state", state);
-    context.resultCallback("regressor", regressor);
     for (size_t i = 0; i < 100; ++i)
     {
       double x = domain->getLowerLimit() + i * (domain->getUpperLimit() - domain->getLowerLimit()) / 99.0;
-      ObjectPtr action = new Double(x);
-      std::vector<ObjectPtr> input = makeRegressionInput(state, action);
+      //double x = context.getRandomGenerator()->sampleDouble(domain->getLowerLimit(), domain->getUpperLimit());
+      std::vector<ObjectPtr> input = makeRegressionInput(state, new Double(x));
       double y = Double::get(regressor->compute(context, &input[0]));
+      ScalarVariableStatisticsPtr yup = computeUpperBound(context, input, regressor.staticCast<AggregatorExpression>());
       context.enterScope(string((int)i));
       context.resultCallback("x", x);
-      context.resultCallback("y", y);
+      context.resultCallback("y", - y);
+      context.resultCallback("up-mean", - yup->getMean());
+      context.resultCallback("up-min", - yup->getMinimum());
+      context.resultCallback("up-max", - yup->getMaximum());
       context.leaveScope();
-      
-      if ((best < worst && y <= bestScore) ||
-          (best > worst && y >= bestScore))
+      y = yup->getMinimum();
+      if (y >= score)
       {
-        if (y != bestScore)
+        if (y > score)
         {
+          score = y;
           bestActions.clear();
-          bestScore = y;
         }
-        bestActions.push_back(action);
+        bestActions.push_back(new Double(x));
       }
     }
     context.leaveScope();
     
-    return std::make_pair(bestActions[context.getRandomGenerator()->sampleSize(bestActions.size())], bestScore);
+    return std::make_pair(bestActions[context.getRandomGenerator()->sampleSize(bestActions.size())], score);
+  }
+  
+  ScalarVariableStatisticsPtr computeUpperBound(ExecutionContext& context, const std::vector<ObjectPtr>& input, AggregatorExpressionPtr expression)
+  {
+    ScalarVariableStatisticsPtr res = new ScalarVariableStatistics("res");
+    for (size_t i = 0; i < expression->getNumSubNodes(); ++i)
+    {
+      ExpressionPtr tree = expression->getSubNode(i);
+      ScalarVectorDomainPtr leafDomain = computeLeafDomain(context, input, tree);
+      double radius = getDomainRadius(leafDomain);
+      res->push(Double::get(tree->compute(context, &input[0])) + radius);
+    }
+    return res;
+  }
+
+  double getDomainRadius(ScalarVectorDomainPtr domain)
+  {
+    double res = 0.0;
+    for (size_t i = 0; i < domain->getNumDimensions(); ++i)
+    {
+      double l = domain->getUpperLimit(i) - domain->getLowerLimit(i);
+      if (l > res)
+        res = l;
+    }
+    return res;
+  }
+
+  ScalarVectorDomainPtr computeLeafDomain(ExecutionContext& context, const std::vector<ObjectPtr>& input, ExpressionPtr tree)
+  {
+    std::vector<std::pair<double, double> > limits = this->problem->getDomain().staticCast<ScalarVectorDomain>()->getLimits();
+    while (!tree.isInstanceOf<ConstantExpression>())
+    {
+      TestExpressionPtr test = tree.staticCast<TestExpression>();
+      FunctionExpressionPtr testCondition = test->getCondition().staticCast<FunctionExpression>();
+      double threshold = Double::get(testCondition->getFunction()->getVariable(0));
+      VariableExpressionPtr testVariable = testCondition->getSubNode(0).staticCast<VariableExpression>();
+      size_t index = testVariable->getInputIndex();
+      bool success = (Double::get(input[index]) >= threshold);
+      if (success)
+      {
+        limits[index].first = threshold;
+        tree = test->getSuccess();
+      }
+      else
+      {
+        limits[index].second = threshold;
+        tree = test->getFailure();
+      }
+    }
+    return new ScalarVectorDomain(limits);
   }
   
   virtual ExpressionDomainPtr createRegressionDomain(ExecutionContext& context, size_t stepNumber)

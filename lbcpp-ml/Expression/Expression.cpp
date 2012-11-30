@@ -117,7 +117,7 @@ size_t Expression::getTreeSize() const
   return res;
 }
 
-inline ExpressionPtr getNodeByTreeIndexRec(ExpressionPtr expression, size_t& index)
+static ExpressionPtr getNodeByTreeIndexRec(ExpressionPtr expression, size_t& index)
 {
   if (index == 0)
     return expression;
