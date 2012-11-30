@@ -233,6 +233,9 @@ public:
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
+  size_t getInputIndex() const
+    {return inputIndex;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

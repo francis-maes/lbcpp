@@ -61,8 +61,9 @@ protected:
   void testSingleObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<ProblemPtr> problems;
-    problems.push_back(new AckleyProblem(6));
-/*    problems.push_back(new GriewangkProblem(6));
+    problems.push_back(new SphereProblem(6));
+/*    problems.push_back(new AckleyProblem(6));
+    problems.push_back(new GriewangkProblem(6));
     problems.push_back(new RastriginProblem(6));
     problems.push_back(new RosenbrockProblem(6));
     problems.push_back(new RosenbrockRotatedProblem(6));*/
@@ -86,14 +87,16 @@ protected:
 
     for (size_t i = 0; i < problems.size(); ++i)
     {
+      const size_t populationSize = 20;
+      
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
-      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100));
-      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize));
+      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true));
       
-      SolverPtr fqiBSolver = new ScalarVectorFQIBasedSolver(100, numEvaluations / 100);
+      SolverPtr fqiBSolver = new ScalarVectorFQIBasedSolver(populationSize, numEvaluations / populationSize);
       solveWithSingleObjectiveOptimizer(context, problem, fqiBSolver);
       
       /*SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), 100, 30, 10);

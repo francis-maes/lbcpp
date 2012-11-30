@@ -5,6 +5,7 @@
   <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes"/>
 
   <class name="SingleObjectiveSharkMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="SphereProblem" base="SingleObjectiveSharkMOProblem"/>  
   <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
