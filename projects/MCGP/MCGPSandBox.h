@@ -349,9 +349,10 @@ public:
     }
   }
 
-  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchTrajectoryPtr trajectory) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
+    SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actions = state->getActionDomain();
     size_t numActions = actions->getNumElements();
     size_t numTerminalActions = getNumTerminalActions(actions);

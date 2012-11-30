@@ -62,6 +62,9 @@ public:
   ObjectPtr getAction(size_t index) const
     {jassert(index < actions.size()); return actions[index];}
 
+  const std::vector<ObjectPtr>& getActions() const
+    {return actions;}
+
   void setFinalState(const SearchStatePtr& finalState)
     {this->finalState = finalState;}
 
@@ -124,7 +127,7 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
   virtual ObjectPtr sample(ExecutionContext& context) const;
 
-  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const = 0;
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchTrajectoryPtr trajectory) const = 0;
 
 protected:
   SearchDomainPtr domain;

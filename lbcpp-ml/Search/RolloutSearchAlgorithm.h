@@ -33,11 +33,10 @@ public:
     {
       if (callback->shouldStop())
         return;
-      ObjectPtr action = sampler->sampleAction(context, state);
+      ObjectPtr action = sampler->sampleAction(context, trajectory);
       trajectory->append(action);
       state->performTransition(context, action);
     }
-    trajectory->setFinalState(state);
     evaluate(context, trajectory);
   }
 

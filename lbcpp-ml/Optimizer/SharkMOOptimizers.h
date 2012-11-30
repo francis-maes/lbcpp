@@ -25,7 +25,7 @@ public:
     : context(context), problem(problem), solver(solver)
   {
   	m_name = (const char* )problem->toShortString();
-    ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
+    ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
     m_dimension = domain->getNumDimensions();
     std::vector<double> lower(domain->getNumDimensions());
     std::vector<double> upper(domain->getNumDimensions());

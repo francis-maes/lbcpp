@@ -40,7 +40,7 @@ public:
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
-    ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
+    ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
     lbfgsInitialize(domain->getNumDimensions());
     parameters = startingSolution.staticCast<DenseDoubleVector>();
     if (!parameters)

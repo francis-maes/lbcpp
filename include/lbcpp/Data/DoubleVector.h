@@ -259,6 +259,9 @@ public:
 
   void appendValue(double value)
     {jassert(values); values->push_back(value);}
+    
+  void removeLastValue()
+    {jassert(values && values->size()); values->pop_back();}
 
   void ensureSize(size_t minimumSize);
 

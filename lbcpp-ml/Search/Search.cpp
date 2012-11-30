@@ -77,14 +77,14 @@ ObjectPtr SearchSampler::sample(ExecutionContext& context) const
 {
   SearchTrajectoryPtr res(new SearchTrajectory());
   SearchStatePtr state = domain->createInitialState();
+  res->setFinalState(state);
   while (!state->isFinalState())
   {
-    ObjectPtr action = sampleAction(context, state);
+    ObjectPtr action = sampleAction(context, res);
     res->append(action);
     state->performTransition(context, action);
   }
   // std::cout << res->toShortString() << std::endl;
-  res->setFinalState(state);
   return res;
 }
 

@@ -43,12 +43,31 @@ private:
   std::vector<ObjectPtr> elements;
 };
 
-class ContinuousDomain : public Domain
+class ScalarDomain : public Domain
 {
 public:
-  ContinuousDomain(const std::vector< std::pair<double, double> >& limits)
+  ScalarDomain(double lowerLimit = -DBL_MAX, double upperLimit = DBL_MAX)
+    : lowerLimit(lowerLimit), upperLimit(upperLimit) {}
+  
+  double getLowerLimit() const
+    {return lowerLimit;}
+
+  double getUpperLimit() const
+    {return upperLimit;}
+        
+protected:
+  friend class ScalarDomainClass;
+  
+  double lowerLimit;
+  double upperLimit;
+};
+
+class ScalarVectorDomain : public Domain
+{
+public:
+  ScalarVectorDomain(const std::vector< std::pair<double, double> >& limits)
     : limits(limits) {}
-  ContinuousDomain() {}
+  ScalarVectorDomain() {}
 
   size_t getNumDimensions() const
     {return limits.size();}
@@ -62,6 +81,9 @@ public:
   double getUpperLimit(size_t dimension) const
     {jassert(dimension < limits.size()); return limits[dimension].second;}
 
+  ScalarDomainPtr getScalarDomain(size_t dimension) const
+    {jassert(dimension < limits.size()); return new ScalarDomain(limits[dimension].first, limits[dimension].second);}
+
   const std::vector< std::pair<double, double> >& getLimits() const
     {return limits;}
 
@@ -74,7 +96,7 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
-  friend class ContinuousDomainClass;
+  friend class ScalarVectorDomainClass;
 
   std::vector< std::pair<double, double> > limits;
 };
