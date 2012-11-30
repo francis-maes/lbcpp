@@ -10,6 +10,7 @@ SET(LBCPP_MOO_SOURCES
   precompiled.h
   precompiled.cpp
   SharkProblems.h
+  FQIBasedSolver.h
   MOOSandBox.h
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp

@@ -63,7 +63,7 @@ SET(LBCPP_ML_OPTIMIZER_SOURCES
 )
 
 SET(LBCPP_ML_SAMPLER_SOURCES
-  Sampler/UniformContinuousSampler.h
+  Sampler/UniformScalarVectorSampler.h
   Sampler/DiagonalGaussianSampler.h
   Sampler/RandomSearchSampler.h
   Sampler/LogLinearActionCodeSearchSampler.h

@@ -25,6 +25,7 @@ public:
   {
     SplittingCriterion::configure(data, supervision, weights, indices);
     supervisions = getSupervisions().staticCast<DVector>();
+    jassert(supervisions);
   }
 
   virtual void update()

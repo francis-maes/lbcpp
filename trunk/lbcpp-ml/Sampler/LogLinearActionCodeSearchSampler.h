@@ -111,7 +111,7 @@ public:
 
   virtual void initialize(ExecutionContext& context)
   {
-    setDomain(new ContinuousDomain(std::vector<std::pair<double, double> >(numParameters, std::make_pair(-DBL_MAX, DBL_MAX))));
+    setDomain(new ScalarVectorDomain(std::vector<std::pair<double, double> >(numParameters, std::make_pair(-DBL_MAX, DBL_MAX))));
     addObjective(new LogLinearActionCodeLearningObjective(examples, regularizer));
   }
 
@@ -133,8 +133,9 @@ public:
 
   typedef LogLinearActionCodeLearningProblem::Example Example;
   
-  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchTrajectoryPtr trajectory) const
   {
+    SearchStatePtr state = trajectory->getFinalState();
     DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
     size_t n = actionDomain->getNumElements();
     

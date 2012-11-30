@@ -18,12 +18,23 @@ namespace lbcpp
 class RandomSearchSampler : public SearchSampler
 {
 public:
-  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
+  virtual ObjectPtr sampleAction(ExecutionContext& context, SearchTrajectoryPtr trajectory) const
   {
-    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
-    size_t n = actionDomain->getNumElements();
-    jassert(n > 0);
-    return actionDomain->getElement(context.getRandomGenerator()->sampleSize(n));
+    SearchStatePtr state = trajectory->getFinalState();
+    DiscreteDomainPtr actionDomain = state->getActionDomain().dynamicCast<DiscreteDomain>();
+    if (actionDomain)
+    {
+      size_t n = actionDomain->getNumElements();
+      jassert(n > 0);
+      return actionDomain->getElement(context.getRandomGenerator()->sampleSize(n));
+    }
+    
+    ScalarDomainPtr scalarDomain = state->getActionDomain().dynamicCast<ScalarDomain>();
+    if (scalarDomain)
+      return new Double(context.getRandomGenerator()->sampleDouble(scalarDomain->getLowerLimit(), scalarDomain->getUpperLimit()));
+    
+    jassertfalse;
+    return ObjectPtr();
   }
 };
 

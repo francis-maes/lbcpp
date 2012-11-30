@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class FitnessLimits : public ContinuousDomain
+class FitnessLimits : public ScalarVectorDomain
 {
 public:
   FitnessLimits(const std::vector< std::pair<double, double> >& limits)
-    : ContinuousDomain(limits) {}
+    : ScalarVectorDomain(limits) {}
   FitnessLimits() {}
 
   size_t getNumObjectives() const

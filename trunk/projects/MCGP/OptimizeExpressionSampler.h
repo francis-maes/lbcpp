@@ -54,7 +54,7 @@ public:
   virtual void initialize(ExecutionContext& context)
   {
     size_t numCodes = codeGenerator->getNumCodes(targetProblem->getDomain().staticCast<SearchDomain>()->getInitialState());
-    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(numCodes, std::make_pair(-5.0, 5.0))));
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numCodes, std::make_pair(-5.0, 5.0))));
     addObjective(new OptimizeExpressionSamplerObjective(logLinearActionCodeSearchSampler(codeGenerator), targetProblem));
   }
 

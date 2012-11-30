@@ -65,7 +65,7 @@ public:
           limits[i].first = box->lowerBound((unsigned int)i);
           limits[i].second = box->upperBound((unsigned int)i);
         }
-        setDomain(new ContinuousDomain(limits));
+        setDomain(new ScalarVectorDomain(limits));
       }
     }
 
@@ -76,7 +76,7 @@ public:
       addObjective(new ObjectiveFromSharkObjectiveFunction(objective, i, worst, best));
     }
 
-    DenseDoubleVectorPtr initialGuess = new DenseDoubleVector(domain.staticCast<ContinuousDomain>()->getNumDimensions(), 0.0);
+    DenseDoubleVectorPtr initialGuess = new DenseDoubleVector(domain.staticCast<ScalarVectorDomain>()->getNumDimensions(), 0.0);
     objective->ProposeStartingPoint(initialGuess->getValues());
     setInitialGuess(initialGuess);
   }
@@ -146,7 +146,7 @@ struct RosenbrockProblem : public ProblemFromSharkObjectiveFunction
 
   virtual void initialize(ExecutionContext& context)
   {
-    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
     ProblemFromSharkObjectiveFunction::initialize(context);
   }
 
@@ -164,7 +164,7 @@ struct RosenbrockRotatedProblem : public ProblemFromSharkObjectiveFunction
 
   virtual void initialize(ExecutionContext& context)
   {
-    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
     ProblemFromSharkObjectiveFunction::initialize(context);
   }
 

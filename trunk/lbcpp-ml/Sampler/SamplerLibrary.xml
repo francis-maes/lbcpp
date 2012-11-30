@@ -22,7 +22,7 @@
   </class>
   
   <!-- Continuous Samplers -->
-  <class name="UniformContinuousSampler" base="Sampler">
+  <class name="UniformScalarVectorSampler" base="Sampler">
     <constructor/>
   </class>
   

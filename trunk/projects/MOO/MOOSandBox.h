@@ -19,6 +19,7 @@
 # include <lbcpp-ml/ExpressionSampler.h>
 
 # include "SharkProblems.h"
+# include "FQIBasedSolver.h"
 
 namespace lbcpp
 {
@@ -61,10 +62,10 @@ protected:
   {
     std::vector<ProblemPtr> problems;
     problems.push_back(new AckleyProblem(6));
-    problems.push_back(new GriewangkProblem(6));
+/*    problems.push_back(new GriewangkProblem(6));
     problems.push_back(new RastriginProblem(6));
     problems.push_back(new RosenbrockProblem(6));
-    problems.push_back(new RosenbrockRotatedProblem(6));
+    problems.push_back(new RosenbrockRotatedProblem(6));*/
 
 #if 0
     for (size_t numTrainingSamples = 10; numTrainingSamples < 100; numTrainingSamples += 5)
@@ -88,14 +89,17 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformContinuousSampler(), numEvaluations));
+      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100));
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
       
-      SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), 100, 30, 10);
+      SolverPtr fqiBSolver = new ScalarVectorFQIBasedSolver(100, numEvaluations / 100);
+      solveWithSingleObjectiveOptimizer(context, problem, fqiBSolver);
+      
+      /*SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), 100, 30, 10);
       ceSolver->setVerbosity((SolverVerbosity)verbosity);
-      SolverPtr sbSolver = surrogateBasedSolver(uniformContinuousSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, numEvaluations);
-      solveWithSingleObjectiveOptimizer(context, problem, sbSolver);
+      SolverPtr sbSolver = surrogateBasedSolver(uniformScalarVectorSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, numEvaluations);
+      solveWithSingleObjectiveOptimizer(context, problem, sbSolver);*/
 
       context.leaveScope(); 
     }
@@ -123,7 +127,7 @@ protected:
     DVectorPtr cpuTimes = new DVector(0, 0.0);
     DVectorPtr scores = new DVector(0, 0.0);
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
-    ParetoFrontPtr front = new ParetoFront();
+    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     SolverCallbackPtr callback = compositeSolverCallback(
       fillParetoFrontSolverCallback(front),
       singleObjectiveEvaluatorSolverCallback(evaluationPeriod, cpuTimes, scores),
@@ -174,7 +178,7 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformContinuousSampler(), numEvaluations));
+      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
       solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
       //solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100, numEvaluations / 100));
 
@@ -241,7 +245,7 @@ protected:
   void testSolutionVectorComponent(ExecutionContext& context)
   {
     ProblemPtr problem = new ZDT1MOProblem();
-    SamplerPtr sampler = uniformContinuousSampler();
+    SamplerPtr sampler = uniformScalarVectorSampler();
     sampler->initialize(context, problem->getDomain());
 
     SolutionVectorPtr solutions = new SolutionVector(problem->getFitnessLimits());

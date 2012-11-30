@@ -108,12 +108,14 @@ protected:
 
   ExpressionPtr makeTree(ExecutionContext& context, const SupervisedLearningObjectivePtr& objective, const IndexSetPtr& indices, size_t depth)
   {
+    // configure splitting criterion
+    splittingCriterion->configure(objective->getData(), objective->getSupervision(), DenseDoubleVectorPtr(), indices);
+
     // min examples and max depth conditions to make a leaf
     if ((indices->size() < minExamplesToSplit) || (maxDepth && depth == maxDepth) || isConstant(objective->getSupervisions(), indices))
       return new ConstantExpression(splittingCriterion->computeVote(indices));
 
     // launch condition learner
-    splittingCriterion->configure(objective->getData(), objective->getSupervision(), DenseDoubleVectorPtr(), indices);
     ProblemPtr conditionProblem = new Problem(problem->getDomain(), splittingCriterion);
     ExpressionPtr conditionNode;
     FitnessPtr conditionFitness;

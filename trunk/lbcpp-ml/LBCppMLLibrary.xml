@@ -36,7 +36,11 @@
   <class name="DiscreteDomain" base="Domain">
     <variable type="Vector[Object]" name="elements"/>
   </class>
-  <class name="ContinuousDomain" base="Domain">
+  <class name="ScalarDomain" base="Domain">
+    <variable type="Double" name="lowerLimit"/>
+    <variable type="Double" name="upperLimit"/>
+  </class>
+  <class name="ScalarVectorDomain" base="Domain">
     <variable type="Vector[Pair[Double,Double]]" name="limits"/>
   </class>
   <class name="VectorDomain" base="Domain">
@@ -45,7 +49,7 @@
   </class>
   
   <!-- Fitness -->
-  <class name="FitnessLimits" base="ContinuousDomain"/>
+  <class name="FitnessLimits" base="ScalarVectorDomain"/>
 
   <class name="Fitness">
     <code>

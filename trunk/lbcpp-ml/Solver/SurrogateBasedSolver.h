@@ -99,7 +99,7 @@ protected:
     ExpressionDomainPtr res = new ExpressionDomain();
     
     DomainPtr domain = problem->getDomain();
-    ContinuousDomainPtr continuousDomain = domain.dynamicCast<ContinuousDomain>();
+    ScalarVectorDomainPtr continuousDomain = domain.dynamicCast<ScalarVectorDomain>();
     if (continuousDomain)
     {
       for (size_t i = 0; i < continuousDomain->getNumDimensions(); ++i)

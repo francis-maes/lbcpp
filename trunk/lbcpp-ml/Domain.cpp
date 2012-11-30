@@ -28,9 +28,9 @@ void DiscreteDomain::clone(ExecutionContext& context, const ObjectPtr& target) c
   {target.staticCast<DiscreteDomain>()->elements = elements;}
 
 /*
-** ContinuousDomain
+** ScalarVectorDomain
 */
-DenseDoubleVectorPtr ContinuousDomain::sampleUniformly(RandomGeneratorPtr random) const
+DenseDoubleVectorPtr ScalarVectorDomain::sampleUniformly(RandomGeneratorPtr random) const
 {
   size_t n = limits.size();
   DenseDoubleVectorPtr res(new DenseDoubleVector(n, 0.0));
@@ -39,7 +39,7 @@ DenseDoubleVectorPtr ContinuousDomain::sampleUniformly(RandomGeneratorPtr random
   return res;
 }
 
-ObjectPtr ContinuousDomain::projectIntoDomain(const ObjectPtr& object) const
+ObjectPtr ScalarVectorDomain::projectIntoDomain(const ObjectPtr& object) const
 {
   DenseDoubleVectorPtr solution = object.staticCast<DenseDoubleVector>();
   DenseDoubleVectorPtr res;
@@ -58,5 +58,5 @@ ObjectPtr ContinuousDomain::projectIntoDomain(const ObjectPtr& object) const
   return res ? (ObjectPtr)res : object;
 }
 
-void ContinuousDomain::clone(ExecutionContext& context, const ObjectPtr& target) const
-  {target.staticCast<ContinuousDomain>()->limits = limits;}
+void ScalarVectorDomain::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<ScalarVectorDomain>()->limits = limits;}

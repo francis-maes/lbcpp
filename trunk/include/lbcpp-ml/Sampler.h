@@ -35,7 +35,7 @@ public:
     {jassertfalse;}
 };
 
-extern SamplerPtr uniformContinuousSampler();
+extern SamplerPtr uniformScalarVectorSampler();
 extern SamplerPtr diagonalGaussianSampler();
 extern SamplerPtr diagonalGaussianDistributionSampler();
 

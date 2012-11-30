@@ -223,7 +223,7 @@ public:
       startingSolution->setValue(i + n, startingSolution->getValue(i));
     setInitialGuess(startingSolution);
 
-    setDomain(new ContinuousDomain(std::vector< std::pair<double, double> >(n * 2, std::make_pair(0.0, 1.0))));
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(n * 2, std::make_pair(0.0, 1.0))));
     addObjective(new ExpressionSearchProbabilitiesObjective(expressionDomain, maxSize, usePostfixNotation, countPerArity));
   }
 

@@ -49,7 +49,7 @@ public:
     context.leaveScope();
     
     context.enterScope("Solve with Surrogate based");
-    SolverPtr sbSolver = surrogateBasedSolver(uniformContinuousSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, 5000);
+    SolverPtr sbSolver = surrogateBasedSolver(uniformScalarVectorSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, 5000);
     sbSolver->setVerbosity(verbosityDetailed);
     sbSolver->solve(context, problem, storeBestSolutionSolverCallback(solution));
     context.resultCallback("solution2", solution);
@@ -86,7 +86,7 @@ private:
   ProblemPtr makeProblem(ExecutionContext& context)
   {
     ProblemPtr res = new Problem();
-    ContinuousDomainPtr domain = new ContinuousDomain();
+    ScalarVectorDomainPtr domain = new ScalarVectorDomain();
     for (size_t i = 0; i < 21; ++i)
       domain->addDimension(-5.0, 5.0);
     res->setDomain(domain);

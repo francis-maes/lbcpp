@@ -21,8 +21,11 @@ typedef ReferenceCountedObjectPtr<Domain> DomainPtr;
 class DiscreteDomain;
 typedef ReferenceCountedObjectPtr<DiscreteDomain> DiscreteDomainPtr;
 
-class ContinuousDomain;
-typedef ReferenceCountedObjectPtr<ContinuousDomain> ContinuousDomainPtr;
+class ScalarDomain;
+typedef ReferenceCountedObjectPtr<ScalarDomain> ScalarDomainPtr;
+
+class ScalarVectorDomain;
+typedef ReferenceCountedObjectPtr<ScalarVectorDomain> ScalarVectorDomainPtr;
 
 class Objective;
 typedef ReferenceCountedObjectPtr<Objective> ObjectivePtr;

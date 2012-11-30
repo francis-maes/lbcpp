@@ -23,7 +23,7 @@ public:
 
   virtual void initialize(ExecutionContext& context, const DomainPtr& d)
   {
-    domain = d.staticCast<ContinuousDomain>();
+    domain = d.staticCast<ScalarVectorDomain>();
     jassert(domain);
     size_t n = domain->getNumDimensions();
   
@@ -150,7 +150,7 @@ protected:
   DenseDoubleVectorPtr mean;
   DenseDoubleVectorPtr stddev;
 
-  ContinuousDomainPtr domain;
+  ScalarVectorDomainPtr domain;
 
   size_t epoch;
   DenseDoubleVectorPtr initialStddev;

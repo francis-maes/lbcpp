@@ -23,4 +23,13 @@
     <variable type="PositiveInteger" name="verbosity"/>
   </class>
   
+  <!-- FQI Based Solver -->
+  <class name="FQIBasedSolver" base="PopulationBasedSolver" abstract="yes"/>
+  
+  <class name="ScalarVectorSearchState" base="SearchState">
+    <variable type="ScalarVectorDomain" name="vectorDomain"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="vector"/>
+  </class>
+  <class name="ScalarVectorFQIBasedSolver" base="FQIBasedSolver"/>
+  
 </library>

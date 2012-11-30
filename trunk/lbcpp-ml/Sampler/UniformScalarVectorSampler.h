@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: UniformContinuousSampler.h     | Sample uniformly in R^n         |
+| Filename: UniformScalarVectorSampler.h     | Sample uniformly in R^n         |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/09/2012 11:15               |                                 |
 `------------------------------------------/                                 |
@@ -14,17 +14,17 @@
 namespace lbcpp
 {
 
-class UniformContinuousSampler : public Sampler
+class UniformScalarVectorSampler : public Sampler
 {
 public:
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-    {this->domain = domain.staticCast<ContinuousDomain>(); jassert(this->domain);}
+    {this->domain = domain.staticCast<ScalarVectorDomain>(); jassert(this->domain);}
 
   virtual ObjectPtr sample(ExecutionContext& context) const
     {return domain->sampleUniformly(context.getRandomGenerator());}
 
 protected:
-  ContinuousDomainPtr domain;
+  ScalarVectorDomainPtr domain;
 };
 
 }; /* namespace lbcpp */
