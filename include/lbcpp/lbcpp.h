@@ -31,7 +31,6 @@
 
 # include "Core.h"
 
-# include "Data/Stream.h"
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
 # include "Data/DoubleVector.h"
