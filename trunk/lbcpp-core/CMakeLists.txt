@@ -61,6 +61,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Table.cpp
   ../include/lbcpp/Core/Loader.h
   Core/Loader.cpp
+  ../include/lbcpp/Core/RandomGenerator.h
+  Core/RandomGenerator.cpp  
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   ../include/lbcpp/Core/NativeToObject.h
@@ -85,8 +87,6 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/DoubleVector.h
   Data/FeatureGeneratorCallbacks.hpp
   Data/DoubleVector.cpp
-  ../include/lbcpp/Data/RandomGenerator.h
-  Data/RandomGenerator.cpp  
   ../include/lbcpp/Data/RandomVariable.h  
   Data/RandomVariable.cpp
   ../include/lbcpp/Data/IndexSet.h

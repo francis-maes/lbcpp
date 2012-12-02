@@ -10,7 +10,7 @@
 # define LBCPP_ML_DOMAIN_H_
 
 # include "predeclarations.h"
-# include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/Core/RandomGenerator.h>
 # include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp

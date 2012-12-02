@@ -9,7 +9,7 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Core.h>
-#include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Core/RandomGenerator.h>
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;

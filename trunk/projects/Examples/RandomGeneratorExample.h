@@ -10,7 +10,7 @@
 # define LBCPP_EXAMPLES_RANDOM_GENERATOR_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/Core/RandomGenerator.h>
 
 namespace lbcpp
 {

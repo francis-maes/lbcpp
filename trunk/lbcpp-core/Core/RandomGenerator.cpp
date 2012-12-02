@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Core.h>
-#include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Core/RandomGenerator.h>
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
