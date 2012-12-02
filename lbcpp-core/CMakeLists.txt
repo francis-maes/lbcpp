@@ -58,6 +58,8 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/Pair.h
   ../include/lbcpp/Core/Vector.h
   Core/Vector.cpp
+  ../include/lbcpp/Core/Table.h
+  Core/Table.cpp
   ../include/lbcpp/Core/Loader.h
   Core/Loader.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
@@ -97,8 +99,6 @@ SET(LBCPP_DATA_SOURCES
   Data/BinaryConfusionMatrix.cpp
   ../include/lbcpp/Data/IterationFunction.h
   Data/IterationFunction.hpp
-  ../include/lbcpp/Data/Table.h
-  Data/Table.cpp
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )

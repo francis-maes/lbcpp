@@ -8,7 +8,7 @@
 #include "precompiled.h"
 #include "ObjectBrowser.h"
 #include "../ExplorerProject.h"
-#include <lbcpp/Data/Table.h>
+#include <lbcpp/Core/Table.h>
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
 using namespace lbcpp;
 

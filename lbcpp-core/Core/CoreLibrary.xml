@@ -10,7 +10,8 @@
   <include file="lbcpp/Core/Boolean.h"/>
   <include file="lbcpp/Core/Integer.h"/>
   <include file="lbcpp/Core/Double.h"/>
-  <include file="lbcpp/Core/string.h"/>
+  <include file="lbcpp/Core/String.h"/>
+  <include file="lbcpp/Core/Table.h"/>
 
   <!-- Object -->
   <class name="Object" base="" abstract="yes">
@@ -190,6 +191,9 @@
         {return name.getIntValue();}
     </code>
   </class>
+
+  <!-- Data Table -->
+  <class name="Table"/>
 
   <!-- XmlElement -->
   <class name="XmlElement" base="Object">

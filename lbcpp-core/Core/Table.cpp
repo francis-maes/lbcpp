@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Core/string.h>
-#include <lbcpp/Data/Table.h>
+#include <lbcpp/Core/String.h>
+#include <lbcpp/Core/Table.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <algorithm>
 using namespace lbcpp;
@@ -15,8 +15,8 @@ using namespace lbcpp;
 /*
 ** Table
 */
-Table::Table(size_t numSamples)
-  : allIndices(new IndexSet(0, numSamples)) {}
+Table::Table(size_t numRows)
+  : numRows(numRows) {}
 
 void Table::addColumn(const ObjectPtr& key, const ClassPtr& type)
 {
@@ -35,10 +35,7 @@ void Table::addColumn(const string& name, const ClassPtr& type)
 
 void Table::addRow(const std::vector<ObjectPtr>& elements)
 {
-  if (allIndices)
-    allIndices->append(allIndices->size());
-  else
-    allIndices = new IndexSet(0, 1);
+  ++numRows;
   jassert(elements.size() == columns.size());
   for (size_t i = 0; i < elements.size(); ++i)
   {
@@ -52,7 +49,7 @@ void Table::resize(size_t numRows)
 {
   for (size_t i = 0; i < columns.size(); ++i)
     columns[i].data->resize(numRows);
-  allIndices = new IndexSet(0, numRows);
+  this->numRows = numRows;
 }
 
 string Table::getDescription(size_t index) const
@@ -63,14 +60,14 @@ string Table::getDescription(size_t index) const
 
 void Table::setElement(size_t rowIndex, size_t columnIndex, const ObjectPtr& value)
 {
-  jassert(rowIndex < allIndices->size());
+  jassert(rowIndex < numRows);
   jassert(columnIndex < columns.size());
   columns[columnIndex].data->setElement(rowIndex, value);
 }
 
 ObjectPtr Table::getElement(size_t rowIndex, size_t columnIndex) const
 {
-  jassert(rowIndex < allIndices->size());
+  jassert(rowIndex < numRows);
   jassert(columnIndex < columns.size());
   return columns[columnIndex].data->getElement(rowIndex);
 }
@@ -128,7 +125,9 @@ struct OrderContainerFunction
 
 void Table::makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size_t>& res) const
 {
-  res = allIndices->getIndices();
+  res.resize(numRows);
+  for (size_t i = 0; i < numRows; ++i)
+    res[i] = i;
   OrderContainerFunction order(refCountedPointerFromThis(this), columnIndex, increasingOrder, getType(columnIndex)->isConvertibleToDouble());
   std::sort(res.begin(), res.end(), order);
 }
@@ -136,7 +135,7 @@ void Table::makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size
 void Table::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const TablePtr& target = t.staticCast<Table>();
-  target->allIndices = allIndices;
+  target->numRows = numRows;
   target->columnMap = columnMap;
   target->columns = columns;
 }
@@ -144,13 +143,11 @@ void Table::clone(ExecutionContext& context, const ObjectPtr& t) const
 TablePtr Table::randomize(ExecutionContext& context) const
 {
   size_t nc = columns.size();
-  size_t nr = allIndices->size();
-
   TablePtr res = cloneAndCast<Table>();
   std::vector<size_t> order;
-  context.getRandomGenerator()->sampleOrder(nr, order);
-  for (size_t i = 0; i < nc; ++i)
-    res->columns[i].data = vector(res->columns[i].type, nr);
+  context.getRandomGenerator()->sampleOrder(numRows, order);
+  for (size_t i = 0; i < numRows; ++i)
+    res->columns[i].data = vector(res->columns[i].type, numRows);
   for (size_t i = 0; i < order.size(); ++i)
     for (size_t j = 0; j < nc; ++j)
       res->setElement(i, j, getElement(order[i], j));
@@ -160,14 +157,13 @@ TablePtr Table::randomize(ExecutionContext& context) const
 TablePtr Table::range(size_t begin, size_t end) const
 {
   jassert(end >= begin);
-  size_t numRows = end - begin;
   size_t numColumns = getNumColumns();
   TablePtr res = cloneAndCast<Table>();
-  res->allIndices = new IndexSet(numRows);
+  res->numRows = end - begin;
   for (size_t i = 0; i < numColumns; ++i)
   {
-    VectorPtr data = vector(columns[i].type, numRows);
-    for (size_t j = 0; j < numRows; ++j)
+    VectorPtr data = vector(columns[i].type, res->numRows);
+    for (size_t j = 0; j < res->numRows; ++j)
       data->setElement(j, columns[i].data->getElement(begin + j));
     res->columns[i].data = data;
   }
@@ -177,17 +173,16 @@ TablePtr Table::range(size_t begin, size_t end) const
 TablePtr Table::invRange(size_t begin, size_t end) const
 {
   jassert(end >= begin);
-  size_t numRows = getNumRows() - (end - begin);
   size_t numColumns = getNumColumns();
   TablePtr res = cloneAndCast<Table>();
-  res->allIndices = new IndexSet(numRows);
+  res->numRows = getNumRows() - (end - begin);
   for (size_t i = 0; i < numColumns; ++i)
   {
-    VectorPtr data = vector(columns[i].type, numRows);
+    VectorPtr data = vector(columns[i].type, res->numRows);
     size_t idx = 0;
     for (size_t j = 0; j < begin; ++j)
       data->setElement(idx++, columns[i].data->getElement(j));
-    for (size_t j = end; j < getNumRows(); ++j)
+    for (size_t j = end; j < res->numRows; ++j)
       data->setElement(idx++, columns[i].data->getElement(j));
     res->columns[i].data = data;
   }

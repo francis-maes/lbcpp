@@ -11,7 +11,7 @@
 
 # include <lbcpp/UserInterface/ObjectComponent.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
-# include <lbcpp/Data/Table.h>
+# include <lbcpp/Core/Table.h>
 
 namespace lbcpp
 {

@@ -38,12 +38,11 @@ public:
   {
     SplittingCriterionPtr splittingCriterion = problem->getObjective(0).staticCast<SplittingCriterion>();
 
-    IndexSetPtr allIndices = splittingCriterion->getData()->getAllIndices();
     IndexSetPtr indices = splittingCriterion->getIndices();
 
     // flags[i] is true if i is included in indices and false otherwise
     // note that we use std::vector<int> which is faster than std::vector<bool>
-    std::vector<int> flags(allIndices->size(), 0);
+    std::vector<int> flags(splittingCriterion->getData()->getNumRows(), 0);
     for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
       flags[*it] = 1;
     
@@ -163,7 +162,7 @@ private:
     return res;
   }
 
-  static SparseDoubleVectorPtr computeSortedValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& allIndices, const IndexSetPtr& indices, const std::vector<int>& flags)
+  static SparseDoubleVectorPtr computeSortedValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& indices, const std::vector<int>& flags)
   {
     SparseDoubleVectorPtr res = new SparseDoubleVector(indices->size());
     std::vector<std::pair<size_t, double> >& resValues = res->getValuesVector();
@@ -177,22 +176,20 @@ private:
   SparseDoubleVectorPtr getSortedValues(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<int>& flags, const ExpressionPtr& expression)
   {
     SparseDoubleVectorPtr allValues;
-    IndexSetPtr allIndices = splittingCriterion->getData()->getAllIndices();
-    
     SortedValuesCacheMap::const_iterator it = sortedValuesCache.find(expression);
     if (it == sortedValuesCache.end())
-    {    
-      DataVectorPtr values = expression->compute(context, splittingCriterion->getData(), allIndices);
+    {
+      DataVectorPtr values = expression->compute(context, splittingCriterion->getData());
       allValues = sortDoubleValues(values); 
       sortedValuesCache[expression] = allValues;
     }
     else
       allValues = it->second;
       
-    if (splittingCriterion->getIndices() == allIndices)
+    if (splittingCriterion->getIndices()->size() == splittingCriterion->getData()->getNumRows())
       return allValues;
     else
-      return computeSortedValuesSubset(allValues, allIndices, splittingCriterion->getIndices(), flags);
+      return computeSortedValuesSubset(allValues, splittingCriterion->getIndices(), flags);
   }
 };
 
