@@ -3,7 +3,6 @@
 <library name="UserInterfaceComponent" directory="UserInterface/Component">
 
   <uicomponent name="TableComponent" type="Table"/>
-  <uicomponent name="ConfusionMatrixComponent" type="BinaryConfusionMatrix"/>
   <uicomponent name="PieChartComponent" type="PieChart"/>
   <uicomponent name="HistogramComponent" type="Histogram"/>
   

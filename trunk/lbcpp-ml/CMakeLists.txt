@@ -16,6 +16,7 @@ GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Loader/LoaderLibrary.xml LoaderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SplittingCriterion/SplittingCriterionLibrary.xml SplittingCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learner/LearnerLibrary.xml LearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
@@ -37,6 +38,12 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/ExpressionSampler.h
   ../include/lbcpp-ml/BanditPool.h
   ../include/lbcpp-ml/SplittingCriterion.h
+  ../include/lbcpp-ml/DoubleVector.h
+  ../include/lbcpp-ml/RandomVariable.h  
+  ../include/lbcpp-ml/IndexSet.h
+  ../include/lbcpp-ml/BinaryKey.h
+  ../include/lbcpp-ml/BinaryConfusionMatrix.h
+  ../include/lbcpp-ml/IterationFunction.h
 )
 
 
@@ -172,6 +179,19 @@ SET(LBCPP_ML_LEARNER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LearnerLibrary.cpp
 )
 
+SET(LBCPP_ML_DATA_SOURCES
+  Data/FeatureGeneratorCallbacks.hpp
+  Data/DoubleVector.cpp
+  Data/RandomVariable.cpp
+  Data/IndexSet.cpp
+  Data/BinaryConfusionMatrix.cpp
+  Data/ConfusionMatrixComponent.h
+  Data/IterationFunction.hpp
+  Data/DataLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
+)
+
+
 SET(LBCPP_ML_TOPLEVEL_SOURCES
   SolutionContainer.cpp
   SolutionContainerComponent.h
@@ -205,6 +225,7 @@ SET(LBCPP_ML_SOURCES
   ${LBCPP_ML_LOADER_SOURCES}
   ${LBCPP_ML_SPLITTING_CRITERION_SOURCES}
   ${LBCPP_ML_LEARNER_SOURCES}
+  ${LBCPP_ML_DATA_SOURCES}
 
   ${LBCPP_ML_TOPLEVEL_SOURCES}
   ${LBCPP_ML_MAIN_SOURCES}
@@ -227,6 +248,7 @@ SOURCE_GROUP(Search FILES ${LBCPP_ML_SEARCH_SOURCES})
 SOURCE_GROUP(Loader FILES ${LBCPP_ML_LOADER_SOURCES})
 SOURCE_GROUP(SplittingCriterion FILES ${LBCPP_ML_SPLITTING_CRITERION_SOURCES})
 SOURCE_GROUP(Learner FILES ${LBCPP_ML_LEARNER_SOURCES})
+SOURCE_GROUP(Data FILES ${LBCPP_ML_DATA_SOURCES})
 
 SOURCE_GROUP(Main FILES ${LBCPP_ML_MAIN_SOURCES})
 

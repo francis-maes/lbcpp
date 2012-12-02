@@ -10,8 +10,8 @@
 # define LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_
 
 # include "ObjectFunctions.h"
-# include <lbcpp/Data/DoubleVector.h>
-# include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp-ml/DoubleVector.h>
+# include <lbcpp-ml/RandomVariable.h>
 
 namespace lbcpp
 {

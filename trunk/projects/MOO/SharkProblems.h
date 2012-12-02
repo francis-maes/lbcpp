@@ -12,7 +12,7 @@
 # include <lbcpp-ml/Problem.h>
 # include <EALib/ObjectiveFunctions.h>
 # include <EALib/MultiObjectiveFunctions.h>
-# include <lbcpp/Data/DoubleVector.h>
+# include <lbcpp-ml/DoubleVector.h>
 
 namespace lbcpp
 {

@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_ITERATION_CONSTANT_HPP
 # define LBCPP_DATA_ITERATION_CONSTANT_HPP
 
-# include <lbcpp/Data/IterationFunction.h>
+# include <lbcpp-ml/IterationFunction.h>
 
 namespace lbcpp
 {

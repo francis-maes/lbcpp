@@ -9,5 +9,5 @@
 // This file is necessary for Visual Studio to support precompiled headers
 #include "../lbcpp-core/precompiled.h"
 #include <lbcpp/Core.h>
-#include <lbcpp/Data/DoubleVector.h>
-#include <lbcpp/Data/RandomVariable.h>
+#include <lbcpp-ml/DoubleVector.h>
+#include <lbcpp-ml/RandomVariable.h>

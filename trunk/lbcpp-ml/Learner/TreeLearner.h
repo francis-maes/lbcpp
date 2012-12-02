@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_LEARNER_TREE_H_
 # define LBCPP_ML_LEARNER_TREE_H_
 
-# include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp-ml/RandomVariable.h>
 # include <lbcpp-ml/Expression.h>
 # include <lbcpp-ml/SplittingCriterion.h>
 # include <lbcpp-ml/Solver.h>

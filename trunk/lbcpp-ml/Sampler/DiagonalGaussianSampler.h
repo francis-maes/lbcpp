@@ -10,7 +10,7 @@
 # define LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
 
 # include <lbcpp-ml/Sampler.h>
-# include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp-ml/RandomVariable.h>
 
 namespace lbcpp
 {

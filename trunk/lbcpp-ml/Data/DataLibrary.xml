@@ -2,11 +2,11 @@
 
 <library name="Data" directory="Data">
 
-  <include file="lbcpp/Data/RandomVariable.h"/>
-  <include file="lbcpp/Data/DoubleVector.h"/>
-  <include file="lbcpp/Data/IndexSet.h"/>
-  <include file="lbcpp/Data/BinaryKey.h"/>
-  <include file="lbcpp/Data/BinaryConfusionMatrix.h"/>
+  <include file="lbcpp-ml/RandomVariable.h"/>
+  <include file="lbcpp-ml/DoubleVector.h"/>
+  <include file="lbcpp-ml/IndexSet.h"/>
+  <include file="lbcpp-ml/BinaryKey.h"/>
+  <include file="lbcpp-ml/BinaryConfusionMatrix.h"/>
 
   <!-- Random Variable -->
   <class name="ScalarVariableMean" base="NameableObject">
@@ -93,6 +93,7 @@
     <variable type="PositiveInteger" name="falseNegative"/>
     <variable type="PositiveInteger" name="trueNegative"/>
   </class>
+  <uicomponent name="ConfusionMatrixComponent" type="BinaryConfusionMatrix"/>
 
   <!-- Iteration Function -->
   <class name="IterationFunction" base="Object" abstract="yes"/>

@@ -12,6 +12,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/SolutionContainer.h>
+# include <lbcpp-ml/RandomVariable.h>
 # include "MorpionProblem.h"
 
 namespace lbcpp

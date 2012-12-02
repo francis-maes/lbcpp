@@ -28,7 +28,6 @@
 #include <lbcpp/Core/ClassManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Core/RandomGenerator.h>
-#include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Core/DefaultClass.h>
 
 #ifdef LBCPP_USER_INTERFACE
@@ -295,12 +294,6 @@ extern lbcpp::LibraryPtr lbCppLibrary();
 
 }; /* namespace lbcpp */ 
 
-static void lbcppInitializeGlobals()
-{
-  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass);
-  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass);
-}
-
 void lbcpp::initialize(const char* executableName)
 {
   //_crtBreakAlloc = 13146;
@@ -320,9 +313,6 @@ void lbcpp::initialize(const char* executableName)
   // types
   importLibrary(coreLibrary());
   importLibrary(lbCppLibrary());
-
-  // globals
-  lbcppInitializeGlobals();
 }
 
 void lbcpp::deinitialize()
@@ -339,8 +329,6 @@ void lbcpp::deinitialize()
     applicationContext->topLevelLibrary->preShutdown();
     coreLibraryUnCacheTypes();
     lbCppLibraryUnCacheTypes();
-    simpleDenseDoubleVectorClass = ClassPtr();
-    simpleSparseDoubleVectorClass = ClassPtr();
 
     // shutdown types
     applicationContext->typeManager.shutdown();
@@ -457,7 +445,6 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
   coreLibraryCacheTypes(context);
   lbCppLibraryCacheTypes(context);
 
-  lbcppInitializeGlobals();
 #else
   jassert(lbcpp::applicationContext == &applicationContext);
 #endif
@@ -468,8 +455,6 @@ void lbcpp::deinitializeDynamicLibrary()
 #ifdef JUCE_WIN32
   coreLibraryUnCacheTypes();
   lbCppLibraryUnCacheTypes();
-  simpleDenseDoubleVectorClass = ClassPtr();
-  simpleSparseDoubleVectorClass = ClassPtr();
   jassert(lbcpp::applicationContext);
   //lbcpp::applicationContext = NULL;
 #endif // JUCE_WIN32

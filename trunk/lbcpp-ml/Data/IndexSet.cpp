@@ -8,7 +8,7 @@
 
 #include "precompiled.h"
 #include <lbcpp/Core.h>
-#include <lbcpp/Data/IndexSet.h>
+#include <lbcpp-ml/IndexSet.h>
 #include <algorithm>
 using namespace lbcpp;
 

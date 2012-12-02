@@ -11,7 +11,7 @@
 
 # include <lbcpp-ml/Aggregator.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp-ml/RandomVariable.h>
 
 namespace lbcpp
 {
