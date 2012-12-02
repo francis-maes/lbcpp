@@ -64,7 +64,7 @@ void SupervisedLearningObjective::configure(const TablePtr& data, const Variable
   this->data = data;
   this->supervision = supervision;
   this->weights = weights;
-  this->indices = indices ? indices : data->getAllIndices();
+  this->indices = indices ? indices : new IndexSet(0, data->getNumRows());
 }
   
 VectorPtr SupervisedLearningObjective::getSupervisions() const

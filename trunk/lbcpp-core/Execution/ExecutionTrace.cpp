@@ -10,9 +10,9 @@
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Core/string.h>
+#include <lbcpp/Core/String.h>
 #include <lbcpp/Core/NativeToObject.h>
-#include <lbcpp/Data/Table.h>
+#include <lbcpp/Core/Table.h>
 using namespace lbcpp;
 
 /*

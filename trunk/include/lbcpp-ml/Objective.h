@@ -10,7 +10,7 @@
 # define LBCPP_ML_OBJECTIVE_H_
 
 # include <lbcpp/Data/DoubleVector.h>
-# include <lbcpp/Data/Table.h>
+# include <lbcpp/Core/Table.h>
 # include "Expression.h"
 
 namespace lbcpp

@@ -10,7 +10,7 @@
 # define LBCPP_USER_INTERFACE_PLOT_H_
 
 # include "../Core/Object.h"
-# include "../Data/Table.h"
+# include "../Core/Table.h"
 
 namespace lbcpp
 {

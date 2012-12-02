@@ -8,7 +8,7 @@
 
 #include "precompiled.h"
 #include <lbcpp-ml/Expression.h>
-#include <lbcpp/Data/Table.h>
+#include <lbcpp/Core/Table.h>
 #include <algorithm>
 using namespace lbcpp;
 
@@ -201,7 +201,7 @@ ExpressionPtr Expression::sampleSubNode(RandomGeneratorPtr random) const
 
 DataVectorPtr Expression::compute(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
-  IndexSetPtr idx = indices ? indices : data->getAllIndices();
+  IndexSetPtr idx = indices ? indices : new IndexSet(0, data->getNumRows());
   VectorPtr samples = data->getDataByKey(refCountedPointerFromThis(this));
   if (samples)
     return DataVector::createCached(idx, samples);

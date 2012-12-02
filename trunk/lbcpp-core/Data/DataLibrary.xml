@@ -9,7 +9,6 @@
   <include file="lbcpp/Data/IndexSet.h"/>
   <include file="lbcpp/Data/BinaryKey.h"/>
   <include file="lbcpp/Data/BinaryConfusionMatrix.h"/>
-  <include file="lbcpp/Data/Table.h"/>
 
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -94,9 +93,6 @@
     <variable type="Vector[PositiveInteger]" name="v"/>
   </class>
   <class name="BinaryKey" base="Object"/>
-
-  <!-- Data Table -->
-  <class name="Table"/>
 
   <!-- Confusion Matrix -->
   <class name="BinaryConfusionMatrix" base="Object">

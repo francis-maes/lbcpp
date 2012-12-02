@@ -6,11 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_TABLE_H_
-# define LBCPP_DATA_TABLE_H_
+#ifndef LBCPP_CORE_TABLE_H_
+# define LBCPP_CORE_TABLE_H_
 
-# include "../Core/Vector.h"
-# include "IndexSet.h"
+# include "Vector.h"
 
 namespace lbcpp
 {
@@ -18,8 +17,7 @@ namespace lbcpp
 class Table : public Object
 {
 public:
-  Table(size_t numSamples);
-  Table() {}
+  Table(size_t numRows = 0);
 
   void addColumn(const ObjectPtr& key, const ClassPtr& type);
   void addColumn(const string& name, const ClassPtr& type);
@@ -30,7 +28,7 @@ public:
     {return columns.size();}
 
   size_t getNumRows() const
-    {return allIndices ? allIndices->size() : 0;}
+    {return numRows;}
 
   string getDescription(size_t index) const;
 
@@ -49,9 +47,6 @@ public:
   ObjectPtr getElement(size_t rowIndex, size_t columnIndex) const;
   void setElement(size_t rowIndex, size_t columnIndex, const ObjectPtr& value);
 
-  IndexSetPtr getAllIndices() const
-    {return allIndices;}
-
   void makeOrder(size_t columnIndex, bool increasingOrder, std::vector<size_t>& res) const;
 
   TablePtr randomize(ExecutionContext& context) const;
@@ -63,14 +58,13 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 private:
-  IndexSetPtr allIndices;
+  size_t numRows;
 
   struct Column
   {
     ObjectPtr key;
     ClassPtr type;
     VectorPtr data;
-    SparseDoubleVectorPtr sortedDoubleValues;
   };
   std::vector<Column> columns;
 
@@ -83,4 +77,4 @@ extern ClassPtr tableClass;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_TABLE_H_
+#endif // !LBCPP_CORE_TABLE_H_

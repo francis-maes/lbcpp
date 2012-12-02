@@ -10,7 +10,7 @@
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/UserInterface/Plot.h>
 #include <lbcpp/Core/Library.h>
-#include <lbcpp/Data/Table.h>
+#include <lbcpp/Core/Table.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 using juce::Graphics;

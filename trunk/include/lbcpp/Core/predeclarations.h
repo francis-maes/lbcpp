@@ -92,6 +92,9 @@ typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
+class Table;
+typedef ReferenceCountedObjectPtr<Table> TablePtr;
+
 class ExecutionContext;
 typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 

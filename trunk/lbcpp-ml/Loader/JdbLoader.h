@@ -10,7 +10,7 @@
 # define LBCPP_ML_LOADER_JDB_H_
 
 # include <lbcpp/Core/Loader.h>
-# include <lbcpp/Data/Table.h>
+# include <lbcpp/Core/Table.h>
 # include <lbcpp-ml/Expression.h>
 
 namespace lbcpp

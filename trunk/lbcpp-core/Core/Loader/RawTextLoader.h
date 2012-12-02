@@ -10,7 +10,7 @@
 # define LBCPP_CORE_LOADER_RAW_TEXT_H_
 
 # include <lbcpp/Core/Loader.h>
-# include <lbcpp/Core/string.h>
+# include <lbcpp/Core/String.h>
 
 namespace lbcpp
 {
