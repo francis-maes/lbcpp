@@ -82,6 +82,19 @@ class Sampler;
 typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
 /*
+** DoubleVector
+*/
+class DoubleVector;
+typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
+
+class SparseDoubleVector;
+typedef ReferenceCountedObjectPtr<SparseDoubleVector> SparseDoubleVectorPtr;
+
+class DenseDoubleVector;
+typedef ReferenceCountedObjectPtr<DenseDoubleVector> DenseDoubleVectorPtr;
+
+
+/*
 ** Search
 */
 class SearchState;
