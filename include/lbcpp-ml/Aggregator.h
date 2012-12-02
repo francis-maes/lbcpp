@@ -11,7 +11,7 @@
 
 # include "predeclarations.h"
 # include <lbcpp/Core.h>
-# include <lbcpp/Data/IndexSet.h>
+# include "IndexSet.h"
 
 namespace lbcpp
 {

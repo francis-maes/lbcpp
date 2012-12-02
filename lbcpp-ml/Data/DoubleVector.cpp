@@ -6,15 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Data/DoubleVector.h>
+#include <lbcpp-ml/DoubleVector.h>
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/Core/Double.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 #include "FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
-
-ClassPtr lbcpp::simpleDenseDoubleVectorClass;
-ClassPtr lbcpp::simpleSparseDoubleVectorClass;
 
 /*
 ** SparseVectorHelper
@@ -511,7 +508,7 @@ SparseDoubleVector::SparseDoubleVector(ClassPtr thisClass)
   : DoubleVector(thisClass), lastIndex(-1) {}
 
 SparseDoubleVector::SparseDoubleVector(size_t initialReservedSize)
-  : DoubleVector(simpleSparseDoubleVectorClass), lastIndex(-1)
+  : DoubleVector(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass)), lastIndex(-1)
 {
   values.reserve(initialReservedSize);
 }
@@ -898,7 +895,7 @@ DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, ClassPtr elemen
 }
 
 DenseDoubleVector::DenseDoubleVector(size_t initialSize, double initialValue)
-  : DoubleVector(simpleDenseDoubleVectorClass), ownValues(true)
+  : DoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleClass)), ownValues(true)
 {
   jassert(thisClass);
   values = new std::vector<double>(initialSize, initialValue);

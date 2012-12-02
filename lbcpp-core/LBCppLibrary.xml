@@ -4,7 +4,6 @@
 
   <!-- <import name="Core"/> -->
   <import name="Execution"/>
-  <import name="Data"/>
   <import name="Lua"/>
   <import name="UserInterface" ifdef="LBCPP_USER_INTERFACE"/>
 

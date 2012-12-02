@@ -12,7 +12,6 @@
 # include "Function.h"
 # include "Aggregator.h"
 # include <lbcpp/Core/Table.h>
-# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {

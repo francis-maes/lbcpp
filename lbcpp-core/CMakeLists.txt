@@ -9,8 +9,6 @@ GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/Loader/CoreLoaderLibrary.xml CoreLoaderLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
@@ -78,26 +76,6 @@ SET(LBCPP_CORE_LOADER_SOURCES
   Core/Loader/DirectoryLoader.h
   Core/Loader/CoreLoaderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLoaderLibrary.cpp
-)
-
-#### Data ####
-
-SET(LBCPP_DATA_SOURCES
-  ../include/lbcpp/Data/predeclarations.h
-  ../include/lbcpp/Data/DoubleVector.h
-  Data/FeatureGeneratorCallbacks.hpp
-  Data/DoubleVector.cpp
-  ../include/lbcpp/Data/RandomVariable.h  
-  Data/RandomVariable.cpp
-  ../include/lbcpp/Data/IndexSet.h
-  Data/IndexSet.cpp
-  ../include/lbcpp/Data/BinaryKey.h
-  ../include/lbcpp/Data/BinaryConfusionMatrix.h
-  Data/BinaryConfusionMatrix.cpp
-  ../include/lbcpp/Data/IterationFunction.h
-  Data/IterationFunction.hpp
-  Data/DataLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )
 
 #### Execution ####
@@ -191,7 +169,6 @@ IF(LBCPP_USER_INTERFACE)
   SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
 	UserInterface/Component/TableComponent.h
 	UserInterface/Component/TableComponent.cpp
-    UserInterface/Component/ConfusionMatrixComponent.h
     UserInterface/Component/PieChartComponent.h
     UserInterface/Component/HistogramComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
@@ -252,22 +229,11 @@ SET(LBCPP_SOURCES
   ${LBCPP_CORE_SOURCES}
 	${LBCPP_CORE_LOADER_SOURCES}
 
-  # Data
-  ${LBCPP_DATA_SOURCES}
-    ${LBCPP_DATA_STREAM_SOURCES}
-  
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
     ${LBCPP_EXECUTION_CONTEXT_SOURCES}
   
-  # Loss Function
-  ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
-
   # Lua
   ${LBCPP_LUA_SOURCES}
     

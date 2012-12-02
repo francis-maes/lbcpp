@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_DOUBLE_VECTOR_H_
 # define LBCPP_DATA_DOUBLE_VECTOR_H_
 
-# include "../Core/Vector.h"
+# include <lbcpp/Core/Vector.h>
 # include <lbcpp/Core/XmlSerialisation.h>
 
 namespace lbcpp
@@ -120,9 +120,6 @@ extern ClassPtr sparseDoubleVectorClass(ClassPtr elementsEnumeration = enumValue
 extern ClassPtr denseDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
 extern ClassPtr lazyDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
 extern ClassPtr compositeDoubleVectorClass(ClassPtr elementsEnumeration = enumValueClass, ClassPtr elementsType = doubleClass);
-
-extern ClassPtr simpleDenseDoubleVectorClass;
-extern ClassPtr simpleSparseDoubleVectorClass;
 
 class SparseDoubleVector : public DoubleVector
 {

@@ -11,6 +11,7 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Core/RandomGenerator.h>
+# include <lbcpp-ml/RandomVariable.h>
 
 namespace lbcpp
 {

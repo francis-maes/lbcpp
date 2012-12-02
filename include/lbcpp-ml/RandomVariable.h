@@ -28,7 +28,7 @@
 # define LBCPP_RANDOM_VARIABLE_H_
 
 # include "predeclarations.h"
-# include "../Core/Object.h"
+# include <lbcpp/Core/Object.h>
 # include <cfloat>
 # include <deque>
 

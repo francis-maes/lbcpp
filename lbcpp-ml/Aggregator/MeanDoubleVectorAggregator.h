@@ -11,7 +11,7 @@
 
 # include <lbcpp-ml/Aggregator.h>
 # include <lbcpp-ml/Expression.h>
-# include <lbcpp/Data/DoubleVector.h>
+# include <lbcpp-ml/DoubleVector.h>
 
 namespace lbcpp
 {

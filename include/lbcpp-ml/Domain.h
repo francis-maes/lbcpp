@@ -11,7 +11,7 @@
 
 # include "predeclarations.h"
 # include <lbcpp/Core/RandomGenerator.h>
-# include <lbcpp/Data/DoubleVector.h>
+# include "DoubleVector.h"
 
 namespace lbcpp
 {

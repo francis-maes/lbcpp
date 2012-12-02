@@ -15,6 +15,7 @@
 # include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp-ml/SplittingCriterion.h>
 # include <lbcpp-ml/ExpressionSampler.h>
+# include <lbcpp-ml/RandomVariable.h>
 
 namespace lbcpp
 {

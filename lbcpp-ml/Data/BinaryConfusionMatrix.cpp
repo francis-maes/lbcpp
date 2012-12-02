@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Data/BinaryConfusionMatrix.h>
+#include <lbcpp-ml/BinaryConfusionMatrix.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/DefaultClass.h>
 #include <lbcpp/Core/Integer.h>

@@ -10,7 +10,7 @@
 # define LBCPP_USER_INTERFACE_COMPONENT_CONFUSION_MATRIX_H_
 
 # include <lbcpp/UserInterface/ObjectComponent.h>
-# include <lbcpp/Data/BinaryConfusionMatrix.h>
+# include <lbcpp-ml/BinaryConfusionMatrix.h>
 
 namespace lbcpp
 {

@@ -13,6 +13,7 @@
   <import name="Loader"/>
   <import name="SplittingCriterion"/>
   <import name="Learner"/>
+  <import name="Data"/>
 
   <include file="lbcpp-ml/Problem.h"/>
   <include file="lbcpp-ml/Perturbator.h"/>

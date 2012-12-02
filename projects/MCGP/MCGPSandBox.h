@@ -10,7 +10,7 @@
 # define LBCPP_MCGP_SANDBOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp-ml/RandomVariable.h>
 # include <lbcpp-ml/Solver.h>
 # include <lbcpp-ml/Sampler.h>
 # include <lbcpp-ml/SolutionContainer.h>

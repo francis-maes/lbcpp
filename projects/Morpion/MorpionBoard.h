@@ -10,6 +10,7 @@
 # define LBCPP_MORPION_BOARD_H_
 
 # include <lbcpp/Core/Object.h>
+# include <lbcpp-ml/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -297,7 +298,7 @@ public:
           //if (maskIndex)
             counts[maskIndex]++;
         }
-    SparseDoubleVectorPtr res = new SparseDoubleVector(simpleSparseDoubleVectorClass);
+    SparseDoubleVectorPtr res = new SparseDoubleVector(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration,doubleClass));
     for (std::map<size_t, size_t>::const_iterator it = counts.begin(); it != counts.end(); ++it)
       res->setElement(it->first, new Double(it->second));
     return res;

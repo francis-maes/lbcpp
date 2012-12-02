@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_OBJECTIVE_H_
 # define LBCPP_ML_OBJECTIVE_H_
 
-# include <lbcpp/Data/DoubleVector.h>
+# include "DoubleVector.h"
 # include <lbcpp/Core/Table.h>
 # include "Expression.h"
 

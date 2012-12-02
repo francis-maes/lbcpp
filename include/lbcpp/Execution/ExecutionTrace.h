@@ -13,7 +13,6 @@
 # include "WorkUnit.h"
 # include "../Core/Vector.h"
 # include "../Core/Pair.h"
-# include "../Data/predeclarations.h"
 
 namespace lbcpp
 {

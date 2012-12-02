@@ -141,7 +141,7 @@ public:
     SparseDoubleVectorPtr stateFeatures = features.compute(board, featuresComplexity);
 
     size_t n = actions->getNumElements();
-    OVectorPtr res = new OVector(simpleSparseDoubleVectorClass, n);
+    OVectorPtr res = new OVector(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration,doubleClass), n);
     for (size_t i = 0; i < n; ++i)
     {
       MorpionActionPtr action = actions->getElement(i).getObjectAndCast<MorpionAction>();

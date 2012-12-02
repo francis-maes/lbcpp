@@ -31,11 +31,6 @@
 
 # include "Core.h"
 
-# include "Data/RandomVariable.h"
-# include "Data/DoubleVector.h"
-# include "Data/BinaryKey.h"
-# include "Data/IndexSet.h"
-
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
 # include "Execution/ExecutionTrace.h"

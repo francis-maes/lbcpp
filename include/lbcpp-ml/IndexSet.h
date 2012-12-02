@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_INDEX_SET_H_
 # define LBCPP_DATA_INDEX_SET_H_
 
-# include "../Core/RandomGenerator.h"
+# include <lbcpp/Core/RandomGenerator.h>
 
 namespace lbcpp
 {

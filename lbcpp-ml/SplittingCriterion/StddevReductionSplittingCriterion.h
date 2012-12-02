@@ -10,7 +10,7 @@
 # define LBCPP_ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_
 
 # include <lbcpp-ml/SplittingCriterion.h>
-# include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp-ml/RandomVariable.h>
 
 namespace lbcpp
 {
