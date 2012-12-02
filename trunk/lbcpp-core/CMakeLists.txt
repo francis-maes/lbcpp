@@ -9,7 +9,6 @@ GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/Loader/CoreLoaderLibrary.xml CoreLoaderLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
@@ -83,8 +82,6 @@ SET(LBCPP_CORE_LOADER_SOURCES
 
 SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/predeclarations.h
-  ../include/lbcpp/Data/Stream.h
-  Data/Stream.cpp
   ../include/lbcpp/Data/DoubleVector.h
   Data/FeatureGeneratorCallbacks.hpp
   Data/DoubleVector.cpp
@@ -101,15 +98,6 @@ SET(LBCPP_DATA_SOURCES
   Data/IterationFunction.hpp
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
-)
-
-SET(LBCPP_DATA_STREAM_SOURCES
-  Data/Stream/DirectoryFileStream.h
-  Data/Stream/DirectoryPairFileStream.h
-  Data/Stream/LibSVMDataParser.h
-  Data/Stream/LibSVMDataParser.cpp
-  Data/Stream/StreamLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
 )
 
 #### Execution ####
@@ -302,7 +290,6 @@ SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
-SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})

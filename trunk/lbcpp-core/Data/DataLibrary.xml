@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Data" directory="Data">
-  <import name="Stream"/>
 
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
