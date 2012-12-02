@@ -1,5 +1,0 @@
-if (USE_LUAJIT)
-  subdirs(luajit)
-else(USE_LUAJIT)
-  subdirs(luacpp)
-endif(USE_LUAJIT)
