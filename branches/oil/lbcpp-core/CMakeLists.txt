@@ -23,8 +23,6 @@ IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Plot/UserInterfacePlotLibrary.xml UserInterfacePlotLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
 
-GENERATE_INTROSPECTION_CODE(Lua/LuaLibrary.xml LuaLibrary.cpp)
-
 #### Core ####
 
 SET(LBCPP_CORE_SOURCES
@@ -62,6 +60,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Loader.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
+  ../include/lbcpp/Core/Table.h
+  Core/Table.cpp
   ../include/lbcpp/Core/NativeToObject.h
   ../include/lbcpp/Core/ObjectToNative.h
   Core/CoreLibrary.xml
@@ -77,40 +77,6 @@ SET(LBCPP_CORE_LOADER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLoaderLibrary.cpp
 )
 
-#### Data ####
-
-SET(LBCPP_DATA_SOURCES
-  ../include/lbcpp/Data/predeclarations.h
-  ../include/lbcpp/Data/Stream.h
-  Data/Stream.cpp
-  ../include/lbcpp/Data/DoubleVector.h
-  Data/FeatureGeneratorCallbacks.hpp
-  Data/DoubleVector.cpp
-  ../include/lbcpp/Data/RandomGenerator.h
-  Data/RandomGenerator.cpp  
-  ../include/lbcpp/Data/RandomVariable.h  
-  Data/RandomVariable.cpp
-  ../include/lbcpp/Data/IndexSet.h
-  Data/IndexSet.cpp
-  ../include/lbcpp/Data/BinaryKey.h
-  ../include/lbcpp/Data/BinaryConfusionMatrix.h
-  Data/BinaryConfusionMatrix.cpp
-  ../include/lbcpp/Data/IterationFunction.h
-  Data/IterationFunction.hpp
-  ../include/lbcpp/Data/Table.h
-  Data/Table.cpp
-  Data/DataLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
-)
-
-SET(LBCPP_DATA_STREAM_SOURCES
-  Data/Stream/DirectoryFileStream.h
-  Data/Stream/DirectoryPairFileStream.h
-  Data/Stream/LibSVMDataParser.h
-  Data/Stream/LibSVMDataParser.cpp
-  Data/Stream/StreamLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
-)
 
 #### Execution ####
 
@@ -236,13 +202,6 @@ IF(LBCPP_USER_INTERFACE)
 
 ENDIF(LBCPP_USER_INTERFACE)
 
-SET(LBCPP_LUA_SOURCES
-  ../include/lbcpp/Lua/Lua.h
-  Lua/Lua.cpp
-  Lua/LuaLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuaLibrary.cpp
-)
-
 ##### MAIN ####
 
 SET(LBCPP_MAIN_SOURCES
@@ -264,25 +223,11 @@ SET(LBCPP_SOURCES
   ${LBCPP_CORE_SOURCES}
 	${LBCPP_CORE_LOADER_SOURCES}
 
-  # Data
-  ${LBCPP_DATA_SOURCES}
-    ${LBCPP_DATA_STREAM_SOURCES}
-  
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
     ${LBCPP_EXECUTION_CONTEXT_SOURCES}
   
-  # Loss Function
-  ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
-
-  # Lua
-  ${LBCPP_LUA_SOURCES}
-    
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
     ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
@@ -300,18 +245,11 @@ SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
 SOURCE_SUB_GROUP(Core Loader FILES ${LBCPP_CORE_LOADER_SOURCES})
 
-## Data
-SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
-SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
-
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 
-## Lua
-SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})
-	  
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Component FILES ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES})
