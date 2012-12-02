@@ -12,6 +12,7 @@
   <include file="lbcpp/Core/Double.h"/>
   <include file="lbcpp/Core/String.h"/>
   <include file="lbcpp/Core/Table.h"/>
+  <include file="lbcpp/Core/RandomGenerator.h"/>
 
   <!-- Object -->
   <class name="Object" base="" abstract="yes">
@@ -194,7 +195,13 @@
 
   <!-- Data Table -->
   <class name="Table"/>
-
+  
+  <!-- Random Generator -->
+  <class name="RandomGenerator">
+    <function lang="lua" name="create" static="yes"/>
+    <function lang="lua" name="sample"/>
+  </class>
+  
   <!-- XmlElement -->
   <class name="XmlElement" base="Object">
     <variable type="String" name="tagName"/>

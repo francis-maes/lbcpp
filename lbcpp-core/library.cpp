@@ -27,7 +27,7 @@
 #include <lbcpp/library.h>
 #include <lbcpp/Core/ClassManager.h>
 #include <lbcpp/Core/Library.h>
-#include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Core/RandomGenerator.h>
 #include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Core/DefaultClass.h>
 

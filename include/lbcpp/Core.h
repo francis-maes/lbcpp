@@ -27,6 +27,8 @@
 
 # include "Core/Loader.h"
 # include "Core/XmlSerialisation.h"
+# include "Core/RandomGenerator.h"
+
 # include "Execution/ExecutionContext.h"
 
 # include "Core/NativeToObject.h"

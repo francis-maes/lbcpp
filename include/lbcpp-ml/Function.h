@@ -11,6 +11,7 @@
 
 # include "predeclarations.h"
 # include <lbcpp/Core.h>
+# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {

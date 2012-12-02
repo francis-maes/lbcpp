@@ -2,19 +2,12 @@
 
 <library name="Data" directory="Data">
 
-  <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
   <include file="lbcpp/Data/DoubleVector.h"/>
   <include file="lbcpp/Data/IndexSet.h"/>
   <include file="lbcpp/Data/BinaryKey.h"/>
   <include file="lbcpp/Data/BinaryConfusionMatrix.h"/>
 
-  <!-- Random Generator -->
-  <class name="RandomGenerator">
-    <function lang="lua" name="create" static="yes"/>
-    <function lang="lua" name="sample"/>
-  </class>
-  
   <!-- Random Variable -->
   <class name="ScalarVariableMean" base="NameableObject">
     <code>

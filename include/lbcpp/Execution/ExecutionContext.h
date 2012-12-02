@@ -11,7 +11,7 @@
 
 # include "ExecutionCallback.h"
 # include "ExecutionContextCallback.h"
-# include "../Data/RandomGenerator.h"
+# include "../Core/RandomGenerator.h"
 
 namespace lbcpp
 {

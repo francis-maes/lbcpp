@@ -8,7 +8,7 @@
 
 #include "precompiled.h"
 #include <lbcpp/Execution/ExecutionContext.h>
-#include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Core/RandomGenerator.h>
 #include <lbcpp/UserInterface/Plot.h>
 using namespace lbcpp;
 
