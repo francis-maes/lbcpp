@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Lua" directory="Lua">
+  <include file="lbcpp/Lua/Lua.h"/>
+
+  <class name="LuaWrapperValue"/>
+  <class name="LuaWrapperVector"/>
+
+</library>
