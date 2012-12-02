@@ -32,24 +32,6 @@
 namespace lbcpp
 {
 
-class Stream;
-typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
-
-class RandomGenerator;
-typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
-
-class DoubleVector;
-typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
-
-class SparseDoubleVector;
-typedef ReferenceCountedObjectPtr<SparseDoubleVector> SparseDoubleVectorPtr;
-
-class DenseDoubleVector;
-typedef ReferenceCountedObjectPtr<DenseDoubleVector> DenseDoubleVectorPtr;
-
-class Table;
-typedef ReferenceCountedObjectPtr<Table> TablePtr;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PREDECLARATIONS_H_
