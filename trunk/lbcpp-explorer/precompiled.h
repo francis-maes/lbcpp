@@ -7,7 +7,7 @@
                                `------------------------------------*/
 
 // This file is necessary for Visual Studio to support precompiled headers
-#include "../lbcpp-core/precompiled.h"
-#include <lbcpp/Core.h>
-#include <lbcpp-ml/DoubleVector.h>
-#include <lbcpp-ml/RandomVariable.h>
+#include "../lib/oil/precompiled.h"
+#include <oil/Core.h>
+#include <ml/DoubleVector.h>
+#include <ml/RandomVariable.h>

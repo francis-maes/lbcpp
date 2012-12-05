@@ -9,8 +9,8 @@
 #ifndef LBCPP_MCGP_REGRESSION_SANDBOX_H_
 # define LBCPP_MCGP_REGRESSION_SANDBOX_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp-ml/Solver.h>
+# include <oil/Execution/WorkUnit.h>
+# include <ml/Solver.h>
 
 namespace lbcpp
 {

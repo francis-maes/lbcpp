@@ -9,9 +9,9 @@
 #ifndef LBCPP_MCGP_TREE_GP_SAMPLERS_H_
 # define LBCPP_MCGP_TREE_GP_SAMPLERS_H_
 
-# include <lbcpp-ml/SolutionComparator.h>
-# include <lbcpp-ml/ExpressionSampler.h>
-# include <lbcpp-ml/Solver.h>
+# include <ml/SolutionComparator.h>
+# include <ml/ExpressionSampler.h>
+# include <ml/Solver.h>
 
 namespace lbcpp
 {

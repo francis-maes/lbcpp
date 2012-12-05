@@ -9,8 +9,8 @@
 #ifndef LBCPP_MCGP_TEST_DOMAIN_H_
 # define LBCPP_MCGP_TEST_DOMAIN_H_
 
-# include <lbcpp-ml/Domain.h>
-# include <lbcpp-ml/Sampler.h>
+# include <ml/Domain.h>
+# include <ml/Sampler.h>
 # include <climits>
 
 #if 0

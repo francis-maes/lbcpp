@@ -9,9 +9,9 @@
 #include "Components/ObjectBrowser.h"
 #include "ExplorerConfiguration.h"
 #include "ExplorerProject.h"
-#include <lbcpp/Execution/ExecutionTrace.h>
-#include <lbcpp/UserInterface/UserInterfaceManager.h>
-#include <lbcpp/library.h>
+#include <oil/Execution/ExecutionTrace.h>
+#include <oil/UserInterface/UserInterfaceManager.h>
+#include <oil/library.h>
 using namespace lbcpp;
 using juce::TooltipWindow;
 

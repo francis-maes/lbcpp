@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Execution/WorkUnit.h>
-#include <lbcpp/Execution/ExecutionTrace.h>
-#include <lbcpp/library.h>
+#include <oil/Execution/WorkUnit.h>
+#include <oil/Execution/ExecutionTrace.h>
+#include <oil/library.h>
 using namespace lbcpp;
 
 void usage()

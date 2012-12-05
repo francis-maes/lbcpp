@@ -9,10 +9,10 @@
 #ifndef LBCPP_MORPION_SANDBOX_H_
 # define LBCPP_MORPION_SANDBOX_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp-ml/Solver.h>
-# include <lbcpp-ml/SolutionContainer.h>
-# include <lbcpp-ml/RandomVariable.h>
+# include <oil/Execution/WorkUnit.h>
+# include <ml/Solver.h>
+# include <ml/SolutionContainer.h>
+# include <ml/RandomVariable.h>
 # include "MorpionProblem.h"
 
 namespace lbcpp

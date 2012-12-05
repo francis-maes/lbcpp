@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "NewWorkUnitDialogWindow.h"
-#include <lbcpp/Core/Library.h>
-#include <lbcpp/library.h>
+#include <oil/Core/Library.h>
+#include <oil/library.h>
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const string& title);

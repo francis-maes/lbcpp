@@ -10,7 +10,7 @@
 # define LBCPP_EXPLORER_PROJECT_H_
 
 # include "ExplorerConfiguration.h"
-# include <lbcpp/Execution/WorkUnit.h>
+# include <oil/Execution/WorkUnit.h>
 
 namespace lbcpp
 {

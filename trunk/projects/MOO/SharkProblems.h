@@ -9,10 +9,10 @@
 #ifndef LBCPP_MOO_PROBLEM_SHARK_H_
 # define LBCPP_MOO_PROBLEM_SHARK_H_
 
-# include <lbcpp-ml/Problem.h>
+# include <ml/Problem.h>
 # include <EALib/ObjectiveFunctions.h>
 # include <EALib/MultiObjectiveFunctions.h>
-# include <lbcpp-ml/DoubleVector.h>
+# include <ml/DoubleVector.h>
 
 namespace lbcpp
 {

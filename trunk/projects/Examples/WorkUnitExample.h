@@ -9,7 +9,7 @@
 #ifndef LBCPP_EXAMPLES_WORK_UNIT_H_
 # define LBCPP_EXAMPLES_WORK_UNIT_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
+# include <oil/Execution/WorkUnit.h>
 
 namespace lbcpp
 {

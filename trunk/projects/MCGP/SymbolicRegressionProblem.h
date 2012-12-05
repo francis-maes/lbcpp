@@ -9,7 +9,7 @@
 #ifndef LBCPP_MCGP_SYMBOLIC_REGRESSION_H_
 # define LBCPP_MCGP_SYMBOLIC_REGRESSION_H_
 
-# include <lbcpp-ml/ExpressionDomain.h>
+# include <ml/ExpressionDomain.h>
 
 namespace lbcpp
 {

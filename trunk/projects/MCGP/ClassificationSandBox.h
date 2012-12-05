@@ -9,10 +9,10 @@
 #ifndef LBCPP_MCGP_CLASSIFICATION_SANDBOX_H_
 # define LBCPP_MCGP_CLASSIFICATION_SANDBOX_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp-ml/Solver.h>
-# include <lbcpp-ml/ExpressionSampler.h>
-# include <lbcpp-ml/SplittingCriterion.h>
+# include <oil/Execution/WorkUnit.h>
+# include <ml/Solver.h>
+# include <ml/ExpressionSampler.h>
+# include <ml/SplittingCriterion.h>
 
 namespace lbcpp
 {

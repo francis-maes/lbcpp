@@ -9,14 +9,14 @@
 #ifndef LBCPP_MOO_SANDBOX_H_
 # define LBCPP_MOO_SANDBOX_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp-ml/RandomVariable.h>
-# include <lbcpp-ml/Solver.h>
-# include <lbcpp-ml/Sampler.h>
-# include <lbcpp-ml/SolutionContainer.h>
+# include <oil/Execution/WorkUnit.h>
+# include <ml/RandomVariable.h>
+# include <ml/Solver.h>
+# include <ml/Sampler.h>
+# include <ml/SolutionContainer.h>
 
-# include <lbcpp-ml/SplittingCriterion.h>
-# include <lbcpp-ml/ExpressionSampler.h>
+# include <ml/SplittingCriterion.h>
+# include <ml/ExpressionSampler.h>
 
 # include "SharkProblems.h"
 # include "FQIBasedSolver.h"

@@ -10,9 +10,9 @@
 # define LBCPP_EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_
 
 # include "common.h"
-# include <lbcpp/UserInterface/ObjectComponent.h>
-# include <lbcpp/UserInterface/UserInterfaceManager.h>
-# include <lbcpp/Lua/Lua.h>
+# include <oil/UserInterface/ObjectComponent.h>
+# include <oil/UserInterface/UserInterfaceManager.h>
+# include <oil/Lua/Lua.h>
 # include "../../juce/juce_CodeEditorComponent.h"
 # include "../../juce/juce_LuaCodeTokeniser.h"
 # include "../lbcpp-explorer/ExplorerProject.h"
