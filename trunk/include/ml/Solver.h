@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLVER_H_
-# define LBCPP_ML_SOLVER_H_
+#ifndef ML_SOLVER_H_
+# define ML_SOLVER_H_
 
 # include "Problem.h"
 # include "SolutionContainer.h"
@@ -149,4 +149,4 @@ extern PopulationBasedSolverPtr nsga2moOptimizer(size_t populationSize = 100, si
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OPTIMIZER_H_
+#endif // !ML_OPTIMIZER_H_

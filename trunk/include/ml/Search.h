@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SEARCH_H_
-# define LBCPP_ML_SEARCH_H_
+#ifndef ML_SEARCH_H_
+# define ML_SEARCH_H_
 
 # include "Sampler.h"
 # include "Domain.h"
@@ -214,4 +214,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SEARCH_H_
+#endif // !ML_SEARCH_H_

@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: UniformScalarVectorSampler.h     | Sample uniformly in R^n         |
+| Filename: UniformScalarVectorSampler.h   | Sample uniformly in R^n         |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/09/2012 11:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MOO_SAMPLER_UNIFORM_CONTINUOUS_H_
-# define LBCPP_MOO_SAMPLER_UNIFORM_CONTINUOUS_H_
+#ifndef ML_SAMPLER_UNIFORM_CONTINUOUS_H_
+# define ML_SAMPLER_UNIFORM_CONTINUOUS_H_
 
 # include <ml/Sampler.h>
 
@@ -29,4 +29,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MOO_SAMPLER_UNIFORM_CONTINUOUS_H_
+#endif // !ML_SAMPLER_UNIFORM_CONTINUOUS_H_

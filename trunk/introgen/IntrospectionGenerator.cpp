@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "../juce/juce_amalgamated.h"
+#include "../extern/juce/juce_amalgamated.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -723,20 +723,20 @@ protected:
 
     newLine();
     writeLine(T("# ifdef WIN32"));
-    writeLine(T("#  define LBCPP_EXPORT  __declspec( dllexport )"));
+    writeLine(T("#  define OIL_EXPORT  __declspec( dllexport )"));
     writeLine(T("# else"));
-    writeLine(T("#  define LBCPP_EXPORT"));
+    writeLine(T("#  define OIL_EXPORT"));
     writeLine(T("# endif"));
     newLine();
 
-    openScope(T("LBCPP_EXPORT Library* lbcppInitializeLibrary(lbcpp::ApplicationContext& applicationContext)"));
+    openScope(T("OIL_EXPORT Library* lbcppInitializeLibrary(lbcpp::ApplicationContext& applicationContext)"));
     writeLine(T("lbcpp::initializeDynamicLibrary(applicationContext);"));
     writeLine(T("LibraryPtr res = ") + replaceFirstLettersByLowerCase(fileName) + T("Library();"));
     writeLine(T("res->incrementReferenceCounter();"));
     writeLine(T("return res.get();"));
     closeScope();
 
-    openScope(T("LBCPP_EXPORT void lbcppDeinitializeLibrary()"));
+    openScope(T("OIL_EXPORT void lbcppDeinitializeLibrary()"));
     writeLine(replaceFirstLettersByLowerCase(fileName) + T("LibraryUnCacheTypes();"));
     writeLine(T("lbcpp::deinitializeDynamicLibrary();"));
     closeScope();

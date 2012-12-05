@@ -5,14 +5,14 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(MCGPLibrary.xml MCGPLibrary.cpp)
 
-SET(LBCPP_MCGP_PROBLEM_SOURCES
+SET(MCGP_PROBLEM_SOURCES
   BooleanParityProblem.h
   BooleanMultiplexerProblem.h
   SymbolicRegressionProblem.h
   SantaFeTrailProblem.h
 )
 
-SET(LBCPP_MCGP_SOURCES
+SET(MCGP_SOURCES
   precompiled.h
   precompiled.cpp
   TestDomain.h
@@ -20,7 +20,7 @@ SET(LBCPP_MCGP_SOURCES
   OptimizeExpressionSampler.h
   TreeGPOperations.h
   TreeGPSamplers.h
-  ${LBCPP_MCGP_PROBLEM_SOURCES}
+  ${MCGP_PROBLEM_SOURCES}
   MCGPSandBox.h
   RegressionSandBox.h
   ClassificationSandBox.h
@@ -29,10 +29,10 @@ SET(LBCPP_MCGP_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/MCGPLibrary.cpp
 )
 
-SOURCE_GROUP(Problems FILES ${LBCPP_MCGP_PROBLEM_SOURCES})
+SOURCE_GROUP(Problems FILES ${MCGP_PROBLEM_SOURCES})
 
-GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_MCGP_SOURCES)
+GENERATE_LBCPP_PRECOMPILED(precompiled MCGP_SOURCES)
 
-ADD_LIBRARY(project-mcgp SHARED ${LBCPP_MCGP_SOURCES})
+ADD_LIBRARY(project-mcgp SHARED ${MCGP_SOURCES})
 TARGET_LINK_LIBRARIES(project-mcgp ml)
 

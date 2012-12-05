@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_H_
-# define LBCPP_ML_EXPRESSION_H_
+#ifndef ML_EXPRESSION_H_
+# define ML_EXPRESSION_H_
 
 # include "Function.h"
 # include "Aggregator.h"
@@ -428,4 +428,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_H_
+#endif // !ML_EXPRESSION_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_TABLE_H_
-# define LBCPP_CORE_TABLE_H_
+#ifndef OIL_CORE_TABLE_H_
+# define OIL_CORE_TABLE_H_
 
 # include "Vector.h"
 
@@ -77,4 +77,4 @@ extern ClassPtr tableClass;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_TABLE_H_
+#endif // !OIL_CORE_TABLE_H_

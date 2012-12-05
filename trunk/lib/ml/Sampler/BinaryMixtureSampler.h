@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SAMPLER_BINARY_MIXTURE_H_
-# define LBCPP_ML_SAMPLER_BINARY_MIXTURE_H_
+#ifndef ML_SAMPLER_BINARY_MIXTURE_H_
+# define ML_SAMPLER_BINARY_MIXTURE_H_
 
 # include <ml/Sampler.h>
 
@@ -40,4 +40,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SAMPLER_BINARY_MIXTURE_H_
+#endif // !ML_SAMPLER_BINARY_MIXTURE_H_

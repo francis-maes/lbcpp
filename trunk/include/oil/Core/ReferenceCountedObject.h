@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_REFERENCE_COUNTED_OBJECT_H_
-# define LBCPP_CORE_REFERENCE_COUNTED_OBJECT_H_
+#ifndef OIL_CORE_REFERENCE_COUNTED_OBJECT_H_
+# define OIL_CORE_REFERENCE_COUNTED_OBJECT_H_
 
 # include "Utilities.h"
 
@@ -367,4 +367,4 @@ inline const ReferenceCountedObjectPtr<Type>& refCountedPointerFromThis(Type* co
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_REFERENCE_COUNTED_OBJECT_H_
+#endif // !OIL_CORE_REFERENCE_COUNTED_OBJECT_H_

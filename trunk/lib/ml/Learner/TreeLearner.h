@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_LEARNER_TREE_H_
-# define LBCPP_ML_LEARNER_TREE_H_
+#ifndef ML_LEARNER_TREE_H_
+# define ML_LEARNER_TREE_H_
 
 # include <ml/RandomVariable.h>
 # include <ml/Expression.h>
@@ -171,4 +171,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_ML_LEARNER_TREE_H_
+#endif // ML_LEARNER_TREE_H_

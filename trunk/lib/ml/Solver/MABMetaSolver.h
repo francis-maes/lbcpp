@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLVER_MAB_META_H_
-# define LBCPP_ML_SOLVER_MAB_META_H_
+#ifndef ML_SOLVER_MAB_META_H_
+# define ML_SOLVER_MAB_META_H_
 
 # include <ml/Solver.h>
 # include <ml/BanditPool.h>
@@ -107,4 +107,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLVER_MAB_META_H_
+#endif // !ML_SOLVER_MAB_META_H_

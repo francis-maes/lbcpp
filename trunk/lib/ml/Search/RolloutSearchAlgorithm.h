@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SEARCH_ALGORITHM_ROLLOUT_H_
-# define LBCPP_ML_SEARCH_ALGORITHM_ROLLOUT_H_
+#ifndef ML_SEARCH_ALGORITHM_ROLLOUT_H_
+# define ML_SEARCH_ALGORITHM_ROLLOUT_H_
 
 # include <ml/Search.h>
 
@@ -48,4 +48,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SEARCH_ALGORITHM_ROLLOUT_H_
+#endif // !ML_SEARCH_ALGORITHM_ROLLOUT_H_

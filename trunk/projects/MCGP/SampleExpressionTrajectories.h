@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
-# define LBCPP_MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
+#ifndef MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
+# define MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/ExpressionDomain.h>
@@ -353,4 +353,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
+#endif // !MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_LOADER_XML_H_
-# define LBCPP_CORE_LOADER_XML_H_
+#ifndef OIL_CORE_LOADER_XML_H_
+# define OIL_CORE_LOADER_XML_H_
 
 # include <oil/Core/Loader.h>
 # include <oil/Core/XmlSerialisation.h>
@@ -49,4 +49,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_CORE_LOADER_XML_H_
+#endif // OIL_CORE_LOADER_XML_H_

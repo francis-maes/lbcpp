@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MORPION_SANDBOX_H_
-# define LBCPP_MORPION_SANDBOX_H_
+#ifndef MORPION_SANDBOX_H_
+# define MORPION_SANDBOX_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/Solver.h>
@@ -100,4 +100,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MORPION_SANDBOX_H_
+#endif // !MORPION_SANDBOX_H_

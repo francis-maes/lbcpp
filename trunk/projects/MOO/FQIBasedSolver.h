@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLVER_FQI_BASED_H_
-# define LBCPP_ML_SOLVER_FQI_BASED_H_
+#ifndef ML_SOLVER_FQI_BASED_H_
+# define ML_SOLVER_FQI_BASED_H_
 
 # include <ml/Solver.h>
 # include <ml/Search.h>
@@ -449,4 +449,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLVER_FQI_BASED_H_ 
+#endif // !ML_SOLVER_FQI_BASED_H_ 

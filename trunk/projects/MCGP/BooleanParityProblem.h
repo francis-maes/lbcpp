@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_BOOLEAN_PARITY_PROBLEM_H_
-# define LBCPP_MCGP_BOOLEAN_PARITY_PROBLEM_H_
+#ifndef MCGP_BOOLEAN_PARITY_PROBLEM_H_
+# define MCGP_BOOLEAN_PARITY_PROBLEM_H_
 
 # include <ml/ExpressionDomain.h>
 
@@ -64,4 +64,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_BOOLEAN_PARITY_PROBLEM_H_
+#endif // !MCGP_BOOLEAN_PARITY_PROBLEM_H_

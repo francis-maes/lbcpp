@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_VECTOR_H_
-# define LBCPP_CORE_VECTOR_H_
+#ifndef OIL_CORE_VECTOR_H_
+# define OIL_CORE_VECTOR_H_
 
 # include "Boolean.h"
 # include "Integer.h"
@@ -291,4 +291,4 @@ typedef ReferenceCountedObjectPtr<OVector> OVectorPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_VECTOR_H_
+#endif // !OIL_CORE_VECTOR_H_

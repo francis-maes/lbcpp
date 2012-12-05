@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_NATIVE_TO_OBJECT_H_
-# define LBCPP_CORE_NATIVE_TO_OBJECT_H_
+#ifndef OIL_CORE_NATIVE_TO_OBJECT_H_
+# define OIL_CORE_NATIVE_TO_OBJECT_H_
 
 # include "Object.h"
 
@@ -103,4 +103,4 @@ inline ObjectPtr nativeToObject(const std::set<TT>& source, const ClassPtr& expe
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_NATIVE_TO_OBJECT_H_
+#endif // !OIL_CORE_NATIVE_TO_OBJECT_H_

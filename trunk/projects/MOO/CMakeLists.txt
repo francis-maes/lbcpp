@@ -1,12 +1,12 @@
 INCLUDE_DIRECTORIES(
   ${LBCpp_SOURCE_DIR}/include
-  ${LBCpp_SOURCE_DIR}/shark/include  
+  ${LBCpp_SOURCE_DIR}/extern/shark/include  
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 GENERATE_INTROSPECTION_CODE(MOOLibrary.xml MOOLibrary.cpp)
 
-SET(LBCPP_MOO_SOURCES
+SET(MOO_SOURCES
   precompiled.h
   precompiled.cpp
   SharkProblems.h
@@ -16,8 +16,8 @@ SET(LBCPP_MOO_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
 )
 
-GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_MOO_SOURCES)
+GENERATE_LBCPP_PRECOMPILED(precompiled MOO_SOURCES)
 
-ADD_LIBRARY(project-moo SHARED ${LBCPP_MOO_SOURCES})
+ADD_LIBRARY(project-moo SHARED ${MOO_SOURCES})
 TARGET_LINK_LIBRARIES(project-moo ml)
 

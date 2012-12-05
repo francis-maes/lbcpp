@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLVER_CALLBACKS_H_
-# define LBCPP_ML_SOLVER_CALLBACKS_H_
+#ifndef ML_SOLVER_CALLBACKS_H_
+# define ML_SOLVER_CALLBACKS_H_
 
 # include <ml/Solver.h>
 
@@ -250,4 +250,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLVER_CALLBACKS_H_
+#endif // !ML_SOLVER_CALLBACKS_H_

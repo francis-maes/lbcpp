@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_SCALAR_VECTOR_SAMPLER_H_
-# define LBCPP_ML_EXPRESSION_SCALAR_VECTOR_SAMPLER_H_
+#ifndef ML_EXPRESSION_SCALAR_VECTOR_SAMPLER_H_
+# define ML_EXPRESSION_SCALAR_VECTOR_SAMPLER_H_
 
 # include <ml/Expression.h>
 # include <ml/Sampler.h>
@@ -39,4 +39,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_ML_EXPRESSION_SCALAR_VECTOR_SAMPLER_H_
+#endif // ML_EXPRESSION_SCALAR_VECTOR_SAMPLER_H_

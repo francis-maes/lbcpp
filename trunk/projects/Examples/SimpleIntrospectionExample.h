@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXAMPLES_SIMPLE_INTROSPECTION_H_
-# define LBCPP_EXAMPLES_SIMPLE_INTROSPECTION_H_
+#ifndef EXAMPLES_SIMPLE_INTROSPECTION_H_
+# define EXAMPLES_SIMPLE_INTROSPECTION_H_
 
 # include <oil/Core.h>
 
@@ -57,4 +57,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXAMPLES_SIMPLE_INTROSPECTION_H_
+#endif // !EXAMPLES_SIMPLE_INTROSPECTION_H_

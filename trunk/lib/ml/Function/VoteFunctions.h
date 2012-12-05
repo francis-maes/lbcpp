@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_FUNCTION_VOTE_H_
-# define LBCPP_ML_FUNCTION_VOTE_H_
+#ifndef ML_FUNCTION_VOTE_H_
+# define ML_FUNCTION_VOTE_H_
 
 # include <ml/Function.h>
 # include <ml/Expression.h>
@@ -131,4 +131,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_FUNCTION_VOTE_H_
+#endif // !ML_FUNCTION_VOTE_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SAMPLER_SUBSET_VECTOR_H_
-# define LBCPP_ML_SAMPLER_SUBSET_VECTOR_H_
+#ifndef ML_SAMPLER_SUBSET_VECTOR_H_
+# define ML_SAMPLER_SUBSET_VECTOR_H_
 
 # include <ml/Sampler.h>
 
@@ -46,4 +46,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_ML_SAMPLER_SUBSET_VECTOR_H_
+#endif // ML_SAMPLER_SUBSET_VECTOR_H_

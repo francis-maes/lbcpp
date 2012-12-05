@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MOO_PROBLEM_SHARK_H_
-# define LBCPP_MOO_PROBLEM_SHARK_H_
+#ifndef MOO_PROBLEM_SHARK_H_
+# define MOO_PROBLEM_SHARK_H_
 
 # include <ml/Problem.h>
 # include <EALib/ObjectiveFunctions.h>
@@ -222,4 +222,4 @@ struct ZDT6MOProblem : public ZDTMOProblem {ZDT6MOProblem() : ZDTMOProblem(new Z
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MOO_PROBLEM_SHARK_H_
+#endif // !MOO_PROBLEM_SHARK_H_

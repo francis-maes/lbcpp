@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_COMPARATOR_LEXICOGRAPHIC_H_
-# define LBCPP_ML_COMPARATOR_LEXICOGRAPHIC_H_
+#ifndef ML_COMPARATOR_LEXICOGRAPHIC_H_
+# define ML_COMPARATOR_LEXICOGRAPHIC_H_
 
 # include <ml/SolutionComparator.h>
 # include <ml/SolutionContainer.h>
@@ -46,4 +46,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_COMPARATOR_LEXICOGRAPHIC_H_
+#endif // !ML_COMPARATOR_LEXICOGRAPHIC_H_

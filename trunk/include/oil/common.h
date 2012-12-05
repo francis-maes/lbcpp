@@ -44,7 +44,7 @@
 ** Juce
 */
 # define DONT_SET_USING_JUCE_NAMESPACE
-# include "../juce/juce_amalgamated.h"
+# include "../extern/juce/juce_amalgamated.h"
 using juce::StringArray;
 using juce::InputStream;
 using juce::OutputStream;

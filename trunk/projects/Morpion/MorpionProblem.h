@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MORPION_PROBLEM_H_
-# define LBCPP_MORPION_PROBLEM_H_
+#ifndef MORPION_PROBLEM_H_
+# define MORPION_PROBLEM_H_
 
 # include <ml/Search.h>
 # include <ml/Problem.h>
@@ -738,4 +738,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MORPION_PROBLEM_H_
+#endif // !MORPION_PROBLEM_H_

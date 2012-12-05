@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_OBJECT_H_
-# define LBCPP_CORE_OBJECT_H_
+#ifndef OIL_CORE_OBJECT_H_
+# define OIL_CORE_OBJECT_H_
 
 # include "predeclarations.h"
 
@@ -257,4 +257,4 @@ typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_OBJECT_H_
+#endif // !OIL_CORE_OBJECT_H_

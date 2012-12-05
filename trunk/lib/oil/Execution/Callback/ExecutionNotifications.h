@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CALLBACK_NOTIFICATIONS_H_
-# define LBCPP_EXECUTION_CALLBACK_NOTIFICATIONS_H_
+#ifndef OIL_EXECUTION_CALLBACK_NOTIFICATIONS_H_
+# define OIL_EXECUTION_CALLBACK_NOTIFICATIONS_H_
 
 # include <oil/Execution/ExecutionCallback.h>
 # include <oil/Execution/ExecutionStack.h>
@@ -171,4 +171,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXECUTION_CALLBACK_NOTIFIER_H_
+#endif // !OIL_EXECUTION_CALLBACK_NOTIFIER_H_

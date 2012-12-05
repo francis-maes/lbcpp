@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CALLBACK_H_
-# define LBCPP_EXECUTION_CALLBACK_H_
+#ifndef OIL_EXECUTION_CALLBACK_H_
+# define OIL_EXECUTION_CALLBACK_H_
 
 # include "predeclarations.h"
 # include "../Core/Object.h"
@@ -233,4 +233,4 @@ extern ClassPtr progressionStateClass;
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_CALLBACK_H_
+#endif //!OIL_EXECUTION_CALLBACK_H_

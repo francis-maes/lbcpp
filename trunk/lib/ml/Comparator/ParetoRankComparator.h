@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_COMPARATOR_PARETO_RANK_H_
-# define LBCPP_ML_COMPARATOR_PARETO_RANK_H_
+#ifndef ML_COMPARATOR_PARETO_RANK_H_
+# define ML_COMPARATOR_PARETO_RANK_H_
 
 # include <ml/SolutionComparator.h>
 
@@ -51,4 +51,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_COMPARATOR_PARETO_RANK_H_
+#endif // !ML_COMPARATOR_PARETO_RANK_H_

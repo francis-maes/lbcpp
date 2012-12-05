@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_BINARY_CONFUSION_MATRIX_H_
-# define LBCPP_DATA_BINARY_CONFUSION_MATRIX_H_
+#ifndef ML_DATA_BINARY_CONFUSION_MATRIX_H_
+# define ML_DATA_BINARY_CONFUSION_MATRIX_H_
 
 # include <oil/Core/Object.h>
 
@@ -87,4 +87,4 @@ typedef ReferenceCountedObjectPtr<BinaryConfusionMatrix> BinaryConfusionMatrixPt
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_BINARY_CONFUSION_MATRIX_H_
+#endif // !ML_DATA_BINARY_CONFUSION_MATRIX_H_

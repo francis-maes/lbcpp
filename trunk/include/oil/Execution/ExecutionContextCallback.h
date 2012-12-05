@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CONTEXT_CALLBACK_H_
-# define LBCPP_EXECUTION_CONTEXT_CALLBACK_H_
+#ifndef OIL_EXECUTION_CONTEXT_CALLBACK_H_
+# define OIL_EXECUTION_CONTEXT_CALLBACK_H_
 
 # include "../Core/Object.h"
 
@@ -26,4 +26,4 @@ typedef ExecutionContextCallback* ExecutionContextCallbackPtr;
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_CONTEXT_CALLBACK_H_
+#endif //!OIL_EXECUTION_CONTEXT_CALLBACK_H_

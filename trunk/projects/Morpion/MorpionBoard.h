@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MORPION_BOARD_H_
-# define LBCPP_MORPION_BOARD_H_
+#ifndef MORPION_BOARD_H_
+# define MORPION_BOARD_H_
 
 # include <oil/Core/Object.h>
 # include <ml/DoubleVector.h>
@@ -428,4 +428,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MORPION_BOARD_H_
+#endif // !MORPION_BOARD_H_

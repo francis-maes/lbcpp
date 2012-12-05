@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_BANDIT_POOL_H_
-# define LBCPP_ML_BANDIT_POOL_H_
+#ifndef ML_BANDIT_POOL_H_
+# define ML_BANDIT_POOL_H_
 
 # include <oil/Core.h>
 # include "predeclarations.h"
@@ -120,4 +120,4 @@ typedef ReferenceCountedObjectPtr<BanditPool> BanditPoolPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_BANDIT_POOL_H_
+#endif // !ML_BANDIT_POOL_H_

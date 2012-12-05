@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_AGGREGATOR_H_
-# define LBCPP_ML_AGGREGATOR_H_
+#ifndef ML_AGGREGATOR_H_
+# define ML_AGGREGATOR_H_
 
 # include "predeclarations.h"
 # include <oil/Core.h>
@@ -41,4 +41,4 @@ extern AggregatorPtr meanDoubleVectorAggregator();
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_AGGREGATOR_H_
+#endif // !ML_AGGREGATOR_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_ACTION_DOMAINS_CACHE_H_
-# define LBCPP_ML_EXPRESSION_ACTION_DOMAINS_CACHE_H_
+#ifndef ML_EXPRESSION_ACTION_DOMAINS_CACHE_H_
+# define ML_EXPRESSION_ACTION_DOMAINS_CACHE_H_
 
 # include <ml/ExpressionDomain.h>
 
@@ -88,4 +88,4 @@ typedef ReferenceCountedObjectPtr<ExpressionActionDomainsCache> ExpressionAction
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_ACTION_DOMAINS_CACHE_H_
+#endif // !ML_EXPRESSION_ACTION_DOMAINS_CACHE_H_

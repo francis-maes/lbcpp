@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_CONFIGURATION_H_
-# define LBCPP_EXPLORER_CONFIGURATION_H_
+#ifndef EXPLORER_CONFIGURATION_H_
+# define EXPLORER_CONFIGURATION_H_
 
 namespace lbcpp
 {
@@ -76,4 +76,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_CONFIGURATION_H_
+#endif // !EXPLORER_CONFIGURATION_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CONTEXT_SUB_H_
-# define LBCPP_EXECUTION_CONTEXT_SUB_H_
+#ifndef OIL_EXECUTION_CONTEXT_SUB_H_
+# define OIL_EXECUTION_CONTEXT_SUB_H_
 
 # include <oil/Execution/ExecutionStack.h>
 # include <oil/Execution/ExecutionContext.h>
@@ -46,4 +46,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_CONTEXT_SUB_H_
+#endif //!OIL_EXECUTION_CONTEXT_SUB_H_

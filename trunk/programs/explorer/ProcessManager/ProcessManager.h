@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_PROCESS_MANAGER_H_
-# define LBCPP_EXPLORER_PROCESS_MANAGER_H_
+#ifndef EXPLORER_PROCESS_MANAGER_H_
+# define EXPLORER_PROCESS_MANAGER_H_
 
 namespace lbcpp
 {
@@ -200,4 +200,4 @@ extern ProcessManagerPtr localProcessManager();
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_PROCESS_MANAGER_H_
+#endif // !EXPLORER_PROCESS_MANAGER_H_

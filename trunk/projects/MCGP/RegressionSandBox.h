@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_REGRESSION_SANDBOX_H_
-# define LBCPP_MCGP_REGRESSION_SANDBOX_H_
+#ifndef MCGP_REGRESSION_SANDBOX_H_
+# define MCGP_REGRESSION_SANDBOX_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/Solver.h>
@@ -101,4 +101,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_MCGP_REGRESSION_SANDBOX_H_
+#endif // MCGP_REGRESSION_SANDBOX_H_

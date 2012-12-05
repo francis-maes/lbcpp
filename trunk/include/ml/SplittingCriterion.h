@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SPLITTING_CRITERION_H_
-# define LBCPP_ML_SPLITTING_CRITERION_H_
+#ifndef ML_SPLITTING_CRITERION_H_
+# define ML_SPLITTING_CRITERION_H_
 
 # include "Expression.h"
 # include "Objective.h"
@@ -64,4 +64,4 @@ extern ClassificationSplittingCriterionPtr informationGainSplittingCriterion(boo
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SPLITTING_CRITERION_H_
+#endif // !ML_SPLITTING_CRITERION_H_

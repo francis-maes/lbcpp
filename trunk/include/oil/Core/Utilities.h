@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_UTILITIES_H_
-# define LBCPP_CORE_UTILITIES_H_
+#ifndef OIL_CORE_UTILITIES_H_
+# define OIL_CORE_UTILITIES_H_
 
 # include "../common.h"
 # include <cmath>
@@ -75,4 +75,4 @@ extern string getTypeName(const std::type_info& info);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_UTILITIES_H_
+#endif // !OIL_CORE_UTILITIES_H_

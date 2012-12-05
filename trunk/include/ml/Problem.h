@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_PROBLEM_H_
-# define LBCPP_ML_PROBLEM_H_
+#ifndef ML_PROBLEM_H_
+# define ML_PROBLEM_H_
 
 # include "Domain.h"
 # include "Objective.h"
@@ -95,4 +95,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_PROBLEM_H_
+#endif // !ML_PROBLEM_H_

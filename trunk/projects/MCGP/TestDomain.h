@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_TEST_DOMAIN_H_
-# define LBCPP_MCGP_TEST_DOMAIN_H_
+#ifndef MCGP_TEST_DOMAIN_H_
+# define MCGP_TEST_DOMAIN_H_
 
 # include <ml/Domain.h>
 # include <ml/Sampler.h>
@@ -404,4 +404,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_TEST_DOMAIN_H_
+#endif // !MCGP_TEST_DOMAIN_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CALLBACK_MAKE_AND_AUTO_SAVE_TRACE_H_
-# define LBCPP_EXECUTION_CALLBACK_MAKE_AND_AUTO_SAVE_TRACE_H_
+#ifndef OIL_EXECUTION_CALLBACK_MAKE_AND_AUTO_SAVE_TRACE_H_
+# define OIL_EXECUTION_CALLBACK_MAKE_AND_AUTO_SAVE_TRACE_H_
 
 # include "MakeTraceExecutionCallback.h"
 
@@ -64,4 +64,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_CALLBACK_MAKE_AND_AUTO_SAVE_TRACE_H_
+#endif //!OIL_EXECUTION_CALLBACK_MAKE_AND_AUTO_SAVE_TRACE_H_

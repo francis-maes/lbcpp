@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_NOTIFICATION_H_
-# define LBCPP_EXECUTION_NOTIFICATION_H_
+#ifndef OIL_EXECUTION_NOTIFICATION_H_
+# define OIL_EXECUTION_NOTIFICATION_H_
 
 # include "ExecutionContext.h"
 # include "../Core.h"
@@ -51,4 +51,4 @@ typedef ReferenceCountedObjectPtr<NotificationQueue> NotificationQueuePtr;
 
 }; /* namespace smode */
 
-#endif // !LBCPP_EXECUTION_NOTIFICATION_H_
+#endif // !OIL_EXECUTION_NOTIFICATION_H_

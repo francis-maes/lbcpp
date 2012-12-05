@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLUTION_SET_COMPONENT_H_
-# define LBCPP_ML_SOLUTION_SET_COMPONENT_H_
+#ifndef ML_SOLUTION_SET_COMPONENT_H_
+# define ML_SOLUTION_SET_COMPONENT_H_
 
 # include <ml/SolutionComparator.h>
 # include <ml/SolutionContainer.h>
@@ -277,4 +277,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLUTION_SET_COMPONENT_H_
+#endif // !ML_SOLUTION_SET_COMPONENT_H_

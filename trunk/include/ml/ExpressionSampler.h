@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_SAMPLER_H_
-# define LBCPP_ML_EXPRESSION_SAMPLER_H_
+#ifndef ML_EXPRESSION_SAMPLER_H_
+# define ML_EXPRESSION_SAMPLER_H_
 
 # include "ExpressionDomain.h"
 # include "Sampler.h"
@@ -74,4 +74,4 @@ extern BinaryPerturbatorPtr subTreeCrossOverExpressionPerturbator(double functio
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_SAMPLER_H_
+#endif // !ML_EXPRESSION_SAMPLER_H_

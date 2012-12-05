@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_ITERATION_CONSTANT_HPP
-# define LBCPP_DATA_ITERATION_CONSTANT_HPP
+#ifndef ML_DATA_ITERATION_CONSTANT_HPP
+# define ML_DATA_ITERATION_CONSTANT_HPP
 
 # include <ml/IterationFunction.h>
 
@@ -46,4 +46,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_ITERATION_CONSTANT_HPP
+#endif // !ML_DATA_ITERATION_CONSTANT_HPP
