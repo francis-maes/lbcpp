@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_CONTAINER_SELECTOR_H_
 
 # include "common.h"
-# include <lbcpp/UserInterface/ObjectComponent.h>
+# include <oil/UserInterface/ObjectComponent.h>
 
 namespace lbcpp
 {

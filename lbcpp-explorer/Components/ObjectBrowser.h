@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_VARIABLE_BROWSER_H_
 
 # include "../Utilities/PropertyListDisplayComponent.h"
-# include <lbcpp/UserInterface/ObjectComponent.h>
+# include <oil/UserInterface/ObjectComponent.h>
 
 class ObjectBrowserContent;
 

@@ -5,4 +5,4 @@ INCLUDE_DIRECTORIES(
 
 # RunWorkUnit
 ADD_EXECUTABLE(RunWorkUnit RunWorkUnit.cpp)
-TARGET_LINK_LIBRARIES(RunWorkUnit lbcpp-ml)
+TARGET_LINK_LIBRARIES(RunWorkUnit ml)

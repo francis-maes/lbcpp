@@ -12,7 +12,7 @@
 # include "ProcessManager.h"
 # include "../Components/common.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
-# include <lbcpp/UserInterface/ObjectComponent.h>
+# include <oil/UserInterface/ObjectComponent.h>
 
 class ProcessConsoleComponent;
 

@@ -8,8 +8,8 @@
 #include "precompiled.h"
 #include "ObjectBrowser.h"
 #include "../ExplorerProject.h"
-#include <lbcpp/Core/Table.h>
-#include <lbcpp/UserInterface/UserInterfaceManager.h>
+#include <oil/Core/Table.h>
+#include <oil/UserInterface/UserInterfaceManager.h>
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const string& title);

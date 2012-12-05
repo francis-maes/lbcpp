@@ -9,13 +9,13 @@
 #ifndef LBCPP_ML_SOLVER_FQI_BASED_H_
 # define LBCPP_ML_SOLVER_FQI_BASED_H_
 
-# include <lbcpp-ml/Solver.h>
-# include <lbcpp-ml/Search.h>
-# include <lbcpp-ml/Expression.h>
-# include <lbcpp-ml/ExpressionDomain.h>
-# include <lbcpp-ml/SplittingCriterion.h>
-# include <lbcpp-ml/ExpressionSampler.h>
-# include <lbcpp-ml/RandomVariable.h>
+# include <ml/Solver.h>
+# include <ml/Search.h>
+# include <ml/Expression.h>
+# include <ml/ExpressionDomain.h>
+# include <ml/SplittingCriterion.h>
+# include <ml/ExpressionSampler.h>
+# include <ml/RandomVariable.h>
 
 namespace lbcpp
 {

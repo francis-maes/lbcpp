@@ -9,9 +9,9 @@
 #ifndef LBCPP_EXAMPLES_RANDOM_GENERATOR_H_
 # define LBCPP_EXAMPLES_RANDOM_GENERATOR_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Core/RandomGenerator.h>
-# include <lbcpp-ml/RandomVariable.h>
+# include <oil/Execution/WorkUnit.h>
+# include <oil/Core/RandomGenerator.h>
+# include <ml/RandomVariable.h>
 
 namespace lbcpp
 {

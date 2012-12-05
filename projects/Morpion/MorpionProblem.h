@@ -9,9 +9,9 @@
 #ifndef LBCPP_MORPION_PROBLEM_H_
 # define LBCPP_MORPION_PROBLEM_H_
 
-# include <lbcpp-ml/Search.h>
-# include <lbcpp-ml/Problem.h>
-# include <lbcpp/UserInterface/ObjectComponent.h>
+# include <ml/Search.h>
+# include <ml/Problem.h>
+# include <oil/UserInterface/ObjectComponent.h>
 # include "MorpionBoard.h"
 
 namespace lbcpp

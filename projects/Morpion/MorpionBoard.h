@@ -9,8 +9,8 @@
 #ifndef LBCPP_MORPION_BOARD_H_
 # define LBCPP_MORPION_BOARD_H_
 
-# include <lbcpp/Core/Object.h>
-# include <lbcpp-ml/DoubleVector.h>
+# include <oil/Core/Object.h>
+# include <ml/DoubleVector.h>
 
 namespace lbcpp
 {

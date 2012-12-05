@@ -11,9 +11,9 @@
 #include "ObjectBrowser.h"
 #include "HexadecimalFileComponent.h"
 #include "LuaCodeEditorComponent.h"
-#include <lbcpp/library.h>
-#include <lbcpp/Core/Library.h>
-#include <lbcpp/Core/Loader.h>
+#include <oil/library.h>
+#include <oil/Core/Library.h>
+#include <oil/Core/Loader.h>
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const string& title);

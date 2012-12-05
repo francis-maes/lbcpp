@@ -160,8 +160,7 @@ ADD_SUBDIRECTORY(shark)
 ## Sub directories
 ##
 ADD_SUBDIRECTORY(juce)
-ADD_SUBDIRECTORY(lbcpp-core)
-ADD_SUBDIRECTORY(lbcpp-ml)
+ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(projects)
 ADD_SUBDIRECTORY(programs)
 

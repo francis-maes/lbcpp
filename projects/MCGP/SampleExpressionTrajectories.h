@@ -9,9 +9,9 @@
 #ifndef LBCPP_MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
 # define LBCPP_MCGP_SAMPLE_EXPRESSION_TRAJECTORIES_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp-ml/ExpressionDomain.h>
-# include <lbcpp-ml/Domain.h>
+# include <oil/Execution/WorkUnit.h>
+# include <ml/ExpressionDomain.h>
+# include <ml/Domain.h>
 
 namespace lbcpp
 {

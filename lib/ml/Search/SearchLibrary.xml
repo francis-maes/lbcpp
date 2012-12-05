@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Search" directory="Search">
+
+  <include file="ml/Search.h"/>
+  
+  <class name="SearchState" base="Object" abstract="yes"/>
+  <class name="SearchTrajectory" base="Object">
+    <variable type="Vector[Object]" name="actions"/>
+    <variable type="SearchState" name="finalState"/>
+  </class>
+  <class name="SearchDomain" base="Domain">
+    <variable type="SearchState" name="initialState"/>
+  </class>
+  <class name="MaximizeSearchTrajectoryLengthObjective" base="Objective"/>
+  
+  <class name="SearchActionCodeGenerator" base="Object" abstract="yes"/>
+
+  <class name="SearchAlgorithm" base="Solver" abstract="yes"/>
+  <class name="DecoratorSearchAlgorithm" base="SearchAlgorithm" abstract="yes">
+    <variable type="Solver" name="algorithm"/>
+  </class>
+
+  <class name="RolloutSearchAlgorithm" base="SearchAlgorithm">
+    <constructor arguments="SearchSamplerPtr sampler"/>
+    <variable type="SearchSampler" name="sampler"/>
+  </class>
+  
+  <class name="StepSearchAlgorithm" base="DecoratorSearchAlgorithm">
+    <constructor arguments="SolverPtr algorithm"/>
+  </class>
+
+  <class name="LookAheadSearchAlgorithm" base="DecoratorSearchAlgorithm">
+    <constructor arguments="SolverPtr algorithm, double numActions"/>
+    <variable type="Double" name="numActions"/>
+  </class>
+
+</library>
