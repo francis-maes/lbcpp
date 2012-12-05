@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_FITNESS_H_
-# define LBCPP_ML_FITNESS_H_
+#ifndef ML_FITNESS_H_
+# define ML_FITNESS_H_
 
 # include "Domain.h"
 
@@ -77,4 +77,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_FITNESS_H_
+#endif // !ML_FITNESS_H_

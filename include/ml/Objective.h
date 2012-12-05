@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_OBJECTIVE_H_
-# define LBCPP_ML_OBJECTIVE_H_
+#ifndef ML_OBJECTIVE_H_
+# define ML_OBJECTIVE_H_
 
 # include "DoubleVector.h"
 # include <oil/Core/Table.h>
@@ -131,4 +131,4 @@ extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(TablePtr
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OBJECTIVE_H_
+#endif // !ML_OBJECTIVE_H_

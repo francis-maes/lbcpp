@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
-# define LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
+#ifndef ML_SAMPLER_DIAGONAL_GAUSSIAN_H_
+# define ML_SAMPLER_DIAGONAL_GAUSSIAN_H_
 
 # include <ml/Sampler.h>
 # include <ml/RandomVariable.h>
@@ -174,4 +174,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
+#endif // !ML_SAMPLER_DIAGONAL_GAUSSIAN_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLUTION_COMPARATOR_H_
-# define LBCPP_ML_SOLUTION_COMPARATOR_H_
+#ifndef ML_SOLUTION_COMPARATOR_H_
+# define ML_SOLUTION_COMPARATOR_H_
 
 # include "Fitness.h"
 
@@ -30,4 +30,4 @@ extern SolutionComparatorPtr paretoRankAndCrowdingDistanceComparator();
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLUTION_COMPARATOR_H_
+#endif // !ML_SOLUTION_COMPARATOR_H_

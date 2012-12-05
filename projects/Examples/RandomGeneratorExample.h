@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXAMPLES_RANDOM_GENERATOR_H_
-# define LBCPP_EXAMPLES_RANDOM_GENERATOR_H_
+#ifndef EXAMPLES_RANDOM_GENERATOR_H_
+# define EXAMPLES_RANDOM_GENERATOR_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <oil/Core/RandomGenerator.h>
@@ -72,4 +72,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXAMPLES_WORK_UNIT_H_
+#endif // !EXAMPLES_RANDOM_GENERATOR_H_

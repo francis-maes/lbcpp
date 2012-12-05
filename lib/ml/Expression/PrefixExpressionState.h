@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_PREFIX_STATE_H_
-# define LBCPP_ML_EXPRESSION_PREFIX_STATE_H_
+#ifndef ML_EXPRESSION_PREFIX_STATE_H_
+# define ML_EXPRESSION_PREFIX_STATE_H_
 
 # include <ml/ExpressionDomain.h>
 # include <ml/Search.h>
@@ -106,4 +106,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_PREFIX_STATE_H_
+#endif // !ML_EXPRESSION_PREFIX_STATE_H_

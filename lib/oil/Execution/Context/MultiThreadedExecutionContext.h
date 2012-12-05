@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CONTEXT_MULTI_THREADED_H_
-# define LBCPP_EXECUTION_CONTEXT_MULTI_THREADED_H_
+#ifndef OIL_EXECUTION_CONTEXT_MULTI_THREADED_H_
+# define OIL_EXECUTION_CONTEXT_MULTI_THREADED_H_
 
 # include <oil/Execution/ExecutionContext.h>
 # include <oil/Execution/ExecutionStack.h>
@@ -547,4 +547,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_CONTEXT_MULTI_THREADED_H_
+#endif //!OIL_EXECUTION_CONTEXT_MULTI_THREADED_H_

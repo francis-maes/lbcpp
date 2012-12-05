@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_DOUBLE_VECTOR_H_
-# define LBCPP_DATA_DOUBLE_VECTOR_H_
+#ifndef ML_DATA_DOUBLE_VECTOR_H_
+# define ML_DATA_DOUBLE_VECTOR_H_
 
 # include <oil/Core/Vector.h>
 # include <oil/Core/XmlSerialisation.h>
@@ -383,4 +383,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_DOUBLE_VECTOR_H_
+#endif // !ML_DATA_DOUBLE_VECTOR_H_

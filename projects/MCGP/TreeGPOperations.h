@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_TREE_GP_OPERATIONS_H_
-# define LBCPP_MCGP_TREE_GP_OPERATIONS_H_
+#ifndef MCGP_TREE_GP_OPERATIONS_H_
+# define MCGP_TREE_GP_OPERATIONS_H_
 
 # include <ml/SolutionComparator.h>
 # include <ml/ExpressionSampler.h>
@@ -304,4 +304,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_TREE_BASED_GENETIC_PROGRAMMING_H_
+#endif // !MCGP_TREE_BASED_GENETIC_PROGRAMMING_H_

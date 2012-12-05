@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_PREDECLARATIONS_H_
-# define LBCPP_ML_PREDECLARATIONS_H_
+#ifndef ML_PREDECLARATIONS_H_
+# define ML_PREDECLARATIONS_H_
 
 namespace lbcpp
 {
@@ -159,4 +159,4 @@ typedef ReferenceCountedObjectPtr<PostfixExpressionTypeSpace> PostfixExpressionT
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_PREDECLARATIONS_H_
+#endif // !ML_PREDECLARATIONS_H_

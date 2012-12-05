@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
-# define LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
+#ifndef ML_FEATURE_GENERATOR_CALLBACKS_HPP_H_
+# define ML_FEATURE_GENERATOR_CALLBACKS_HPP_H_
 
 # include <ml/DoubleVector.h>
 
@@ -232,4 +232,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
+#endif // !ML_FEATURE_GENERATOR_CALLBACKS_HPP_H_

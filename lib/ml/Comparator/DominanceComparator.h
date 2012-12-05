@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_COMPARATOR_DOMINANCE_H_
-# define LBCPP_ML_COMPARATOR_DOMINANCE_H_
+#ifndef ML_COMPARATOR_DOMINANCE_H_
+# define ML_COMPARATOR_DOMINANCE_H_
 
 # include <ml/SolutionComparator.h>
 # include <ml/SolutionContainer.h>
@@ -45,4 +45,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_COMPARATOR_DOMINANCE_H_
+#endif // !ML_COMPARATOR_DOMINANCE_H_

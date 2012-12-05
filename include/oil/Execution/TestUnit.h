@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_TEST_UNIT_H_
-# define LBCPP_EXECUTION_TEST_UNIT_H_
+#ifndef OIL_EXECUTION_TEST_UNIT_H_
+# define OIL_EXECUTION_TEST_UNIT_H_
 
 # include "WorkUnit.h"
 
@@ -47,4 +47,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_TEST_UNIT_H_
+#endif //!OIL_EXECUTION_TEST_UNIT_H_

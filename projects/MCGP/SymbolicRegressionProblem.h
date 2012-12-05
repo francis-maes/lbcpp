@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_SYMBOLIC_REGRESSION_H_
-# define LBCPP_MCGP_SYMBOLIC_REGRESSION_H_
+#ifndef MCGP_SYMBOLIC_REGRESSION_H_
+# define MCGP_SYMBOLIC_REGRESSION_H_
 
 # include <ml/ExpressionDomain.h>
 
@@ -169,4 +169,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_SYMBOLIC_REGRESSION_H_
+#endif // !MCGP_SYMBOLIC_REGRESSION_H_

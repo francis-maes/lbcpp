@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
-# define LBCPP_ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
+#ifndef ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
+# define ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
 
 # include <ml/Search.h>
 # include <ml/Solver.h>
@@ -294,4 +294,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_
+#endif // !ML_SAMPLER_SEARCH_LOG_LINEAR_ACTION_CODE_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_AGGREGATOR_MEAN_DOUBLE_H_
-# define LBCPP_ML_AGGREGATOR_MEAN_DOUBLE_H_
+#ifndef ML_AGGREGATOR_MEAN_DOUBLE_H_
+# define ML_AGGREGATOR_MEAN_DOUBLE_H_
 
 # include <ml/Aggregator.h>
 # include <ml/Expression.h>
@@ -78,4 +78,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_AGGREGATOR_MEAN_DOUBLE_H_
+#endif // !ML_AGGREGATOR_MEAN_DOUBLE_H_

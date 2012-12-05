@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_TREE_VIEW_H_
-# define LBCPP_ML_EXPRESSION_TREE_VIEW_H_
+#ifndef ML_EXPRESSION_TREE_VIEW_H_
+# define ML_EXPRESSION_TREE_VIEW_H_
 
 # include "../../oil/UserInterface/TreeView/GenericTreeView.h"
 # include <ml/Expression.h>
@@ -46,4 +46,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_TREE_VIEW_H_
+#endif // !ML_EXPRESSION_TREE_VIEW_H_

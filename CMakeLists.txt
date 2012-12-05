@@ -152,14 +152,9 @@ endif(${USE_LUAJIT} EQUAL "1")
 ADD_SUBDIRECTORY(lua)
 
 ##
-## Shark
-##
-ADD_SUBDIRECTORY(shark)
-
-##
 ## Sub directories
 ##
-ADD_SUBDIRECTORY(juce)
+ADD_SUBDIRECTORY(extern)
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(projects)
 ADD_SUBDIRECTORY(programs)

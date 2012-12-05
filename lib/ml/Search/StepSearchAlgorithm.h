@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SEARCH_ALGORITHM_STEP_H_
-# define LBCPP_ML_SEARCH_ALGORITHM_STEP_H_
+#ifndef ML_SEARCH_ALGORITHM_STEP_H_
+# define ML_SEARCH_ALGORITHM_STEP_H_
 
 # include <ml/Search.h>
 # include <ml/SolutionContainer.h>
@@ -70,4 +70,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SEARCH_ALGORITHM_STEP_H_
+#endif // !ML_SEARCH_ALGORITHM_STEP_H_

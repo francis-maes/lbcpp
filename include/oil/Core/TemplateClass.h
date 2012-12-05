@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_TEMPLATE_CLASS_H_
-# define LBCPP_CORE_TEMPLATE_CLASS_H_
+#ifndef OIL_CORE_TEMPLATE_CLASS_H_
+# define OIL_CORE_TEMPLATE_CLASS_H_
 
 # include "Class.h"
 
@@ -110,4 +110,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_TEMPLATE_CLASS_H_
+#endif // !OIL_CORE_TEMPLATE_CLASS_H_

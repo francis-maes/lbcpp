@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_LOADER_ARFF_H_
-# define LBCPP_ML_LOADER_ARFF_H_
+#ifndef ML_LOADER_ARFF_H_
+# define ML_LOADER_ARFF_H_
 
 # include <oil/Core/Loader.h>
 # include <oil/Core/Table.h>
@@ -285,4 +285,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_ML_LOADER_ARFF_H_
+#endif // ML_LOADER_ARFF_H_

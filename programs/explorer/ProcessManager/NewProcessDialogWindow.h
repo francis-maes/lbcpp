@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_PROCESS_MANAGER_NEW_DIALOG_WINDOW_H_
-# define LBCPP_EXPLORER_PROCESS_MANAGER_NEW_DIALOG_WINDOW_H_
+#ifndef EXPLORER_PROCESS_MANAGER_NEW_DIALOG_WINDOW_H_
+# define EXPLORER_PROCESS_MANAGER_NEW_DIALOG_WINDOW_H_
 
 # include "ProcessManager.h"
 # include "RecentProcesses.h"
@@ -206,4 +206,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_PROCESS_MANAGER_NEW_DIALOG_WINDOW_H_
+#endif // !EXPLORER_PROCESS_MANAGER_NEW_DIALOG_WINDOW_H_

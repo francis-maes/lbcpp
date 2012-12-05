@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CONTEXT_H_
-# define LBCPP_EXECUTION_CONTEXT_H_
+#ifndef OIL_EXECUTION_CONTEXT_H_
+# define OIL_EXECUTION_CONTEXT_H_
 
 # include "ExecutionCallback.h"
 # include "ExecutionContextCallback.h"
@@ -145,4 +145,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_CONTEXT_H_
+#endif //!OIL_EXECUTION_CONTEXT_H_

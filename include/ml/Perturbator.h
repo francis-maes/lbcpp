@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_PERTURBATOR_H_
-# define LBCPP_ML_PERTURBATOR_H_
+#ifndef ML_PERTURBATOR_H_
+# define ML_PERTURBATOR_H_
 
 # include <ml/Domain.h>
 
@@ -40,4 +40,4 @@ typedef ReferenceCountedObjectPtr<BinaryPerturbator> BinaryPerturbatorPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_PERTURBATOR_H_
+#endif // !ML_PERTURBATOR_H_

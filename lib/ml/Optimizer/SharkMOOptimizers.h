@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_OPTIMIZER_SHARK_H_
-# define LBCPP_ML_OPTIMIZER_SHARK_H_
+#ifndef ML_OPTIMIZER_SHARK_H_
+# define ML_OPTIMIZER_SHARK_H_
 
 # include <ml/Solver.h>
 # undef T
@@ -150,4 +150,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OPTIMIZER_SHARK_H_
+#endif // !ML_OPTIMIZER_SHARK_H_

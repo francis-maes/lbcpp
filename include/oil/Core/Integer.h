@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_INTEGER_H_
-# define LBCPP_CORE_INTEGER_H_
+#ifndef OIL_CORE_INTEGER_H_
+# define OIL_CORE_INTEGER_H_
 
 # include "Object.h"
 # include "Enumeration.h"
@@ -107,4 +107,4 @@ extern ClassPtr enumValueClass;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_DOUBLE_H_
+#endif // !OIL_CORE_DOUBLE_H_

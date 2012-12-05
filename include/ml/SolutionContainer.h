@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLUTION_CONTAINER_H_
-# define LBCPP_ML_SOLUTION_CONTAINER_H_
+#ifndef ML_SOLUTION_CONTAINER_H_
+# define ML_SOLUTION_CONTAINER_H_
 
 # include "predeclarations.h"
 
@@ -137,4 +137,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLUTION_CONTAINER_H_
+#endif // !ML_SOLUTION_CONTAINER_H_

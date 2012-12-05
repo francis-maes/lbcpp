@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_LIBRARY_H_
-# define LBCPP_CORE_LIBRARY_H_
+#ifndef OIL_CORE_LIBRARY_H_
+# define OIL_CORE_LIBRARY_H_
 
 # include "Class.h"
 
@@ -105,4 +105,4 @@ struct MakeUIComponentConstructor
   
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_LIBRARY_H_
+#endif // !OIL_CORE_LIBRARY_H_

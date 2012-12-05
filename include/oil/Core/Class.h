@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_TYPE_H_
-# define LBCPP_CORE_TYPE_H_
+#ifndef OIL_CORE_TYPE_H_
+# define OIL_CORE_TYPE_H_
 
 # include "Signature.h"
 
@@ -158,4 +158,4 @@ extern ClassPtr classClass;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_TYPE_H_
+#endif // !OIL_CORE_TYPE_H_

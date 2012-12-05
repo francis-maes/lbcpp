@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SOLVER_BEAM_NRPA_H_
-# define LBCPP_ML_SOLVER_BEAM_NRPA_H_
+#ifndef ML_SOLVER_BEAM_NRPA_H_
+# define ML_SOLVER_BEAM_NRPA_H_
 
 # include "NRPASolver.h"
 # include <algorithm>
@@ -106,4 +106,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SOLVER_BEAM_NRPA_H_
+#endif // !ML_SOLVER_BEAM_NRPA_H_

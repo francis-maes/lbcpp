@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXAMPLES_WORK_UNIT_H_
-# define LBCPP_EXAMPLES_WORK_UNIT_H_
+#ifndef EXAMPLES_WORK_UNIT_H_
+# define EXAMPLES_WORK_UNIT_H_
 
 # include <oil/Execution/WorkUnit.h>
 
@@ -64,4 +64,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXAMPLES_WORK_UNIT_H_
+#endif // !EXAMPLES_WORK_UNIT_H_

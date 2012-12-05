@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ITERATION_FUNCTION_H_
-# define LBCPP_ITERATION_FUNCTION_H_
+#ifndef ML_ITERATION_FUNCTION_H_
+# define ML_ITERATION_FUNCTION_H_
 
 # include "predeclarations.h"
 
@@ -92,4 +92,4 @@ extern IterationFunctionPtr invLinearIterationFunction(double initialValue = 1.0
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ITERATION_FUNCTION_H_
+#endif // !ML_ITERATION_FUNCTION_H_

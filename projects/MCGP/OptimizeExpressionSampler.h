@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_
-# define LBCPP_MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_
+#ifndef MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_
+# define MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_
 
 # include <ml/ExpressionDomain.h>
 # include <ml/BanditPool.h>
@@ -129,4 +129,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_
+#endif // !MCGP_OPTIMIZE_EXPRESSION_SAMPLER_H_

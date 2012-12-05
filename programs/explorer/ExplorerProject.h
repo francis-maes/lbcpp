@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_PROJECT_H_
-# define LBCPP_EXPLORER_PROJECT_H_
+#ifndef EXPLORER_PROJECT_H_
+# define EXPLORER_PROJECT_H_
 
 # include "ExplorerConfiguration.h"
 # include <oil/Execution/WorkUnit.h>
@@ -146,4 +146,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_PROJECT_H_
+#endif // !EXPLORER_PROJECT_H_

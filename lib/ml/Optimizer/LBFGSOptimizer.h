@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_OPTIMIZER_LBFGS_H_
-# define LBCPP_ML_OPTIMIZER_LBFGS_H_
+#ifndef ML_OPTIMIZER_LBFGS_H_
+# define ML_OPTIMIZER_LBFGS_H_
 
 # include <ml/Solver.h>
 # include <ml/SolutionContainer.h>
@@ -93,4 +93,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_OPTIMIZER_LBFGS_H_
+#endif // !ML_OPTIMIZER_LBFGS_H_

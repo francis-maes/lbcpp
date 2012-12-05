@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MOO_SANDBOX_H_
-# define LBCPP_MOO_SANDBOX_H_
+#ifndef MOO_SANDBOX_H_
+# define MOO_SANDBOX_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/RandomVariable.h>
@@ -266,4 +266,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MOO_SANDBOX_H_
+#endif // !MOO_SANDBOX_H_

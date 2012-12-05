@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_DOMAIN_H_
-# define LBCPP_ML_EXPRESSION_DOMAIN_H_
+#ifndef ML_EXPRESSION_DOMAIN_H_
+# define ML_EXPRESSION_DOMAIN_H_
 
 # include "Domain.h"
 # include "Expression.h"
@@ -193,4 +193,4 @@ extern ExpressionStatePtr typedPostfixExpressionState(ExpressionDomainPtr domain
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_DOMAIN_H_
+#endif // !ML_EXPRESSION_DOMAIN_H_

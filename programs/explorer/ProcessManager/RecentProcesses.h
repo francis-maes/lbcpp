@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_PROCESS_MANAGER_RECENTS_H_
-# define LBCPP_EXPLORER_PROCESS_MANAGER_RECENTS_H_
+#ifndef EXPLORER_PROCESS_MANAGER_RECENTS_H_
+# define EXPLORER_PROCESS_MANAGER_RECENTS_H_
 
 # include "ProcessManager.h"
 # include "../ExplorerConfiguration.h"
@@ -65,4 +65,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_PROCESS_MANAGER_RECENTS_H_
+#endif // !EXPLORER_PROCESS_MANAGER_RECENTS_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SAMPLER_SEARCH_RANDOM_H_
-# define LBCPP_ML_SAMPLER_SEARCH_RANDOM_H_
+#ifndef ML_SAMPLER_SEARCH_RANDOM_H_
+# define ML_SAMPLER_SEARCH_RANDOM_H_
 
 # include <ml/Search.h>
 # include <ml/Sampler.h>
@@ -40,4 +40,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SAMPLER_SEARCH_RANDOM_H_
+#endif // !ML_SAMPLER_SEARCH_RANDOM_H_

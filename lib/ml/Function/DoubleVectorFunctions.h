@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_
-# define LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_
+#ifndef ML_FUNCTION_DOUBLE_VECTOR_H_
+# define ML_FUNCTION_DOUBLE_VECTOR_H_
 
 # include "ObjectFunctions.h"
 # include <ml/DoubleVector.h>
@@ -212,4 +212,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_
+#endif // !ML_FUNCTION_DOUBLE_VECTOR_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_PREDECLARATIONS_H_
-# define LBCPP_EXECUTION_PREDECLARATIONS_H_
+#ifndef OIL_EXECUTION_PREDECLARATIONS_H_
+# define OIL_EXECUTION_PREDECLARATIONS_H_
 
 # include "../Core/predeclarations.h"
 
@@ -43,4 +43,4 @@ typedef ReferenceCountedObjectPtr<ProgressionState> ProgressionStatePtr;
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_PREDECLARATIONS_H_
+#endif //!OIL_EXECUTION_PREDECLARATIONS_H_

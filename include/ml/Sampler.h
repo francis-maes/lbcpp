@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SAMPLER_H_
-# define LBCPP_ML_SAMPLER_H_
+#ifndef ML_SAMPLER_H_
+# define ML_SAMPLER_H_
 
 # include "Domain.h"
 # include "SolutionContainer.h"
@@ -76,4 +76,4 @@ typedef ReferenceCountedObjectPtr<DecoratorSampler> DecoratorSamplerPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SAMPLER_H_
+#endif // !ML_SAMPLER_H_

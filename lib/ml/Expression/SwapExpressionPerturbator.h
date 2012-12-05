@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_PERTURBATOR_SWAP_H_
-# define LBCPP_ML_EXPRESSION_PERTURBATOR_SWAP_H_
+#ifndef ML_EXPRESSION_PERTURBATOR_SWAP_H_
+# define ML_EXPRESSION_PERTURBATOR_SWAP_H_
 
 # include <ml/ExpressionSampler.h>
 
@@ -64,4 +64,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_PERTURBATOR_SWAP_H_
+#endif // !ML_EXPRESSION_PERTURBATOR_SWAP_H_

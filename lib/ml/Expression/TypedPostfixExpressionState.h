@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
-# define LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
+#ifndef ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
+# define ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
 
 # include "PostfixExpressionState.h"
 
@@ -125,4 +125,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_TYPED_POSTFIX_STATE_H_
+#endif // !ML_EXPRESSION_TYPED_POSTFIX_STATE_H_

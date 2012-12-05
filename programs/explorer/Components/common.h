@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_COMMON_H_
 
 # define DONT_SET_USING_JUCE_NAMESPACE
-# include "../../juce/juce_amalgamated.h"
+# include "../../extern/juce/juce_amalgamated.h"
 
 using juce::Component;
 using juce::TabbedComponent;

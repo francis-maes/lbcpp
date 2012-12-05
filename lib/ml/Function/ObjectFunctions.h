@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_FUNCTION_OBJECT_H_
-# define LBCPP_ML_FUNCTION_OBJECT_H_
+#ifndef ML_FUNCTION_OBJECT_H_
+# define ML_FUNCTION_OBJECT_H_
 
 # include <ml/Function.h>
 # include <ml/Expression.h>
@@ -146,4 +146,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_FUNCTION_OBJECT_H_
+#endif // !ML_FUNCTION_OBJECT_H_

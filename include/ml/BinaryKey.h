@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_BINARY_KEY_H_
-# define LBCPP_DATA_BINARY_KEY_H_
+#ifndef ML_DATA_BINARY_KEY_H_
+# define ML_DATA_BINARY_KEY_H_
 
 # include <oil/Core/Object.h>
 
@@ -113,4 +113,4 @@ typedef ReferenceCountedObjectPtr<BinaryKey> BinaryKeyPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_BINARY_KEY_H_
+#endif // !ML_DATA_BINARY_KEY_H_

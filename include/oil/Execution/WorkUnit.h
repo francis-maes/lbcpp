@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_WORK_UNIT_H_
-# define LBCPP_EXECUTION_WORK_UNIT_H_
+#ifndef OIL_EXECUTION_WORK_UNIT_H_
+# define OIL_EXECUTION_WORK_UNIT_H_
 
 # include "predeclarations.h"
 # include "../Core.h"
@@ -142,4 +142,4 @@ protected:
   
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_WORK_UNIT_H_
+#endif //!OIL_EXECUTION_WORK_UNIT_H_

@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_RANDOM_VARIABLE_H_
-# define LBCPP_RANDOM_VARIABLE_H_
+#ifndef ML_RANDOM_VARIABLE_H_
+# define ML_RANDOM_VARIABLE_H_
 
 # include "predeclarations.h"
 # include <oil/Core/Object.h>
@@ -224,4 +224,4 @@ typedef ReferenceCountedObjectPtr<ScalarVariableRecentMeanAndVariance> ScalarVar
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_RANDOM_VARIABLE_H_
+#endif // !ML_RANDOM_VARIABLE_H_

@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_ENUMERATION_H_
-# define LBCPP_CORE_ENUMERATION_H_
+#ifndef OIL_CORE_ENUMERATION_H_
+# define OIL_CORE_ENUMERATION_H_
 
 # include "DefaultClass.h"
 
@@ -160,4 +160,4 @@ typedef ReferenceCountedObjectPtr<ConcatenateEnumeration> ConcatenateEnumeration
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_ENUMERATION_H_
+#endif // !OIL_CORE_ENUMERATION_H_

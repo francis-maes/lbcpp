@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_INDEX_SET_H_
-# define LBCPP_DATA_INDEX_SET_H_
+#ifndef ML_DATA_INDEX_SET_H_
+# define ML_DATA_INDEX_SET_H_
 
 # include <oil/Core/RandomGenerator.h>
 
@@ -71,4 +71,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_INDEX_SET_H_
+#endif // !ML_DATA_INDEX_SET_H_

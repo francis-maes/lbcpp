@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_EXPRESSION_PERTURBATOR_SHRINK_H_
-# define LBCPP_ML_EXPRESSION_PERTURBATOR_SHRINK_H_
+#ifndef ML_EXPRESSION_PERTURBATOR_SHRINK_H_
+# define ML_EXPRESSION_PERTURBATOR_SHRINK_H_
 
 # include <ml/ExpressionSampler.h>
 
@@ -30,4 +30,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_EXPRESSION_PERTURBATOR_SHRINK_H_
+#endif // !ML_EXPRESSION_PERTURBATOR_SHRINK_H_

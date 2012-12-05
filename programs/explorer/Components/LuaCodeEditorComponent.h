@@ -6,15 +6,15 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_
-# define LBCPP_EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_
+#ifndef EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_
+# define EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_
 
 # include "common.h"
 # include <oil/UserInterface/ObjectComponent.h>
 # include <oil/UserInterface/UserInterfaceManager.h>
 # include <oil/Lua/Lua.h>
-# include "../../juce/juce_CodeEditorComponent.h"
-# include "../../juce/juce_LuaCodeTokeniser.h"
+# include "../../extern/juce/juce_CodeEditorComponent.h"
+# include "../../extern/juce/juce_LuaCodeTokeniser.h"
 # include "../ExplorerProject.h"
 
 class LuaCodeEditorComponent;
@@ -56,4 +56,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_
+#endif // !EXPLORER_COMPONENTS_LUA_CODE_EDITOR_H_

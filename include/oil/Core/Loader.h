@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Loader.h                   | File Loader Base Class          |
+| Filename: Loader.h                       | File Loader Base Class          |
 | Author  : Francis Maes                   |                                 |
 | Started : 10/11/2012 13:16               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_FILE_LOADER_H_
-# define LBCPP_DATA_FILE_LOADER_H_
+#ifndef OIL_CORE_LOADER_H_
+# define OIL_CORE_LOADER_H_
 
 # include "../Core/Object.h"
 # include "../Execution/ExecutionContext.h"
@@ -52,4 +52,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_FILE_LOADER_H_
+#endif // !OIL_CORE_LOADER_H_

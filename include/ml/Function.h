@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_FUNCTION_H_
-# define LBCPP_ML_FUNCTION_H_
+#ifndef ML_FUNCTION_H_
+# define ML_FUNCTION_H_
 
 # include "predeclarations.h"
 # include <oil/Core.h>
@@ -176,4 +176,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_FUNCTION_H_
+#endif // !ML_FUNCTION_H_

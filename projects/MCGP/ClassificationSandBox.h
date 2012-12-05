@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_CLASSIFICATION_SANDBOX_H_
-# define LBCPP_MCGP_CLASSIFICATION_SANDBOX_H_
+#ifndef MCGP_CLASSIFICATION_SANDBOX_H_
+# define MCGP_CLASSIFICATION_SANDBOX_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/Solver.h>
@@ -129,4 +129,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_MCGP_CLASSIFICATION_SANDBOX_H_
+#endif // MCGP_CLASSIFICATION_SANDBOX_H_

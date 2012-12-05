@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
-# define LBCPP_EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
+#ifndef EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
+# define EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
 
 # include "../ExplorerProject.h"
 # include "../Components/common.h"
@@ -36,4 +36,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
+#endif // !EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_

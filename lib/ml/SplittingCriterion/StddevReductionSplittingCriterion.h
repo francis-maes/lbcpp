@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_
-# define LBCPP_ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_
+#ifndef ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_
+# define ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_
 
 # include <ml/SplittingCriterion.h>
 # include <ml/RandomVariable.h>
@@ -98,4 +98,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_
+#endif // !ML_SPLITTING_CRITERION_STDDEV_REDUCTION_H_

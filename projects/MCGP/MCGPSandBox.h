@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MCGP_SANDBOX_H_
-# define LBCPP_MCGP_SANDBOX_H_
+#ifndef MCGP_SANDBOX_H_
+# define MCGP_SANDBOX_H_
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/RandomVariable.h>
@@ -907,4 +907,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MCGP_SANDBOX_H_
+#endif // !MCGP_SANDBOX_H_

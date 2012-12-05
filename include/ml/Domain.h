@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_DOMAIN_H_
-# define LBCPP_ML_DOMAIN_H_
+#ifndef ML_DOMAIN_H_
+# define ML_DOMAIN_H_
 
 # include "predeclarations.h"
 # include <oil/Core/RandomGenerator.h>
@@ -120,4 +120,4 @@ extern DomainPtr vectorDomain(DomainPtr elementsDomain);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_ML_DOMAIN_H_
+#endif // !ML_DOMAIN_H_

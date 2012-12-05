@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_ML_LEARNER_RANDOM_SPLIT_CONDITION_H_
-# define LBCPP_ML_LEARNER_RANDOM_SPLIT_CONDITION_H_
+#ifndef ML_LEARNER_RANDOM_SPLIT_CONDITION_H_
+# define ML_LEARNER_RANDOM_SPLIT_CONDITION_H_
 
 # include <ml/Solver.h>
 # include <ml/Expression.h>
@@ -70,4 +70,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // LBCPP_ML_LEARNER_RANDOM_SPLIT_CONDITION_H_
+#endif // ML_LEARNER_RANDOM_SPLIT_CONDITION_H_

@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_PROCESS_MANAGER_COMPONENT_H_
-# define LBCPP_EXPLORER_PROCESS_MANAGER_COMPONENT_H_
+#ifndef EXPLORER_PROCESS_MANAGER_COMPONENT_H_
+# define EXPLORER_PROCESS_MANAGER_COMPONENT_H_
 
 # include "ProcessManager.h"
 # include "../Components/common.h"
@@ -191,5 +191,5 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_PROCESS_MANAGER_COMPONENT_H_
+#endif // !EXPLORER_PROCESS_MANAGER_COMPONENT_H_
 

@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_RANDOM_GENERATOR_H_
-# define LBCPP_DATA_RANDOM_GENERATOR_H_
+#ifndef OIL_CORE_RANDOM_GENERATOR_H_
+# define OIL_CORE_RANDOM_GENERATOR_H_
 
 # include "../Core/Object.h"
 # include "predeclarations.h"
@@ -342,4 +342,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_RANDOM_GENERATOR_H_
+#endif // !OIL_CORE_RANDOM_GENERATOR_H_

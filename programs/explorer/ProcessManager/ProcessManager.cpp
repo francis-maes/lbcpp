@@ -71,7 +71,7 @@ void ProcessManager::killAllRunningProcesses()
 /*
 ** LocalProcessManager
 */
-#include "../../juce/ConsoleProcess.h"
+#include "../../extern/juce/ConsoleProcess.h"
 
 class LocalProcess : public Process
 {
