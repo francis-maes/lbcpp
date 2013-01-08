@@ -42,7 +42,7 @@
     <variable type="Double" name="minValue"/>
     <variable type="Double" name="maxValue"/>
     <variable type="Boolean" name="includeOutOfBound"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
+    <variable type="Vector[Double]" name="values"/>
   </class>
 
 </library>
