@@ -49,7 +49,7 @@ public:
     context.leaveScope();
     
     context.enterScope("Solve with Surrogate based");
-    SolverPtr sbSolver = surrogateBasedSolver(uniformScalarVectorSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, 5000);
+    SolverPtr sbSolver = continuousSurrogateBasedSolver(uniformScalarVectorSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, 5000);
     sbSolver->setVerbosity(verbosityDetailed);
     sbSolver->solve(context, problem, storeBestSolutionSolverCallback(solution));
     context.resultCallback("solution2", solution);

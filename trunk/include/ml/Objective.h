@@ -120,12 +120,17 @@ protected:
   VariableExpressionPtr supervision;
 };
 
+// classification
 extern SupervisedLearningObjectivePtr binaryAccuracyObjective(TablePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr multiClassAccuracyObjective(TablePtr data, VariableExpressionPtr supervision);
 
+// regression
 extern SupervisedLearningObjectivePtr mseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr rmseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(TablePtr data, VariableExpressionPtr supervision);
+
+// multi-dimensional regression
+extern SupervisedLearningObjectivePtr mseMultiRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
 
 // todo: StochasticDifferentiableObjective
 

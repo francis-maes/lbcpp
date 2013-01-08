@@ -146,6 +146,7 @@ SET(ML_EXPRESSION_SEARCH_SOURCES
 SET(ML_EXPRESSION_OBJECTIVE_SOURCES
   Expression/ClassificationObjectives.h
   Expression/RegressionObjectives.h
+  Expression/MultiRegressionObjectives.h
 )
 
 SET(ML_SEARCH_SOURCES
