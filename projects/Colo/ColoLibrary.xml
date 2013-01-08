@@ -17,6 +17,11 @@
     <variable type="Vector[Vector[Double]]" name="probabilities"/>
   </class>
 
+  <class name="SurrogateBasedMOSolver" base="SurrogateBasedSolver" abstract="yes">
+  </class>
+
+  <class name="ColoSurrogateBasedMOSolver" base="SurrogateBasedMOSolver"/>
+  
   <class name="ColoSandBox" base="WorkUnit">
     <variable type="File" name="javaDirectory"/>
     <variable type="File" name="modelDirectory"/>

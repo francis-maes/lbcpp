@@ -13,6 +13,8 @@ SET(LBCPP_COLO_SOURCES
   precompiled.h
   precompiled.cpp
   ColoJavaWrapper.cpp
+  ColoProblem.h
+  SurrogateBasedColoSolver.h
   ColoSandBox.h
   ColoLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ColoLibrary.cpp
