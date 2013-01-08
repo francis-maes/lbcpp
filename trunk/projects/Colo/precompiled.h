@@ -7,5 +7,5 @@
                                `------------------------------------*/
 
 // This file is necessary for Visual Studio to support precompiled headers
-#include "../../lbcpp-core/precompiled.h"
-#include <lbcpp/lbcpp.h>
+#include "../../lib/oil/precompiled.h"
+#include <oil/lbcpp.h>

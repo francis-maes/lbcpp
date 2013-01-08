@@ -51,8 +51,15 @@ public:
       context.errorCallback("Could not find ColoEvaluator class");
       return false;
     }
-    constructor = env->GetMethodID(evaluatorClass, "<init>", "(Ljava/lang/string;)V");
-    getValuesMethod = env->GetMethodID(evaluatorClass, "getValue", "(Ljava/lang/string;)[D");
+    
+    constructor = env->GetMethodID(evaluatorClass, "<init>", "(Ljava/lang/String;)V");
+    if (!constructor)
+    {
+      env->ExceptionDescribe();
+      context.errorCallback("Could not find ColoEvaluator constructor");
+      return false;
+    }
+    getValuesMethod = env->GetMethodID(evaluatorClass, "getValue", "(Ljava/lang/String;)[D");
     jstring modelpath = env->NewStringUTF(modelDirectory.getFullPathName());
     context.enterScope("Loading Weka Models");
     instance = env->NewObject(evaluatorClass, constructor, modelpath);
@@ -62,7 +69,10 @@ public:
 
   std::vector<double> evaluate(const ColoObjectPtr& colo)
   {
-    jstring sequence = env->NewStringUTF(colo->toShortString());
+    string cppSequence = colo->toShortString();
+    char* cppSequenceBis = (char* )malloc(cppSequence.length()+1);
+    memcpy(cppSequenceBis, (const char* )cppSequence, cppSequence.length()+1);
+    jstring sequence = env->NewStringUTF(cppSequence);
     jdoubleArray vals = (jdoubleArray)env->CallObjectMethod(instance, getValuesMethod, sequence);
     std::vector<double> values(2);
     if (vals)
@@ -72,6 +82,9 @@ public:
       values[0] = 10.0;
       values[1] = 0.0;
     }
+    env->DeleteLocalRef(sequence);
+    env->DeleteLocalRef(vals);
+    free(cppSequenceBis);
     return values;
   }
   JavaVM* jvm;

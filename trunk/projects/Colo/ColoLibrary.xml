@@ -11,10 +11,10 @@
     <variable type="File" name="modelDirectory"/>
   </class>
   <class name="ColoSampler" base="Sampler">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
+    <variable type="Vector[Double]" name="probabilities"/>
   </class>
   <class name="ColoSampler2" base="Sampler">
-    <variable type="Vector[DenseDoubleVector[PositiveIntegerEnumeration,Double]]" name="probabilities"/>
+    <variable type="Vector[Vector[Double]]" name="probabilities"/>
   </class>
 
   <class name="ColoSandBox" base="WorkUnit">
