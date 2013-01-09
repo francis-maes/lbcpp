@@ -85,6 +85,18 @@ protected:
         if (fabs(value - d->get(*it)) > 1e-9)
           return false;
     }
+    else if (data->getElementsType()->inheritsFrom(denseDoubleVectorClass()))
+    {
+      OVectorPtr o = data.staticCast<OVector>();
+      IndexSet::const_iterator it = indices->begin();
+      DenseDoubleVectorPtr value = o->getAndCast<DenseDoubleVector>(*it);
+      for (++it; it != indices->end(); ++it)
+      {
+        double distance = value->l2norm(o->getAndCast<DenseDoubleVector>(*it));
+        if (distance > 1e-9)
+          return false;
+      }
+    }
     else
     {
       IndexSet::const_iterator it = indices->begin();

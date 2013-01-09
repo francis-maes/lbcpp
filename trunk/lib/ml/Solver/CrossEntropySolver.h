@@ -45,9 +45,10 @@ public:
     {
       ObjectPtr bestSolution = selectedPopulation->getSolution(0);
       context.resultCallback("bestSolution", bestSolution);
-      context.resultCallback("bestFitness", selectedPopulation->getFitness(0));
-      if (problem->getNumValidationObjectives())
-        context.resultCallback("bestSolutionValidation", problem->getValidationObjective(0)->evaluate(context, bestSolution));
+      for (size_t i = 0; i < problem->getNumObjectives(); ++i)
+        context.resultCallback("bestFitness" + string((int)i), selectedPopulation->getFitness(0)->getValue(i));
+      for (size_t i = 0; i < problem->getNumValidationObjectives(); ++i)
+        context.resultCallback("bestSolutionValidation" + string((int)i), problem->getValidationObjective(i)->evaluate(context, bestSolution));
     }
 
     currentSampler = currentSampler->cloneAndCast<Sampler>();

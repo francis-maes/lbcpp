@@ -54,14 +54,30 @@ protected:
       DataVectorPtr values = objective->computePredictions(context, booleanOrScalar);
       double minValue = DBL_MAX;
       double maxValue = -DBL_MAX;
-      for (DataVector::const_iterator it = values->begin(); it != values->end(); ++it)
+      if (values->getElementsType()->inheritsFrom(doubleClass))
       {
-        double value = it.getRawDouble();
-        if (value < minValue)
-          minValue = value;
-        if (value > maxValue)
-          maxValue = value;
+        for (DataVector::const_iterator it = values->begin(); it != values->end(); ++it)
+        {
+          double value = it.getRawDouble();
+          if (value < minValue)
+            minValue = value;
+          if (value > maxValue)
+            maxValue = value;
+        }
       }
+      else if (values->getElementsType()->inheritsFrom(integerClass))
+      {
+        for (DataVector::const_iterator it = values->begin(); it != values->end(); ++it)
+        {
+          double value = (double)it.getRawInteger();
+          if (value < minValue)
+            minValue = value;
+          if (value > maxValue)
+            maxValue = value;
+        }
+      }
+      else
+        jassertfalse;
       double threshold = context.getRandomGenerator()->sampleDouble(minValue, maxValue);
       return new FunctionExpression(stumpFunction(threshold), booleanOrScalar);
     }

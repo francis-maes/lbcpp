@@ -18,6 +18,8 @@
 namespace lbcpp
 {
 
+extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
+
 class ColoSandBox : public WorkUnit
 {
 public:
@@ -25,6 +27,8 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
+    lbCppMLLibraryCacheTypes(context);
+
     ColoProblemPtr problem = new ColoProblem(context, javaDirectory, modelDirectory);
     if (!problem->getNumObjectives())
       return new Boolean(false);
@@ -35,23 +39,29 @@ public:
 
     runOptimizer(context, problem, randomSolver(new ColoSampler(), numEvaluations));
 
-    /*
-    //runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, false));
+    runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, false));
     runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 10, numEvaluations / 100, true));
     runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, true));
-    //runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
+    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
     runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 10, numEvaluations / 100, true));
     runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, true));
     //runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 300, numEvaluations / 1000, false));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 100, numEvaluations / 1000, true));
+    /*runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 100, numEvaluations / 1000, true));
     runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 300, numEvaluations / 1000, true));
     */
     
     SamplerPtr expressionVectorSampler = scalarExpressionVectorSampler();
     SolverPtr conditionLearner = randomSplitConditionLearner(expressionVectorSampler);
-    SolverPtr surrogateLearner = treeLearner(stddevReductionSplittingCriterion(), conditionLearner); // FIXME: multi-dimensional splitting criterion
+    SolverPtr surrogateLearner = treeLearner(vectorStddevReductionSplittingCriterion(), conditionLearner);
+    surrogateLearner = simpleEnsembleLearner(surrogateLearner, 10);
     SolverPtr surrogateSolver = crossEntropySolver(new ColoSampler(), 100, 10, numEvaluations / 100, true);
+    surrogateSolver->setVerbosity(verbosityDetailed);
     IterativeSolverPtr surrogateBasedSolver = new ColoSurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, numEvaluations);
+    runOptimizer(context, problem, surrogateBasedSolver);
+
+    surrogateSolver = crossEntropySolver(new ColoSampler2(), 1000, 300, 50, true);
+    surrogateSolver->setVerbosity(verbosityDetailed);
+    surrogateBasedSolver = new ColoSurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, numEvaluations);
     runOptimizer(context, problem, surrogateBasedSolver);
 
     /*runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler(), 2, 20, 10, 5, false));
@@ -74,7 +84,9 @@ public:
       hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),
       maxEvaluationsSolverCallback(numEvaluations));
 
-    optimizer->setVerbosity(verbosityProgressAndResult);
+    //optimizer->setVerbosity(verbosityProgressAndResult);
+    optimizer->setVerbosity(verbosityDetailed);
+
     optimizer->solve(context, problem, callback);
 
     for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)

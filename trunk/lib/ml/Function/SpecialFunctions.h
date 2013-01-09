@@ -42,17 +42,21 @@ public:
   {
     if (!inputs[0])
       return ObjectPtr();
-    return new Boolean(Double::get(inputs[0]) >= threshold);
+    if (inputs[0].isInstanceOf<Double>())
+      return new Boolean(Double::get(inputs[0]) >= threshold);
+    else
+      return new Boolean((double)Integer::get(inputs[0]) >= threshold);
   }
 
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
   {
     const DataVectorPtr& scalars = inputs[0];
     jassert(scalars->size());
-    if (scalars->getElementsType() == doubleClass)
+    BVectorPtr res = new BVector(scalars->size());
+    unsigned char* dest = res->getDataPointer();
+
+    if (scalars->getElementsType()->inheritsFrom(doubleClass))
     {
-      BVectorPtr res = new BVector(scalars->size());
-      unsigned char* dest = res->getDataPointer();
       for (DataVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
       {
         double value = it.getRawDouble();
@@ -61,10 +65,22 @@ public:
         else
           *dest++ = (value >= threshold ? 1 : 0);
       }
-      return new DataVector(scalars->getIndices(), res);
+    }
+    else if (scalars->getElementsType()->inheritsFrom(integerClass))
+    {
+      for (DataVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
+      {
+        double value = (double)it.getRawInteger();
+        if (value == IVector::missingValue)
+          *dest++ = 2;
+        else
+          *dest++ = (value >= threshold ? 1 : 0);
+      }
     }
     else
-      return Function::compute(context, inputs, outputType);
+      jassertfalse;
+
+    return new DataVector(scalars->getIndices(), res);
   }
 
   virtual VectorPtr getVariableCandidateValues(size_t index, const std::vector<ClassPtr>& inputTypes) const

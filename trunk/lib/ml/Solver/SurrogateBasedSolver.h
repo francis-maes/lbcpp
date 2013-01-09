@@ -139,6 +139,7 @@ protected:
         fitnessVector->setValue(i, fitness->getValue(i));
       row.push_back(fitnessVector);
     }
+    surrogateLearningProblem->getObjective(0).staticCast<LearningObjective>()->getIndices()->append(data->getNumRows());
     data->addRow(row);
   }
 
@@ -151,38 +152,53 @@ protected:
   
   struct SurrogateObjective : public Objective
   {
-    SurrogateObjective(ObjectivePtr originalObjective, ExpressionPtr surrogateModel)
-      : originalObjective(originalObjective), surrogateModel(surrogateModel) {}
+    SurrogateObjective(SurrogateBasedSolver* owner, size_t objectiveNumber, ExpressionPtr surrogateModel)
+      : owner(owner), objectiveNumber(objectiveNumber), surrogateModel(surrogateModel) {}
+
+    // FIXME: add an exploration term
 
     virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
     {
       std::vector<ObjectPtr> row;
-      DenseDoubleVectorPtr vector = object.dynamicCast<DenseDoubleVector>();
-      if (vector)
+      owner->encodeIntoVariables(context, object, row);
+      ObjectPtr prediction = surrogateModel->compute(context, &row[0]);
+      if (prediction.isInstanceOf<Double>())
       {
-        for (size_t i = 0; i < vector->getNumValues(); ++i)
-          row.push_back(new Double(vector->getValue(i)));
+        jassert(objectiveNumber == 0);
+        return Double::get(prediction);
       }
       else
-        jassertfalse;
-      return Double::get(surrogateModel->compute(context, &row[0])); // FIXME: add an exploration term
+      {
+        DenseDoubleVectorPtr pred = prediction.staticCast<DenseDoubleVector>();
+        jassert(objectiveNumber < pred->getNumValues());
+        return pred->getValue(objectiveNumber);
+      }
     }
 
     virtual void getObjectiveRange(double& worst, double& best) const
-      {return originalObjective->getObjectiveRange(worst, best);}
+      {return owner->problem->getObjective(objectiveNumber)->getObjectiveRange(worst, best);}
 
   private:
-    ObjectivePtr originalObjective;
+    SurrogateBasedSolver* owner;
+    size_t objectiveNumber;
     ExpressionPtr surrogateModel;
   };
   
+  ProblemPtr createSurrogateOptimizationProblem(ExpressionPtr surrogateModel)
+  {
+    ProblemPtr res = new Problem();
+    res->setDomain(problem->getDomain());
+    for (size_t i = 0; i < problem->getNumObjectives(); ++i)
+    {
+      res->addObjective(new SurrogateObjective(this, i, surrogateModel));
+      res->addValidationObjective(problem->getObjective(i));
+    }
+    return res;
+  }
+
   ObjectPtr optimizeSurrogate(ExecutionContext& context, ExpressionPtr surrogateModel)
   {
-    ProblemPtr surrogateProblem = new Problem();
-    surrogateProblem->setDomain(problem->getDomain());
-    surrogateProblem->addObjective(new SurrogateObjective(problem->getObjective(0), surrogateModel));
-    surrogateProblem->addValidationObjective(problem->getObjective(0));
-    
+    ProblemPtr surrogateProblem = createSurrogateOptimizationProblem(surrogateModel);
     ObjectPtr res;
     FitnessPtr bestFitness;
     surrogateSolver->solve(context, surrogateProblem, storeBestSolverCallback(res, bestFitness));
@@ -202,21 +218,17 @@ public:
   virtual void createEncodingVariables(ExecutionContext& context, DomainPtr domain, ExpressionDomainPtr res)
   {
     ScalarVectorDomainPtr continuousDomain = domain.dynamicCast<ScalarVectorDomain>();
-    if (continuousDomain)
-    {
-      for (size_t i = 0; i < continuousDomain->getNumDimensions(); ++i)
-        res->addInput(doubleClass, "x" + string((int)i+1));
-    }
+    jassert(continuousDomain);
+    for (size_t i = 0; i < continuousDomain->getNumDimensions(); ++i)
+      res->addInput(doubleClass, "x" + string((int)i+1));
   }
 
   virtual void encodeIntoVariables(ExecutionContext& context, ObjectPtr object, std::vector<ObjectPtr>& res)
   {
     DenseDoubleVectorPtr vector = object.dynamicCast<DenseDoubleVector>();
-    if (vector)
-    {
-      for (size_t i = 0; i < vector->getNumValues(); ++i)
-        res.push_back(new Double(vector->getValue(i)));
-    }
+    jassert(vector);
+    for (size_t i = 0; i < vector->getNumValues(); ++i)
+      res.push_back(new Double(vector->getValue(i)));
   }
 };
 

@@ -168,6 +168,7 @@ SET(ML_LOADER_SOURCES
 SET(ML_SPLITTING_CRITERION_SOURCES
   SplittingCriterion/InformationGainSplittingCriterion.h
   SplittingCriterion/StddevReductionSplittingCriterion.h
+  SplittingCriterion/VectorStddevReductionSplittingCriterion.h
   SplittingCriterion/SplittingCriterion.cpp
   SplittingCriterion/SplittingCriterionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SplittingCriterionLibrary.cpp
