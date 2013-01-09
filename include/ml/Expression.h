@@ -82,8 +82,8 @@ public:
       switch (owner->implementation)
       {
       case constantValueImpl: return (int)Integer::get(owner->constantRawObject);
-      case ownedVectorImpl: return (int)Integer::get(owner->vector->getElement(position));
-      case cachedVectorImpl: return (int)Integer::get(owner->vector->getElement(*it));
+      case ownedVectorImpl: return (int)owner->vector.staticCast<IVector>()->get(position);
+      case cachedVectorImpl: return (int)owner->vector.staticCast<IVector>()->get(*it);
       default: jassert(false); return 0;
       }
     }

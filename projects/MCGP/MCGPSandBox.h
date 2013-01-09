@@ -749,22 +749,6 @@ protected:
   juce::File outputDirectory;
   bool verbose;
 
-  struct SolverInfo
-  {
-    string name;
-    std::vector<double> fitnessPerEvaluationCount;
-    std::vector<double> fitnessPerCpuTime;
-
-    const std::vector<double>& getResults(bool inFunctionOfCpuTime) const
-      {return inFunctionOfCpuTime ? fitnessPerCpuTime : fitnessPerEvaluationCount;}
-
-    double getResult(bool inFunctionOfCpuTime, size_t index) const
-    {
-      const std::vector<double>& results = getResults(inFunctionOfCpuTime);
-      return index < results.size() ? results[index] : results.back();
-    }
-  };
-
   SolverPtr nmcSolver(size_t level, SamplerPtr sampler) const
   {
     SolverPtr res = rolloutSearchAlgorithm(sampler);
@@ -788,6 +772,22 @@ protected:
 
   SolverPtr ceSolver(size_t populationSize, size_t numTrainingSamples, bool elitist, SamplerPtr sampler) const
     {return crossEntropySolver(sampler, populationSize, numTrainingSamples, numEvaluations / populationSize, elitist);}
+  
+  struct SolverInfo
+  {
+    string name;
+    std::vector<double> fitnessPerEvaluationCount;
+    std::vector<double> fitnessPerCpuTime;
+
+    const std::vector<double>& getResults(bool inFunctionOfCpuTime) const
+      {return inFunctionOfCpuTime ? fitnessPerCpuTime : fitnessPerEvaluationCount;}
+
+    double getResult(bool inFunctionOfCpuTime, size_t index) const
+    {
+      const std::vector<double>& results = getResults(inFunctionOfCpuTime);
+      return index < results.size() ? results[index] : results.back();
+    }
+  };
 
   SolverInfo runSolver(ExecutionContext& context, SolverPtr solver, const string& description, bool usePostfixNotation)
   {
