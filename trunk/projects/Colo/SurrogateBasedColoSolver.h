@@ -85,9 +85,8 @@ public:
     {
       ObjectPtr object = objects[i];
       FitnessPtr fitness = evaluate(context, object);
-      context.informationCallback(object->toShortString() + " => " + fitness->toShortString()); // TMP !
-      //if (verbosity >= verbosityDetailed)
-      //  context.resultCallback("fitness", fitness);
+      if (verbosity >= verbosityDetailed)
+        context.informationCallback(object->toShortString() + " => " + fitness->toShortString());
       addSurrogateData(context, object, fitness, surrogateData);      
     }
     return true;

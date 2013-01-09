@@ -49,6 +49,14 @@ public:
         context.resultCallback("bestFitness" + string((int)i), selectedPopulation->getFitness(0)->getValue(i));
       for (size_t i = 0; i < problem->getNumValidationObjectives(); ++i)
         context.resultCallback("bestSolutionValidation" + string((int)i), problem->getValidationObjective(i)->evaluate(context, bestSolution));
+
+      if (problem->getNumObjectives() > 1)
+      {
+        ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+        for (size_t i = 0; i < population->getNumSolutions(); ++i)
+          front->insertSolution(population->getSolution(i), population->getFitness(i));
+        context.resultCallback("hyperVolume", front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+      }
     }
 
     currentSampler = currentSampler->cloneAndCast<Sampler>();

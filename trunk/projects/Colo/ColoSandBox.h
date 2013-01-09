@@ -11,6 +11,7 @@
 
 # include "ColoProblem.h"
 # include "SurrogateBasedColoSolver.h"
+# include <ml/RandomVariable.h>
 
 # include <ml/ExpressionSampler.h>
 # include <ml/SplittingCriterion.h>
@@ -23,7 +24,7 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class ColoSandBox : public WorkUnit
 {
 public:
-  ColoSandBox() : numEvaluations(1000) {}
+  ColoSandBox() : numEvaluations(1000), numRuns(10), verbose(false) {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -37,32 +38,51 @@ public:
     context.resultCallback("referenceFront", referenceFront);
     context.informationCallback("Reference HyperVolume: " + string(referenceFront->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness())));
 
-    runOptimizer(context, problem, randomSolver(new ColoSampler(), numEvaluations));
+    std::vector<SolverInfo> infos;
+    context.enterScope("Running");
 
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, false));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 10, numEvaluations / 100, true));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, true));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 10, numEvaluations / 100, true));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, true));
-    //runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 300, numEvaluations / 1000, false));
-    /*runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 100, numEvaluations / 1000, true));
-    runOptimizer(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 300, numEvaluations / 1000, true));
-    */
+    infos.push_back(runSolver(context, problem, randomSolver(new ColoSampler(), numEvaluations), "random"));
+
+#if 0
+    //infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler(), 100, 10, numEvaluations / 100, false), "eda1-100-10"));
+    //infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, false), "eda1-100-30"));
+    //infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler(), 100, 10, numEvaluations / 100, true), "eda1-100-10-el"));
+    infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler(), 100, 30, numEvaluations / 100, true), "eda1-100-30-el"));
+
+    //infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 100, 10, numEvaluations / 100, false), "eda2-100-10"));
+    //infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, false), "eda2-100-30"));
+    //infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 100, 10, numEvaluations / 100, true), "eda2-100-10-el"));
+    infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 100, 30, numEvaluations / 100, true), "eda2-100-30-el"));
     
-    SamplerPtr expressionVectorSampler = scalarExpressionVectorSampler();
+    infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler(), 1000, 100, numEvaluations / 1000, false), "eda1-1000-100"));
+    infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 100, numEvaluations / 1000, false), "eda2-1000-100"));
+    /*infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 300, numEvaluations / 1000, false), "eda2-1000-300"));
+    infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 100, numEvaluations / 1000, true), "eda2-1000-100-el"));
+    infos.push_back(runSolver(context, problem, crossEntropySolver(new ColoSampler2(), 1000, 300, numEvaluations / 1000, true), "eda2-1000-300-el"));*/
+#endif // 0
+
+    
+    SamplerPtr expressionVectorSampler = subsetVectorSampler(scalarExpressionVectorSampler(), 33);
     SolverPtr conditionLearner = randomSplitConditionLearner(expressionVectorSampler);
     SolverPtr surrogateLearner = treeLearner(vectorStddevReductionSplittingCriterion(), conditionLearner);
     surrogateLearner = simpleEnsembleLearner(surrogateLearner, 10);
-    SolverPtr surrogateSolver = crossEntropySolver(new ColoSampler(), 100, 10, numEvaluations / 100, true);
-    surrogateSolver->setVerbosity(verbosityDetailed);
+    SolverPtr surrogateSolver = crossEntropySolver(new ColoSampler(), 100, 10, 10, true);
+    if (verbose)
+      surrogateSolver->setVerbosity(verbosityDetailed);
     IterativeSolverPtr surrogateBasedSolver = new ColoSurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, numEvaluations);
-    runOptimizer(context, problem, surrogateBasedSolver);
+    infos.push_back(runSolver(context, problem, surrogateBasedSolver, "surrogate-100-10-eda1-100-10-10-el"));
 
-    surrogateSolver = crossEntropySolver(new ColoSampler2(), 1000, 300, 50, true);
-    surrogateSolver->setVerbosity(verbosityDetailed);
+    surrogateSolver = crossEntropySolver(new ColoSampler2(), 100, 10, 10, true);
+    if (verbose)
+      surrogateSolver->setVerbosity(verbosityDetailed);
     surrogateBasedSolver = new ColoSurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, numEvaluations);
-    runOptimizer(context, problem, surrogateBasedSolver);
+    infos.push_back(runSolver(context, problem, surrogateBasedSolver, "surrogate-100-100-eda2-100-10-10-el"));
+    
+    context.leaveScope();
+    
+    context.enterScope("Results");
+    displayResults(context, infos);
+    context.leaveScope();
 
     /*runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler(), 2, 20, 10, 5, false));
     runOptimizer(context, problem, new NestedCrossEntropySolver(new ColoSampler(), 2, 20, 10, 5, true));
@@ -71,6 +91,7 @@ public:
     return new Boolean(true);
   }
 
+#if 0
   void runOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
     context.enterScope(optimizer->toShortString());
@@ -105,6 +126,7 @@ public:
 
     context.leaveScope(hyperVolume);
   }
+#endif // 0
 
 protected:
   friend class ColoSandBoxClass;
@@ -112,6 +134,111 @@ protected:
   juce::File javaDirectory;
   juce::File modelDirectory;
   size_t numEvaluations;
+  size_t numRuns;
+  juce::File outputDirectory;
+  bool verbose;
+
+  enum {evaluationPeriod = 100};
+
+  struct SolverInfo
+  {
+    string name;
+    std::vector<double> cpuTimes;
+    std::vector<double> hyperVolumes;
+  };
+
+  SolverInfo runSolver(ExecutionContext& context, ProblemPtr problem, SolverPtr solver, const string& description)
+  {
+    OutputStream* hyperVolumesOutput = NULL;
+
+    if (outputDirectory != juce::File::nonexistent)
+    {
+      outputDirectory.createDirectory();
+      juce::File hyperVolumesFile = outputDirectory.getChildFile(description + ".txt");
+      if (hyperVolumesFile.exists()) hyperVolumesFile.deleteFile();
+      hyperVolumesOutput = hyperVolumesFile.createOutputStream();
+    }
+
+    context.enterScope(description);
+    context.resultCallback("solver", solver);
+	  std::vector<SolverInfo> runInfos(numRuns);
+    for (size_t i = 0; i < numRuns; ++i)
+    {
+      SolverInfo& info = runInfos[i];
+      if (verbose)
+        context.enterScope("Run " + string((int)i));
+      double res = runSolverOnce(context, problem, solver, info);
+      writeToOutput(hyperVolumesOutput, info.hyperVolumes);
+      if (verbose)
+        context.leaveScope(res);
+      context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
+    }
+
+
+    if (hyperVolumesOutput)
+      deleteAndZero(hyperVolumesOutput);
+
+    SolverInfo res;
+    res.name = description;
+    res.hyperVolumes.resize(runInfos[0].hyperVolumes.size());
+    mergeResults(res.hyperVolumes, runInfos, false);
+    context.leaveScope(res.hyperVolumes.back());
+    return res;
+  }
+  
+  void writeToOutput(OutputStream* ostr, const std::vector<double>& values)
+  {
+    if (ostr)
+    {
+      string line;
+      for (size_t i = 0; i < values.size(); ++i)
+        line += string(values[i]) + " ";
+      line += "\n";
+      *ostr << line;
+      ostr->flush();
+    }
+  }
+
+  double runSolverOnce(ExecutionContext& context, ProblemPtr problem, SolverPtr solver, SolverInfo& info)
+  {
+    DVectorPtr cpuTimes = new DVector();
+    DVectorPtr hyperVolumes = new DVector();
+    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+    SolverCallbackPtr callback = compositeSolverCallback(
+      fillParetoFrontSolverCallback(front),
+      hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),
+      maxEvaluationsSolverCallback(numEvaluations));
+
+    solver->setVerbosity(verbose ? verbosityDetailed : verbosityQuiet);
+    solver->solve(context, problem, callback);
+    info.cpuTimes = cpuTimes->getNativeVector();
+    info.hyperVolumes = hyperVolumes->getNativeVector();
+    return front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
+  }
+
+  void mergeResults(std::vector<double>& res, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
+  {
+    for (size_t i = 0; i < res.size(); ++i)
+    {
+      ScalarVariableMean mean;
+      for (size_t j = 0; j < infos.size(); ++j)
+        mean.push(infos[j].hyperVolumes[i]);
+      res[i] = mean.getMean();
+    }
+  }
+
+  void displayResults(ExecutionContext& context, const std::vector<SolverInfo>& infos)
+  {
+    for (size_t i = 0; i < infos[0].hyperVolumes.size(); ++i)
+    {
+      size_t numEvaluations = (i + 1) * evaluationPeriod;
+      context.enterScope(string((int)numEvaluations));
+      context.resultCallback("numEvaluations", numEvaluations);
+      for (size_t j = 0; j < infos.size(); ++j)
+        context.resultCallback(infos[j].name, infos[j].hyperVolumes[i]);
+      context.leaveScope();
+    }
+  }
 
   ParetoFrontPtr makeReferenceParetoFront(ExecutionContext& context, ProblemPtr problem)
   {

@@ -26,6 +26,9 @@
     <variable type="File" name="javaDirectory"/>
     <variable type="File" name="modelDirectory"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="File" name="outputDirectory"/>
+    <variable type="Boolean" name="verbose"/>
   </class>
   
 </library>
