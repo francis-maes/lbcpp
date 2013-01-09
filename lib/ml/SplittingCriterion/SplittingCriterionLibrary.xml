@@ -14,7 +14,12 @@
   <class name="StddevReductionSplittingCriterion" base="SplittingCriterion">
     <constructor/>
   </class>
-  
+
+  <class name="VectorStddevReductionSplittingCriterion" base="SplittingCriterion">
+    <constructor/>
+  </class>
+
+
   <!-- <class name="BinaryClassificationSplittingCriterion" base="SupervisedSplittingCriterion"/>
   <class name="InformationGainBinarySplittingCriterion" base="BinaryClassificationSplittingCriterion">
     <variable type="Boolean" name="normalize"/>

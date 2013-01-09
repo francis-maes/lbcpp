@@ -155,8 +155,15 @@ public:
     RandomGeneratorPtr random = context.getRandomGenerator();
 
     ColoObjectPtr res = new ColoObject();
+    
+    // sample first flag (forbid sampling an empty sequence)
+    std::vector<double> probs(probabilities);
+    probs[probabilities.size() - 1] = 0.0;
+    res->append(random->sampleWithProbabilities(probs));
+
+    // sample next flags (maximum sequence length = numFlags + 1)
     size_t maxLength = probabilities.size();
-    for (size_t i = 0; i < maxLength; ++i)
+    for (size_t i = 1; i < maxLength; ++i)
     {
       size_t flag = random->sampleWithNormalizedProbabilities(probabilities);
       if (flag == probabilities.size() - 1)
