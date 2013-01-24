@@ -16,6 +16,7 @@
   </class>
 
   <class name="CMAESMOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t populationSize, size_t numOffsprings, size_t numGenerations"/>
     <variable type="PositiveInteger" name="numOffsprings"/>
   </class>
 

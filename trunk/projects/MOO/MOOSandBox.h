@@ -31,8 +31,8 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    testSingleObjectiveOptimizers(context);
-    //testBiObjectiveOptimizers(context);
+    //testSingleObjectiveOptimizers(context);
+    testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
     return ObjectPtr();
   }
@@ -183,7 +183,7 @@ protected:
       context.resultCallback("problem", problem);
       solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
       solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
-      //solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
 
       //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
       solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));

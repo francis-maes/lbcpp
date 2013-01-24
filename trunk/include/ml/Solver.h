@@ -146,6 +146,7 @@ protected:
 
 extern PopulationBasedSolverPtr crossEntropySolver(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr());
 extern PopulationBasedSolverPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
+extern PopulationBasedSolverPtr cmaesmoOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0);
 
 }; /* namespace lbcpp */
 
