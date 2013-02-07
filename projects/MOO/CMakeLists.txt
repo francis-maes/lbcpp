@@ -12,6 +12,7 @@ SET(MOO_SOURCES
   SharkProblems.h
   FQIBasedSolver.h
   MOOSandBox.h
+  TestRandomForestUncertainties.h
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
 )

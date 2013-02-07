@@ -24,6 +24,11 @@
     <variable type="PositiveInteger" name="verbosity"/>
   </class>
   
+  <class name="TestRandomForestUncertainties" base="WorkUnit">
+    <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+  </class>
+  
   <!-- FQI Based Solver -->
   <class name="FQIBasedSolver" base="PopulationBasedSolver" abstract="yes"/>
   

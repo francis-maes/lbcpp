@@ -48,7 +48,7 @@
 
   <!-- Solvers -->
   <class name="RandomSolver" base="IterativeSolver">
-    <constructor arguments="SamplerPtr sample, size_t numIterations"/>
+    <constructor arguments="SamplerPtr sampler, size_t numIterations"/>
     <variable type="Sampler" name="sampler"/>
   </class>
 
