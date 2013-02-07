@@ -136,7 +136,10 @@ public:
   void resultCallback(const string& name, const ReferenceCountedObjectPtr<T>& value)
     {resultCallback(name, ObjectPtr(value));}
 
-
+  template<class T>
+  void resultCallback(const string& name, const T* value)
+    {resultCallback(name, ObjectPtr(value));}
+  
   void appendCallback(const ExecutionCallbackPtr& callback);
   void removeCallback(const ExecutionCallbackPtr& callback);
   void clearCallbacks();
