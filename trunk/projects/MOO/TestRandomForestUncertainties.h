@@ -42,6 +42,16 @@ namespace lbcpp
       RFlearner = baggingLearner(RFlearner, numTrees);
       RFlearner->setVerbosity(verbosityDetailed);
       
+      // make RF learner
+      SamplerPtr RF2expressionVectorSampler = scalarExpressionVectorSampler();
+      SolverPtr RF2conditionLearner = randomSplitConditionLearner(RF2expressionVectorSampler);
+      //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
+      SolverPtr RF2learner = treeLearner(stddevReductionSplittingCriterion(), RF2conditionLearner); 
+      //learner->setVerbosity((SolverVerbosity)verbosity);
+      RF2learner = baggingLearner(RF2learner, numTrees);
+      RF2learner->setVerbosity(verbosityDetailed);
+      
+      
       // make XT learner
       SamplerPtr XTexpressionVectorSampler = scalarExpressionVectorSampler();
       SolverPtr XTconditionLearner = randomSplitConditionLearner(XTexpressionVectorSampler);
@@ -56,7 +66,11 @@ namespace lbcpp
       
       solvers.push_back(DTlearner);
       solvers.push_back(RFlearner);
+      solvers.push_back(RF2learner);
       solvers.push_back(XTlearner);
+      
+      
+      
       
       for (size_t i = 0; i < solvers.size(); i++)
       {
@@ -97,13 +111,15 @@ namespace lbcpp
             for (size_t j = 0; j < numTrees; j++)
             {
               double treepred = Double::get(trees[j]->compute(context, &input));
+              //context.resultCallback("tree" + string((int)j), treepred);
               stats.push(treepred);
             }
             
             double stddev = stats.getStandardDeviation();
             double pred = Double::get(prediction);
-            context.resultCallback("stddevUp", new Double(pred + stddev));
-            context.resultCallback("stddevDown", new Double(pred - stddev));
+            //context.resultCallback("predcheck", stats.getMean());
+            context.resultCallback("stddevUp", pred + stddev);
+            context.resultCallback("stddevDown", pred - stddev);
           }
           context.resultCallback("prediction", prediction);
           context.leaveScope();
