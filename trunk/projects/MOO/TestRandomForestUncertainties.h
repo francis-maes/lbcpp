@@ -15,15 +15,17 @@
 namespace lbcpp
 {
   
-  
+  extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
+
   class TestRandomForestUncertainties : public WorkUnit
   {
   public:
-    TestRandomForestUncertainties() {}
+    TestRandomForestUncertainties() : numSamples(25), numTrees(100) {}
     
     virtual ObjectPtr run(ExecutionContext& context)
     {
-      
+      lbCppMLLibraryCacheTypes(context);
+
       ProblemPtr problem = makeProblem(context);
       
       // make DT learner

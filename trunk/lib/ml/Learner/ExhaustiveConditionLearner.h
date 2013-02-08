@@ -40,17 +40,16 @@ public:
 
     IndexSetPtr indices = splittingCriterion->getIndices();
 
-    // flags[i] is true if i is included in indices and false otherwise
-    // note that we use std::vector<int> which is faster than std::vector<bool>
-    std::vector<int> flags(splittingCriterion->getData()->getNumRows(), 0);
+    // counts[i] is the number of times that index i appears in indices
+    std::vector<size_t> counts(splittingCriterion->getData()->getNumRows(), 0);
     for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-      flags[*it] = 1;
+      ++counts[*it] = 1;
     
     OVectorPtr expressions = expressionsSampler->sample(context).staticCast<OVector>();
     for (size_t i = 0; i < expressions->getNumElements(); ++i)
     {
       ExpressionPtr expression = expressions->getElement(i).staticCast<Expression>();
-      std::pair<double, ExpressionPtr> p = computeCriterionWithEventualStump(context, splittingCriterion, flags, expression);
+      std::pair<double, ExpressionPtr> p = computeCriterionWithEventualStump(context, splittingCriterion, counts, expression);
       if (p.first >= -DBL_MAX)
         addSolution(context, p.second, p.first);
     }
@@ -61,7 +60,7 @@ protected:
 
   SamplerPtr expressionsSampler;
 
-  std::pair<double, ExpressionPtr> computeCriterionWithEventualStump(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<int>& flags, const ExpressionPtr& booleanOrScalar)
+  std::pair<double, ExpressionPtr> computeCriterionWithEventualStump(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<size_t>& counts, const ExpressionPtr& booleanOrScalar)
   {
      if (booleanOrScalar->getType() == booleanClass)
       return std::make_pair(splittingCriterion->evaluate(context, booleanOrScalar), booleanOrScalar);
@@ -69,7 +68,7 @@ protected:
     {
       jassert(booleanOrScalar->getType()->isConvertibleToDouble());
       double value;
-      SparseDoubleVectorPtr sortedValues = getSortedValues(context, splittingCriterion, flags, booleanOrScalar);
+      SparseDoubleVectorPtr sortedValues = getSortedValues(context, splittingCriterion, counts, booleanOrScalar);
       double threshold = findBestThreshold(context, splittingCriterion, booleanOrScalar, sortedValues, value);
       return std::make_pair(value, new FunctionExpression(stumpFunction(threshold), booleanOrScalar));
     }
@@ -162,18 +161,18 @@ private:
     return res;
   }
 
-  static SparseDoubleVectorPtr computeSortedValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& indices, const std::vector<int>& flags)
+  static SparseDoubleVectorPtr computeSortedValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& indices, const std::vector<size_t>& counts)
   {
     SparseDoubleVectorPtr res = new SparseDoubleVector(indices->size());
     std::vector<std::pair<size_t, double> >& resValues = res->getValuesVector();
     for (size_t i = 0; i < allValues->getNumValues(); ++i)
-      if (flags[allValues->getValue(i).first] > 0)
+      for (size_t j = 0; j < counts[allValues->getValue(i).first]; ++j)
         resValues.push_back(allValues->getValue(i));
     jassert(resValues.size() <= indices->size()); // there may be missing values
     return res;
   }
 
-  SparseDoubleVectorPtr getSortedValues(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<int>& flags, const ExpressionPtr& expression)
+  SparseDoubleVectorPtr getSortedValues(ExecutionContext& context, SplittingCriterionPtr splittingCriterion, const std::vector<size_t>& counts, const ExpressionPtr& expression)
   {
     SparseDoubleVectorPtr allValues;
     SortedValuesCacheMap::const_iterator it = sortedValuesCache.find(expression);
@@ -186,10 +185,13 @@ private:
     else
       allValues = it->second;
       
-    if (splittingCriterion->getIndices()->size() == splittingCriterion->getData()->getNumRows())
-      return allValues;
-    else
-      return computeSortedValuesSubset(allValues, splittingCriterion->getIndices(), flags);
+    //if (splittingCriterion->getIndices()->size() == splittingCriterion->getData()->getNumRows()) 
+    // => FIXME: this test fails in the case of bagging. To make this faster, we need to store the "allIndices" within the Table
+    // This would enable to make a direct pointer comparison to know if this test concerns the whole dataset or not
+
+    //  return allValues;
+    //else
+    return computeSortedValuesSubset(allValues, splittingCriterion->getIndices(), counts);
   }
 };
 

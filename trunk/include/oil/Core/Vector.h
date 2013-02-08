@@ -128,10 +128,10 @@ public:
     {return v;}
 
   const NativeType* getDataPointer() const
-    {return &v[0];}
+    {return v.size() ? &v[0] : NULL;}
 
   NativeType* getDataPointer()
-    {return &v[0];}
+    {return v.size() ? &v[0] : NULL;}
   
 protected:
   std::vector<NativeType> v;

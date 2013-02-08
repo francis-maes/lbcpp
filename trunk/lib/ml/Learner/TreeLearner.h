@@ -138,6 +138,7 @@ protected:
     // check condition and update importance values
     if (!conditionNode || conditionNode.isInstanceOf<ConstantExpression>() || fabs(conditionFitness->getValue(0) - worstFitness) < 1e-9)
       return new ConstantExpression(splittingCriterion->computeVote(indices));
+
     conditionNode->addImportance(conditionFitness->getValue(0) * indices->size() / objective->getData()->getNumRows());
     if (verbosity >= verbosityDetailed)
       context.informationCallback(conditionNode->toShortString() + T(" [") + string(conditionNode->getSubNode(0)->getImportance()) + T("]"));
@@ -148,7 +149,10 @@ protected:
     TestExpression::dispatchIndices(conditionValues, failureExamples, successExamples, missingExamples);
 
     if (failureExamples->size() == indices->size() || successExamples->size() == indices->size() || missingExamples->size() == indices->size())
+    {
+      jassertfalse; // all the examples go into one of the child branches, this should never happen
       return new ConstantExpression(splittingCriterion->computeVote(indices));
+    }
 
     // ...call recursively
     if (verbosity >= verbosityDetailed)
