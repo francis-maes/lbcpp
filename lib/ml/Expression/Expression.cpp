@@ -514,4 +514,4 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
 }
 
 DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const
-  {return subNode ? subNode->compute(context, data, subIndices) : DataVector::createConstant(subIndices, ObjectPtr());}
+  {return subNode && subIndices->size() ? subNode->compute(context, data, subIndices) : DataVector::createConstant(subIndices, getType()->createObject(context));}
