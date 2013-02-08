@@ -51,13 +51,14 @@ public:
       tokens.addTokens(line, T(" "), NULL);
       tokens.removeEmptyStrings(true);
 
-      int length = tokens[2].getIntValue();
-      if (length < 0)
+      if (!tokens[2].containsOnly(T("0123456789")))
       {
-        context.errorCallback(T("TDBFileParser::parseLine"), T("Invalid length: ") + String(length));
+        context.errorCallback(T("TDBFileParser::parseLine"),
+                              T("Invalid length - ") + tokens[2] +
+                              T("is not an integer"));
         return false;
       }
-      proteinLength = (size_t)length;
+      proteinLength = (size_t)tokens[2].getIntValue();
       return true;
     }
     /* Parse residue */
@@ -68,13 +69,14 @@ public:
       dsspSecondaryStructureSequence = Protein::createEmptyDSSPSecondaryStructure(proteinLength, true);
     }
     // Replace the coil symbole ' ' by 'C'
-    if(line[5] == T(' '))
-      line[5] = T('C');
+    line = srcLine;
+    if (line[7] == T(' '))
+      line[7] = T('C');
 
     StringArray tokens;
     tokens.addTokens(line, T(" "), NULL);
     tokens.removeEmptyStrings(true);
-    
+
     if (tokens.size() != 43)
     {
       context.errorCallback(T("TDBFileParser::parseLine"), 
