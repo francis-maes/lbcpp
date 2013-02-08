@@ -26,7 +26,8 @@ public:
     : TextParser(context, file),
       fileName(file.getFileNameWithoutExtension()),
       proteinLength((size_t)-1),
-      currentResidueIndex(0) {}
+      currentResidueIndex(0),
+      shiftResidueIndex(0) {}
 
   virtual TypePtr getElementsType() const
     {return proteinClass;}
@@ -72,6 +73,10 @@ public:
     line = srcLine;
     if (line[7] == T(' '))
       line[7] = T('C');
+    else if (line[7] == T('P'))
+      line[7] = T('E');
+    else if (line[7] == T('A'))
+      line[7] = T('E');
 
     StringArray tokens;
     tokens.addTokens(line, T(" "), NULL);
@@ -86,12 +91,14 @@ public:
     }
     // Check the residue index
     int residueIndex = tokens[0].getIntValue();
-    if ((size_t)residueIndex != currentResidueIndex + 1)
+    if (currentResidueIndex == 0)
+      shiftResidueIndex = (size_t)residueIndex;
+    if ((size_t)residueIndex != currentResidueIndex + shiftResidueIndex)
     {
       context.errorCallback(T("TDBFileParser::parseLine"),
                             T("Invalid residue number: ")
                             + String(residueIndex) + T(" instead of ")
-                            + String((int)currentResidueIndex + 1));
+                            + String((int)(currentResidueIndex + shiftResidueIndex)));
       return false;
     }
     // Add residue symbol
@@ -137,6 +144,7 @@ protected:
   ProteinPtr protein;
   size_t proteinLength;
   size_t currentResidueIndex;
+  size_t shiftResidueIndex;
   VectorPtr primaryStructure;
   VectorPtr dsspSecondaryStructureSequence;
 };
