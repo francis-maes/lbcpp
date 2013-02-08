@@ -78,6 +78,7 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
   Data/Formats/TertiaryStructureCASPFileGenerator.h
   Data/Formats/PSSMFileParser.h
   Data/Formats/DSSPFileParser.h
+  Data/Formats/TDBFileParser.h
 )
 
 SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
@@ -110,12 +111,11 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
 )
 
 SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
+  WorkUnit/ConverterWorkUnits.h
   WorkUnit/CaspPDBtoValidPDBWorkUnit.cpp
   WorkUnit/CaspPDBtoValidPDBWorkUnit.h
   WorkUnit/CompileProteinsWorkUnit.cpp
   WorkUnit/CompileProteinsWorkUnit.h
-  WorkUnit/ConvertPDBToProteinWorkUnit.cpp
-  WorkUnit/ConvertPDBToProteinWorkUnit.h
   WorkUnit/ProteinInferenceEvaluator.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.h
@@ -128,7 +128,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/BanditBox.h
   WorkUnit/PerceptronWorkUnit.h
   WorkUnit/ProteinStatisticsWorkUnit.h
-  WorkUnit/CB513AndRS126Box.h
   WorkUnit/StudentTestsBox.h
   WorkUnit/ComparativeStudy.h
   WorkUnit/FeatureFunctionSelectionPipeline.h

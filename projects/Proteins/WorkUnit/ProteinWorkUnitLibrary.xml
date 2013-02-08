@@ -93,6 +93,11 @@
     <variable type="File" name="spxFile"/>
     <variable type="File" name="outputDirectory"/>
   </class>
+
+  <class name="ConvertTDBFileToProtein" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
   
   <class name="CountCysteinesWorkUnit" base="WorkUnit">
     <variable type="File" name="proteinDirectory"/>
