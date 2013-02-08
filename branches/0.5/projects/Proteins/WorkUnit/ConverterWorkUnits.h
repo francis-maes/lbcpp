@@ -1,4 +1,5 @@
 #include "Data/Protein.h"
+#include "Data/Formats/TDBFileParser.h"
 
 namespace lbcpp
 {
@@ -436,6 +437,128 @@ protected:
   friend class ConvertASTRALFileToPDBClass;
   
   File inputDirectory;
+  File outputDirectory;
+};
+
+class ConvertTDBFileToProtein : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputDirectory == File::nonexistent || outputDirectory == File::nonexistent)
+    {
+      context.errorCallback(T("ConvertTDBFileToProtein::run"), T("At least one of argument is wrong !"));
+      return false;
+    }
+    
+    juce::OwnedArray<File> files;
+    inputDirectory.findChildFiles(files, File::findFiles, false, T("*"));
+    size_t correctlyConvected = 0;
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      ProteinPtr protein = StreamPtr(new TDBFileParser(context, *files[i]))->next().getObjectAndCast<Protein>();
+      if (!protein)
+      {
+        context.errorCallback(T("ConvertTDBFileToProtein::run"), T("No protein parsed in file: ") + files[i]->getFullPathName());
+        continue;
+      }
+      protein->saveToFile(context, outputDirectory.getChildFile(protein->getName() + T(".xml")));
+      ++correctlyConvected;
+    }
+    
+    context.informationCallback(T("Parsed protein: ") + String((int)correctlyConvected) + T("/") + String(files.size()));
+    return true;
+  }
+  
+protected:
+  friend class ConvertTDBFileToProteinClass;
+  
+  File inputDirectory;
+  File outputDirectory;
+};
+
+class ConvertPDBToProteinWorkUnit : public WorkUnit
+{
+public:
+  ConvertPDBToProteinWorkUnit() : outputFile(File::getCurrentWorkingDirectory().getChildFile(T("output"))) {}
+  
+  virtual String toString() const
+    {return T("Convert a PDB file to a Protein file and vice-versa.");}
+  
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!inputFile.exists())
+    {
+      context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file ") + inputFile.getFileName().quoted() +(" does not exists"));
+      return false;
+    }
+    
+    if (inputFile.getFileExtension() != T(".pdb") && inputFile.getFileExtension() != T(".xml"))
+    {
+      context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not valid"));
+      return false;
+    }
+    
+    if (inputFile.getFileExtension() == T(".pdb") && !convertPDBToProtein(context, inputFile, outputFile))
+    {
+      context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not a valid PDB"));
+      return false;
+    }
+    
+    if (inputFile.getFileExtension() == T(".xml") && !convertProteinToPDB(context, inputFile, outputFile))
+    {
+      context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not a valid XML"));
+      return false;
+    }
+    
+    return true;
+  }
+  
+protected:
+  friend class ConvertPDBToProteinWorkUnitClass;
+  
+  File inputFile;
+  File outputFile;
+
+  bool convertPDBToProtein(ExecutionContext& context, const File& inputFile, const File& outputFile)
+  {
+    ProteinPtr protein = Protein::createFromPDB(context, inputFile, false);
+    if (!protein)
+      return false;
+    
+    Variable(protein).saveToFile(context, outputFile);
+    return true;
+  }
+  
+  bool convertProteinToPDB(ExecutionContext& context, const File& inputFile, const File& outputFile)
+  {
+    ProteinPtr protein = Protein::createFromXml(context, inputFile);
+    if (!protein)
+      return false;
+    
+    protein->saveToPDBFile(context, outputFile);
+    return true;
+  }  
+};
+
+class ConvertSPXFileToProteins : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!spxFile.exists())
+      return false;
+
+    ConsumerPtr consumer = saveToFileConsumer(outputDirectory);
+    consumer->consumeStream(context, new SPXFileParser(context, spxFile));
+
+    return true;
+  }
+
+protected:
+  friend class ConvertSPXFileToProteinsClass;
+
+  File spxFile;
   File outputDirectory;
 };
 

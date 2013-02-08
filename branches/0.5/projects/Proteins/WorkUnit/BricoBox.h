@@ -257,61 +257,6 @@ protected:
   File traceFile;
 };
 
-class ConvertSPXFileToProteins : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    if (!spxFile.exists())
-      return false;
-
-    //ConsumerPtr consumer = saveToFileConsumer(outputDirectory);
-    //consumer->consumeStream(context, new SPXFileParser(context, spxFile));
-    
-    ContainerPtr data = (new SPXFileParser(context, spxFile))->load();
-    size_t numCys = 0;
-    size_t all = 0;
-    size_t none = 0;
-    size_t mix = 0;
-    for (size_t i = 0; i < data->getNumElements(); ++i)
-    {
-      ProteinPtr protein = data->getElement(i).getObjectAndCast<Protein>(context);
-      size_t n = protein->getCysteinIndices().size();
-      numCys += n;
-
-      size_t numBonded = 0;
-      SymmetricMatrixPtr matrix = protein->getDisulfideBonds(context);
-      for (size_t j = 0; j < n; ++j)
-        for (size_t jj = j + 1; jj < n; ++jj)
-          numBonded += matrix->getElement(j, jj).getDouble() * 2;
-
-      if (numBonded == n)
-        ++all;
-      else if (numBonded == 0)
-        ++none;
-      else
-      {
-        if (n - numBonded != 1)
-          std::cout << "Num. Cys: " << n << " - Num. Bonded: " << numBonded << std::endl;
-        ++mix;
-      }
-    }
-    
-    std::cout << "Num. Cysteines: " << numCys << std::endl;
-    std::cout << "Num. All  : " << all << std::endl;
-    std::cout << "Num. None : " << none << std::endl;
-    std::cout << "Num. Mix  : " << mix << std::endl;
-    
-    return true;
-  }
-
-protected:
-  friend class ConvertSPXFileToProteinsClass;
-
-  File spxFile;
-  File outputDirectory;
-};
-
 class CountCysteinesWorkUnit : public WorkUnit
 {
 public:
