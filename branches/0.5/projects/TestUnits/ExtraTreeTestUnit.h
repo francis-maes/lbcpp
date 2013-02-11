@@ -23,7 +23,7 @@ public:
   ExtraTreeTestUnit() : numTrees(100), numAttributes(21), minSplitSize(1) {}
   
   virtual String toString() const
-    {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
+    {return T("x3Tester has one goal in his live: Making Extra-Trees really work ;-)");}
   
   virtual Variable run(ExecutionContext& context)
   {
@@ -57,7 +57,8 @@ protected:
     for (size_t i = 0; i < testingData->getNumElements(); ++i)
       allData->append(testingData->getElement(i));
     
-    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, false, true);
+    //FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, false, true);
+    FunctionPtr learner = classificationSavedExtraTree(numTrees, numAttributes, minSplitSize, context.getFile("x3Test-Classif"));
     
     learner->train(context, learningData, allData, T("Training"));
     //learner->saveToFile(context, context.getFile(T("testSaveTree.xml")));

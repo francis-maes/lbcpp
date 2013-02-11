@@ -42,4 +42,21 @@
   <class name="BinaryLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
   <class name="ClassificationLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
 
+
+  <class name="SavedRTreeFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+    <variable type="File" name="file"/>
+  </class>
+
+  <class name="SavedRTreeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+  <class name="RegressionSavedRTreeFunction" base="SavedRTreeFunction"/>
+  <class name="BinarySavedRTreeFunction" base="SavedRTreeFunction"/>
+  <class name="ClassificationSavedRTreeFunction" base="SavedRTreeFunction"/>
+
+
 </library>

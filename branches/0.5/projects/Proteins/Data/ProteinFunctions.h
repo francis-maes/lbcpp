@@ -99,17 +99,15 @@ public:
 class GetProteinTargetFunction : public SimpleUnaryFunction
 {
 public:
-  GetProteinTargetFunction(ProteinTarget target = noTarget, double oxidizedCysteineThreshold = 0.5f)
+  GetProteinTargetFunction(ProteinTarget target = noTarget)
     : SimpleUnaryFunction(proteinClass, proteinClass->getMemberVariableType(target), T("Target"))
-    , target(target), oxidizedCysteineThreshold(oxidizedCysteineThreshold) {}
+    , target(target) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const ProteinPtr& protein = input.getObjectAndCast<Protein>();
     if (!protein)
       return Variable::missingValue(getOutputType());
-    if (target == odsbTarget)
-      return protein->getOxidizedDisulfideBonds(context, oxidizedCysteineThreshold);
     return protein->getTargetOrComputeIfMissing(context, target);
   }
 
@@ -117,7 +115,6 @@ protected:
   friend class GetProteinTargetFunctionClass;
 
   ProteinTarget target;
-  double oxidizedCysteineThreshold;
 };
 
 class GreedyDisulfidePatternBuilder : public SimpleUnaryFunction

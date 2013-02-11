@@ -2,13 +2,6 @@
 
 <library name="ProteinWorkUnit" directory="WorkUnit">
 
-  <class name="ProteinInferenceEvaluatorWorkUnit" base="WorkUnit">
-    <variable type="File" name="inputDirectory" description="Input protein directory" shortName="in"/>
-    <variable type="File" name="outputDirectory" description="Output protein directory" shortName="o"/>
-    <variable type="File" name="inferenceFile" description="File of the inference to use" shortName="inf"/>
-    <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
-  </class>
-
   <class name="CaspPDBtoValidPDBWorkUnit" base="WorkUnit">
     <variable type="File" name="pdbDirectory" description="Input CASP PDB directory" shortName="in"/>
     <variable type="File" name="fastaFile" description="Input FASTA file (comments line must be the CASP PDB file name and the sequence must exactly be the same sequence that the tertiary structure of the CASP PDB file)" shortName="f"/>
@@ -371,6 +364,15 @@
   <class name="SimplePerceptronWorkUnit" base="WorkUnit"/>
   <!-- END Perceptron WorkUnit -->
 
+
+
+
+  <!-- BEGIN ModelBox -->
+  <class name="SimpleModelWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in" description="Directory of input proteins (without train/test split)"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup" description="Directory of supervision proteins (without train/test split)"/>
+  </class>
+  <!-- END ModelBox -->
 
 
 
