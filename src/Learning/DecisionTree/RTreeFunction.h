@@ -77,6 +77,8 @@ public:
   
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
+  bool saveTreesToBinaryFile(ExecutionContext& context, const File& file) const;
+  bool loadTreesFromBinaryFile(ExecutionContext& context, const File& file);
 
   // Private
   static void* computeCoreTableOf(ExecutionContext& context, const Variable& input);

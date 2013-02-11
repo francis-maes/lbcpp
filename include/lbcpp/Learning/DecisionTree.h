@@ -38,6 +38,22 @@ extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100,
                                             bool verbose = false,
                                             bool useLowMemory = false);
 
+extern FunctionPtr binaryClassificationSavedExtraTree(size_t numTrees,
+                                                 size_t numAttributeSamplesPerSplit,
+                                                 size_t minimumSizeForSplitting,
+                                                 const File& filePrefix);
+
+extern FunctionPtr classificationSavedExtraTree(size_t numTrees,
+                                                 size_t numAttributeSamplesPerSplit,
+                                                 size_t minimumSizeForSplitting,
+                                                 const File& filePrefix);
+
+extern FunctionPtr regressionSavedExtraTree(size_t numTrees,
+                                                 size_t numAttributeSamplesPerSplit,
+                                                 size_t minimumSizeForSplitting,
+                                                 const File& filePrefix);
+
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_DECISION_TREE_H_

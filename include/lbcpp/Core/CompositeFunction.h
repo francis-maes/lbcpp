@@ -182,8 +182,13 @@ typedef void (Object::*CompositeFunctionBuilderFunction)(CompositeFunctionBuilde
 class MethodBasedCompositeFunction : public CompositeFunction
 {
 public:
-  MethodBasedCompositeFunction(ObjectPtr pthis, CompositeFunctionBuilderFunction compositeFunctionBuilderFunction)
-    : pthis(pthis), compositeFunctionBuilderFunction(compositeFunctionBuilderFunction) {jassert(pthis);}
+  MethodBasedCompositeFunction(ObjectPtr pthis, CompositeFunctionBuilderFunction compositeFunctionBuilderFunction, bool isLearnableFunction = true)
+    : pthis(pthis), compositeFunctionBuilderFunction(compositeFunctionBuilderFunction)
+    {
+      jassert(pthis);
+      if (!isLearnableFunction)
+        setBatchLearner(NULL);
+    }
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
@@ -198,7 +203,11 @@ protected:
 };
 
 # define lbcppMemberCompositeFunction(ThisClass, Fun) \
-    CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(this),  (CompositeFunctionBuilderFunction)(&ThisClass::Fun)))
+    CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (CompositeFunctionBuilderFunction)(&ThisClass::Fun)))
+
+# define lbcppMemberCompositeUnlearnableFunction(ThisClass, Fun) \
+    CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (CompositeFunctionBuilderFunction)(&ThisClass::Fun), false))
+
 
 inline void variableToNative(ExecutionContext& context, CompositeFunction::StepType& dest, const Variable& source)
   {jassert(source.isInteger()); dest = (CompositeFunction::StepType)source.getInteger();}

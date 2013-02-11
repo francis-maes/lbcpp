@@ -9,6 +9,7 @@
 #include <lbcpp/Learning/DecisionTree.h>
 #include "RTreeFunction.h"
 #include "LowMemoryRTreeFunction.h"
+#include "SavedRTreeFunction.h"
 
 namespace lbcpp
 {
@@ -45,5 +46,30 @@ FunctionPtr classificationExtraTree(size_t numTrees,
     return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
   return new ClassificationLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
+
+FunctionPtr binaryClassificationSavedExtraTree(size_t numTrees,
+                                                 size_t numAttributeSamplesPerSplit,
+                                                 size_t minimumSizeForSplitting,
+                                                 const File& filePrefix)
+{
+  return new BinarySavedRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, filePrefix);
+}
+
+FunctionPtr classificationSavedExtraTree(size_t numTrees,
+                                                 size_t numAttributeSamplesPerSplit,
+                                                 size_t minimumSizeForSplitting,
+                                                 const File& filePrefix)
+{
+  return new ClassificationSavedRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, filePrefix);
+}
+
+FunctionPtr regressionSavedExtraTree(size_t numTrees,
+                                                 size_t numAttributeSamplesPerSplit,
+                                                 size_t minimumSizeForSplitting,
+                                                 const File& filePrefix)
+{
+  return new RegressionSavedRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, filePrefix);
+}
+
 
 };

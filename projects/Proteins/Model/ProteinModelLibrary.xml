@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinModel" directory="Model">
+
+  <class name="Model" base="CompositeFunction" abstract="yes"/>
+
+  <class name="ProteinModel" base="Model" abstract="yes">
+    <variable type="VariablesEnumeration[Protein]" name="target"/>
+  </class>
+
+  <class name="ProteinParallelModel" base="CompositeFunction">
+    <variable type="ObjectVector[ProteinModel]" name="models"/>
+  </class>
+
+  <class name="ProteinSequentialModel" base="CompositeFunction">
+    <variable type="ObjectVector[CompositeFunction]" name="models"/>
+  </class>
+
+
+
+  <class name="SimpleProteinModel" base="ProteinModel"/>
+</library>
