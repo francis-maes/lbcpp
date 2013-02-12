@@ -7,7 +7,9 @@
                                `--------------------------------------------*/
 
 #include "ProteinModel.h"
+#include "ProteinMap.h"
 #include "../Data/ProteinFunctions.h"
+#include "../Predictor/ProteinPerception.h"
 
 using namespace lbcpp;
 
@@ -37,11 +39,6 @@ void ProteinModel::buildFunction(CompositeFunctionBuilder& builder)
   makeProteinInputs.push_back(builder.addFunction(createPredictor(builder.getContext()), perception, supervision, targetName + T("Prediction")));
 
   builder.addFunction(new MakeProteinFunction(), makeProteinInputs);
-}
-
-FunctionPtr ProteinModel::createPerception(ExecutionContext& context) const
-{
-  return lbcppMemberCompositeFunction(ProteinModel, buildPerception);    
 }
 
 FunctionPtr ProteinModel::createPredictor(ExecutionContext& context) const
@@ -75,6 +72,98 @@ FunctionPtr ProteinModel::createPredictor(ExecutionContext& context) const
   }
 
   return FunctionPtr();
+}
+
+FunctionPtr ProteinModel::createPerception(ExecutionContext& context) const
+{
+  return lbcppMemberCompositeFunction(ProteinModel, buildPerception);
+}
+
+void ProteinModel::buildPerception(CompositeFunctionBuilder& builder) const
+{
+  size_t protein = builder.addInput(proteinClass);
+  size_t proteinMap = builder.addFunction(new CreateProteinMap(), protein, T("ProteinMap"));
+ 
+  switch (target)
+  {
+    case cbpTarget:
+      // Protein
+      builder.addFunction(lbcppMemberCompositeFunction(ProteinModel, buildGlobalPerception), proteinMap, T("globalPerception"));
+      return;
+    case ss3Target:
+    case ss8Target:
+    case stalTarget:
+    case sa20Target:
+    case drTarget:
+      // Sequence
+      builder.startSelection();
+      {
+        builder.addFunction(getVariableFunction(T("length")), proteinMap);
+        builder.addInSelection(proteinMap);
+      }
+      builder.finishSelectionWithFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(ProteinModel, buildResiduePerception)), T("residuePerception"));
+      return;
+    case cbsTarget:
+      // Cysteine Sequence
+      builder.startSelection();
+      {
+        builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+        builder.addInSelection(proteinMap);
+      }
+      builder.finishSelectionWithFunction(new CreateCysteinBondingStateVectorFunction(lbcppMemberCompositeUnlearnableFunction(ProteinModel, buildCysteineResiduePerception)), T("cysteinePerception"));
+      return;
+    case dsbTarget:
+      // Cysteine Pair
+      builder.startSelection();
+      {
+        builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+        builder.addInSelection(proteinMap);
+      }
+      builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(lbcppMemberCompositeFunction(ProteinModel, buildCysteineResiduePairPerception), 0.f), T("cysteinePairPerception"));
+      return;
+    default:
+      const String targetName = proteinClass->getMemberVariableName(target);
+      builder.getContext().errorCallback(T("ProteinModel::buildPerception"),
+                                         T("No implementation found for ") + targetName);
+  }
+}
+
+void ProteinModel::buildGlobalPerception(CompositeFunctionBuilder& builder) const
+{
+  size_t proteinMap = builder.addInput(proteinMapClass);
+  
+  builder.startSelection();
+  {
+    builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 1.0), T("bias"));
+    builder.addFunction(lbcppMemberCompositeUnlearnableFunction(ProteinModel, globalFeatures), proteinMap, T("global"));
+  }
+  builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+}
+
+void ProteinModel::buildResiduePerception(CompositeFunctionBuilder& builder) const
+{
+  size_t position = builder.addInput(positiveIntegerType);
+  size_t proteinMap = builder.addInput(proteinMapClass);
+  
+  // Global Features
+  size_t globalFeatures = builder.addFunction(lbcppMemberCompositeUnlearnableFunction(ProteinModel, globalFeatures), proteinMap, T("global"));
+  
+  // Residue Features
+  builder.startSelection();
+  {
+    builder.addInSelection(position);
+    builder.addInSelection(proteinMap);
+  }
+  size_t residueFeatures = builder.finishSelectionWithFunction(lbcppMemberCompositeUnlearnableFunction(ProteinModel, residueFeatures), T("residue"));
+  
+  // Concatenate features
+  builder.startSelection();
+  {
+    builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 1.0), T("bias"));
+    builder.addInSelection(globalFeatures);
+    builder.addInSelection(residueFeatures);
+  }
+  builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
 }
 
 void ProteinParallelModel::buildFunction(CompositeFunctionBuilder& builder)

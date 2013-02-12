@@ -325,7 +325,7 @@ public:
 
       if (!trainingProteins && !testingProteins)
       {
-        context.errorCallback(T("Touble with train/test proteins !"));
+        context.errorCallback(T("Trouble with train/test proteins !"));
         return DBL_MAX;
       }
 

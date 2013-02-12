@@ -121,8 +121,8 @@ public:
       const VariableSignaturePtr& inputVariable = inputVariables[i];
 
       shifts[i] = elementsEnumeration->getNumElements();
-      if (i && !shifts[i])
-        jassertfalse;
+      //if (i && !shifts[i])
+      //  jassertfalse;
 
       EnumerationPtr subElementsEnumeration;
       TypePtr subElementsType;

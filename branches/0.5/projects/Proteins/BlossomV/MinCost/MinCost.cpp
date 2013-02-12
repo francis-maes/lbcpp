@@ -191,7 +191,7 @@ template <typename FlowType, typename CostType>
 		}
 		for (a=i->firstNonsaturated; a; a=a->next)
 		{
-			CostType c = a->GetRCost();
+			a->GetRCost();
 			if (a->r_cap <= 0 || a->GetRCost() < -1e-5)
 			{
 				assert(0);
