@@ -682,9 +682,9 @@ void* RTreeFunction::computeCoreTableOf(ExecutionContext& context, const Variabl
       value = (CORETABLE_TYPE)objVariable.getDouble();
     else if (objType->inheritsFrom(integerType))
       value = (CORETABLE_TYPE)objVariable.getInteger();
-    else {
+    else
       jassertfalse;
-    }
+
     res[j] = value;
   }
   return res;
@@ -816,10 +816,10 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
         value = (CORETABLE_TYPE)objVariable.getInteger();
       else
         jassertfalse;
-      //std::cout << value << " ";
+//      std::cout << value << " ";
       core_table[nb_obj_in_core_table * j + i] = value;
     }
-    //std::cout << std::endl;
+//    std::cout << std::endl;
   }
 
   length_attribute_descriptors = nb_attributes;

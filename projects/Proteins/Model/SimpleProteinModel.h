@@ -11,10 +11,176 @@
 
 # include <lbcpp/Learning/DecisionTree.h>
 # include "ProteinModel.h"
+# include "ProteinMap.h"
 # include "../Predictor/LargeProteinPredictorParameters.h"
 
 namespace lbcpp
 {
+
+class GetSimpleProteinMapElement : public GetProteinMapElement
+{
+public:
+  GetSimpleProteinMapElement(const String& variableName)
+    : GetProteinMapElement(variableName)
+  {
+    if (variableName == T("Seq[AA]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::aaResidueFeatures);
+    }
+    else if (variableName == T("Seq[PSSM]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::pssmResidueFeatures);
+    }
+    else if (variableName == T("Seq[SS3]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::ss3ResidueFeatures);
+    }
+    else if (variableName == T("Seq[SS8]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::ss8ResidueFeatures);
+    }
+    else if (variableName == T("Seq[SA]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::saResidueFeatures);
+    }
+    else if (variableName == T("Seq[DR]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::drResidueFeatures);
+    }
+    else if (variableName == T("Seq[StAl]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::stalResidueFeatures);
+    }
+    else if (variableName == T("Acc[AA]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[AA]"));
+    }
+    else if (variableName == T("Acc[PSSM]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[PSSM]"));
+    }
+    else if (variableName == T("Acc[SS3]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[SS3]"));
+    }
+    else if (variableName == T("Acc[SS8]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[SS8]"));
+    }
+    else if (variableName == T("Acc[SA]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[SA]"));
+    }
+    else if (variableName == T("Acc[DR]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[DR]"));
+    }
+    else if (variableName == T("Acc[StAl]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
+      featuresFunction = new GetSimpleProteinMapElement(T("Seq[StAl]"));
+    }
+    else
+      jassertfalse;
+  }
+
+  void residueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinMap = builder.addInput(proteinMapClass);
+
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+    size_t length = builder.addFunction(getVariableFunction(T("length")), proteinMap);
+    builder.addFunction(createVectorFunction(new MethodBasedCompositeFunction(refCountedPointerFromThis(this), residueFunction)), length, protein);
+  }
+  
+  void residueAccumulator(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinMap = builder.addInput(proteinMapClass);
+
+    size_t features = builder.addFunction(featuresFunction, proteinMap);
+    builder.addFunction(accumulateContainerFunction(), features);
+  }
+
+  void aaResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass);
+
+    size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), protein, position, T("[]"));
+    builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("AA"));
+  }
+
+  void pssmResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType, T("position"));
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+    
+    builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("PSSM"));
+  }
+  
+  void ss3ResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass);
+    
+    builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("S3"));
+  }
+  
+  void ss8ResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass);
+    
+    builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), protein, position, T("SS8"));
+  }
+  
+  void saResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass);
+    
+    size_t sa = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position, T("[]"));
+    builder.addFunction(doubleFeatureGenerator(), sa, T("SA"));
+  }
+  
+  void drResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass);
+    
+    size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position, T("[]"));
+    builder.addFunction(doubleFeatureGenerator(), dr, T("DR"));
+  }
+  
+  void stalResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass);
+    
+    builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position, T("StAl"));
+  }
+
+protected:
+  friend class GetSimpleProteinMapElementClass;
+
+  CompositeFunctionBuilderFunction residueFunction;
+  FunctionPtr featuresFunction;
+
+  GetSimpleProteinMapElement() {}
+};
 
 class SimpleProteinModel : public ProteinModel
 {
@@ -24,172 +190,95 @@ public:
   size_t x3Splits;
   bool x3LowMemory;
 
-  SimpleProteinModel()
-    : ProteinModel(ss3Target),
+  /* Global Feature Parameters */
+  bool useProteinLength;
+  bool aaGlobalHistogram;
+  bool pssmGlobalHistogram;
+
+  /* Residue Feature Parameter */
+  size_t aaWindowSize;
+  size_t pssmWindowSize;
+
+  SimpleProteinModel(ProteinTarget target = noTarget)
+    : ProteinModel(target),
+    /* Machine Learning Parameters */
       x3Trees(10),
       x3Attributes(0),
       x3Splits(1),
-      x3LowMemory(true) {}
+      x3LowMemory(true),
+    /* Global Feature Parameters */
+      useProteinLength(false),
+      aaGlobalHistogram(false),
+      pssmGlobalHistogram(false),
+    /* Residue Feature Parameter */
+      aaWindowSize(0),
+      pssmWindowSize(0)
+  {}
 
 protected:
+  friend class SimpleProteinModelClass;
+
   virtual FunctionPtr createMachineLearning(ExecutionContext& context) const
   {
     return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, false, x3LowMemory);
   }
 
-  virtual void buildPerception(CompositeFunctionBuilder& builder) const
+  void globalFeatures(CompositeFunctionBuilder& builder) const
   {
-    size_t protein = builder.addInput(proteinClass);
-
-    size_t preComputedPerception = builder.addFunction(lbcppMemberCompositeUnlearnableFunction(SimpleProteinModel, preComputePerception), protein, T("PreComputePerception"));
-    
-    builder.startSelection();
-    {
-      builder.addFunction(getVariableFunction(T("length")), preComputedPerception);
-      builder.addInSelection(preComputedPerception);
-    }
-    builder.finishSelectionWithFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(SimpleProteinModel, residuePerception)), T("rfVector"));
-  }
-
-  void residuePerception(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t proteinPerception = builder.addInput(largeProteinPerceptionClass());
+    /* Input */
+    size_t proteinMap = builder.addInput(proteinMapClass);
     /* Data */
-    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
-    size_t numCysteins = builder.addFunction(getVariableFunction(T("numCysteins")), proteinPerception, T("#Cys"));
-    size_t length = builder.addFunction(getVariableFunction(T("length")), proteinPerception, T("length"));
-    size_t aaResidueFeatures = builder.addFunction(getVariableFunction(T("aaResidueFeatures")), proteinPerception, T("pssmRF"));
-    size_t aaAccumulator = builder.addFunction(getVariableFunction(T("aaAccumulator")), proteinPerception, T("aaAccu"));
-    size_t pssmResidueFeatures = builder.addFunction(getVariableFunction(T("pssmResidueFeatures")), proteinPerception, T("pssmRF"));
-    size_t pssmAccumulator = builder.addFunction(getVariableFunction(T("pssmAccumulator")), proteinPerception, T("pssmAccu"));
-
+    size_t length = !useProteinLength ? (size_t)-1 :
+                     builder.addFunction(getVariableFunction(T("length")), proteinMap);
+    size_t aaAccumulator = !aaGlobalHistogram ? (size_t)-1 :
+                            builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
+    size_t pssmAccumulator = !pssmGlobalHistogram ? (size_t)-1 :
+                              builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSSM]")), proteinMap, T("Acc[PSSM]"));
     /* Output */
     builder.startSelection();
     {
-      /*** Global Features ***/
-      builder.addFunction(integerFeatureGenerator(), length, T("length"));
+      if (useProteinLength)
+        builder.addFunction(integerFeatureGenerator(), length, T("length"));
+      if (aaGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), aaAccumulator, T("h(AA)"));
+      if (pssmGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), pssmAccumulator, T("h(PSSM)"));
 
-      // global histograms
-      builder.addFunction(accumulatorGlobalMeanFunction(), aaAccumulator, T("h(AA)"));
-      builder.addFunction(accumulatorGlobalMeanFunction(), pssmAccumulator, T("h(PSSM)"));
-
-      // number of cysteins
-      builder.addFunction(integerFeatureGenerator(), numCysteins, T("#Cys"));
-      builder.addFunction(new IsNumCysteinPair(), protein, T("(#Cys+1) % 2"));
-
-      // bias (and anti-crash)
-      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 1.0), T("bias"));
-
-      /*** Residue Features ***/
-      builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("Pos/Len"));
-
-      // window sizes
-      builder.addFunction(centeredContainerWindowFeatureGenerator(15), aaResidueFeatures, position, T("w(AA,") + String(15) + (")"));
-      builder.addFunction(centeredContainerWindowFeatureGenerator(15), pssmResidueFeatures, position, T("w(PSSM,") + String(15) + (")"));
+      builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 
-  void preComputePerception(CompositeFunctionBuilder& builder) const
+  void residueFeatures(CompositeFunctionBuilder& builder) const
   {
+    /* Inputs */
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t proteinMap = builder.addInput(proteinMapClass);
+    /* Data */
+    size_t aa = !aaWindowSize ? (size_t)-1 :
+                 builder.addFunction(new GetSimpleProteinMapElement(T("Seq[AA]")), proteinMap, T("Seq[AA]"));
+    //size_t aaAccumulator = builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
+
+    size_t pssm = !pssmWindowSize ? (size_t)-1 :
+                   builder.addFunction(new GetSimpleProteinMapElement(T("Seq[PSSM]")), proteinMap, T("Seq[PSSM]"));
+    //size_t pssmAccumulator = builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSMM]")), proteinMap, T("Acc[PSSM]"));
+
+    /* Output */
     builder.startSelection();
     {
-      size_t protein = builder.addInput(proteinClass, T("protein"));
-      size_t length = builder.addFunction(new ProteinLengthFunction(), protein);
-      builder.addFunction(new NumCysteinsFunction(), protein);
-      // AA
-      size_t primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, aaResidueFeatures)), length, protein);
-      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      // PSSM
-      primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, pssmResidueFeatures)), length, protein);
-      primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      // SS3
-      primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, ss3ResidueFeatures)), length, protein);
-      primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      // SS8
-      primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, ss8ResidueFeatures)), length, protein);
-      primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      // SA
-      primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, saResidueFeatures)), length, protein);
-      primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      // DR
-      primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, drResidueFeatures)), length, protein);
-      primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      // STAL
-      primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeUnlearnableFunction(LargeProteinPredictorParameters, stalResidueFeatures)), length, protein);
-      primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-    }
-    builder.finishSelectionWithFunction(new CreateLargeProteinPerception());
-  }
+      // window sizes
+      if (aaWindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(aaWindowSize), aa, position, T("w(AA,") + String((int)aaWindowSize) + (")"));
+      if (pssmWindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(pssmWindowSize), pssm, position, T("w(PSSM,") + String((int)pssmWindowSize) + (")"));
 
-  void aaResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), protein, position, T("aa"));
-    builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
-  }
-  
-  void pssmResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("pssm"));
-  }
-  
-  void ss3ResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("ss3"));
-  }
-  
-  void ss8ResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), protein, position, T("ss8"));
-  }
-  
-  void saResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    size_t sa = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position, T("sa"));
-    builder.addFunction(doubleFeatureGenerator(), sa, T("sa"));
-  }
-  
-  void drResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position, T("dr"));
-    builder.addFunction(doubleFeatureGenerator(), dr, T("dr"));
-  }
-  
-  void stalResidueFeatures(CompositeFunctionBuilder& builder) const
-  {
-    /* Inputs */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position, T("stal"));
+      builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
+    }
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 };
+
+typedef ReferenceCountedObjectPtr<SimpleProteinModel> SimpleProteinModelPtr;
 
 }; /* namespace lbcpp */
 

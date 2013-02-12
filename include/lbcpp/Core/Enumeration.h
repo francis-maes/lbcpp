@@ -101,6 +101,7 @@ public:
 
 extern EnumerationPtr addMissingToEnumerationEnumeration(TypePtr type);
 extern EnumerationPtr addEntropyToEnumerationEnumeration(TypePtr type);
+extern EnumerationPtr emptyEnumeration;
 extern EnumerationPtr singletonEnumeration;
 extern EnumerationPtr existOrMissingEnumeration;
 extern EnumerationPtr falseOrTrueEnumeration;

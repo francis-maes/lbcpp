@@ -18,5 +18,22 @@
 
 
 
-  <class name="SimpleProteinModel" base="ProteinModel"/>
+  <class name="SimpleProteinModel" base="ProteinModel">
+    <variable type="Boolean" name="useProteinLength"/>
+    <variable type="Boolean" name="aaGlobalHistogram"/>
+    <variable type="Boolean" name="pssmGlobalHistogram"/>
+    <variable type="PositiveInteger" name="aaWindowSize"/>
+    <variable type="PositiveInteger" name="pssmWindowSize"/>
+  </class>
+  
+  <class name="Map" base="Object"/>
+
+  <class name="ProteinMap" base="Map">
+    <variable type="Protein" name="protein"/>
+    <variable type="PositiveInteger" name="length"/>
+  </class>
+
+  <class name="CreateProteinMap" base="SimpleUnaryFunction"/>
+  <class name="GetProteinMapElement" base="Function"/>
+  <class name="GetSimpleProteinMapElement" base="GetProteinMapElement"/>
 </library>

@@ -97,10 +97,6 @@ SET(LBCPP_CORE_SOURCES
   Core/Container.cpp
   ../include/lbcpp/Core/Vector.h
   Core/Vector.cpp
-  ../include/lbcpp/Core/Map.h
-  Core/Map.cpp
-  ../include/lbcpp/Core/OrderedMap.h
-  Core/OrderedMap.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
   ../include/lbcpp/Core/Function.h

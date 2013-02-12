@@ -57,7 +57,24 @@ protected:
   // DoubleVector[Perception] -> Output
   virtual FunctionPtr createMachineLearning(ExecutionContext& context) const = 0;
 
-  virtual void buildPerception(CompositeFunctionBuilder& builder) const = 0;
+  void buildPerception(CompositeFunctionBuilder& builder) const;
+  // ProteinMap -> ConcatenateDoubleVector
+  void buildGlobalPerception(CompositeFunctionBuilder& builder) const;
+  // PositiveInteger(Position), ProteinMap -> ConcatenateDoubleVector
+  void buildResiduePerception(CompositeFunctionBuilder& builder) const;
+
+  // PositiveInteger(Cysteine Position), ProteinMap -> ConcatenateDoubleVector
+  virtual void buildCysteineResiduePerception(CompositeFunctionBuilder& builder) const
+    {jassertfalse;}
+
+  // PositiveInteger(Cysteine Position), PositiveInteger(Cysteine Position), ProteinMap -> ConcatenateDoubleVector
+  virtual void buildCysteineResiduePairPerception(CompositeFunctionBuilder& builder) const
+    {jassertfalse;}
+
+  // ProteinMap -> DoubleVector
+  virtual void globalFeatures(CompositeFunctionBuilder& builder) const = 0;
+  // PositiveInteger(Position), ProteinMap -> DoubleVector
+  virtual void residueFeatures(CompositeFunctionBuilder& builder) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinModel> ProteinModelPtr;
