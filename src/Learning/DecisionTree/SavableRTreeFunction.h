@@ -1,15 +1,14 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SavedRTreeFunction.h           | Wrapper of ExtraTrees           |
+| Filename: SavableRTreeFunction.h         | Wrapper of ExtraTrees           |
 | Author  : Julien Becker                  | implemented by Pierre Geurts    |
 | Started : 11/02/2013 09:49               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SAVED_DECISION_TREE_R_TREE_FUNCTION_H_
-# define LBCPP_SAVED_DECISION_TREE_R_TREE_FUNCTION_H_
+#ifndef LBCPP_SAVABLE_DECISION_TREE_R_TREE_FUNCTION_H_
+# define LBCPP_SAVABLE_DECISION_TREE_R_TREE_FUNCTION_H_
 
-# include <lbcpp/Core/Function.h>
 # include <lbcpp/Learning/DecisionTree.h>
 # include <lbcpp/Learning/BatchLearner.h>
 # include "RTreeFunction.h"
@@ -17,46 +16,22 @@
 namespace lbcpp
 {
 
-extern BatchLearnerPtr savedRTreeBatchLearner();
+extern BatchLearnerPtr savableRTreeBatchLearner();
 
-class SavedRTreeFunction : public Function
+class SavableRTreeFunction : public ExtraTreesFunction
 {
 public:
-  SavedRTreeFunction(size_t numTrees,
-                     size_t numAttributeSamplesPerSplit,
-                     size_t minimumSizeForSplitting,
-                     const File& file)
-    : numTrees(numTrees),
-      numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-      minimumSizeForSplitting(minimumSizeForSplitting),
-      file(file)
-    {
-      // Tree files are not assumed to exist when using this constructor
-      setBatchLearner(filterUnsupervisedExamplesBatchLearner(savedRTreeBatchLearner()));
-    }
+  SavableRTreeFunction(size_t numTrees,
+                       size_t numAttributeSamplesPerSplit,
+                       size_t minimumSizeForSplitting,
+                       const File& file)
+  : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting),
+    file(file)
+  {
+    // Tree files are not assumed to exist when using this constructor
+    setBatchLearner(filterUnsupervisedExamplesBatchLearner(savableRTreeBatchLearner()));
+  }
 
-  /* SavedRTreeFunction */
-  size_t getNumTrees() const
-    {return numTrees;}
-  
-  size_t getNumAttributeSamplesPerSplit() const
-    {return numAttributeSamplesPerSplit;}
-  
-  size_t getMinimumSizeForSplitting() const
-    {return minimumSizeForSplitting;}
-  
-  virtual TypePtr getSupervisionType() const = 0;
-  
-  /* Function */
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)containerClass(anyType) : getSupervisionType();}
-  
-  virtual String getOutputPostFix() const
-    {return T("SavedRTree");}  
-  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     void* coreTable = RTreeFunction::computeCoreTableOf(context, inputs[0]);
@@ -68,7 +43,7 @@ public:
       x3Function->initialize(context, inputVariables);
       if (!x3Function->loadTreesFromBinaryFile(context, getTreesFile(i)))
       {
-        context.errorCallback(T("SavedRTreeFunction::computeFunction"), T("Error while loading trees from file: ") + getTreesFile(i).getFileName());
+        context.errorCallback(T("SavableRTreeFunction::computeFunction"), T("Error while loading trees from file: ") + getTreesFile(i).getFileName());
         return Variable();
       }
       const Variable result = x3Function->makePredictionFromCoreTable(context, coreTable);
@@ -79,21 +54,13 @@ public:
   }
   
 protected:
-  friend class SavedRTreeFunctionClass;
-  friend class SavedRTreeBatchLearner;
-
-  size_t numTrees;
-  size_t numAttributeSamplesPerSplit;
-  size_t minimumSizeForSplitting;
+  friend class SavableRTreeFunctionClass;
+  friend class SavableRTreeBatchLearner;
 
   File file;
 
-  SavedRTreeFunction()
-  {
-    // Tree files must exist when using this constructor.
-    setBatchLearner(BatchLearnerPtr());
-  }
-  
+  SavableRTreeFunction() {}
+
   File getTreesFile(size_t index) const
   {
     String identifier = String((int)index);
@@ -110,35 +77,35 @@ protected:
   virtual Variable finalizePrediction(const Variable& value) const = 0;
 };
 
-extern ClassPtr savedRTreeFunctionClass;
-typedef ReferenceCountedObjectPtr<SavedRTreeFunction> SavedRTreeFunctionPtr;
+extern ClassPtr savableRTreeFunctionClass;
+typedef ReferenceCountedObjectPtr<SavableRTreeFunction> SavableRTreeFunctionPtr;
 
-class SavedRTreeBatchLearner : public BatchLearner
+class SavableRTreeBatchLearner : public BatchLearner
 {
 public:  
   virtual TypePtr getRequiredFunctionType() const
-    {return savedRTreeFunctionClass;}
+    {return savableRTreeFunctionClass;}
 
   virtual bool train(ExecutionContext& context,
                      const FunctionPtr& function,
                      const std::vector<ObjectPtr>& trainingData,
                      const std::vector<ObjectPtr>& validationData) const
   {
-    const SavedRTreeFunctionPtr& rTreeFunction = function.staticCast<SavedRTreeFunction>();
+    const SavableRTreeFunctionPtr& rTreeFunction = function.staticCast<SavableRTreeFunction>();
     if (!checkHasAtLeastOneExemples(trainingData))
     {
       context.errorCallback(T("No training examples"));
       return false;
     }
 
-    context.enterScope(T("SavedRTree Learning"));
+    context.enterScope(T("SavableRTree Learning"));
     for (size_t i = 0; i < rTreeFunction->numTrees; ++i)
     {
       RTreeFunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation();
       x3Function->setBatchLearner(rTreeBatchLearner());
       if (!x3Function->train(context, trainingData))
       {
-        context.errorCallback(T("SavedRTreeFunction"), T("Error during learning"));
+        context.errorCallback(T("SavableRTreeFunction"), T("Error during learning"));
         return false;
       }
       x3Function->saveTreesToBinaryFile(context, rTreeFunction->getTreesFile(i));
@@ -150,17 +117,17 @@ public:
   }
 };
 
-class RegressionSavedRTreeFunction : public SavedRTreeFunction
+class RegressionSavableRTreeFunction : public SavableRTreeFunction
 {
 public:
-  RegressionSavedRTreeFunction(size_t numTrees,
-                               size_t numAttributeSamplesPerSplit,
-                               size_t minimumSizeForSplitting,
-                               const File& file)
-    : SavedRTreeFunction(numTrees,
-                             numAttributeSamplesPerSplit,
-                             minimumSizeForSplitting,
-                             file) {}
+  RegressionSavableRTreeFunction(size_t numTrees,
+                                 size_t numAttributeSamplesPerSplit,
+                                 size_t minimumSizeForSplitting,
+                                 const File& file)
+  : SavableRTreeFunction(numTrees,
+                         numAttributeSamplesPerSplit,
+                         minimumSizeForSplitting,
+                         file) {}
   
   virtual TypePtr getSupervisionType() const
     {return doubleType;}
@@ -169,41 +136,35 @@ public:
     {return doubleType;}
 
   virtual RTreeFunctionPtr createExtraTreeImplementation() const
-  {
-    return new RegressionRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
-  }
+    {return new RegressionRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-  {
-    return Variable(0.f, doubleType);
-  }
+    {return Variable(0.f, doubleType);}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
-  {
-    return Variable(a.getDouble() + b.getDouble(), doubleType);
-  }
+    {return Variable(a.getDouble() + b.getDouble(), doubleType);}
 
   virtual Variable finalizePrediction(const Variable& value) const
-  {
-    return Variable(value.getDouble() / (double)numTrees, doubleType);
-  }
+    {return Variable(value.getDouble() / (double)numTrees, doubleType);}
   
 protected:
-  friend class RegressionSavedRTreeFunctionClass;
-  RegressionSavedRTreeFunction() {}
+  friend class RegressionSavableRTreeFunctionClass;
+
+  RegressionSavableRTreeFunction() {}
 };
 
-class BinarySavedRTreeFunction : public SavedRTreeFunction
+class BinarySavableRTreeFunction : public SavableRTreeFunction
 {
 public:
-  BinarySavedRTreeFunction(size_t numTrees,
-                           size_t numAttributeSamplesPerSplit,
-                           size_t minimumSizeForSplitting,
-                           const File& file)
-    : SavedRTreeFunction(numTrees,
+  BinarySavableRTreeFunction(size_t numTrees,
+                             size_t numAttributeSamplesPerSplit,
+                             size_t minimumSizeForSplitting,
+                             const File& file)
+  : SavableRTreeFunction(numTrees,
                          numAttributeSamplesPerSplit,
                          minimumSizeForSplitting,
-                         file) {}
+                         file)
+  {}
   
   virtual TypePtr getSupervisionType() const
     {return sumType(probabilityType, booleanType);}
@@ -212,42 +173,34 @@ public:
     {return probabilityType;}
   
   virtual RTreeFunctionPtr createExtraTreeImplementation() const
-  {
-    return new BinaryRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
-  }
+    {return new BinaryRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-  {
-    return Variable(0.f, probabilityType);
-  }
+    {return Variable(0.f, probabilityType);}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
-  {
-    return Variable(a.getDouble() + b.getDouble(), probabilityType);
-  }
+    {return Variable(a.getDouble() + b.getDouble(), probabilityType);}
   
   virtual Variable finalizePrediction(const Variable& value) const
-  {
-    return Variable(value.getDouble() / (double)numTrees, probabilityType);
-  }
+  {return Variable(value.getDouble() / (double)numTrees, probabilityType);}
 
 protected:
-  friend class BinarySavedRTreeFunctionClass;
+  friend class BinarySavableRTreeFunctionClass;
 
-  BinarySavedRTreeFunction() {}
+  BinarySavableRTreeFunction() {}
 };
 
-class ClassificationSavedRTreeFunction : public SavedRTreeFunction
+class ClassificationSavableRTreeFunction : public SavableRTreeFunction
 {
 public:
-  ClassificationSavedRTreeFunction(size_t numTrees,
-                                   size_t numAttributeSamplesPerSplit,
-                                   size_t minimumSizeForSplitting,
-                                   const File& file)
-    : SavedRTreeFunction(numTrees,
-                         numAttributeSamplesPerSplit,
-                         minimumSizeForSplitting,
-                         file) {}
+  ClassificationSavableRTreeFunction(size_t numTrees,
+                                     size_t numAttributeSamplesPerSplit,
+                                     size_t minimumSizeForSplitting,
+                                     const File& file)
+  : SavableRTreeFunction(numTrees,
+                       numAttributeSamplesPerSplit,
+                       minimumSizeForSplitting,
+                       file) {}
   
   virtual TypePtr getSupervisionType() const
     {return sumType(enumValueType, doubleVectorClass(enumValueType, probabilityType));}
@@ -260,14 +213,10 @@ public:
   }
   
   virtual RTreeFunctionPtr createExtraTreeImplementation() const
-  {
-    return new ClassificationRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
-  }
+    {return new ClassificationRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-  {
-    return new DenseDoubleVector(denseDoubleVectorClass(getOutputType()->getTemplateArgument(0), probabilityType));
-  }
+    {return new DenseDoubleVector(denseDoubleVectorClass(getOutputType()->getTemplateArgument(0), probabilityType));}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
   {
@@ -284,11 +233,11 @@ public:
   }
 
 protected:
-  friend class ClassificationSavedRTreeFunctionClass;
+  friend class ClassificationSavableRTreeFunctionClass;
 
-  ClassificationSavedRTreeFunction() {}
+  ClassificationSavableRTreeFunction() {}
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SAVED_DECISION_TREE_R_TREE_FUNCTION_H_
+#endif // !LBCPP_SAVABLE_DECISION_TREE_R_TREE_FUNCTION_H_

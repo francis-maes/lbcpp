@@ -9,7 +9,6 @@
 #ifndef LBCPP_LOW_MEMORY_DECISION_TREE_R_TREE_FUNCTION_H_
 # define LBCPP_LOW_MEMORY_DECISION_TREE_R_TREE_FUNCTION_H_
 
-# include <lbcpp/Core/Function.h>
 # include <lbcpp/Learning/DecisionTree.h>
 # include <lbcpp/Learning/BatchLearner.h>
 # include "RTreeFunction.h"
@@ -19,39 +18,15 @@ namespace lbcpp
 
 extern BatchLearnerPtr lowMemoryRTreeBatchLearner();
 
-class LowMemoryRTreeFunction : public Function
+class LowMemoryRTreeFunction : public ExtraTreesFunction
 {
 public:
   LowMemoryRTreeFunction(size_t numTrees,
                          size_t numAttributeSamplesPerSplit,
                          size_t minimumSizeForSplitting)
-    : numTrees(numTrees),
-      numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-      minimumSizeForSplitting(minimumSizeForSplitting),
-      predictionIndex((size_t)-1)
+  : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting),
+    predictionIndex((size_t)-1)
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
-
-  /* LowMemoryRTreeFunction */
-  size_t getNumTrees() const
-    {return numTrees;}
-  
-  size_t getNumAttributeSamplesPerSplit() const
-    {return numAttributeSamplesPerSplit;}
-  
-  size_t getMinimumSizeForSplitting() const
-    {return minimumSizeForSplitting;}
-  
-  virtual TypePtr getSupervisionType() const = 0;
-  
-  /* Function */
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)containerClass(anyType) : getSupervisionType();}
-  
-  virtual String getOutputPostFix() const
-    {return T("LowMemRTree");}  
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
@@ -65,17 +40,12 @@ protected:
   friend class LowMemoryRTreeFunctionClass;
   friend class LowMemoryRTreeBatchLearner;
 
-  size_t numTrees;
-  size_t numAttributeSamplesPerSplit;
-  size_t minimumSizeForSplitting;
-
   size_t predictionIndex;
   std::vector<Variable> predictions;
 
-  LowMemoryRTreeFunction()
-    {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
-  
-  virtual FunctionPtr createExtraTreeImplementation() const = 0;
+  LowMemoryRTreeFunction() {}
+
+  virtual RTreeFunctionPtr createExtraTreeImplementation() const = 0;
 
   virtual Variable createEmptyPrediction() const = 0;
   virtual Variable addPrediction(const Variable& a, const Variable& b) const = 0;
@@ -84,7 +54,6 @@ protected:
 
 extern ClassPtr lowMemoryRTreeFunctionClass;
 typedef ReferenceCountedObjectPtr<LowMemoryRTreeFunction> LowMemoryRTreeFunctionPtr;
-extern BatchLearnerPtr rTreeBatchLearner(bool verbose = false);
 
 class LowMemoryRTreeBatchLearner : public BatchLearner
 {
@@ -118,8 +87,8 @@ public:
     context.enterScope(T("Low Memory RTree Learning"));
     for (size_t i = 0; i < rTreeFunction->numTrees; ++i)
     {
-      RTreeFunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation().dynamicCast<RTreeFunction>();
-      x3Function->setBatchLearner(rTreeBatchLearner());
+      RTreeFunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation();
+      x3Function->setVerbosity(false);
       if (!x3Function->train(context, trainingData))
       {
         context.errorCallback(T("LowMemoryRTreeFunction"), T("Error during learning"));
@@ -128,7 +97,6 @@ public:
 
       for (size_t j = 0; j < numTesting; ++j)
       {
-        //const Variable result = x3Function->compute(context, validationData[j]->getVariable(0), Variable());
         const Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
         predictions[j] = rTreeFunction->addPrediction(predictions[j], result);
       }
@@ -156,10 +124,9 @@ public:
   RegressionLowMemoryRTreeFunction(size_t numTrees,
                                    size_t numAttributeSamplesPerSplit,
                                    size_t minimumSizeForSplitting)
-    : LowMemoryRTreeFunction(numTrees,
-                             numAttributeSamplesPerSplit,
-                             minimumSizeForSplitting) {}
-  RegressionLowMemoryRTreeFunction() {}
+  : LowMemoryRTreeFunction(numTrees,
+                           numAttributeSamplesPerSplit,
+                           minimumSizeForSplitting) {}
   
   virtual TypePtr getSupervisionType() const
     {return doubleType;}
@@ -167,25 +134,22 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return doubleType;}
 
-  virtual FunctionPtr createExtraTreeImplementation() const
-  {
-    return new RegressionRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
-  }
+  virtual RTreeFunctionPtr createExtraTreeImplementation() const
+    {return new RegressionRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-  {
-    return Variable(0.f, doubleType);
-  }
+    {return Variable(0.f, doubleType);}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
-  {
-    return Variable(a.getDouble() + b.getDouble(), doubleType);
-  }
+    {return Variable(a.getDouble() + b.getDouble(), doubleType);}
 
   virtual Variable finalizePrediction(const Variable& value) const
-  {
-    return Variable(value.getDouble() / (double)numTrees, doubleType);
-  }
+    {return Variable(value.getDouble() / (double)numTrees, doubleType);}
+
+protected:
+  friend class RegressionLowMemoryRTreeFunctionClass;
+
+  RegressionLowMemoryRTreeFunction() {}
 };
 
 class BinaryLowMemoryRTreeFunction : public LowMemoryRTreeFunction
@@ -194,10 +158,9 @@ public:
   BinaryLowMemoryRTreeFunction(size_t numTrees,
                                    size_t numAttributeSamplesPerSplit,
                                    size_t minimumSizeForSplitting)
-    : LowMemoryRTreeFunction(numTrees,
-                             numAttributeSamplesPerSplit,
-                             minimumSizeForSplitting) {}
-  BinaryLowMemoryRTreeFunction() {}
+  : LowMemoryRTreeFunction(numTrees,
+                           numAttributeSamplesPerSplit,
+                           minimumSizeForSplitting) {}
   
   virtual TypePtr getSupervisionType() const
     {return sumType(probabilityType, booleanType);}
@@ -205,25 +168,22 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return probabilityType;}
   
-  virtual FunctionPtr createExtraTreeImplementation() const
-  {
-    return new BinaryRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
-  }
+  virtual RTreeFunctionPtr createExtraTreeImplementation() const
+    {return new BinaryRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-  {
-    return Variable(0.f, probabilityType);
-  }
+    {return Variable(0.f, probabilityType);}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
-  {
-    return Variable(a.getDouble() + b.getDouble(), probabilityType);
-  }
+    {return Variable(a.getDouble() + b.getDouble(), probabilityType);}
   
   virtual Variable finalizePrediction(const Variable& value) const
-  {
-    return Variable(value.getDouble() / (double)numTrees, probabilityType);
-  }
+    {return Variable(value.getDouble() / (double)numTrees, probabilityType);}
+
+protected:
+  friend class BinaryLowMemoryRTreeFunctionClass;
+
+  BinaryLowMemoryRTreeFunction() {}
 };
 
 class ClassificationLowMemoryRTreeFunction : public LowMemoryRTreeFunction
@@ -232,10 +192,9 @@ public:
   ClassificationLowMemoryRTreeFunction(size_t numTrees,
                                        size_t numAttributeSamplesPerSplit,
                                        size_t minimumSizeForSplitting)
-    : LowMemoryRTreeFunction(numTrees,
-                             numAttributeSamplesPerSplit,
-                             minimumSizeForSplitting) {}
-  ClassificationLowMemoryRTreeFunction() {}
+  : LowMemoryRTreeFunction(numTrees,
+                           numAttributeSamplesPerSplit,
+                           minimumSizeForSplitting) {}
   
   virtual TypePtr getSupervisionType() const
     {return sumType(enumValueType, doubleVectorClass(enumValueType, probabilityType));}
@@ -247,15 +206,11 @@ public:
     return inputVariables[1]->getType();
   }
   
-  virtual FunctionPtr createExtraTreeImplementation() const
-  {
-    return new ClassificationRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
-  }
+  virtual RTreeFunctionPtr createExtraTreeImplementation() const
+    {return new ClassificationRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-  {
-    return new DenseDoubleVector(denseDoubleVectorClass(getOutputType()->getTemplateArgument(0), probabilityType));
-  }
+    {return new DenseDoubleVector(denseDoubleVectorClass(getOutputType()->getTemplateArgument(0), probabilityType));}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
   {
@@ -270,6 +225,11 @@ public:
       values[i] /= numTrees;
     return value;
   }
+
+protected:
+  friend class ClassificationLowMemoryRTreeFunctionClass;
+
+  ClassificationLowMemoryRTreeFunction() {}
 };
 
 }; /* namespace lbcpp */

@@ -370,7 +370,7 @@ public:
         x3Splits = tokens[3].getIntValue();
       }
       bool x3LowMemory = true;
-      predictor->learner = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, false, x3LowMemory);
+      predictor->learner = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, x3LowMemory);
     } 
     // k-Nearest Neighbors - Default setting
     if (learningMachineName == T("kNN"))

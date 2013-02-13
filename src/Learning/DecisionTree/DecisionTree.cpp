@@ -9,67 +9,48 @@
 #include <lbcpp/Learning/DecisionTree.h>
 #include "RTreeFunction.h"
 #include "LowMemoryRTreeFunction.h"
-#include "SavedRTreeFunction.h"
+#include "SavableRTreeFunction.h"
 
 namespace lbcpp
 {
 
-FunctionPtr regressionExtraTree(size_t numTrees,
-                                size_t numAttributeSamplesPerSplit,
-                                size_t minimumSizeForSplitting,
-                                bool verbose,
-                                bool useLowMemory)
-{
-  if (!useLowMemory)
-    return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
-  return new RegressionLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-}
-
-FunctionPtr binaryClassificationExtraTree(size_t numTrees,
+ExtraTreesFunctionPtr regressionExtraTree(size_t numTrees,
                                           size_t numAttributeSamplesPerSplit,
                                           size_t minimumSizeForSplitting,
-                                          bool verbose,
-                                          bool useLowMemory)
+                                          bool useLowMemory,
+                                          const File& saveTreesToFilePrefix)
 {
   if (!useLowMemory)
-    return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
-  return new BinaryLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+    return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  if (saveTreesToFilePrefix == File::nonexistent)
+    return new RegressionLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new RegressionSavableRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, saveTreesToFilePrefix);
 }
 
-FunctionPtr classificationExtraTree(size_t numTrees,
+ExtraTreesFunctionPtr binaryClassificationExtraTree(size_t numTrees,
+                                          size_t numAttributeSamplesPerSplit,
+                                          size_t minimumSizeForSplitting,
+                                          bool useLowMemory,
+                                          const File& saveTreesToFilePrefix)
+{
+  if (!useLowMemory)
+    return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  if (saveTreesToFilePrefix == File::nonexistent)
+    return new BinaryLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new BinarySavableRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, saveTreesToFilePrefix);
+}
+
+ExtraTreesFunctionPtr classificationExtraTree(size_t numTrees,
                                     size_t numAttributeSamplesPerSplit,
                                     size_t minimumSizeForSplitting,
-                                    bool verbose,
-                                    bool useLowMemory)
+                                    bool useLowMemory,
+                                    const File& saveTreesToFilePrefix)
 {
   if (!useLowMemory)
-    return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
-  return new ClassificationLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+    return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  if (saveTreesToFilePrefix == File::nonexistent)
+    return new ClassificationLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new ClassificationSavableRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, saveTreesToFilePrefix);
 }
-
-FunctionPtr binaryClassificationSavedExtraTree(size_t numTrees,
-                                                 size_t numAttributeSamplesPerSplit,
-                                                 size_t minimumSizeForSplitting,
-                                                 const File& filePrefix)
-{
-  return new BinarySavedRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, filePrefix);
-}
-
-FunctionPtr classificationSavedExtraTree(size_t numTrees,
-                                                 size_t numAttributeSamplesPerSplit,
-                                                 size_t minimumSizeForSplitting,
-                                                 const File& filePrefix)
-{
-  return new ClassificationSavedRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, filePrefix);
-}
-
-FunctionPtr regressionSavedExtraTree(size_t numTrees,
-                                                 size_t numAttributeSamplesPerSplit,
-                                                 size_t minimumSizeForSplitting,
-                                                 const File& filePrefix)
-{
-  return new RegressionSavedRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, filePrefix);
-}
-
 
 };

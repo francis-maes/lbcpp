@@ -676,7 +676,7 @@ public:
       LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
       LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
       //dsbPredictor->learningMachineName = learningMachineName;
-      dsbPredictor->learner = classificationExtraTree(x3Trees, x3Attributes, x3Splits, false, true);
+      dsbPredictor->learner = classificationExtraTree(x3Trees, x3Attributes, x3Splits, true);
       dsbPredictor->x3Trees = x3Trees;
       dsbPredictor->x3Attributes = x3Attributes;
       dsbPredictor->x3Splits = x3Splits;
