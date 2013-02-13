@@ -1001,7 +1001,7 @@ public:
       return binaryLocalitySensitiveHashing(knnNeighbors);
     else if (learningMachineName == T("ExtraTrees"))
     {
-      FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, false, x3LowMemory);
+      FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, x3LowMemory);
       if (useAddBias)
         res = new PreProcessCompositeFunction(res, composeFunction(addBiasLearnableFunction(binaryClassificationSensitivityAndSpecificityScore, 0.0, true)
                                                                    , signedScalarToProbabilityFunction()));

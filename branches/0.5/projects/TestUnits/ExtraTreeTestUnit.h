@@ -16,7 +16,7 @@ namespace lbcpp
 {
 
 extern EnumerationPtr waveFormTypeEnumeration;
- 
+
 class ExtraTreeTestUnit : public TestUnit
 {
 public:
@@ -57,8 +57,7 @@ protected:
     for (size_t i = 0; i < testingData->getNumElements(); ++i)
       allData->append(testingData->getElement(i));
     
-    //FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, false, true);
-    FunctionPtr learner = classificationSavedExtraTree(numTrees, numAttributes, minSplitSize, context.getFile("x3Test-Classif"));
+    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, true);
     
     learner->train(context, learningData, allData, T("Training"));
     //learner->saveToFile(context, context.getFile(T("testSaveTree.xml")));

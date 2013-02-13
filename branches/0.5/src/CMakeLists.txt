@@ -574,12 +574,12 @@ SET(LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES
 )
 
 SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
+  Learning/DecisionTree/ExtraTreeLearningMachine.h
   Learning/DecisionTree/DecisionTree.cpp
   Learning/DecisionTree/RTreeFunction.h
   Learning/DecisionTree/RTreeFunction.cpp
-  Learning/DecisionTree/RTreeBatchLearner.h
   Learning/DecisionTree/LowMemoryRTreeFunction.h
-  Learning/DecisionTree/SavedRTreeFunction.h
+  Learning/DecisionTree/SavableRTreeFunction.h
   Learning/DecisionTree/DecisionTreeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
 )

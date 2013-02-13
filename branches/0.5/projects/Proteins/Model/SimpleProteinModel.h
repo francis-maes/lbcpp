@@ -220,7 +220,7 @@ protected:
 
   virtual FunctionPtr createMachineLearning(ExecutionContext& context) const
   {
-    return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, false, x3LowMemory);
+    return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, x3LowMemory);
   }
 
   void globalFeatures(CompositeFunctionBuilder& builder) const

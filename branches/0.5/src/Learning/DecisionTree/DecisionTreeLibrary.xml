@@ -2,11 +2,24 @@
 
 <library name="DecisionTree" directory="Learning/DecisionTree">
 
-  <!-- RTreeFunction -->
-  <class name="RTreeFunction" base="Function" abstract="yes">
+  <!-- ExtraTrees -->
+  <class name="ExtraTreesFunction" base="Function" abstract="yes">
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
     <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+  </class>
+
+  <class name="ExtraTreeLearningMachine" base="ProxyFunction">
+    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool useLowMemory, const File&amp; file" returnType="Function"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+    <variable type="Boolean" name="useLowMemory"/>
+    <variable type="File" name="file"/>
+  </class>
+
+  <!-- RTreeFunction -->
+  <class name="RTreeFunction" base="ExtraTreesFunction" abstract="yes">
     <variable type="GenericVector[Double]" name="variableImportances"/>
   </class>
 
@@ -18,45 +31,29 @@
     <constructor arguments="bool verbose"/>
     <variable type="Boolean" name="verbose"/>
   </class>
-  
-  <class name="ExtraTreeLearningMachine" base="ProxyFunction">
-    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose, bool useLowMemory" returnType="Function"/>
-    <variable type="PositiveInteger" name="numTrees"/>
-    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
-    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
-    <variable type="Boolean" name="verbose"/>
-    <variable type="Boolean" name="useLowMemory"/>
-  </class>
 
-  <class name="LowMemoryRTreeFunction" base="Function" abstract="yes">
-    <variable type="PositiveInteger" name="numTrees"/>
-    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
-    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
-  </class>
-
-  <class name="LowMemoryRTreeBatchLearner" base="BatchLearner">
-    <constructor/>
-  </class>
+  <!-- LowMemoryRTreeFunction -->
+  <class name="LowMemoryRTreeFunction" base="ExtraTreesFunction" abstract="yes"/>
 
   <class name="RegressionLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
   <class name="BinaryLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
   <class name="ClassificationLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
 
-
-  <class name="SavedRTreeFunction" base="Function" abstract="yes">
-    <variable type="PositiveInteger" name="numTrees"/>
-    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
-    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
-    <variable type="File" name="file"/>
-  </class>
-
-  <class name="SavedRTreeBatchLearner" base="BatchLearner">
+  <class name="LowMemoryRTreeBatchLearner" base="BatchLearner">
     <constructor/>
   </class>
 
-  <class name="RegressionSavedRTreeFunction" base="SavedRTreeFunction"/>
-  <class name="BinarySavedRTreeFunction" base="SavedRTreeFunction"/>
-  <class name="ClassificationSavedRTreeFunction" base="SavedRTreeFunction"/>
+  <!-- SavableRTreeFunction -->
+  <class name="SavableRTreeFunction" base="ExtraTreesFunction" abstract="yes">
+    <variable type="File" name="file"/>
+  </class>
 
+  <class name="RegressionSavableRTreeFunction" base="SavableRTreeFunction"/>
+  <class name="BinarySavableRTreeFunction" base="SavableRTreeFunction"/>
+  <class name="ClassificationSavableRTreeFunction" base="SavableRTreeFunction"/>
+
+  <class name="SavableRTreeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
 
 </library>

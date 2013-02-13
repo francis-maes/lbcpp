@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "RTreeFunction.h"
-#include "RTreeBatchLearner.h"
 #include <lbcpp/Core/ReferenceCountedObject.h>
 #include <lbcpp/Core/DynamicObject.h>
 #include <lbcpp/Data/DoubleVector.h>
@@ -191,224 +190,6 @@ public:
     attribute_descriptors = treesState.attribute_descriptors;
     nb_attributes = treesState.nb_attributes;
     getattval = treesState.getattval;
-  }
-
-  void saveToXml(XmlExporter& exporter) const
-  {
-    exporter.enter(T("maxNumNodes"));
-    exporter.writeVariable(Variable(treesState.maxNumNodes, integerType), integerType);
-    exporter.leave();
-    
-    exporter.enter(T("numLeaves"));
-    exporter.writeVariable(Variable(treesState.numLeaves, integerType), integerType);
-    exporter.leave();
-    
-    exporter.enter(T("numPredictions"));
-    exporter.writeVariable(Variable(treesState.numPredictions, integerType), integerType);
-    exporter.leave();
-    
-    exporter.enter(T("nb_goal_multiregr"));
-    exporter.writeVariable(Variable(treesState.nb_goal_multiregr, integerType), integerType);
-    exporter.leave();
-    
-    exporter.enter(T("current_nb_of_ensemble_terms"));
-    exporter.writeVariable(Variable(treesState.current_nb_of_ensemble_terms, integerType), integerType);
-    exporter.leave();
-
-    exporter.enter(T("average_predictions_ltrees"));
-    exporter.writeVariable(Variable(treesState.average_predictions_ltrees, integerType), integerType);
-    exporter.leave();
-
-    exporter.enter(T("size_current_tree_table_pred"));
-    exporter.writeVariable(Variable(treesState.size_current_tree_table_pred, integerType), integerType);
-    exporter.leave();
-
-    exporter.enter(T("nb_attributes"));
-    exporter.writeVariable(Variable(treesState.nb_attributes, integerType), integerType);
-    exporter.leave();
-
-    File outputFile = exporter.getContext().getFile(T("model.bin"));
-    OutputStream* o = outputFile.createOutputStream();
-    // ltrees
-    for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
-      o->writeInt(treesState.ltrees[i]);
-    // ltrees_weight
-    for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
-      o->writeFloat(treesState.ltrees_weight[i]);
-    // left_successor
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      o->writeInt(treesState.left_successor[i]);
-    // right_successor
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      o->writeInt(treesState.right_successor[i]);
-    // tested_attribute
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      o->writeInt(treesState.tested_attribute[i]);
-    // threshold
-    for (size_t i = 0; i < treesState.maxNumNodes; ++i)
-      for (size_t j = 0; j < MAX_NUMBER_OF_SYMBOLIC_VALUES_DIV_32; ++j)
-        o->writeInt(treesState.threshold[i].i[j]);
-    // prediction
-    for (size_t i = 0; i < treesState.maxNumNodes; ++i)
-      o->writeInt(treesState.prediction[i]);
-    // prediction_values
-    for (size_t i = 0; i < treesState.numLeaves; ++i)
-      for (size_t j = 0; j < treesState.numPredictions; ++j)
-        o->writeFloat(treesState.prediction_values[i][j]);
-    // attribute_descriptors
-    for (size_t i = 0; i < (size_t)treesState.nb_attributes; ++i)
-      o->writeInt(treesState.attribute_descriptors[i]);
-
-    delete o;
-  }
-  
-  bool loadFromXml(XmlImporter& importer)
-  {
-    if (importer.enter(T("maxNumNodes")))
-    {
-      treesState.maxNumNodes = (size_t)importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("numLeaves")))
-    {
-      treesState.numLeaves = (size_t)importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("numPredictions")))
-    {
-      treesState.numPredictions = (size_t)importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("nb_goal_multiregr")))
-    {
-      treesState.nb_goal_multiregr = importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("current_nb_of_ensemble_terms")))
-    {
-      treesState.current_nb_of_ensemble_terms = importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("average_predictions_ltrees")))
-    {
-      treesState.average_predictions_ltrees = importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("size_current_tree_table_pred")))
-    {
-      treesState.size_current_tree_table_pred = importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-    if (importer.enter(T("nb_attributes")))
-    {
-      treesState.nb_attributes = importer.getAllSubText().getIntValue();
-      importer.leave();
-    }
-
-    File inputFile = importer.getContext().getFile(T("model.bin"));
-    InputStream* o = inputFile.createInputStream();
-    // ltrees
-    treesState.ltrees = (int*)MyMalloc(treesState.current_nb_of_ensemble_terms * sizeof(int));
-    if (treesState.ltrees == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (ltrees) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
-      treesState.ltrees[i] = o->readInt();
-    // ltrees_weight
-    treesState.ltrees_weight = (float*)MyMalloc(treesState.current_nb_of_ensemble_terms * sizeof(float));
-    if (treesState.ltrees_weight == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (ltrees_weight) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
-        treesState.ltrees_weight[i] = o->readFloat();
-    // left_successor
-    treesState.left_successor = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
-    if (treesState.left_successor == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (left_successor) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      treesState.left_successor[i] = o->readInt();
-    // right_successor
-    treesState.right_successor = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
-    if (treesState.right_successor == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (right_successor) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      treesState.right_successor[i] = o->readInt();
-    // tested_attribute
-    treesState.tested_attribute = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
-    if (treesState.tested_attribute == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (tested_attribute) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      treesState.tested_attribute[i] = o->readInt();
-    // threshold
-    treesState.threshold = (union threshold_type*)MyMalloc(treesState.maxNumNodes * sizeof(union threshold_type));
-    if (treesState.threshold == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (threshold) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      for (size_t j = 0; j < MAX_NUMBER_OF_SYMBOLIC_VALUES_DIV_32; ++j)
-        treesState.threshold[i].i[j] = o->readInt();
-    // prediction
-    treesState.prediction = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
-    if (treesState.prediction == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (prediction) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
-      treesState.prediction[i] = o->readInt();
-    // prediction_values
-    treesState.prediction_values = (float**)MyMalloc(treesState.numLeaves * sizeof(float*));
-    if (treesState.prediction_values == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (prediction_values) !"));
-      return false;
-    }
-    for (size_t i = 0; i < treesState.numLeaves; ++i)
-    {
-      treesState.prediction_values[i] = (float*)MyMalloc(treesState.numPredictions * sizeof(float));
-      if (treesState.prediction_values[i] == NULL)
-      {
-        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (prediction_values[") + String((int)i) + T("]) !"));
-        return false;
-      }
-      for (size_t j = 0; j < treesState.numPredictions; ++j)
-        treesState.prediction_values[i][j] = o->readFloat();
-    }
-    // attribute_descriptors
-    treesState.attribute_descriptors = (int*)MyMalloc(treesState.nb_attributes * sizeof(int));
-    if (treesState.attribute_descriptors == NULL)
-    {
-      importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (attribute_descriptors) !"));
-      return false;
-    }
-    for (size_t i = 0; i < (size_t)treesState.nb_attributes; ++i)
-      treesState.attribute_descriptors[i] = o->readInt();
-
-    treesState.get_tree_prediction_vector = get_tree_prediction_vector_classical;
-    treesState.getattval = getattval_normal;
-    
-    set_print_result(0, 0);
-    goal_type = MULTIREGR;
-    goal = MULTIREGR;
-    length_attribute_descriptors = treesState.nb_attributes;
-    nb_classes = 0;
-    
-    return true;
   }
 
   bool saveToBinaryFile(ExecutionContext& context, const File& file) const
@@ -629,25 +410,11 @@ protected:
 
 typedef ReferenceCountedObjectPtr<RTree> RTreePtr;
 
-extern BatchLearnerPtr rTreeBatchLearner(bool verbose = false);
-
 }; /* namespace lbcpp */
 
 /*
 ** RTreeFunction
 */
-
-RTreeFunction::RTreeFunction(size_t numTrees,
-                             size_t numAttributeSamplesPerSplit,
-                             size_t minimumSizeForSplitting,
-                             bool verbose)
-  : numTrees(numTrees), 
-    numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-    minimumSizeForSplitting(minimumSizeForSplitting)
-  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner(verbose)));}
-
-RTreeFunction::RTreeFunction() : numTrees(100), numAttributeSamplesPerSplit(10), minimumSizeForSplitting(1)
-  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
 
 Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
@@ -704,8 +471,16 @@ Variable RTreeFunction::makePredictionFromCoreTable(ExecutionContext& context, v
 void RTreeFunction::saveToXml(XmlExporter& exporter) const
 {
   Object::saveToXml(exporter);
+  ExecutionContext& context = exporter.getContext();
+  File f = context.getFile(juce::Time().toString(true, true, true, true)).getNonexistentChildFile(T(""), T(".x3"), true);
   exporter.enter(T("rTree"));
-  trees->saveToXml(exporter);
+  
+  if (trees.staticCast<RTree>()->saveToBinaryFile(context, f))
+    exporter.writeVariable(f, fileType);
+  else
+    context.errorCallback(T("RTreeFunction::saveToXml"),
+                          T("Error while saving extra trees to ") + f.getFullPathName());
+
   exporter.leave();
 }
 
@@ -715,9 +490,24 @@ bool RTreeFunction::loadFromXml(XmlImporter& importer)
     return false;
   if (!importer.enter(T("rTree")))
     return false;
-  trees = new RTree(0,0,0);
-  if (!trees->loadFromXml(importer))
+
+  Variable v = importer.loadVariable(fileType);
+  if (!v.exists() || !v.isFile())
+  {
+    importer.getContext().errorCallback(T("RTreeFunction::loadFromXml"),
+                                        T("No extra trees file specified !"));
     return false;
+  }
+  File f = v.getFile();
+  
+  trees = new RTree(0,0,0);
+  if (!trees.staticCast<RTree>()->loadFromBinaryFile(importer.getContext(), f))
+  {
+    importer.getContext().errorCallback(T("RTreeFunction::loadFromXml"),
+                                       T("Error while reading extra trees from ") +
+                                       f.getFullPathName());
+    return false;
+  }
   importer.leave();
   return true;
 }
@@ -736,31 +526,6 @@ bool RTreeFunction::loadTreesFromBinaryFile(ExecutionContext& context, const Fil
 /*
 ** RTreeBatchLearner
 */
-void exportData(ExecutionContext& context)
-{
-  File f = File::getCurrentWorkingDirectory().getChildFile(T("x.train"));
-  if (f.exists())
-    f.deleteFile();
-  OutputStream* o = f.createOutputStream();
-  for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
-  {
-    for (size_t j = 0; j < (size_t)nb_attributes; ++j)
-      *o << core_table[nb_obj_in_core_table * j + i] << " ";
-    *o << "\n";
-  }
-  delete o;
-  
-  f = File::getCurrentWorkingDirectory().getChildFile(T("y.train"));
-  if (f.exists())
-    f.deleteFile();
-  o = f.createOutputStream();
-  for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
-    *o << core_table_y[i] << "\n";
-  delete o;
-  
-  context.informationCallback(T("RTreeBatchLearner::exportData"), T("Training data saved: ") + f.getFullPathName());
-}
-
 bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   ScopedLock _(learnerLock);
