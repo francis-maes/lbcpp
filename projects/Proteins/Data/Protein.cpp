@@ -724,7 +724,7 @@ ContainerPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(Cartesian
 ** Create Empty Targets
 */
 ContainerPtr Protein::createEmptyPositionSpecificScoringMatrix(size_t length)
-  {return objectVector(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), length);}
+  {return objectVector(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, doubleType), length);}
 
 ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length, bool useSparseVectors)
 {

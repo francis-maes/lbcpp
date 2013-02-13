@@ -53,7 +53,7 @@ protected:
 #if JUCE_MAC && JUCE_DEBUG
     numProteinsToLoad = 10;
 #endif
-    
+
     if (supervisionDirectory.getChildFile(T("train/")).exists()
         && supervisionDirectory.getChildFile(T("test/")).exists())
     {

@@ -68,6 +68,7 @@ public:
     {
       primaryStructure = vector(aminoAcidTypeEnumeration, proteinLength);
       dsspSecondaryStructureSequence = Protein::createEmptyDSSPSecondaryStructure(proteinLength, true);
+      pssmMatrix = Protein::createEmptyPositionSpecificScoringMatrix(proteinLength);
     }
     // Replace the coil symbole ' ' by 'C'
     line = srcLine;
@@ -116,7 +117,25 @@ public:
     SparseDoubleVectorPtr svDssp = new SparseDoubleVector(dsspSecondaryStructureElementEnumeration, probabilityType);
     svDssp->appendValue(secondaryStructureIndex, 1.0);
     dsspSecondaryStructureSequence->setElement(currentResidueIndex, svDssp);
-
+    // Add position specific scoring matrix
+    static const String residueOrder(T("ARNDCQEGHILKMFPSTWYV"));
+    DenseDoubleVectorPtr pssmVector = new DenseDoubleVector(positionSpecificScoringMatrixEnumeration, doubleType);
+    for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
+    {
+      String scoreString = tokens[23 + i];
+      if (!scoreString.containsOnly(T("-0123456789")))
+      {
+        context.errorCallback(T("TDBFileParser::parseLine"),
+                              T("Invalid PSSM value: ") + scoreString);
+        return false;
+      }
+      int scoreValue = scoreString.getIntValue();
+      int index = aminoAcidTypeEnumeration->findElementByOneLetterCode(residueOrder[i]);
+      jassert(index >= 0);
+      pssmVector->getValueReference(index) = scoreValue;
+    }
+    pssmMatrix->setElement(currentResidueIndex, pssmVector);
+    
     ++currentResidueIndex;
     return true;
   }
@@ -134,6 +153,7 @@ public:
     ProteinPtr protein = new Protein(fileName);
     protein->setPrimaryStructure(primaryStructure);
     protein->setDSSPSecondaryStructure(dsspSecondaryStructureSequence);
+    protein->setPositionSpecificScoringMatrix(pssmMatrix);
 
     setResult(protein);
     return true;
@@ -147,6 +167,7 @@ protected:
   size_t shiftResidueIndex;
   VectorPtr primaryStructure;
   VectorPtr dsspSecondaryStructureSequence;
+  VectorPtr pssmMatrix;
 };
 
 };
