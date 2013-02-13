@@ -94,9 +94,10 @@
   </enumeration>
   
   <code>
+    // The eight states (H, I, G, E, B, S, T, _) were reduced to three states according to the scheme outlined by Rost and Sander (1993)
     SecondaryStructureElement dsspSecondaryStructureToSecondaryStructure(DSSPSecondaryStructureElement element)
     {
-      if (element == threeTurnHelix || element == alphaHelix || element == piHelix)
+      if (element == threeTurnHelix || element == alphaHelix)
         return helix;
       if (element == residueInIsolatedBridge || element == extendedStrandInSheet)
         return sheet;
