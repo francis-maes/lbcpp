@@ -118,6 +118,8 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/ProteinEvaluator.h
   Evaluator/QScoreEvaluator.h
   Evaluator/QScoreEvaluator.cpp
+  Evaluator/SegmentOverlapEvaluator.h
+  Evaluator/SegmentOverlapEvaluator.cpp
   Evaluator/ProteinEvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinEvaluatorLibrary.cpp
 )

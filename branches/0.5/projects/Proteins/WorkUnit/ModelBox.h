@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Function.h>
 # include "../Model/SimpleProteinModel.h"
+# include "../Evaluator/SegmentOverlapEvaluator.h"
 
 namespace lbcpp
 {
@@ -43,7 +44,10 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
+    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
+    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"));
+    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"), true);
+
     return evaluator;
   }
 
@@ -76,6 +80,49 @@ protected:
       return false;
     }
     return true;
+  }
+};
+
+class TestSegmentOverlapWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    VectorPtr obs = createVectorFromString(T("CEEEEEEEEEEC"));
+    VectorPtr pre = createVectorFromString(T("CCCEEEEEECCC"));
+
+    SupervisedEvaluatorPtr f = new SegmentOverlapEvaluator(secondaryStructureElementEnumeration);
+    ScoreObjectPtr so = f->createEmptyScoreObject(context, FunctionPtr());
+    f->addPrediction(context, pre, obs, so);
+    f->finalizeScoreObject(so, FunctionPtr());
+    
+    std::cout << so->toString() << std::endl;
+    return so;
+  }
+
+  VectorPtr createVectorFromString(const String str) const
+  {
+    DoubleVectorPtr coil = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+    coil->setElement(2, 1.f);
+    DoubleVectorPtr helix = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+    helix->setElement(0, 1.f);
+    
+    VectorPtr res = vector(doubleVectorClass(secondaryStructureElementEnumeration, probabilityType), str.length());
+    for (size_t i = 0; i < (size_t)str.length(); ++i)
+    {
+      switch (str[i])
+      {
+        case T('C'):
+          res->setElement(i, coil);
+          break;
+        case T('E'):
+          res->setElement(i, helix);
+          break;
+        default:
+          jassertfalse;
+      }
+    }
+    return res;
   }
 };
 

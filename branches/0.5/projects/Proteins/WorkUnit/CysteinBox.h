@@ -721,9 +721,9 @@ protected:
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator(oxidizedCysteineThreshold);
 /*
-    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
-    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
-    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
+    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
+    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
+    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
 
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DSB Tuned Q2"));
@@ -732,7 +732,7 @@ protected:
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("DSB QP"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"));
 */
-    evaluator->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("SS3"), true);
+    evaluator->addEvaluator(ss3Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3"), true);
 
 //    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(), T("OxyDSB QP"));
 //    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("OxyDSB QP Perfect"), true);
@@ -1700,11 +1700,11 @@ protected:
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     
     if (target == ss3Target || target == ss8Target || target == stalTarget)
-      evaluator->addEvaluator(target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
+      evaluator->addEvaluator(target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
     else if (target == sa20Target || target == cbsTarget)
-      evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
+      evaluator->addEvaluator(target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
     else if (target == drTarget)
-      evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
+      evaluator->addEvaluator(target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
     else if (target == dsbTarget)
       evaluator->addEvaluator(target, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
     else if (target == cbpTarget)

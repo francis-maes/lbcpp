@@ -68,7 +68,7 @@ protected:
           continue;
         if (!predicted.exists())
         {
-          context.errorCallback(T("ContainerSupervisedEvaluator::updateScoreObject"), T("Missing prediction"));
+          context.errorCallback(T("ElementContainerSupervisedEvaluator::updateScoreObject"), T("Missing prediction"));
           return false;
         }
         //jassertfalse;

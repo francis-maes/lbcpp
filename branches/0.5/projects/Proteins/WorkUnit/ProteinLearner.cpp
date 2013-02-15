@@ -22,11 +22,11 @@ ProteinLearner::ProteinLearner() : maxProteins(0), numStacks(1), sequentialLearn
 EvaluatorPtr ProteinLearner::createEvaluator() const
 {
   ProteinEvaluatorPtr res = new ProteinEvaluator();
-  res->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
-  res->addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
-  res->addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
-  res->addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
-  res->addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
+  res->addEvaluator(ss3Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+  res->addEvaluator(ss8Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+  res->addEvaluator(sa20Target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+  res->addEvaluator(drTarget,   elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+  res->addEvaluator(stalTarget, elementContainerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
   return res;
 }
 
