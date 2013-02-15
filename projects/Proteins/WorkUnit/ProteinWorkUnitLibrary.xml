@@ -372,6 +372,7 @@
     <variable type="File" name="inputDirectory" shortName="in" description="Directory of input proteins (without train/test split)"/>
     <variable type="File" name="supervisionDirectory" shortName="sup" description="Directory of supervision proteins (without train/test split)"/>
   </class>
+  <class name="TestSegmentOverlapWorkUnit" base="WorkUnit"/>
   <!-- END ModelBox -->
 
 

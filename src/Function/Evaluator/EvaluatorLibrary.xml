@@ -30,7 +30,7 @@
   <class name="CallbackBasedEvaluator" base="Evaluator" abstract="yes">
     <variable type="Evaluator" name="evaluator"/>
   </class>
-  
+
   <!-- Score Enumerations -->
   <enumeration name="BinaryClassificationScore">
     <value name="accuracyScore" oneLetterCode="a"/>
@@ -141,6 +141,16 @@
     <variable type="String" name="extension"/>
   </class>
   
+  <class name="ElementContainerSupervisedEvaluator" base="SupervisedEvaluator">
+    <constructor arguments="SupervisedEvaluatorPtr elementEvaluator"/>
+    <variable type="SupervisedEvaluator" name="elementEvaluator"/>
+  </class>
+
+  <class name="ContainerScoreObject" base="ScoreObject">
+    <variable type="Double" name="mean"/>
+    <variable type="ScalarVariableMean" name="meanVector"/>
+  </class>
+    
   <class name="ContainerSupervisedEvaluator" base="SupervisedEvaluator">
     <constructor arguments="SupervisedEvaluatorPtr elementEvaluator"/>
     <variable type="SupervisedEvaluator" name="elementEvaluator"/>

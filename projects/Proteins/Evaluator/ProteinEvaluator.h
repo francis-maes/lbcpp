@@ -80,14 +80,14 @@ public:
 #if 0
 /* Exemples */
 //    addEvaluator(cbpTarget,  classificationEvaluator(), T("Cystein Bonding Property"));
-//    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
-//    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
-//    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
-//    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
-//    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
-//    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
-//    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
-//    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
+//    addEvaluator(ss3Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+//    addEvaluator(ss8Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+//    addEvaluator(sa20Target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+//    addEvaluator(drTarget,   elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+//    addEvaluator(stalTarget, elementContainerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
+//    addEvaluator(cma8Target, elementContainerSupervisedEvaluator(new ContactMapEvaluator(8)));
+//    addEvaluator(cmb8Target, elementContainerSupervisedEvaluator(new ContactMapEvaluator(8)));
+//    addEvaluator(cbsTarget,  elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
 //    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
 //    addEvaluator(fdsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Symmetric Bonds (Greedy L=6)"));
 //    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), 10), T("Disulfide Bonds (Greedy L=6 & # <= 10)"));

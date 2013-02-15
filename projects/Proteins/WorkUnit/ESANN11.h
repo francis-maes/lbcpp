@@ -457,11 +457,11 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
-    evaluator->addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
-    evaluator->addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
-    evaluator->addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
-    evaluator->addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
+    evaluator->addEvaluator(ss3Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+    evaluator->addEvaluator(ss8Target,  elementContainerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+    evaluator->addEvaluator(sa20Target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+    evaluator->addEvaluator(drTarget,   elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+    evaluator->addEvaluator(stalTarget, elementContainerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
 
     return evaluator;
   }

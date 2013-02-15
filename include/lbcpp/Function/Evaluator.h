@@ -210,7 +210,10 @@ extern EvaluatorPtr defaultSupervisedEvaluator();
 // Save To Directory
 extern EvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String& extension = T(".xml"));
 
-// Container[Pair[T_Input,T_Supervision]> -> T_Supervision
+// Container[Pair[T_Input,T_Supervision]] -> T_Supervision
+// by-Element
+extern SupervisedEvaluatorPtr elementContainerSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator);
+// by-Container (Average of by-Element scores of each Container)
 extern SupervisedEvaluatorPtr containerSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator);
 
 extern SupervisedEvaluatorPtr symmetricMatrixSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator, size_t minimumDistanceFromDiagonal = 1);

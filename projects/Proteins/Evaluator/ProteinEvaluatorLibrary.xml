@@ -36,4 +36,15 @@
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
 
+
+  <class name="SegmentOverlapScoreObject" base="ScoreObject">
+    <variable type="Double" name="globalSovMean"/>
+    <variable type="GenericVector[ScalarVariableMean]" name="sovVectors"/>
+    <variable type="ScalarVariableMean" name="globalSov"/>
+  </class>
+
+  <class name="SegmentOverlapEvaluator" base="SupervisedEvaluator">
+    <variable type="Enumeration" name="enumeration"/>
+  </class>
+
 </library>

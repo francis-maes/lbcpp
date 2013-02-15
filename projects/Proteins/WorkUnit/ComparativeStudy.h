@@ -448,11 +448,11 @@ protected:
     //return evaluator;
 
     if (target == ss3Target || target == ss8Target || target == stalTarget)
-      evaluator->addEvaluator(target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
+      evaluator->addEvaluator(target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
     else if (target == sa20Target || target == cbsTarget)
-      evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
+      evaluator->addEvaluator(target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
     else if (target == drTarget)
-      evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
+      evaluator->addEvaluator(target, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
     else if (target == dsbTarget || target == odsbTarget)
       evaluator->addEvaluator(target, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
     else if (target == cbpTarget)
