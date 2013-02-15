@@ -35,6 +35,32 @@
     <!-- missingvalue: name="unknown" oneLetterCode="X" threeLettersCode="XAA"-->
   </enumeration>
 
+  <enumeration name="StandardAminoAcidType">
+    <value name="alanine"             oneLetterCode="A" threeLettersCode="ALA"/>
+    <value name="arginine"            oneLetterCode="R" threeLettersCode="ARG"/>
+    <value name="asparagine"          oneLetterCode="N" threeLettersCode="ASN"/>
+    <value name="asparticAcid"        oneLetterCode="D" threeLettersCode="ASP"/>
+    <value name="cysteine"            oneLetterCode="C" threeLettersCode="CYS"/>
+
+    <value name="glutamicAcid"        oneLetterCode="E" threeLettersCode="GLU"/>
+    <value name="glutamine"           oneLetterCode="Q" threeLettersCode="GLN"/>
+    <value name="glycine"             oneLetterCode="G" threeLettersCode="GLY"/>
+    <value name="histidine"           oneLetterCode="H" threeLettersCode="HIS"/>
+    <value name="isoleucine"          oneLetterCode="I" threeLettersCode="ILE"/>
+
+    <value name="leucine"             oneLetterCode="L" threeLettersCode="LEU"/>
+    <value name="lysine"              oneLetterCode="K" threeLettersCode="LYS"/>
+    <value name="methionine"          oneLetterCode="M" threeLettersCode="MET"/>
+    <value name="phenylalanine"       oneLetterCode="F" threeLettersCode="PHE"/>
+    <value name="proline"             oneLetterCode="P" threeLettersCode="PRO"/>
+
+    <value name="serine"              oneLetterCode="S" threeLettersCode="SER"/>
+    <value name="threonine"           oneLetterCode="T" threeLettersCode="THR"/>
+    <value name="tryptophan"          oneLetterCode="W" threeLettersCode="TRP"/>
+    <value name="tyrosine"            oneLetterCode="Y" threeLettersCode="TYR"/>
+    <value name="valine"              oneLetterCode="V" threeLettersCode="VAL"/>
+  </enumeration>
+
   <enumeration name="AminoAcidCategory1">
     <value name="nonPolar"/>
     <value name="polar"/>

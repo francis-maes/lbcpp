@@ -47,6 +47,7 @@ enum AminoAcidType
 };
 
 extern EnumerationPtr aminoAcidTypeEnumeration;
+extern EnumerationPtr standardAminoAcidTypeEnumeration;
 extern EnumerationPtr positionSpecificScoringMatrixEnumeration;
 
 enum AminoAcidCategory1

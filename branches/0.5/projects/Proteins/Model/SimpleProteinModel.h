@@ -12,6 +12,7 @@
 # include <lbcpp/Learning/DecisionTree.h>
 # include "ProteinModel.h"
 # include "ProteinMap.h"
+# include "ModelFunction.h"
 # include "../Predictor/LargeProteinPredictorParameters.h"
 
 namespace lbcpp
@@ -97,6 +98,22 @@ public:
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
       featuresFunction = new GetSimpleProteinMapElement(T("Seq[StAl]"));
+    }
+    else if (variableName == T("NumCys"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, numCysteines);
+    }
+    else if (variableName == T("NumOfEachAA"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, numOfEachAminoAcid);
+    }
+    else if (variableName == T("Dimer[AA]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, dimericAminoAcidComposition);
+    }
+    else if (variableName == T("SepProfile[AA]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, separationProfile);
     }
     else
       jassertfalse;
@@ -187,6 +204,36 @@ public:
     builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position, T("StAl"));
   }
 
+  void numCysteines(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinMap = builder.addInput(proteinMapClass);
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+    builder.addFunction(new NumCysteinsFunction(), protein, T("NumCys"));
+  }
+  
+  void numOfEachAminoAcid(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinMap = builder.addInput(proteinMapClass);
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+    builder.addFunction(new NumOfEachResidueFunction(), protein, T("NumOfEachAA"));
+  }
+
+  void dimericAminoAcidComposition(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinMap = builder.addInput(proteinMapClass);
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+    size_t sequence = builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
+    builder.addFunction(new DimericAminoAcidCompositionFunction(), sequence, T("Dimer[AA]"));
+  }
+
+  void separationProfile(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinMap = builder.addInput(proteinMapClass);
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+    size_t sequence = builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
+    builder.addFunction(new CreateSeparationProfileFunction(), sequence, T("SepProfile[AA]"));    
+  }
+
 protected:
   friend class GetSimpleProteinMapElementClass;
 
@@ -208,10 +255,18 @@ public:
   bool useProteinLength;
   bool aaGlobalHistogram;
   bool pssmGlobalHistogram;
+  bool useNumCysteines;
+  bool useNumOfEachResidue;
+  bool aaDimericProfile;
 
   /* Residue Feature Parameter */
+  bool usePosition;
+  bool useRelativePosition;
   size_t aaWindowSize;
   size_t pssmWindowSize;
+  size_t aaLocalHistogramSize;
+  size_t pssmLocalHistogramSize;
+  size_t aaSeparationProfileSize;
 
   SimpleProteinModel(ProteinTarget target = noTarget)
     : ProteinModel(target),
@@ -224,9 +279,17 @@ public:
       useProteinLength(false),
       aaGlobalHistogram(false),
       pssmGlobalHistogram(false),
+      useNumCysteines(false),
+      useNumOfEachResidue(false),
+      aaDimericProfile(false),
     /* Residue Feature Parameter */
+      usePosition(false),
+      useRelativePosition(false),
       aaWindowSize(0),
-      pssmWindowSize(0)
+      pssmWindowSize(0),
+      aaLocalHistogramSize(0),
+      pssmLocalHistogramSize(0),
+      aaSeparationProfileSize(0)
   {}
 
 protected:
@@ -244,19 +307,30 @@ protected:
     /* Data */
     size_t length = !useProteinLength ? (size_t)-1 :
                      builder.addFunction(getVariableFunction(T("length")), proteinMap);
+    size_t numCysteines = !useNumCysteines ? (size_t)-1 :
+                           builder.addFunction(new GetSimpleProteinMapElement(T("NumCys")), proteinMap, T("NumCys"));
     size_t aaAccumulator = !aaGlobalHistogram ? (size_t)-1 :
                             builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
     size_t pssmAccumulator = !pssmGlobalHistogram ? (size_t)-1 :
                               builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSSM]")), proteinMap, T("Acc[PSSM]"));
+
     /* Output */
     builder.startSelection();
     {
       if (useProteinLength)
         builder.addFunction(integerFeatureGenerator(), length, T("length"));
+      if (useNumCysteines)
+        builder.addFunction(integerFeatureGenerator(), numCysteines, T("#Cys"));
+      if (useNumOfEachResidue)
+        builder.addFunction(new GetSimpleProteinMapElement(T("NumOfEachAA")), proteinMap, T("NumOfEachAA"));
+
       if (aaGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), aaAccumulator, T("h(AA)"));
       if (pssmGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), pssmAccumulator, T("h(PSSM)"));
+
+      if (aaDimericProfile)
+        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer[AA]")), proteinMap, T("Dimer[AA]"));
 
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }
@@ -269,22 +343,44 @@ protected:
     size_t position = builder.addInput(positiveIntegerType);
     size_t proteinMap = builder.addInput(proteinMapClass);
     /* Data */
+    size_t length = !useRelativePosition ? (size_t)-1 :
+                     builder.addFunction(getVariableFunction(T("length")), proteinMap);
+
     size_t aa = !aaWindowSize ? (size_t)-1 :
                  builder.addFunction(new GetSimpleProteinMapElement(T("Seq[AA]")), proteinMap, T("Seq[AA]"));
-    //size_t aaAccumulator = builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
+    size_t aaAcc = !aaLocalHistogramSize ? (size_t)-1 :
+                    builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
 
     size_t pssm = !pssmWindowSize ? (size_t)-1 :
                    builder.addFunction(new GetSimpleProteinMapElement(T("Seq[normPSSM]")), proteinMap, T("Seq[normPSSM]"));
-    //size_t pssmAccumulator = builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSMM]")), proteinMap, T("Acc[PSSM]"));
+    size_t pssmAcc = !pssmLocalHistogramSize ? (size_t)-1 :
+                      builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSMM]")), proteinMap, T("Acc[PSSM]"));
 
+    size_t aaSepPro = !aaSeparationProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile[AA]")), proteinMap);
     /* Output */
     builder.startSelection();
     {
+      if (usePosition)
+        builder.addFunction(integerFeatureGenerator(), position, T("position"));
+      if (useRelativePosition)
+        builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("pos/len"));
+
       // window sizes
       if (aaWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(aaWindowSize), aa, position, T("w(AA,") + String((int)aaWindowSize) + (")"));
       if (pssmWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(pssmWindowSize), pssm, position, T("w(PSSM,") + String((int)pssmWindowSize) + (")"));
+
+      // local histograms
+      if (aaLocalHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(aaLocalHistogramSize), aaAcc, position, T("h(AA,") + String((int)aaLocalHistogramSize) + T(")"));
+      if (pssmLocalHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(pssmLocalHistogramSize), pssmAcc, position, T("h(PSSM,") + String((int)pssmLocalHistogramSize) + T(")"));
+
+      if (aaSeparationProfileSize)
+        for (size_t i = 0; i < standardAminoAcidTypeEnumeration->getNumElements(); ++i)
+          builder.addFunction(new GetSeparationProfileFunction(i, aaSeparationProfileSize), aaSepPro, position, T("SepProfile[AA]"));
 
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }

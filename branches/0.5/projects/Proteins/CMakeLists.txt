@@ -103,6 +103,7 @@ SET(LBCPP_PROTEIN_MODEL_SOURCES
   Model/ProteinModel.h
   Model/ProteinModel.cpp
   Model/ProteinMap.h
+  Model/ModelFunction.h
   Model/SimpleProteinModel.h
   Model/ProteinModelLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinModelLibrary.cpp
