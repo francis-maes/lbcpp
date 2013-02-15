@@ -263,6 +263,32 @@ protected:
   }
 };
 
+class NormalizePssmRowFunction : public SimpleUnaryFunction
+{
+public:
+  NormalizePssmRowFunction()
+    : SimpleUnaryFunction(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, doubleType),
+                          denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType),
+                          T("Norm[PSSM]")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DenseDoubleVectorPtr& pssm = input.getObjectAndCast<DenseDoubleVector>();
+    if (!pssm)
+      return Variable::missingValue(getOutputType());
+    DenseDoubleVectorPtr res = new DenseDoubleVector(positionSpecificScoringMatrixEnumeration, probabilityType);
+    const size_t n = positionSpecificScoringMatrixEnumeration->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      res->getValueReference(i) = normalize(pssm->getValue(i));
+    return res;
+  }
+
+  double normalize(double score) const
+  {
+    return (score <= -5.0) ? 0.0 : (score >= 5.0) ? 1.0 : 0.5 + 0.1 * score;
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_DATA_FUNCTIONS_H_

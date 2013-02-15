@@ -217,4 +217,6 @@
     <variable type="Probability" name="threshold"/>
   </class>
 
+  <class name="NormalizePssmRowFunction" base="SimpleUnaryFunction"/>
+
 </library>
