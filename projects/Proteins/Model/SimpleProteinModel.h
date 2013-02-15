@@ -33,6 +33,11 @@ public:
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::pssmResidueFeatures);
     }
+    else if (variableName == T("Seq[normPSSM]"))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
+      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::normPssmResidueFeatures);
+    }
     else if (variableName == T("Seq[SS3]"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
@@ -127,16 +132,25 @@ public:
   {
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
-    
+
     builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("PSSM"));
   }
-  
+
+  void normPssmResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType, T("position"));
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+    
+    size_t pssm = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("PSSM"));
+    builder.addFunction(new NormalizePssmRowFunction(), pssm);
+  }
+
   void ss3ResidueFeatures(CompositeFunctionBuilder& builder) const
   {
     size_t position = builder.addInput(positiveIntegerType);
     size_t protein = builder.addInput(proteinClass);
     
-    builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("S3"));
+    builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("SS3"));
   }
   
   void ss8ResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -260,7 +274,7 @@ protected:
     //size_t aaAccumulator = builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
 
     size_t pssm = !pssmWindowSize ? (size_t)-1 :
-                   builder.addFunction(new GetSimpleProteinMapElement(T("Seq[PSSM]")), proteinMap, T("Seq[PSSM]"));
+                   builder.addFunction(new GetSimpleProteinMapElement(T("Seq[normPSSM]")), proteinMap, T("Seq[normPSSM]"));
     //size_t pssmAccumulator = builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSMM]")), proteinMap, T("Acc[PSSM]"));
 
     /* Output */
