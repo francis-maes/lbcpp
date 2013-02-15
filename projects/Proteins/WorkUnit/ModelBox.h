@@ -28,11 +28,17 @@ public:
 
     SimpleProteinModelPtr m = new SimpleProteinModel(ss3Target);
     m->pssmWindowSize = 15;
+    m->useNumCysteines = true;
+    m->useNumOfEachResidue = true;
+    m->aaDimericProfile = true;
+    m->usePosition = true;
+    m->useRelativePosition = true;
+    m->aaSeparationProfileSize = 11;
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = m->evaluate(context, testingProteins, evaluator, T("EvaluateTest"));
-    return evaluator->getScoreToMinimize(scores);    
+    return evaluator->getScoreToMinimize(scores);
   }
 
 protected:

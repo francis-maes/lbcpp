@@ -2,6 +2,7 @@
 
 <library name="ProteinModel" directory="Model">
 
+  <!-- Protein Model -->
   <class name="Model" base="CompositeFunction" abstract="yes"/>
 
   <class name="ProteinModel" base="Model" abstract="yes">
@@ -16,16 +17,7 @@
     <variable type="ObjectVector[CompositeFunction]" name="models"/>
   </class>
 
-
-
-  <class name="SimpleProteinModel" base="ProteinModel">
-    <variable type="Boolean" name="useProteinLength"/>
-    <variable type="Boolean" name="aaGlobalHistogram"/>
-    <variable type="Boolean" name="pssmGlobalHistogram"/>
-    <variable type="PositiveInteger" name="aaWindowSize"/>
-    <variable type="PositiveInteger" name="pssmWindowSize"/>
-  </class>
-  
+  <!-- Protein Map -->
   <class name="Map" base="Object"/>
 
   <class name="ProteinMap" base="Map">
@@ -36,4 +28,49 @@
   <class name="CreateProteinMap" base="SimpleUnaryFunction"/>
   <class name="GetProteinMapElement" base="Function"/>
   <class name="GetSimpleProteinMapElement" base="GetProteinMapElement"/>
+
+
+
+
+  <!-- Simple Model -->
+  <class name="SimpleProteinModel" base="ProteinModel">
+    <!-- Global Parameters -->
+    <variable type="Boolean" name="useProteinLength"/>
+    <variable type="Boolean" name="aaGlobalHistogram"/>
+    <variable type="Boolean" name="pssmGlobalHistogram"/>
+    <variable type="Boolean" name="useNumCysteines"/>
+    <variable type="Boolean" name="useNumOfEachResidue"/>
+    <variable type="Boolean" name="aaDimericProfile"/>
+
+    <!-- Residue Parameters -->
+    <variable type="Boolean" name="usePosition"/>
+    <variable type="Boolean" name="useRelativePosition"/>
+    <variable type="PositiveInteger" name="aaWindowSize"/>
+    <variable type="PositiveInteger" name="pssmWindowSize"/>
+    <variable type="PositiveInteger" name="aaLocalHistogramSize"/>
+    <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
+    <variable type="PositiveInteger" name="aaSeparationProfileSize"/>
+  </class>
+  
+
+
+
+  <!-- BEGIN Model Function -->
+
+  <class name="NumOfEachResidueFunction" base="SimpleUnaryFunction"/>
+
+  <class name="DimericAminoAcidCompositionFunction" base="SimpleUnaryFunction"/>
+  <class name="DimericCompositionFunction" base="SimpleUnaryFunction"/>
+
+  <class name="SeparationProfile" base="Object">
+    <variable type="GenericVector[GenericVector[PositiveInteger]]" name="profiles"/>
+  </class>
+  <class name="CreateSeparationProfileFunction" base="SimpleUnaryFunction"/>
+  <class name="GetSeparationProfileFunction" base="Function">
+    <variable type="PositiveInteger" name="index"/>
+    <variable type="PositiveInteger" name="windowSize"/>
+  </class>
+  
+  <!-- END Model Function -->
+
 </library>

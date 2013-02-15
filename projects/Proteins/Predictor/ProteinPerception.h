@@ -170,20 +170,6 @@ public:
   }
 };
 
-class NumCysteinsFunction : public SimpleUnaryFunction
-{
-public:
-  NumCysteinsFunction() : SimpleUnaryFunction(proteinClass, positiveIntegerType, T("NumCysteins")) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
-    if (protein)
-      return Variable(protein->getCysteinIndices().size(), positiveIntegerType);
-    return Variable::missingValue(positiveIntegerType);
-  }
-};
-
 class GetCysteinIndexFromProteinIndex : public Function
 {
 public:
@@ -585,6 +571,21 @@ protected:
 
   FunctionPtr elementGeneratorFunction;
 };
+
+class NumCysteinsFunction : public SimpleUnaryFunction
+{
+public:
+  NumCysteinsFunction() : SimpleUnaryFunction(proteinClass, positiveIntegerType, T("NumCysteins")) {}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    if (protein)
+      return Variable(protein->getCysteinIndices().size(), positiveIntegerType);
+    return Variable::missingValue(positiveIntegerType);
+  }
+};
+
 
 class CreateCysteinSeparationProfil : public Function
 {

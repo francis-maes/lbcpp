@@ -18,7 +18,7 @@
 
   <class name="ProteinLengthFunction" base="SimpleUnaryFunction"/>
   <class name="NumCysteinsFunction" base="SimpleUnaryFunction"/>
-  
+
   <class name="CreateProteinPerceptionFunction" base="Function"/>
   <class name="SubtractFunction" base="Function"/>
   <class name="CreateDisulfideSymmetricMatrixFunction" base="Function">
