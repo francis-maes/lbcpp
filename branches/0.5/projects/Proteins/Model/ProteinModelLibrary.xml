@@ -50,6 +50,7 @@
     <variable type="PositiveInteger" name="aaLocalHistogramSize"/>
     <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
     <variable type="PositiveInteger" name="aaSeparationProfileSize"/>
+    <variable type="PositiveInteger" name="aaLocalDimericProfileSize"/>
   </class>
   
 
@@ -59,8 +60,11 @@
 
   <class name="NumOfEachResidueFunction" base="SimpleUnaryFunction"/>
 
-  <class name="DimericAminoAcidCompositionFunction" base="SimpleUnaryFunction"/>
-  <class name="DimericCompositionFunction" base="SimpleUnaryFunction"/>
+  <class name="DimericAminoAcidCompositionFunction" base="Function"/>
+  <class name="DimericCompositionFunction" base="Function"/>
+  <class name="LocalDimericAminoAcidCompositionFunction" base="Function">
+    <variable type="PositiveInteger" name="windowSize"/>
+  </class>
 
   <class name="SeparationProfile" base="Object">
     <variable type="GenericVector[GenericVector[PositiveInteger]]" name="profiles"/>

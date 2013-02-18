@@ -267,6 +267,7 @@ public:
   size_t aaLocalHistogramSize;
   size_t pssmLocalHistogramSize;
   size_t aaSeparationProfileSize;
+  size_t aaLocalDimericProfileSize;
 
   SimpleProteinModel(ProteinTarget target = noTarget)
     : ProteinModel(target),
@@ -289,7 +290,8 @@ public:
       pssmWindowSize(0),
       aaLocalHistogramSize(0),
       pssmLocalHistogramSize(0),
-      aaSeparationProfileSize(0)
+      aaSeparationProfileSize(0),
+      aaLocalDimericProfileSize(0)
   {}
 
 protected:
@@ -343,6 +345,8 @@ protected:
     size_t position = builder.addInput(positiveIntegerType);
     size_t proteinMap = builder.addInput(proteinMapClass);
     /* Data */
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+
     size_t length = !useRelativePosition ? (size_t)-1 :
                      builder.addFunction(getVariableFunction(T("length")), proteinMap);
 
@@ -358,6 +362,8 @@ protected:
 
     size_t aaSepPro = !aaSeparationProfileSize ? (size_t)-1 :
                        builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile[AA]")), proteinMap);
+    size_t aaSeq = !aaLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
     /* Output */
     builder.startSelection();
     {
@@ -381,6 +387,9 @@ protected:
       if (aaSeparationProfileSize)
         for (size_t i = 0; i < standardAminoAcidTypeEnumeration->getNumElements(); ++i)
           builder.addFunction(new GetSeparationProfileFunction(i, aaSeparationProfileSize), aaSepPro, position, T("SepProfile[AA]"));
+
+      if (aaLocalDimericProfileSize)
+        builder.addFunction(new LocalDimericAminoAcidCompositionFunction(aaLocalDimericProfileSize), aaSeq, position, T("h(DiAA,") + String((int)aaLocalHistogramSize) + T(")"));
 
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }

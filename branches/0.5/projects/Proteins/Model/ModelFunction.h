@@ -49,13 +49,13 @@ class DimericAminoAcidCompositionFunction : public Function
 {
 public:
   virtual String getOutputPostFix() const
-  {return T("DiComposition");}
+    {return T("DiComposition");}
   
   virtual size_t getNumRequiredInputs() const
-  {return 1;}
+    {return 1;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-  {return vectorClass(aminoAcidTypeEnumeration);}
+    {return vectorClass(aminoAcidTypeEnumeration);}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -143,6 +143,73 @@ public:
     }
     return res;
   }
+};
+
+class LocalDimericAminoAcidCompositionFunction : public Function
+{
+public:
+  LocalDimericAminoAcidCompositionFunction(size_t windowSize)
+    : windowSize(windowSize) {}
+
+  virtual String getOutputPostFix() const
+    {return T("LocalDiComposition");}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+  {return index == 0 ? (TypePtr)vectorClass(aminoAcidTypeEnumeration) : positiveIntegerType;}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    return doubleVectorClass(cartesianProductEnumerationEnumeration(standardAminoAcidTypeEnumeration,
+                                                                    standardAminoAcidTypeEnumeration), probabilityType);
+  }
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const VectorPtr& inputVector = inputs[0].getObjectAndCast<Vector>(context);
+    if (!inputVector)
+      return Variable::missingValue(getOutputType());
+    const size_t position = inputs[1].getInteger();
+
+    const size_t numEnumerationElements = standardAminoAcidTypeEnumeration->getNumElements();
+    const size_t numElements = inputVector->getNumElements();
+    const double incrementValue = 1.f / (float)(windowSize - 1.f);
+
+    SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getOutputType());
+    size_t previousIndex = (size_t)-1;
+
+    size_t firstIndex = (size_t)juce::jmax((int)(position - windowSize / 2), 0);
+    size_t lastIndex = (size_t)juce::jmin((int)(position + windowSize / 2), (int)numElements - 1);
+    for (size_t i = firstIndex; i <= lastIndex; ++i)
+    {
+      const Variable v = inputVector->getElement(i);
+      if (v.isMissingValue())
+      {
+        previousIndex = (size_t)-1; 
+        continue;
+      }
+      size_t currentIndex = v.getInteger();
+      if (currentIndex >= numEnumerationElements)
+      {
+        previousIndex = (size_t)-1;
+        continue; // Non standard amino acid
+      }
+
+      if (previousIndex != (size_t)-1)      
+        res->incrementValue(previousIndex * numEnumerationElements + currentIndex, incrementValue);
+      previousIndex = currentIndex;      
+    }
+    return res;
+  }
+
+protected:
+  friend class LocalDimericAminoAcidCompositionFunctionClass;
+
+  size_t windowSize;
+
+  LocalDimericAminoAcidCompositionFunction() {}
 };
 
 class SeparationProfile : public Object
