@@ -27,13 +27,7 @@ public:
       return false;
 
     SimpleProteinModelPtr m = new SimpleProteinModel(ss3Target);
-    m->pssmWindowSize = 15;
-    m->useNumCysteines = true;
-    m->useNumOfEachResidue = true;
-    m->aaDimericProfile = true;
-    m->usePosition = true;
-    m->useRelativePosition = true;
-    m->aaSeparationProfileSize = 11;
+    m->aaLocalDimericProfileSize = 5;
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
