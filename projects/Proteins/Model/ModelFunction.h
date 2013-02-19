@@ -102,13 +102,13 @@ class DimericCompositionFunction : public Function
 {
 public:
   virtual String getOutputPostFix() const
-  {return T("DiComposition");}
+    {return T("DiComposition");}
   
   virtual size_t getNumRequiredInputs() const
-  {return 1;}
+    {return 1;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-  {return vectorClass(doubleVectorClass(enumerationClass, probabilityType));}
+    {return vectorClass(doubleVectorClass(enumerationClass, probabilityType));}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -158,7 +158,7 @@ public:
     {return 2;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-  {return index == 0 ? (TypePtr)vectorClass(aminoAcidTypeEnumeration) : positiveIntegerType;}
+    {return index == 0 ? (TypePtr)vectorClass(aminoAcidTypeEnumeration) : positiveIntegerType;}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -356,6 +356,26 @@ protected:
   GetSeparationProfileFunction() {}
 };
 
+class EnsureProteinTargetIsComputedFunction : public SimpleUnaryFunction
+{
+public:
+  EnsureProteinTargetIsComputedFunction(ProteinTarget target = noTarget)
+  : SimpleUnaryFunction(proteinClass, nilType, T("ComputeTarget")),
+    target(target) {}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    jassert(protein);
+    protein->getTargetOrComputeIfMissing(context, target);
+    return Variable();
+  }
+
+protected:
+  friend class EnsureProteinTargetIsComputedFunctionClass;
+
+  ProteinTarget target;
+};
   
 }; /* namespace lbcpp */
 

@@ -27,7 +27,7 @@ public:
       return false;
 
     SimpleProteinModelPtr m = new SimpleProteinModel(ss3Target);
-    m->aaLocalDimericProfileSize = 5;
+    m->ss3WindowSize = 5;
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
@@ -45,8 +45,8 @@ protected:
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
-    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"));
-    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"), true);
+    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
+    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
 
     return evaluator;
   }
