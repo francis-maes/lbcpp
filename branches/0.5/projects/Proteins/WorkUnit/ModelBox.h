@@ -27,11 +27,16 @@ public:
       return false;
 
     SimpleProteinModelPtr m = new SimpleProteinModel(ss3Target);
-    m->ss3WindowSize = 5;
+    m->pssmWindowSize = 15;
+
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
+
+    if (outputDirectory != File::nonexistent)
+      m->evaluate(context, testingProteins, saveToDirectoryEvaluator(outputDirectory, T(".xml")), T("Saving test predictions to directory"));
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = m->evaluate(context, testingProteins, evaluator, T("EvaluateTest"));
+
     return evaluator->getScoreToMinimize(scores);
   }
 
@@ -40,6 +45,10 @@ protected:
 
   File inputDirectory;
   File supervisionDirectory;
+  File outputDirectory;
+
+  size_t numFolds;
+  size_t fold;
 
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
@@ -67,10 +76,10 @@ protected:
     }
     else
     {
-      context.informationCallback(T("No train/test split detected. Splitting to 4:1"));
+      context.informationCallback(T("No train/test split detected. Fold: ") + String((int)fold) + T(" of ") +  String((int)numFolds) + T("folds"));
       ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, numProteinsToLoad, T("Loading proteins"));
-      trainingProteins = proteins->invFold(0, 5);
-      testingProteins = proteins->fold(0, 5);
+      trainingProteins = proteins->invFold(fold, numFolds);
+      testingProteins = proteins->fold(fold, numFolds);
     }
 
     if (!trainingProteins || trainingProteins->getNumElements() == 0 ||
