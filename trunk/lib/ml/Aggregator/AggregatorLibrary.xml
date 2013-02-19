@@ -10,6 +10,11 @@
     <constructor/>
   </class>
 
+  <!-- Double Statistics -->
+  <class name="StatisticsDoubleAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+  
   <!-- DoubleVector -->
   <class name="MeanDoubleVectorAggregator" base="Aggregator">
     <constructor/>

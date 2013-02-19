@@ -72,6 +72,8 @@ namespace lbcpp
       solvers.push_back(XTlearner);
       
       
+      ObjectivePtr problemObj = problem->getObjective(0);
+      const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
       
       
       for (size_t i = 0; i < solvers.size(); i++)
@@ -86,7 +88,7 @@ namespace lbcpp
         context.leaveScope();
         context.resultCallback("model", model);
         context.resultCallback("fitness", fitness);      
-        
+        context.resultCallback("data",problemData);
         // evaluate
         double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
         context.resultCallback("testingScore", testingScore);
@@ -99,13 +101,40 @@ namespace lbcpp
           context.resultCallback("x", x);
           context.resultCallback("supervision", targetFunction(x));
           
-          ObjectPtr input = new Double(x);
-          ObjectPtr prediction = model->compute(context, &input);
+          double found = 0.0;
+          for (size_t r = 0; r < problemData->getNumRows() && !found; r++)
+          {
+            if (fabs(Double::get(problemData->getElement(r,0)) - x) < 0.01)
+            {
+              found = Double::get(problemData->getElement(r,1));
+            }
+          }
+
+          context.resultCallback("examples",found);
+
           
+          ObjectPtr input = new Double(x);
+          
+          
+          AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
+          if (ensemble)  // it's an ensemble
+          {
+            ScalarVariableStatisticsPtr prediction = model->compute(context, &input).staticCast<ScalarVariableStatistics>();
+            double pred = prediction->getMean();
+            double stddev = prediction->getStandardDeviation();
+            context.resultCallback("prediction", pred);
+            context.resultCallback("stddevUp", pred + stddev);
+            context.resultCallback("stddevDown", pred - stddev);
+          }
+          else
+          {
+            ObjectPtr prediction = model->compute(context, &input);
+            context.resultCallback("prediction",prediction);
+          }
 
           // this can be used as an argument to resultcallback
           // ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("some name");
-          AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
+          /*AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
           if (ensemble)  // it's an ensemble
           {
             const std::vector<ExpressionPtr>& trees = ensemble->getNodes();
@@ -122,8 +151,8 @@ namespace lbcpp
             //context.resultCallback("predcheck", stats.getMean());
             context.resultCallback("stddevUp", pred + stddev);
             context.resultCallback("stddevDown", pred - stddev);
-          }
-          context.resultCallback("prediction", prediction);
+          }*/
+          
           context.leaveScope();
         }
         context.leaveScope();

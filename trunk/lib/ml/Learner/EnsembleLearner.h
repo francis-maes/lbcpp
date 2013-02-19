@@ -10,6 +10,7 @@
 # define ML_LEARNER_ENSEMBLE_H_
 
 # include <ml/Solver.h>
+# include <ml/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -90,10 +91,11 @@ protected:
 
   size_t ensembleSize;
 
+  // returns both the aggregator and the output type of this aggregator
   std::pair<AggregatorPtr, ClassPtr> createAggregator(ClassPtr supervisionType)
   {
     if (supervisionType->inheritsFrom(doubleClass))
-      return std::make_pair(meanDoubleAggregator(), supervisionType);
+      return std::make_pair(statisticsDoubleAggregator(), scalarVariableStatisticsClass);
     else if (supervisionType.isInstanceOf<Enumeration>())
       return std::make_pair(meanDoubleVectorAggregator(), denseDoubleVectorClass(supervisionType.staticCast<Enumeration>(), doubleClass));
     else if (supervisionType->inheritsFrom(denseDoubleVectorClass()))
