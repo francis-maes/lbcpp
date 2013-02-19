@@ -166,7 +166,7 @@ public:
   {
     size_t position = builder.addInput(positiveIntegerType);
     size_t protein = builder.addInput(proteinClass);
-    
+    builder.addFunction(new EnsureProteinTargetIsComputedFunction(ss3Target), protein);
     builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("SS3"));
   }
   
@@ -259,6 +259,9 @@ public:
   bool useNumOfEachResidue;
   bool aaDimericProfile;
 
+  // ss3GlobalHistogram;
+  // ss3DimericProfile;
+
   /* Residue Feature Parameter */
   bool usePosition;
   bool useRelativePosition;
@@ -268,6 +271,11 @@ public:
   size_t pssmLocalHistogramSize;
   size_t aaSeparationProfileSize;
   size_t aaLocalDimericProfileSize;
+  
+  size_t ss3WindowSize;
+  // ss3LocalHistogramSize;
+  // ss3LocalDimericProfileSize;
+  // ss3SegmentProfileSize;
 
   SimpleProteinModel(ProteinTarget target = noTarget)
     : ProteinModel(target),
@@ -291,7 +299,8 @@ public:
       aaLocalHistogramSize(0),
       pssmLocalHistogramSize(0),
       aaSeparationProfileSize(0),
-      aaLocalDimericProfileSize(0)
+      aaLocalDimericProfileSize(0),
+      ss3WindowSize(0)
   {}
 
 protected:
@@ -358,7 +367,10 @@ protected:
     size_t pssm = !pssmWindowSize ? (size_t)-1 :
                    builder.addFunction(new GetSimpleProteinMapElement(T("Seq[normPSSM]")), proteinMap, T("Seq[normPSSM]"));
     size_t pssmAcc = !pssmLocalHistogramSize ? (size_t)-1 :
-                      builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSMM]")), proteinMap, T("Acc[PSSM]"));
+                      builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSSM]")), proteinMap, T("Acc[PSSM]"));
+
+    size_t ss3 = !ss3WindowSize ? (size_t)-1 :
+                  builder.addFunction(new GetSimpleProteinMapElement(T("Seq[SS3]")), proteinMap, T("Seq[SS3]"));
 
     size_t aaSepPro = !aaSeparationProfileSize ? (size_t)-1 :
                        builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile[AA]")), proteinMap);
@@ -377,6 +389,8 @@ protected:
         builder.addFunction(centeredContainerWindowFeatureGenerator(aaWindowSize), aa, position, T("w(AA,") + String((int)aaWindowSize) + (")"));
       if (pssmWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(pssmWindowSize), pssm, position, T("w(PSSM,") + String((int)pssmWindowSize) + (")"));
+      if (ss3WindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(ss3WindowSize), ss3, position, T("w(SS3,") + String((int)ss3WindowSize) + T(")"));
 
       // local histograms
       if (aaLocalHistogramSize)

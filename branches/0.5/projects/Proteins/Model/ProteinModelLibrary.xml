@@ -74,6 +74,10 @@
     <variable type="PositiveInteger" name="index"/>
     <variable type="PositiveInteger" name="windowSize"/>
   </class>
+
+  <class name="EnsureProteinTargetIsComputedFunction" base="SimpleUnaryFunction">
+    <variable type="VariablesEnumeration[Protein]" name="target"/>
+  </class>
   
   <!-- END Model Function -->
 
