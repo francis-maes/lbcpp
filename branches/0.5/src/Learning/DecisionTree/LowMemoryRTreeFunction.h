@@ -32,6 +32,7 @@ public:
   {
     if (!inputs[1].exists())
       return Variable::missingValue(getOutputType());
+    const_cast<LowMemoryRTreeFunction*>(this)->predictionIndex %= predictions.size();
     jassert(predictionIndex < predictions.size());
     return predictions[const_cast<LowMemoryRTreeFunction*>(this)->predictionIndex++];
   }
