@@ -91,7 +91,12 @@
     <variable type="File" name="inputDirectory" shortName="i"/>
     <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
-  
+
+  <class name="ConvertDisproFileToProteins" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
   <class name="CountCysteinesWorkUnit" base="WorkUnit">
     <variable type="File" name="proteinDirectory"/>
   </class>

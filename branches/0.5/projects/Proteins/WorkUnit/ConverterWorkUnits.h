@@ -562,4 +562,202 @@ protected:
   File outputDirectory;
 };
 
+/*
+ * Input:
+ *  (blank line)
+ *  Name
+ *  Num. residue
+ *  Sequence AA
+ *  Sequence predicted SS3 (H, E, C)
+ *  Sequence predictied solvent accessibility (e, b at 25%)
+ *  Sequence disordered residue (T, N)
+ * Ouput:
+ *  Protein
+ */
+class DisproFileParser : public TextParser
+{
+public:
+  DisproFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file), proteinLength((size_t)-1) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass;}
+  
+  virtual void parseBegin() {}
+  
+  virtual bool parseLine(const String& srcLine)
+  {
+    String line = srcLine.trim();
+    if (line.startsWith(T("#")) || line == String::empty)
+      return true;
+
+    if (!protein)
+    {
+      protein = new Protein(line);
+      return true;
+    }
+
+    if (proteinLength == (size_t)-1)
+    {
+      if (!line.containsOnly(T("0123456789")))
+      {
+        context.errorCallback(T("DisproFileParser::parseLine"),
+                              T("Invalid length - ") + line +
+                              T("is not an integer"));
+        return false;
+      }
+      proteinLength = (size_t)line.getIntValue();
+      return true;
+    }
+
+    if (!protein->getPrimaryStructure())
+    {
+      if ((size_t)line.length() != proteinLength)
+      {
+        context.errorCallback(T("DisproFileParser::parseLine"),
+                              T("Invalid sequence length: ") +
+                              String(line.length()) + T("instead of ") +
+                              String((int)proteinLength));
+        return false;        
+      }
+      protein->setPrimaryStructure(line);
+      return true;
+    }
+    
+    if (!protein->getSecondaryStructure())
+    {
+      if ((size_t)line.length() != proteinLength)
+      {
+        context.errorCallback(T("DisproFileParser::parseLine"),
+                              T("Invalid SS3 sequence length: ") +
+                              String(line.length()) + T("instead of ") +
+                              String((int)proteinLength));
+        return false;
+      }
+      DoubleVectorPtr helix = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+      helix->setElement(0, 1.f);
+      DoubleVectorPtr sheet = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+      sheet->setElement(1, 1.f);
+      DoubleVectorPtr coil = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+      coil->setElement(2, 1.f);
+      
+      VectorPtr ss3 = objectVector(sparseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), proteinLength);
+      for (size_t i = 0; i < proteinLength; ++i)
+        if (line[i] == T('H'))
+          ss3->setElement(i, helix);
+        else if (line[i] == T('E'))
+          ss3->setElement(i, sheet);
+        else
+          ss3->setElement(i, coil);
+      protein->setSecondaryStructure(ss3);
+      return true;
+    }
+    
+    if (!protein->getSolventAccessibilityAt20p())
+    {
+      if ((size_t)line.length() != proteinLength)
+      {
+        context.errorCallback(T("DisproFileParser::parseLine"),
+                              T("Invalid SA sequence length: ") +
+                              String(line.length()) + T("instead of ") +
+                              String((int)proteinLength));
+        return false;
+      }
+      DenseDoubleVectorPtr sa20 = Protein::createEmptyProbabilitySequence(proteinLength);
+      for (size_t i = 0; i < proteinLength; ++i)
+        sa20->setElement(i, probability(line[i] == T('e') ? 1.f : 0.f));
+      protein->setSolventAccessibilityAt20p(sa20);
+      return true;
+    }
+
+    if (!protein->getSolventAccessibilityAt20p())
+    {
+      if ((size_t)line.length() != proteinLength)
+      {
+        context.errorCallback(T("DisproFileParser::parseLine"),
+                              T("Invalid SA sequence length: ") +
+                              String(line.length()) + T("instead of ") +
+                              String((int)proteinLength));
+        return false;
+      }
+      DenseDoubleVectorPtr sa20 = Protein::createEmptyProbabilitySequence(proteinLength);
+      for (size_t i = 0; i < proteinLength; ++i)
+        sa20->setElement(i, probability(line[i] == T('e') ? 1.f : 0.f));
+      protein->setSolventAccessibilityAt20p(sa20);
+      return true;
+    }
+
+    if ((size_t)line.length() != proteinLength)
+    {
+      context.errorCallback(T("DisproFileParser::parseLine"),
+                            T("Invalid DR sequence length: ") +
+                            String(line.length()) + T("instead of ") +
+                            String((int)proteinLength));
+      return false;
+    }
+    DenseDoubleVectorPtr dr = Protein::createEmptyProbabilitySequence(proteinLength);
+    for (size_t i = 0; i < proteinLength; ++i)
+      dr->setElement(i, probability(line[i] == T('T') ? 1.f : 0.f));
+    protein->setDisorderRegions(dr);
+
+    setResult(protein);
+    protein = ProteinPtr();
+    proteinLength = (size_t)-1;
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+  {
+    return true;
+  }
+  
+protected:
+  ProteinPtr protein;
+  size_t proteinLength;
+};
+
+class ConvertDisproFileToProteins : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputFile == File::nonexistent || outputDirectory == File::nonexistent)
+    {
+      context.errorCallback(T("ConvertDisproFileToProteins::run"), T("At least one of argument is wrong !"));
+      return false;
+    }
+    
+    outputDirectory.getChildFile(T("sup/")).createDirectory();
+    outputDirectory.getChildFile(T("in/")).createDirectory();
+    
+    StreamPtr stream = StreamPtr(new DisproFileParser(context, inputFile));
+    while (!stream->isExhausted())
+    {
+      ProteinPtr protein = stream->next().getObjectAndCast<Protein>();
+      if (!protein)
+        continue;
+      ProteinPtr supervision = new Protein(protein->getName());
+      supervision->setPrimaryStructure(protein->getPrimaryStructure());
+      supervision->setDisorderRegions(protein->getDisorderRegions());
+
+      ProteinPtr input = new Protein(protein->getName());
+      input->setPrimaryStructure(protein->getPrimaryStructure());
+      input->setSecondaryStructure(protein->getSecondaryStructure());
+      input->setSolventAccessibilityAt20p(protein->getSolventAccessibilityAt20p());
+
+      supervision->saveToFile(context, outputDirectory.getChildFile(T("sup/") + supervision->getName() + T(".xml")));
+      input->saveToFile(context, outputDirectory.getChildFile(T("in/") + input->getName() + T(".xml")));
+    }
+    
+    return true;
+  }
+  
+protected:
+  friend class ConvertDisproFileToProteinsClass;
+  
+  File inputFile;
+  File outputDirectory;
+};
+
 };
