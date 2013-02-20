@@ -36,35 +36,55 @@
   <class name="SimpleProteinModel" base="ProteinModel">
     <!-- Global Parameters -->
     <variable type="Boolean" name="useProteinLength"/>
-    <variable type="Boolean" name="aaGlobalHistogram"/>
-    <variable type="Boolean" name="pssmGlobalHistogram"/>
     <variable type="Boolean" name="useNumCysteines"/>
     <variable type="Boolean" name="useNumOfEachResidue"/>
+    
+    <variable type="Boolean" name="aaGlobalHistogram"/>
     <variable type="Boolean" name="aaDimericProfile"/>
+
+    <variable type="Boolean" name="pssmGlobalHistogram"/>
+    <variable type="Boolean" name="pssmDimericProfile"/>
+
+    <variable type="Boolean" name="ss3GlobalHistogram"/>
+    <variable type="Boolean" name="ss3DimericProfile"/>
+
+    <variable type="Boolean" name="drGlobalHistogram"/>
+    <variable type="Boolean" name="drDimericProfile"/>
+
+    <variable type="Boolean" name="saGlobalHistogram"/>
+    <variable type="Boolean" name="saDimericProfile"/>
 
     <!-- Residue Parameters -->
     <variable type="Boolean" name="usePosition"/>
     <variable type="Boolean" name="useRelativePosition"/>
-    <variable type="PositiveInteger" name="aaWindowSize"/>
-    <variable type="PositiveInteger" name="pssmWindowSize"/>
-    <variable type="PositiveInteger" name="aaLocalHistogramSize"/>
-    <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
     <variable type="PositiveInteger" name="aaSeparationProfileSize"/>
+
+    <variable type="PositiveInteger" name="aaWindowSize"/>
+    <variable type="PositiveInteger" name="aaLocalHistogramSize"/>
     <variable type="PositiveInteger" name="aaLocalDimericProfileSize"/>
+
+    <variable type="PositiveInteger" name="pssmWindowSize"/>
+    <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
+    <variable type="PositiveInteger" name="pssmLocalDimericProfileSize"/>
+
+    <variable type="PositiveInteger" name="ss3WindowSize"/>
+    <variable type="PositiveInteger" name="ss3LocalHistogramSize"/>
+    <variable type="PositiveInteger" name="ss3LocalDimericProfileSize"/>
+
+    <variable type="PositiveInteger" name="drWindowSize"/>
+    <variable type="PositiveInteger" name="drLocalHistogramSize"/>
+    <variable type="PositiveInteger" name="drLocalDimericProfileSize"/>
+
+    <variable type="PositiveInteger" name="saWindowSize"/>
+    <variable type="PositiveInteger" name="saLocalHistogramSize"/>
+    <variable type="PositiveInteger" name="saLocalDimericProfileSize"/>
   </class>
   
 
 
 
   <!-- BEGIN Model Function -->
-
   <class name="NumOfEachResidueFunction" base="SimpleUnaryFunction"/>
-
-  <class name="DimericAminoAcidCompositionFunction" base="Function"/>
-  <class name="DimericCompositionFunction" base="Function"/>
-  <class name="LocalDimericAminoAcidCompositionFunction" base="Function">
-    <variable type="PositiveInteger" name="windowSize"/>
-  </class>
 
   <class name="SeparationProfile" base="Object">
     <variable type="GenericVector[GenericVector[PositiveInteger]]" name="profiles"/>
@@ -79,6 +99,24 @@
     <variable type="VariablesEnumeration[Protein]" name="target"/>
   </class>
   
+  <!-- Dimeric Functions -->
+  <class name="DimericCompositionFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numEnumerationElements"/>
+  </class>
+  <class name="AminoAcidDimericCompositionFunction" base="DimericCompositionFunction"/>
+  <class name="DoubleVectorDimericCompositionFunction" base="DimericCompositionFunction"/>
+  <class name="ProbabilityDimericCompositionFunction" base="DimericCompositionFunction"/>
+  <class name="DimericCompositionProxyFunction" base="ProxyFunction"/>
+
+  <class name="LocalDimericCompositionFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="windowSize"/>
+    <variable type="PositiveInteger" name="numEnumerationElements"/>
+  </class>
+  <class name="AminoAcidLocalDimericCompositionFunction" base="LocalDimericCompositionFunction"/>
+  <class name="DoubleVectorLocalDimericCompositionFunction" base="LocalDimericCompositionFunction"/>
+  <class name="ProbabilityLocalDimericCompositionFunction" base="LocalDimericCompositionFunction"/>
+  <class name="LocalDimericCompositionProxyFunction" base="ProxyFunction"/>
+
   <!-- END Model Function -->
 
 </library>

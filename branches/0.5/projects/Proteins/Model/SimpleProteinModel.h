@@ -13,6 +13,7 @@
 # include "ProteinModel.h"
 # include "ProteinMap.h"
 # include "ModelFunction.h"
+# include "DimericCompositionFunction.h"
 # include "../Predictor/LargeProteinPredictorParameters.h"
 
 namespace lbcpp
@@ -24,80 +25,47 @@ public:
   GetSimpleProteinMapElement(const String& variableName)
     : GetProteinMapElement(variableName)
   {
-    if (variableName == T("Seq[AA]"))
+    if (variableName == T("Sequence.primaryStructure"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::aaResidueFeatures);
     }
-    else if (variableName == T("Seq[PSSM]"))
+    else if (variableName == T("Sequence.positionSpecificScoringMatrix"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::pssmResidueFeatures);
     }
-    else if (variableName == T("Seq[normPSSM]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
-      residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::normPssmResidueFeatures);
-    }
-    else if (variableName == T("Seq[SS3]"))
+    else if (variableName == T("Sequence.secondaryStructure"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::ss3ResidueFeatures);
     }
-    else if (variableName == T("Seq[SS8]"))
+    else if (variableName == T("Sequence.dsspSecondaryStructure"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::ss8ResidueFeatures);
     }
-    else if (variableName == T("Seq[SA]"))
+    else if (variableName == T("Sequence.solventAccessibilityAt20p"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::saResidueFeatures);
     }
-    else if (variableName == T("Seq[DR]"))
+    else if (variableName == T("Sequence.disorderRegions"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::drResidueFeatures);
     }
-    else if (variableName == T("Seq[StAl]"))
+    else if (variableName == T("Sequence.structuralAlphabetSequence"))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueFeatures);
       residueFunction = (CompositeFunctionBuilderFunction)(&GetSimpleProteinMapElement::stalResidueFeatures);
     }
-    else if (variableName == T("Acc[AA]"))
+    else if (variableName.startsWith(T("Accumulator")))
     {
+      String target = variableName.substring(variableName.indexOfChar(T('.')) + 1);
+
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[AA]"));
-    }
-    else if (variableName == T("Acc[PSSM]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[PSSM]"));
-    }
-    else if (variableName == T("Acc[SS3]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[SS3]"));
-    }
-    else if (variableName == T("Acc[SS8]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[SS8]"));
-    }
-    else if (variableName == T("Acc[SA]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[SA]"));
-    }
-    else if (variableName == T("Acc[DR]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[DR]"));
-    }
-    else if (variableName == T("Acc[StAl]"))
-    {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, residueAccumulator);
-      featuresFunction = new GetSimpleProteinMapElement(T("Seq[StAl]"));
+      featuresFunction = new GetSimpleProteinMapElement(T("Sequence.") + target);
     }
     else if (variableName == T("NumCys"))
     {
@@ -107,9 +75,9 @@ public:
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, numOfEachAminoAcid);
     }
-    else if (variableName == T("Dimer[AA]"))
+    else if (variableName.startsWith(T("Dimer.")))
     {
-      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, dimericAminoAcidComposition);
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, dimericComposition);
     }
     else if (variableName == T("SepProfile[AA]"))
     {
@@ -125,6 +93,7 @@ public:
 
     size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
     size_t length = builder.addFunction(getVariableFunction(T("length")), proteinMap);
+
     builder.addFunction(createVectorFunction(new MethodBasedCompositeFunction(refCountedPointerFromThis(this), residueFunction)), length, protein);
   }
   
@@ -166,7 +135,7 @@ public:
   {
     size_t position = builder.addInput(positiveIntegerType);
     size_t protein = builder.addInput(proteinClass);
-    builder.addFunction(new EnsureProteinTargetIsComputedFunction(ss3Target), protein);
+
     builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("SS3"));
   }
   
@@ -218,12 +187,15 @@ public:
     builder.addFunction(new NumOfEachResidueFunction(), protein, T("NumOfEachAA"));
   }
 
-  void dimericAminoAcidComposition(CompositeFunctionBuilder& builder) const
+  void dimericComposition(CompositeFunctionBuilder& builder) const
   {
+    String target = variableName.substring(variableName.indexOfChar(T('.')) + 1);
+
     size_t proteinMap = builder.addInput(proteinMapClass);
     size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
-    size_t sequence = builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
-    builder.addFunction(new DimericAminoAcidCompositionFunction(), sequence, T("Dimer[AA]"));
+
+    size_t sequence = builder.addFunction(getVariableFunction(target), protein);
+    builder.addFunction(new DimericCompositionProxyFunction(), sequence, T("Dimer[") + target + T("]"));
   }
 
   void separationProfile(CompositeFunctionBuilder& builder) const
@@ -253,11 +225,24 @@ public:
 
   /* Global Feature Parameters */
   bool useProteinLength;
-  bool aaGlobalHistogram;
-  bool pssmGlobalHistogram;
   bool useNumCysteines;
   bool useNumOfEachResidue;
+
+  bool aaGlobalHistogram;
   bool aaDimericProfile;
+
+  bool pssmGlobalHistogram;
+  bool pssmDimericProfile;
+  
+  bool ss3GlobalHistogram;
+  bool ss3DimericProfile;
+  
+  bool drGlobalHistogram;
+  bool drDimericProfile;
+  
+  bool saGlobalHistogram;
+  bool saDimericProfile;
+
 
   // ss3GlobalHistogram;
   // ss3DimericProfile;
@@ -265,17 +250,29 @@ public:
   /* Residue Feature Parameter */
   bool usePosition;
   bool useRelativePosition;
-  size_t aaWindowSize;
-  size_t pssmWindowSize;
-  size_t aaLocalHistogramSize;
-  size_t pssmLocalHistogramSize;
   size_t aaSeparationProfileSize;
+
+  size_t aaWindowSize;
+  size_t aaLocalHistogramSize;
   size_t aaLocalDimericProfileSize;
+
+  size_t pssmWindowSize;
+  size_t pssmLocalHistogramSize;
+  size_t pssmLocalDimericProfileSize;
   
   size_t ss3WindowSize;
-  // ss3LocalHistogramSize;
+  size_t ss3LocalHistogramSize;
+  size_t ss3LocalDimericProfileSize;
   // ss3LocalDimericProfileSize;
   // ss3SegmentProfileSize;
+
+  size_t drWindowSize;
+  size_t drLocalHistogramSize;
+  size_t drLocalDimericProfileSize;
+
+  size_t saWindowSize;
+  size_t saLocalHistogramSize;
+  size_t saLocalDimericProfileSize;
 
   SimpleProteinModel(ProteinTarget target = noTarget)
     : ProteinModel(target),
@@ -286,21 +283,49 @@ public:
       x3LowMemory(true),
     /* Global Feature Parameters */
       useProteinLength(false),
-      aaGlobalHistogram(false),
-      pssmGlobalHistogram(false),
       useNumCysteines(false),
       useNumOfEachResidue(false),
+
+      aaGlobalHistogram(false),
       aaDimericProfile(false),
+      
+      pssmGlobalHistogram(false),
+      pssmDimericProfile(false),
+
+      ss3GlobalHistogram(false),
+      ss3DimericProfile(false),
+
+      drGlobalHistogram(false),
+      drDimericProfile(false),
+
+      saGlobalHistogram(false),
+      saDimericProfile(false),
+
     /* Residue Feature Parameter */
       usePosition(false),
       useRelativePosition(false),
-      aaWindowSize(0),
-      pssmWindowSize(0),
-      aaLocalHistogramSize(0),
-      pssmLocalHistogramSize(0),
       aaSeparationProfileSize(0),
+
+      aaWindowSize(0),
+      aaLocalHistogramSize(0),
       aaLocalDimericProfileSize(0),
-      ss3WindowSize(0)
+
+      pssmWindowSize(0),
+      pssmLocalHistogramSize(0),
+      pssmLocalDimericProfileSize(0),
+
+      ss3WindowSize(0),
+      ss3LocalHistogramSize(0),
+      ss3LocalDimericProfileSize(0),
+
+      drWindowSize(0),
+      drLocalHistogramSize(0),
+      drLocalDimericProfileSize(0),
+
+      saWindowSize(0),
+      saLocalHistogramSize(0),
+      saLocalDimericProfileSize(0)
+
   {}
 
 protected:
@@ -321,9 +346,15 @@ protected:
     size_t numCysteines = !useNumCysteines ? (size_t)-1 :
                            builder.addFunction(new GetSimpleProteinMapElement(T("NumCys")), proteinMap, T("NumCys"));
     size_t aaAccumulator = !aaGlobalHistogram ? (size_t)-1 :
-                            builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
+                            builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.primaryStructure")), proteinMap, T("Acc[AA]"));
     size_t pssmAccumulator = !pssmGlobalHistogram ? (size_t)-1 :
-                              builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSSM]")), proteinMap, T("Acc[PSSM]"));
+                              builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.positionSpecificScoringMatrix")), proteinMap, T("Acc[PSSM]"));
+    size_t ss3Accumulator = !ss3GlobalHistogram ? (size_t)-1 :
+                             builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.secondaryStructure")), proteinMap, T("Acc[SS3]"));
+    size_t drAccumulator = !drGlobalHistogram ? (size_t)-1 :
+                            builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.disorderRegions")), proteinMap, T("Acc[DR]"));
+    size_t saAccumulator = !saGlobalHistogram ? (size_t)-1 :
+                            builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.solventAccessibilityAt20p")), proteinMap, T("Acc[SA]"));
 
     /* Output */
     builder.startSelection();
@@ -335,13 +366,29 @@ protected:
       if (useNumOfEachResidue)
         builder.addFunction(new GetSimpleProteinMapElement(T("NumOfEachAA")), proteinMap, T("NumOfEachAA"));
 
+      // histograms
       if (aaGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), aaAccumulator, T("h(AA)"));
       if (pssmGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), pssmAccumulator, T("h(PSSM)"));
+      if (ss3GlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), ss3Accumulator, T("h(SS3)"));
+      if (drGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), drAccumulator, T("h(DR)"));
+      if (saGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), saAccumulator, T("h(SA)"));
 
+      // dimeric profiles
       if (aaDimericProfile)
-        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer[AA]")), proteinMap, T("Dimer[AA]"));
+        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer.primaryStructure")), proteinMap, T("Dimer[AA]"));
+      if (pssmDimericProfile)
+        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer.positionSpecificScoringMatrix")), proteinMap, T("Dimer[PSSM]"));
+      if (ss3DimericProfile)
+        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer.secondaryStructure")), proteinMap, T("Dimer[SS3]"));
+      if (drDimericProfile)
+        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer.disorderRegions")), proteinMap, T("Dimer[DR]"));
+      if (saDimericProfile)
+        builder.addFunction(new GetSimpleProteinMapElement(T("Dimer.solventAccessibilityAt20p")), proteinMap, T("Dimer[SA]"));
 
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }
@@ -360,22 +407,45 @@ protected:
                      builder.addFunction(getVariableFunction(T("length")), proteinMap);
 
     size_t aa = !aaWindowSize ? (size_t)-1 :
-                 builder.addFunction(new GetSimpleProteinMapElement(T("Seq[AA]")), proteinMap, T("Seq[AA]"));
+                 builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.primaryStructure")), proteinMap, T("Seq[AA]"));
     size_t aaAcc = !aaLocalHistogramSize ? (size_t)-1 :
-                    builder.addFunction(new GetSimpleProteinMapElement(T("Acc[AA]")), proteinMap, T("Acc[AA]"));
+                    builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.primaryStructure")), proteinMap, T("Acc[AA]"));
 
     size_t pssm = !pssmWindowSize ? (size_t)-1 :
-                   builder.addFunction(new GetSimpleProteinMapElement(T("Seq[normPSSM]")), proteinMap, T("Seq[normPSSM]"));
+                   builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.positionSpecificScoringMatrix")), proteinMap, T("Seq[normPSSM]"));
     size_t pssmAcc = !pssmLocalHistogramSize ? (size_t)-1 :
-                      builder.addFunction(new GetSimpleProteinMapElement(T("Acc[PSSM]")), proteinMap, T("Acc[PSSM]"));
-
+                      builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.positionSpecificScoringMatrix")), proteinMap, T("Acc[PSSM]"));
+    
     size_t ss3 = !ss3WindowSize ? (size_t)-1 :
-                  builder.addFunction(new GetSimpleProteinMapElement(T("Seq[SS3]")), proteinMap, T("Seq[SS3]"));
+                  builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.secondaryStructure")), proteinMap, T("Seq[SS3]"));
+    size_t ss3Acc = !ss3LocalHistogramSize ? (size_t)-1 :
+                     builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.secondaryStructure")), proteinMap, T("Acc[SS3]"));
 
+    size_t dr = !drWindowSize ? (size_t)-1 :
+                 builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.disorderRegions")), proteinMap, T("Seq[DR]"));
+    size_t drAcc = !drLocalHistogramSize ? (size_t)-1 :
+                    builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.disorderRegions")), proteinMap, T("Acc[DR]"));
+
+    size_t sa = !saWindowSize ? (size_t)-1 :
+                 builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.solventAccessibilityAt20p")), proteinMap, T("Seq[SA]"));
+    size_t saAcc = !saLocalHistogramSize ? (size_t)-1 :
+                    builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.solventAccessibilityAt20p")), proteinMap, T("Acc[SA]"));
+
+    
     size_t aaSepPro = !aaSeparationProfileSize ? (size_t)-1 :
                        builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile[AA]")), proteinMap);
+
     size_t aaSeq = !aaLocalDimericProfileSize ? (size_t)-1 :
                     builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
+    size_t pssmSeq = !pssmLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("positionSpecificScoringMatrix")), protein);
+    size_t ss3Seq = !ss3LocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("secondaryStructure")), protein);
+    size_t drSeq = !drLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("disorderRegions")), protein);
+    size_t saSeq = !saLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("solventAccessibilityAt20p")), protein);
+
     /* Output */
     builder.startSelection();
     {
@@ -391,19 +461,38 @@ protected:
         builder.addFunction(centeredContainerWindowFeatureGenerator(pssmWindowSize), pssm, position, T("w(PSSM,") + String((int)pssmWindowSize) + (")"));
       if (ss3WindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(ss3WindowSize), ss3, position, T("w(SS3,") + String((int)ss3WindowSize) + T(")"));
+      if (drWindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(drWindowSize), dr, position, T("w(DR,") + String((int)drWindowSize) + T(")"));
+      if (saWindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(saWindowSize), sa, position, T("w(SA,") + String((int)saWindowSize) + T(")"));
 
       // local histograms
       if (aaLocalHistogramSize)
         builder.addFunction(accumulatorLocalMeanFunction(aaLocalHistogramSize), aaAcc, position, T("h(AA,") + String((int)aaLocalHistogramSize) + T(")"));
       if (pssmLocalHistogramSize)
         builder.addFunction(accumulatorLocalMeanFunction(pssmLocalHistogramSize), pssmAcc, position, T("h(PSSM,") + String((int)pssmLocalHistogramSize) + T(")"));
+      if (ss3LocalHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(ss3LocalHistogramSize), ss3Acc, position, T("h(SS3,") + String((int)ss3LocalHistogramSize) + T(")"));
+      if (drLocalHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(drLocalHistogramSize), drAcc, position, T("h(DR,") + String((int)drLocalHistogramSize) + T(")"));
+      if (saLocalHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(saLocalHistogramSize), saAcc, position, T("h(SA,") + String((int)saLocalHistogramSize) + T(")"));
 
       if (aaSeparationProfileSize)
         for (size_t i = 0; i < standardAminoAcidTypeEnumeration->getNumElements(); ++i)
           builder.addFunction(new GetSeparationProfileFunction(i, aaSeparationProfileSize), aaSepPro, position, T("SepProfile[AA]"));
 
+      // dimeric local profiles
       if (aaLocalDimericProfileSize)
-        builder.addFunction(new LocalDimericAminoAcidCompositionFunction(aaLocalDimericProfileSize), aaSeq, position, T("h(DiAA,") + String((int)aaLocalHistogramSize) + T(")"));
+        builder.addFunction(new LocalDimericCompositionProxyFunction(aaLocalDimericProfileSize), aaSeq, position, T("Di(AA,") + String((int)aaLocalHistogramSize) + T(")"));
+      if (pssmLocalDimericProfileSize)
+        builder.addFunction(new LocalDimericCompositionProxyFunction(pssmLocalDimericProfileSize), pssmSeq, position, T("Di(PSSM,") + String((int)pssmLocalHistogramSize) + T(")"));
+      if (ss3LocalDimericProfileSize)
+        builder.addFunction(new LocalDimericCompositionProxyFunction(ss3LocalDimericProfileSize), ss3Seq, position, T("Di(SS3,") + String((int)ss3LocalHistogramSize) + T(")"));
+      if (drLocalDimericProfileSize)
+        builder.addFunction(new LocalDimericCompositionProxyFunction(drLocalDimericProfileSize), drSeq, position, T("Di(DR,") + String((int)drLocalHistogramSize) + T(")"));
+      if (saLocalDimericProfileSize)
+        builder.addFunction(new LocalDimericCompositionProxyFunction(saLocalDimericProfileSize), saSeq, position, T("Di(SA,") + String((int)saLocalHistogramSize) + T(")"));
 
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }
