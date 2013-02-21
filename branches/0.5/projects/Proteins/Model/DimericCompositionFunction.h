@@ -87,10 +87,10 @@ class DoubleVectorDimericCompositionFunction : public DimericCompositionFunction
 {
 protected:
   virtual TypePtr getInputElementsType() const
-    {return doubleVectorClass(enumerationClass, doubleType);}
+    {return doubleVectorClass(enumValueType, doubleType);}
 
   virtual EnumerationPtr getOutputEnumeration(const TypePtr& inputType)
-    {return inputType->getTemplateArgument(0);}
+    {return inputType->getTemplateArgument(0)->getTemplateArgument(0);}
 
   virtual int getValue(const Variable& v) const
   {
@@ -131,13 +131,14 @@ public:
 
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
-    TypePtr inputType = inputVariables[0]->getType();
+    TypePtr inputType = inputVariables[0]->getType()->getTemplateArgument(0);
 
-    if (inputType == probabilityType)
+    if (inputType == positiveIntegerEnumerationEnumeration
+        && inputVariables[0]->getType()->getTemplateArgument(1) == probabilityType)
       return new ProbabilityDimericCompositionFunction();
     else if (inputType == aminoAcidTypeEnumeration)
       return new AminoAcidDimericCompositionFunction();
-    else if (inputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+    else if (inputType->inheritsFrom(doubleVectorClass(enumValueType, doubleType)))
       return new DoubleVectorDimericCompositionFunction();
     else
     {
@@ -242,10 +243,10 @@ public:
 
 protected:
   virtual TypePtr getInputElementsType() const
-    {return doubleVectorClass(enumerationClass, doubleType);}
+    {return doubleVectorClass(enumValueType, doubleType);}
 
   virtual EnumerationPtr getOutputEnumeration(const TypePtr& inputType)
-    {return inputType->getTemplateArgument(0);}
+    {return inputType->getTemplateArgument(0)->getTemplateArgument(0);}
 
   virtual int getValue(const Variable& v) const
   {
@@ -293,23 +294,24 @@ public:
     : windowSize(windowSize) {}
 
   virtual size_t getNumRequiredInputs() const
-    {return 1;}
+    {return 2;}
 
   virtual String getOutputPostFix() const
     {return T("DimerProxy");}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return vectorClass(anyType);}
+    {return index == 0 ? (TypePtr)vectorClass(anyType) : positiveIntegerType;}
 
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
-    TypePtr inputType = inputVariables[0]->getType();
+    TypePtr inputType = inputVariables[0]->getType()->getTemplateArgument(0);
 
-    if (inputType == probabilityType)
+    if (inputType == positiveIntegerEnumerationEnumeration
+        && inputVariables[0]->getType()->getTemplateArgument(1) == probabilityType)
       return new ProbabilityLocalDimericCompositionFunction(windowSize);
     else if (inputType == aminoAcidTypeEnumeration)
       return new AminoAcidLocalDimericCompositionFunction(windowSize);
-    else if (inputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+    else if (inputType->inheritsFrom(doubleVectorClass(enumValueType, doubleType)))
       return new DoubleVectorLocalDimericCompositionFunction(windowSize);
     else
     {
