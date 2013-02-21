@@ -25,7 +25,7 @@ public:
       subFronts[i]->computeCrowdingDistances(crowdingDistances[i]);
   }
 
-  virtual int compare(size_t index1, size_t index2)
+  virtual int compareSolutions(size_t index1, size_t index2)
   {
     size_t rank1 = mapping[index1].first;
     size_t rank2 = mapping[index2].first;

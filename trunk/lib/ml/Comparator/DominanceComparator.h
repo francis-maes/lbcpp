@@ -21,7 +21,7 @@ public:
   virtual void initialize(const SolutionContainerPtr& solutions)
     {this->solutions = solutions;}
 
-  virtual int compare(size_t index1, size_t index2)
+  virtual int compareSolutions(size_t index1, size_t index2)
   {
     FitnessPtr fitness1 = solutions->getFitness(index1);
     FitnessPtr fitness2 = solutions->getFitness(index2);

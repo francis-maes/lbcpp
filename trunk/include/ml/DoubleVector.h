@@ -183,8 +183,8 @@ public:
   virtual void clear();
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
-  virtual void prepend(const ObjectPtr& value);
-  virtual void append(const ObjectPtr& value);
+  virtual void prependElement(const ObjectPtr& value);
+  virtual void appendElement(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container
@@ -291,8 +291,8 @@ public:
   virtual void clear();
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
-  virtual void prepend(const ObjectPtr& value);
-  virtual void append(const ObjectPtr& value);
+  virtual void prependElement(const ObjectPtr& value);
+  virtual void appendElement(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container
@@ -361,8 +361,8 @@ public:
   virtual void clear();
   virtual void reserve(size_t size);
   virtual void resize(size_t size);
-  virtual void prepend(const ObjectPtr& value);
-  virtual void append(const ObjectPtr& value);
+  virtual void prependElement(const ObjectPtr& value);
+  virtual void appendElement(const ObjectPtr& value);
   virtual void remove(size_t index);
 
   // Container

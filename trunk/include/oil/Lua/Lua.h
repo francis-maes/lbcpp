@@ -188,10 +188,10 @@ public:
   virtual void resize(size_t size)
     {jassertfalse;}
 
-  virtual void prepend(const ObjectPtr& value)
+  virtual void prependElement(const ObjectPtr& value)
     {jassertfalse;}
 
-  virtual void append(const ObjectPtr& value)
+  virtual void appendElement(const ObjectPtr& value)
     {jassertfalse;}
 
   virtual void remove(size_t index)

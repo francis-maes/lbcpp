@@ -108,6 +108,8 @@ SET(ML_FUNCTION_SOURCES
 SET(ML_AGGREGATOR_SOURCES
   Aggregator/MeanDoubleAggregator.h
   Aggregator/MeanDoubleVectorAggregator.h
+  Aggregator/StatisticsDoubleAggregator.h
+  Aggregator/StatisticsDoubleVectorAggregator.h
   Aggregator/AggregatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/AggregatorLibrary.cpp
 )

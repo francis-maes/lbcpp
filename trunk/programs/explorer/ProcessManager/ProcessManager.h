@@ -144,14 +144,14 @@ public:
   {
     ProcessPtr process = getProcess(index);
     remove(index);
-    target->prepend(process);
+    target->prependElement(process);
   }
 
   void moveToBottom(size_t index, ProcessListPtr target)
   {
     ProcessPtr process = getProcess(index);
     remove(index);
-    target->append(process);
+    target->appendElement(process);
   }
 };
 

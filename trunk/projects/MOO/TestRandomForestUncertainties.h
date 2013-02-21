@@ -20,61 +20,85 @@ namespace lbcpp
   class TestRandomForestUncertainties : public WorkUnit
   {
   public:
-    TestRandomForestUncertainties() : numSamples(25), numTrees(100) {}
+    TestRandomForestUncertainties() : numSamples(25), numTrees(100), numObjectives(1) {}
     
     virtual ObjectPtr run(ExecutionContext& context)
     {
       lbCppMLLibraryCacheTypes(context);
+      
+      moFunctionIdx.resize(numObjectives);
+      for (size_t i = 0; i < numObjectives; ++i)
+         moFunctionIdx[i] = i;
+      
+      if (numObjectives > 8)
+      {
+        context.errorCallback("Too many objectives, maximum is 8");
+        return new Boolean(false);
+      }
+      
+      
+      // create the domain
+      ExpressionDomainPtr domain = new ExpressionDomain();
+      VariableExpressionPtr x = domain->addInput(doubleClass, "x");
+      VariableExpressionPtr y;
+      
+      if (numObjectives == 1)
+       y = domain->createSupervision(doubleClass, "y");
+      else
+      {
+        DefaultEnumerationPtr objectivesEnumeration = new DefaultEnumeration("objectives");
+        for (size_t i = 0; i < numObjectives; ++i)
+          objectivesEnumeration->addElement(context, "objective" + string((int)i));
+        ClassPtr dvClass = denseDoubleVectorClass(objectivesEnumeration, doubleClass);
+        y = domain->createSupervision(dvClass, "y");
+      }
+      
+      // create the learning problem
+      ProblemPtr problem = makeProblem(context, domain);
+      
+      // create the splitting criterion
+      SplittingCriterionPtr splittingCriterion;
+      if (numObjectives == 1)
+        splittingCriterion = stddevReductionSplittingCriterion();
+      else
+        splittingCriterion = vectorStddevReductionSplittingCriterion();
+      
+      // create the sampler
+      SamplerPtr sampler = scalarExpressionVectorSampler();
+      
+      // create condition learner for decision trees and random forests
+      SolverPtr exhaustive = exhaustiveConditionLearner(sampler);
+           
+      // create DT learner
+      SolverPtr dtLearner = treeLearner(splittingCriterion, exhaustive);
+      dtLearner->setVerbosity(verbosityDetailed);
 
-      ProblemPtr problem = makeProblem(context);
-      
-      // make DT learner
-      SamplerPtr DTexpressionVectorSampler = scalarExpressionVectorSampler();
-      SolverPtr DTconditionLearner = exhaustiveConditionLearner(DTexpressionVectorSampler);
-      
-      SolverPtr DTlearner = treeLearner(stddevReductionSplittingCriterion(), DTconditionLearner);
-      DTlearner->setVerbosity(verbosityDetailed);
-
-      // make RF learner
-      SamplerPtr RFexpressionVectorSampler = scalarExpressionVectorSampler();
-      SolverPtr RFconditionLearner = exhaustiveConditionLearner(RFexpressionVectorSampler);
-      //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
-      SolverPtr RFlearner = treeLearner(stddevReductionSplittingCriterion(), RFconditionLearner); 
-      //learner->setVerbosity((SolverVerbosity)verbosity);
-      RFlearner = baggingLearner(RFlearner, numTrees);
-      RFlearner->setVerbosity(verbosityDetailed);
-      
-      // make RF learner
-      SamplerPtr RF2expressionVectorSampler = scalarExpressionVectorSampler();
-      SolverPtr RF2conditionLearner = randomSplitConditionLearner(RF2expressionVectorSampler);
-      //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
-      SolverPtr RF2learner = treeLearner(stddevReductionSplittingCriterion(), RF2conditionLearner); 
-      //learner->setVerbosity((SolverVerbosity)verbosity);
-      RF2learner = baggingLearner(RF2learner, numTrees);
-      RF2learner->setVerbosity(verbosityDetailed);
+      // create RF learner
+      SolverPtr rfLearner = treeLearner(splittingCriterion, exhaustive); 
+      rfLearner = baggingLearner(rfLearner, numTrees);
+      rfLearner->setVerbosity(verbosityDetailed);
       
       
-      // make XT learner
-      SamplerPtr XTexpressionVectorSampler = scalarExpressionVectorSampler();
-      SolverPtr XTconditionLearner = randomSplitConditionLearner(XTexpressionVectorSampler);
-      //conditionLearner->setVerbosity((SolverVerbosity)verbosity);
-      SolverPtr XTlearner = treeLearner(stddevReductionSplittingCriterion(), XTconditionLearner); 
-      //learner->setVerbosity((SolverVerbosity)verbosity);
-      XTlearner = simpleEnsembleLearner(XTlearner, numTrees);
-      XTlearner->setVerbosity(verbosityDetailed);
+      // create XT learner
+      // these trees should choose random splits 
+      SolverPtr xtLearner = treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)); 
+      xtLearner = simpleEnsembleLearner(xtLearner, numTrees);
+      xtLearner->setVerbosity(verbosityDetailed);
       
       
+      // put learners in a vector
       std::vector<SolverPtr> solvers;
       
-      solvers.push_back(DTlearner);
-      solvers.push_back(RFlearner);
-      solvers.push_back(RF2learner);
-      solvers.push_back(XTlearner);
+      solvers.push_back(dtLearner);
+      solvers.push_back(rfLearner);
+      solvers.push_back(xtLearner);
       
       
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
       
+      TablePtr testTable = makeTestTable(domain->getInput(0));
+
       
       for (size_t i = 0; i < solvers.size(); i++)
       {
@@ -88,71 +112,61 @@ namespace lbcpp
         context.leaveScope();
         context.resultCallback("model", model);
         context.resultCallback("fitness", fitness);      
-        context.resultCallback("data",problemData);
+        context.resultCallback("data", problemData);
         // evaluate
         double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
         context.resultCallback("testingScore", testingScore);
         
         // make curve
         context.enterScope("test");
-        for (double x = -1.0; x <= 1.0; x += 0.01)
+        
+        VectorPtr predictions = model->compute(context, testTable)->getVector();
+        context.resultCallback("predictions", predictions);
+        
+        double x = -1.0;
+        for (size_t i = 0; i < 200; ++i, x += 0.01)
         {
           context.enterScope(string(x));
           context.resultCallback("x", x);
-          context.resultCallback("supervision", targetFunction(x));
-          
-          double found = 0.0;
-          for (size_t r = 0; r < problemData->getNumRows() && !found; r++)
+         
+          for (size_t j = 0; j < numObjectives; ++j)
           {
-            if (fabs(Double::get(problemData->getElement(r,0)) - x) < 0.01)
+            context.resultCallback("supervision" + string((int)j), targetFunction(x, moFunctionIdx[j]));
+          
+            bool found = false;
+            for (size_t r = 0; r < problemData->getNumRows() && !found; r++)
             {
-              found = Double::get(problemData->getElement(r,1));
-            }
-          }
-
-          context.resultCallback("examples",found);
-
-          
-          ObjectPtr input = new Double(x);
-          
-          
-          AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
-          if (ensemble)  // it's an ensemble
-          {
-            ScalarVariableStatisticsPtr prediction = model->compute(context, &input).staticCast<ScalarVariableStatistics>();
-            double pred = prediction->getMean();
-            double stddev = prediction->getStandardDeviation();
-            context.resultCallback("prediction", pred);
-            context.resultCallback("stddevUp", pred + stddev);
-            context.resultCallback("stddevDown", pred - stddev);
-          }
-          else
-          {
-            ObjectPtr prediction = model->compute(context, &input);
-            context.resultCallback("prediction",prediction);
-          }
-
-          // this can be used as an argument to resultcallback
-          // ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("some name");
-          /*AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
-          if (ensemble)  // it's an ensemble
-          {
-            const std::vector<ExpressionPtr>& trees = ensemble->getNodes();
-            ScalarVariableStatistics stats;
-            for (size_t j = 0; j < numTrees; j++)
-            {
-              double treepred = Double::get(trees[j]->compute(context, &input));
-              //context.resultCallback("tree" + string((int)j), treepred);
-              stats.push(treepred);
+              if (fabs(Double::get(problemData->getElement(r,0)) - x) < 0.005)
+              {
+                found = true;
+                ObjectPtr supervision = problemData->getElement(r, 1);
+                context.resultCallback("examples" + string((int)j), getIthValue(supervision, j));
+              }
             }
             
-            double stddev = stats.getStandardDeviation();
-            double pred = Double::get(prediction);
-            //context.resultCallback("predcheck", stats.getMean());
-            context.resultCallback("stddevUp", pred + stddev);
-            context.resultCallback("stddevDown", pred - stddev);
-          }*/
-          
+            AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
+            if (ensemble)  // it's an ensemble
+            {
+              ScalarVariableStatisticsPtr prediction;
+              if (numObjectives == 1)
+                prediction = predictions->getElement(i).staticCast<ScalarVariableStatistics>();
+              else
+              {
+                OVectorPtr multiPrediction = predictions->getElement(i).staticCast<OVector>();
+                prediction = multiPrediction->getAndCast<ScalarVariableStatistics>(j);
+              }
+              double pred = prediction->getMean();
+              double stddev = prediction->getStandardDeviation();
+              context.resultCallback("prediction" + string((int)j), pred);
+              context.resultCallback("stddevUp" + string((int)j), pred + stddev);
+              context.resultCallback("stddevDown" + string((int)j), pred - stddev);
+
+            }
+            else
+            {
+              context.resultCallback("prediction" + string((int)j), getIthValue(predictions->getElement(i), j));
+            }
+          }
           context.leaveScope();
         }
         context.leaveScope();
@@ -167,17 +181,33 @@ namespace lbcpp
     
     size_t numSamples;
     size_t numTrees;
+    size_t numObjectives;
     
-  private:  
-    ProblemPtr makeProblem(ExecutionContext& context)
+  private:
+    
+    std::vector<size_t> moFunctionIdx;
+    
+    double getIthValue(ObjectPtr object, size_t i) const
+      {return (numObjectives == 1 ? Double::get(object) : object.staticCast<DenseDoubleVector>()->getValue(i));}
+      
+    ProblemPtr makeProblem(ExecutionContext& context, ExpressionDomainPtr domain)
     {
       ProblemPtr res = new Problem();
-      ExpressionDomainPtr domain = new ExpressionDomain();
-      VariableExpressionPtr x = domain->addInput(doubleClass, "x");
-      VariableExpressionPtr y = domain->createSupervision(doubleClass, "y");
+      
+      VariableExpressionPtr x = domain->getInput(0);
+      VariableExpressionPtr y = domain->getSupervision();
+      
       res->setDomain(domain);
-      res->addObjective(normalizedRMSERegressionObjective(makeTable(context, numSamples, x, y), y));
-      res->addValidationObjective(normalizedRMSERegressionObjective(makeTable(context, 101, x, y), y));
+
+      if (numObjectives == 1) {
+        res->addObjective(mseRegressionObjective(makeTable(context, numSamples, x, y), y));
+        res->addValidationObjective(mseRegressionObjective(makeTable(context, 101, x, y), y));
+      }
+      else
+      {
+        res->addObjective(mseMultiRegressionObjective(makeTable(context, numSamples, x, y), y));
+        res->addValidationObjective(mseMultiRegressionObjective(makeTable(context, 101, x, y), y));
+      }
       return res;
     }
     
@@ -185,21 +215,58 @@ namespace lbcpp
     {
       TablePtr res = new Table(count);
       res->addColumn(x, doubleClass);
-      res->addColumn(y, doubleClass);
+      res->addColumn(y, y->getType());
       RandomGeneratorPtr random = context.getRandomGenerator();
       for (size_t i = 0; i < count; ++i)
       {
         double x = random->sampleDouble(-1.0,1.0);
         res->setElement(i, 0, new Double(x));
-        double y = targetFunction(x);
-        res->setElement(i, 1, new Double(y));
+        
+        if (numObjectives == 1)
+        {
+          double y = targetFunction(x, moFunctionIdx[i]);
+          res->setElement(i, 1, new Double(y));
+        }
+        else
+        {
+          DenseDoubleVectorPtr targetVector(new DenseDoubleVector(y->getType()));
+          for (size_t j = 0; j < numObjectives; ++j)
+            targetVector->setValue(j, targetFunction(x, moFunctionIdx[j]));
+          res->setElement(i, 1, targetVector);
+        }
       }
       return res;
     }
     
-    double targetFunction(double x)
+    TablePtr makeTestTable(VariableExpressionPtr xVariable) const
     {
-      return (- x * x + 1);
+      TablePtr res = new Table(200);
+      res->addColumn(xVariable, xVariable->getType());
+      double x = -1.0;
+      for (size_t i = 0; i < res->getNumRows(); ++i)
+      {
+        res->setElement(i, 0, new Double(x));
+        x += 0.01;
+      }
+      return res;
+    }
+    
+    double targetFunction(double x, size_t functionIndex)
+    {
+      double x2 = x * x;
+      switch (functionIndex)
+      {
+        case 0: return x * x2 + x2 + x;
+        case 1: return sin(x2) * cos(x) - 1.0;
+        case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+        case 3: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+        case 4: return x2 * x2 + x * x2 + x2 + x;
+        case 5: return sin(x) + sin(x + x2);
+        case 6: return log(x + 2) + log(x2 + 1);
+        case 7: return sqrt(2 + x);
+      }
+      jassert(false);
+      return 0.0;
     }
   };
   

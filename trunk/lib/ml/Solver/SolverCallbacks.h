@@ -58,7 +58,7 @@ protected:
 class StoreBestFitnessSolverCallback : public SolverCallback
 {
 public:
-  StoreBestFitnessSolverCallback(FitnessPtr& bestFitness) : res(res) {}
+  StoreBestFitnessSolverCallback(FitnessPtr& bestFitness) : res(bestFitness) {}
   StoreBestFitnessSolverCallback() : res(*(FitnessPtr* )0) {}
 
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)

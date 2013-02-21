@@ -29,7 +29,7 @@ public:
   // compute for a batch of instances
   virtual DataVectorPtr compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const;
 
-  virtual ObjectPtr startAggregation(const IndexSetPtr& indices, ClassPtr outputType) const = 0;
+  virtual ObjectPtr startAggregation(const IndexSetPtr& indices, ClassPtr inputsType, ClassPtr outputType) const = 0;
   virtual void updateAggregation(const ObjectPtr& data, const DataVectorPtr& inputs) const = 0;
   virtual DataVectorPtr finalizeAggregation(const ObjectPtr& data) const = 0;
 };
@@ -39,6 +39,7 @@ typedef ReferenceCountedObjectPtr<Aggregator> AggregatorPtr;
 extern AggregatorPtr meanDoubleAggregator();
 extern AggregatorPtr statisticsDoubleAggregator();
 extern AggregatorPtr meanDoubleVectorAggregator();
+extern AggregatorPtr statisticsDoubleVectorAggregator();
 
 }; /* namespace lbcpp */
 

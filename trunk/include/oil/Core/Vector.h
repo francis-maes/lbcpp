@@ -40,8 +40,8 @@ public:
   virtual void clear() = 0;
   virtual void reserve(size_t size) = 0;
   virtual void resize(size_t size) = 0;
-  virtual void prepend(const ObjectPtr& value) = 0;
-  virtual void append(const ObjectPtr& value) = 0;
+  virtual void prependElement(const ObjectPtr& value) = 0;
+  virtual void appendElement(const ObjectPtr& value) = 0;
   virtual void remove(size_t index) = 0;
   virtual size_t getNumElements() const = 0;
   virtual ObjectPtr getElement(size_t index) const = 0;
@@ -94,10 +94,10 @@ public:
   virtual void resize(size_t size)
     {v.resize(size, ExactClass::missingValue);}
 
-  virtual void prepend(const ObjectPtr& value)
+  virtual void prependElement(const ObjectPtr& value)
     {v.insert(v.begin(), objectToNative(value));}
 
-  virtual void append(const ObjectPtr& value)
+  virtual void appendElement(const ObjectPtr& value)
     {v.push_back(objectToNative(value));}
 
   virtual void remove(size_t index)

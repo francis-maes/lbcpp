@@ -19,5 +19,9 @@
   <class name="MeanDoubleVectorAggregator" base="Aggregator">
     <constructor/>
   </class>
-  
+
+  <!-- DoubleVector Statistics -->
+  <class name="StatisticsDoubleVectorAggregator" base="Aggregator">
+    <constructor/>
+  </class>
 </library>

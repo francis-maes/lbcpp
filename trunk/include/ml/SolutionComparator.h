@@ -20,7 +20,7 @@ public:
   virtual void initialize(const SolutionContainerPtr& solutions) = 0;
 
   // returns -1 if solution1 is prefered, +1 if solution2 is prefered and 0 if there is no preference between the two solutions
-  virtual int compare(size_t index1, size_t index2) = 0;
+  virtual int compareSolutions(size_t index1, size_t index2) = 0;
 };
 
 extern SolutionComparatorPtr objectiveComparator(size_t index);
