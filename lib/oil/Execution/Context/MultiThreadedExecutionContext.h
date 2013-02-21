@@ -355,8 +355,8 @@ public:
   virtual bool isPaused() const
     {return false;}
  
-  virtual ObjectPtr run(const WorkUnitPtr& workUnit)
-    {return ExecutionContext::run(workUnit);}
+  virtual ObjectPtr run(const WorkUnitPtr& workUnit, bool pushIntoStack = true)
+    {return ExecutionContext::run(workUnit, pushIntoStack);}
   
   static void startParallelRun(ExecutionContext& context, CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, ObjectPtr& result)
   {

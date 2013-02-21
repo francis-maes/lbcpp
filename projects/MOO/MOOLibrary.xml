@@ -27,6 +27,7 @@
   <class name="TestRandomForestUncertainties" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numObjectives"/>
   </class>
   
   <!-- FQI Based Solver -->

@@ -40,10 +40,11 @@ public:
     res->reserveNodes(ensembleSize);
     
     // start aggregations for training and validation data
-    ObjectPtr trainingData = aggregator->startAggregation(objective->getIndices(), outputType);
+    ClassPtr inputsType = supervisionType; // FIXME: not correct in the case of multi-class classification with supervisionType = Enumeration
+    ObjectPtr trainingData = aggregator->startAggregation(objective->getIndices(), inputsType, outputType);
     ObjectPtr validationData;
     if (validationObjective && verbosity >= verbosityDetailed)
-      validationData = aggregator->startAggregation(validationObjective->getIndices(), outputType);
+      validationData = aggregator->startAggregation(validationObjective->getIndices(), inputsType, outputType);
     
     // build ensemble
     for (size_t i = 0; i < ensembleSize; ++i)
@@ -99,7 +100,7 @@ protected:
     else if (supervisionType.isInstanceOf<Enumeration>())
       return std::make_pair(meanDoubleVectorAggregator(), denseDoubleVectorClass(supervisionType.staticCast<Enumeration>(), doubleClass));
     else if (supervisionType->inheritsFrom(denseDoubleVectorClass()))
-      return std::make_pair(meanDoubleVectorAggregator(), supervisionType);
+      return std::make_pair(statisticsDoubleVectorAggregator(), vectorClass(scalarVariableStatisticsClass));
     else
     {
       jassertfalse; // not implemented yet

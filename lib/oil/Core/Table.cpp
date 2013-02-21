@@ -41,7 +41,7 @@ void Table::addRow(const std::vector<ObjectPtr>& elements)
   {
     const ObjectPtr& element = elements[i];
     jassert(!element || element->getClass()->inheritsFrom(columns[i].type));
-    columns[i].data->append(element);
+    columns[i].data->appendElement(element);
   }
 }
 

@@ -33,7 +33,7 @@ public:
     for (size_t i = 1; i < tournamentSize; ++i)
     {
       size_t candidate = random->sampleSize(n);
-      if (comparator->compare(candidate, best) < 0)
+      if (comparator->compareSolutions(candidate, best) < 0)
         best = candidate;
     }
     return solutions->getSolution(best);

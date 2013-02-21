@@ -102,7 +102,7 @@ DataVectorPtr Aggregator::compute(ExecutionContext& context, const std::vector<D
 {
   if (!inputs.size())
     return DataVectorPtr();
-  ObjectPtr data = startAggregation(inputs[0]->getIndices(), outputType);
+  ObjectPtr data = startAggregation(inputs[0]->getIndices(), inputs[0]->getElementsType(), outputType);
   for (size_t i = 0; i < inputs.size(); ++i)
     updateAggregation(data, inputs[i]);
   return finalizeAggregation(data);

@@ -45,7 +45,7 @@ public:
   };
   typedef ReferenceCountedObjectPtr<AccumulatorData> AccumulatorDataPtr;
 
-  virtual ObjectPtr startAggregation(const IndexSetPtr& indices, ClassPtr outputType) const
+  virtual ObjectPtr startAggregation(const IndexSetPtr& indices, ClassPtr inputsType, ClassPtr outputType) const
     {return new AccumulatorData(indices, outputType);}
 
   virtual void updateAggregation(const ObjectPtr& d, const DataVectorPtr& inputs) const

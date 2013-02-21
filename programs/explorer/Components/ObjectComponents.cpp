@@ -78,6 +78,6 @@ ObjectPtr lbcpp::createSelectionObject(const std::vector<ObjectPtr>& objects)
   VectorPtr res = vector(baseType);
   res->reserve(objects.size());
   for (size_t i = 0; i < objects.size(); ++i)
-    res->append(objects[i]);
+    res->appendElement(objects[i]);
   return res;
 }

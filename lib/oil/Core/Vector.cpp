@@ -284,7 +284,7 @@ int Vector::append(LuaState& state)
 {
   VectorPtr vector = state.checkObject(1, vectorClass()).staticCast<Vector>();
   ObjectPtr value = state.checkObject(2);
-  vector->append(value);
+  vector->appendElement(value);
   return 0;
 }
 

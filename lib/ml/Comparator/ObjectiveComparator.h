@@ -23,7 +23,7 @@ public:
   virtual void initialize(const SolutionContainerPtr& solutions)
     {this->solutions = solutions;}
 
-  virtual int compare(size_t index1, size_t index2)
+  virtual int compareSolutions(size_t index1, size_t index2)
   {
     double value1 = solutions->getFitness(index1)->getValue(index);
     double value2 = solutions->getFitness(index2)->getValue(index);

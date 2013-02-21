@@ -14,7 +14,7 @@ using namespace lbcpp;
 */
 void RecentFileVector::addRecentFile(const juce::File& file)
 {
-  recentFiles->prepend(File::create(file));
+  recentFiles->prependElement(File::create(file));
   for (size_t i = 1; i < recentFiles->getNumElements(); ++i)
     if (getRecentFile(i) == file)
     {

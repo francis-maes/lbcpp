@@ -102,7 +102,7 @@ struct WrapSolutionComparator
   SolutionComparatorPtr comparator;
 
   bool operator()(size_t a, size_t b) const
-    {return comparator->compare(a, b) < 0;}
+    {return comparator->compareSolutions(a, b) < 0;}
 };
 
 SolutionVectorPtr SolutionVector::sort(const SolutionComparatorPtr& comparator, std::vector<size_t>* mapping) const
@@ -140,7 +140,7 @@ int SolutionVector::findBestSolution(const SolutionComparatorPtr& comparator) co
   comparator->initialize(refCountedPointerFromThis(this));
   size_t bestSolutionIndex = 0;
   for (size_t i = 1; i < solutions.size(); ++i)
-    if (comparator->compare(i, bestSolutionIndex) == -1)
+    if (comparator->compareSolutions(i, bestSolutionIndex) == -1)
       bestSolutionIndex = i;
 
   return (int)bestSolutionIndex;
@@ -211,7 +211,7 @@ void SolutionVector::computeParetoRanks(std::vector< std::pair<size_t, size_t> >
   {
     for (size_t j = 0; j < n; ++j)
     {
-      int c = dom->compare(i, j);
+      int c = dom->compareSolutions(i, j);
       if (c == -1)
         dominationIndices[i].push_back(j);
       else if (c == 1)

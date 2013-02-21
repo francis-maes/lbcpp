@@ -743,10 +743,10 @@ void SparseDoubleVector::reserve(size_t size)
 void SparseDoubleVector::resize(size_t size)
   {jassert(false);}
 
-void SparseDoubleVector::prepend(const ObjectPtr& value)
+void SparseDoubleVector::prependElement(const ObjectPtr& value)
   {jassert(false);}
 
-void SparseDoubleVector::append(const ObjectPtr& value)
+void SparseDoubleVector::appendElement(const ObjectPtr& value)
   {jassert(false);}
 
 void SparseDoubleVector::remove(size_t index)
@@ -1183,7 +1183,7 @@ void DenseDoubleVector::resize(size_t size)
   values->resize(size);
 }
 
-void DenseDoubleVector::prepend(const ObjectPtr& value)
+void DenseDoubleVector::prependElement(const ObjectPtr& value)
 {
   // this operation is not permitted
   jassert(false);
@@ -1193,7 +1193,7 @@ void DenseDoubleVector::prepend(const ObjectPtr& value)
 static inline double doubleObjectToDouble(const ObjectPtr& value)
   {jassert(value); return Double::get(value);}
 
-void DenseDoubleVector::append(const ObjectPtr& value)
+void DenseDoubleVector::appendElement(const ObjectPtr& value)
   {values->push_back(doubleObjectToDouble(value));}
 
 void DenseDoubleVector::remove(size_t index)
@@ -1402,10 +1402,10 @@ void CompositeDoubleVector::reserve(size_t size)
 void CompositeDoubleVector::resize(size_t size)
   {}
 
-void CompositeDoubleVector::prepend(const ObjectPtr& value)
+void CompositeDoubleVector::prependElement(const ObjectPtr& value)
   {jassert(false);}
 
-void CompositeDoubleVector::append(const ObjectPtr& value)
+void CompositeDoubleVector::appendElement(const ObjectPtr& value)
   {jassert(false);}
 
 void CompositeDoubleVector::remove(size_t index)
