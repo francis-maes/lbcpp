@@ -19,6 +19,9 @@ namespace lbcpp
 class SimpleModelWorkUnit : public WorkUnit
 {
 public:
+  SimpleModelWorkUnit()
+  : numFolds(5), fold(0) {}
+
   virtual Variable run(ExecutionContext& context)
   {
     ContainerPtr trainingProteins;
@@ -27,7 +30,8 @@ public:
       return false;
 
     SimpleProteinModelPtr m = new SimpleProteinModel(ss3Target);
-    m->pssmWindowSize = 15;
+
+    m->saSegmentProfileSize = 5;
 
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
 
@@ -76,7 +80,7 @@ protected:
     }
     else
     {
-      context.informationCallback(T("No train/test split detected. Fold: ") + String((int)fold) + T(" of ") +  String((int)numFolds) + T("folds"));
+      context.informationCallback(T("No train/test split detected. Fold: ") + String((int)fold) + T(" of ") +  String((int)numFolds));
       ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, numProteinsToLoad, T("Loading proteins"));
       trainingProteins = proteins->invFold(fold, numFolds);
       testingProteins = proteins->fold(fold, numFolds);

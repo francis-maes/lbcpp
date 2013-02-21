@@ -105,6 +105,8 @@ SET(LBCPP_PROTEIN_MODEL_SOURCES
   Model/ProteinMap.h
   Model/ModelFunction.h
   Model/DimericCompositionFunction.h
+  Model/SeparationProfileFunction.h
+  Model/SegmentProfileFunction.h
   Model/SimpleProteinModel.h
   Model/ProteinModelLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinModelLibrary.cpp

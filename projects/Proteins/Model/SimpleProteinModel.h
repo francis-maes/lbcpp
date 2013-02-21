@@ -14,6 +14,8 @@
 # include "ProteinMap.h"
 # include "ModelFunction.h"
 # include "DimericCompositionFunction.h"
+# include "SeparationProfileFunction.h"
+# include "SegmentProfileFunction.h"
 # include "../Predictor/LargeProteinPredictorParameters.h"
 
 namespace lbcpp
@@ -79,9 +81,13 @@ public:
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, dimericComposition);
     }
-    else if (variableName == T("SepProfile[AA]"))
+    else if (variableName.startsWith(T("SepProfile.")))
     {
       function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, separationProfile);
+    }
+    else if (variableName.startsWith(T("SegProfile.")))
+    {
+      function = lbcppMemberCompositeUnlearnableFunction(GetSimpleProteinMapElement, segmentProfile);
     }
     else
       jassertfalse;
@@ -200,12 +206,26 @@ public:
 
   void separationProfile(CompositeFunctionBuilder& builder) const
   {
+    String target = variableName.substring(variableName.indexOfChar(T('.')) + 1);
+
     size_t proteinMap = builder.addInput(proteinMapClass);
     size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
-    size_t sequence = builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
-    builder.addFunction(new CreateSeparationProfileFunction(), sequence, T("SepProfile[AA]"));    
+
+    size_t sequence = builder.addFunction(getVariableFunction(target), protein);
+    builder.addFunction(new CreateSeparationProfileProxyFunction(), sequence, T("SepProfile[") + target + ("]"));    
   }
 
+  void segmentProfile(CompositeFunctionBuilder& builder) const
+  {
+    String target = variableName.substring(variableName.indexOfChar(T('.')) + 1);
+    
+    size_t proteinMap = builder.addInput(proteinMapClass);
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
+
+    size_t sequence = builder.addFunction(getVariableFunction(target), protein);
+    builder.addFunction(new SegmentContainerProxyFunction(), sequence, T("SegProfile[") + target + ("]"));    
+  }
+  
 protected:
   friend class GetSimpleProteinMapElementClass;
 
@@ -243,36 +263,39 @@ public:
   bool saGlobalHistogram;
   bool saDimericProfile;
 
-
-  // ss3GlobalHistogram;
-  // ss3DimericProfile;
-
   /* Residue Feature Parameter */
   bool usePosition;
   bool useRelativePosition;
-  size_t aaSeparationProfileSize;
 
   size_t aaWindowSize;
   size_t aaLocalHistogramSize;
   size_t aaLocalDimericProfileSize;
+  size_t aaSeparationProfileSize;
+  size_t aaSegmentProfileSize;
 
   size_t pssmWindowSize;
   size_t pssmLocalHistogramSize;
   size_t pssmLocalDimericProfileSize;
+  size_t pssmSeparationProfileSize;
+  size_t pssmSegmentProfileSize;
   
   size_t ss3WindowSize;
   size_t ss3LocalHistogramSize;
   size_t ss3LocalDimericProfileSize;
-  // ss3LocalDimericProfileSize;
-  // ss3SegmentProfileSize;
+  size_t ss3SeparationProfileSize;
+  size_t ss3SegmentProfileSize;
 
   size_t drWindowSize;
   size_t drLocalHistogramSize;
   size_t drLocalDimericProfileSize;
+  size_t drSeparationProfileSize;
+  size_t drSegmentProfileSize;
 
   size_t saWindowSize;
   size_t saLocalHistogramSize;
   size_t saLocalDimericProfileSize;
+  size_t saSeparationProfileSize;
+  size_t saSegmentProfileSize;
 
   SimpleProteinModel(ProteinTarget target = noTarget)
     : ProteinModel(target),
@@ -304,28 +327,36 @@ public:
     /* Residue Feature Parameter */
       usePosition(false),
       useRelativePosition(false),
-      aaSeparationProfileSize(0),
 
       aaWindowSize(0),
       aaLocalHistogramSize(0),
       aaLocalDimericProfileSize(0),
+      aaSeparationProfileSize(0),
+      aaSegmentProfileSize(0),
 
       pssmWindowSize(0),
       pssmLocalHistogramSize(0),
       pssmLocalDimericProfileSize(0),
+      pssmSeparationProfileSize(0),
+      pssmSegmentProfileSize(0),
 
       ss3WindowSize(0),
       ss3LocalHistogramSize(0),
       ss3LocalDimericProfileSize(0),
+      ss3SeparationProfileSize(0),
+      ss3SegmentProfileSize(0),
 
       drWindowSize(0),
       drLocalHistogramSize(0),
       drLocalDimericProfileSize(0),
+      drSeparationProfileSize(0),
+      drSegmentProfileSize(0),
 
       saWindowSize(0),
       saLocalHistogramSize(0),
-      saLocalDimericProfileSize(0)
-
+      saLocalDimericProfileSize(0),
+      saSeparationProfileSize(0),
+      saSegmentProfileSize(0)
   {}
 
 protected:
@@ -410,41 +441,56 @@ protected:
                  builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.primaryStructure")), proteinMap, T("Seq[AA]"));
     size_t aaAcc = !aaLocalHistogramSize ? (size_t)-1 :
                     builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.primaryStructure")), proteinMap, T("Acc[AA]"));
+    size_t aaSepPro = !aaSeparationProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile.primaryStructure")), proteinMap);
+    size_t aaSeq = !aaLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
+    size_t aaSegPro = !aaSegmentProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SegProfile.primaryStructure")), proteinMap);
 
     size_t pssm = !pssmWindowSize ? (size_t)-1 :
                    builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.positionSpecificScoringMatrix")), proteinMap, T("Seq[normPSSM]"));
     size_t pssmAcc = !pssmLocalHistogramSize ? (size_t)-1 :
                       builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.positionSpecificScoringMatrix")), proteinMap, T("Acc[PSSM]"));
-    
+    size_t pssmSepPro = !pssmSeparationProfileSize ? (size_t)-1 :
+                         builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile.positionSpecificScoringMatrix")), proteinMap);
+    size_t pssmSeq = !pssmLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("positionSpecificScoringMatrix")), protein);
+    size_t pssmSegPro = !pssmSegmentProfileSize ? (size_t)-1 :
+                         builder.addFunction(new GetSimpleProteinMapElement(T("SegProfile.positionSpecificScoringMatrix")), proteinMap);
+
     size_t ss3 = !ss3WindowSize ? (size_t)-1 :
                   builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.secondaryStructure")), proteinMap, T("Seq[SS3]"));
     size_t ss3Acc = !ss3LocalHistogramSize ? (size_t)-1 :
                      builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.secondaryStructure")), proteinMap, T("Acc[SS3]"));
+    size_t ss3SepPro = !ss3SeparationProfileSize ? (size_t)-1 :
+                        builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile.secondaryStructure")), proteinMap);
+    size_t ss3Seq = !ss3LocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("secondaryStructure")), protein);
+    size_t ss3SegPro = !ss3SegmentProfileSize ? (size_t)-1 :
+                        builder.addFunction(new GetSimpleProteinMapElement(T("SegProfile.secondaryStructure")), proteinMap);
 
     size_t dr = !drWindowSize ? (size_t)-1 :
                  builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.disorderRegions")), proteinMap, T("Seq[DR]"));
     size_t drAcc = !drLocalHistogramSize ? (size_t)-1 :
                     builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.disorderRegions")), proteinMap, T("Acc[DR]"));
+    size_t drSepPro = !drSeparationProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile.disorderRegions")), proteinMap);
+    size_t drSeq = !drLocalDimericProfileSize ? (size_t)-1 :
+                    builder.addFunction(getVariableFunction(T("disorderRegions")), protein);
+    size_t drSegPro = !drSegmentProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SegProfile.disorderRegions")), proteinMap);
 
     size_t sa = !saWindowSize ? (size_t)-1 :
                  builder.addFunction(new GetSimpleProteinMapElement(T("Sequence.solventAccessibilityAt20p")), proteinMap, T("Seq[SA]"));
     size_t saAcc = !saLocalHistogramSize ? (size_t)-1 :
                     builder.addFunction(new GetSimpleProteinMapElement(T("Accumulator.solventAccessibilityAt20p")), proteinMap, T("Acc[SA]"));
-
-    
-    size_t aaSepPro = !aaSeparationProfileSize ? (size_t)-1 :
-                       builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile[AA]")), proteinMap);
-
-    size_t aaSeq = !aaLocalDimericProfileSize ? (size_t)-1 :
-                    builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
-    size_t pssmSeq = !pssmLocalDimericProfileSize ? (size_t)-1 :
-                    builder.addFunction(getVariableFunction(T("positionSpecificScoringMatrix")), protein);
-    size_t ss3Seq = !ss3LocalDimericProfileSize ? (size_t)-1 :
-                    builder.addFunction(getVariableFunction(T("secondaryStructure")), protein);
-    size_t drSeq = !drLocalDimericProfileSize ? (size_t)-1 :
-                    builder.addFunction(getVariableFunction(T("disorderRegions")), protein);
+    size_t saSepPro = !saSeparationProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SepProfile.solventAccessibilityAt20p")), proteinMap);
     size_t saSeq = !saLocalDimericProfileSize ? (size_t)-1 :
                     builder.addFunction(getVariableFunction(T("solventAccessibilityAt20p")), protein);
+    size_t saSegPro = !saSegmentProfileSize ? (size_t)-1 :
+                       builder.addFunction(new GetSimpleProteinMapElement(T("SegProfile.solventAccessibilityAt20p")), proteinMap);
 
     /* Output */
     builder.startSelection();
@@ -478,10 +524,23 @@ protected:
       if (saLocalHistogramSize)
         builder.addFunction(accumulatorLocalMeanFunction(saLocalHistogramSize), saAcc, position, T("h(SA,") + String((int)saLocalHistogramSize) + T(")"));
 
+      // separation profiles
       if (aaSeparationProfileSize)
         for (size_t i = 0; i < standardAminoAcidTypeEnumeration->getNumElements(); ++i)
           builder.addFunction(new GetSeparationProfileFunction(i, aaSeparationProfileSize), aaSepPro, position, T("SepProfile[AA]"));
-
+      if (pssmSeparationProfileSize)
+        for (size_t i = 0; i < positionSpecificScoringMatrixEnumeration->getNumElements(); ++i)
+          builder.addFunction(new GetSeparationProfileFunction(i, pssmSeparationProfileSize), pssmSepPro, position, T("SepProfile[PSSM]"));
+      if (ss3SeparationProfileSize)
+        for (size_t i = 0; i < secondaryStructureElementEnumeration->getNumElements(); ++i)
+          builder.addFunction(new GetSeparationProfileFunction(i, ss3SeparationProfileSize), ss3SepPro, position, T("SepProfile[SS3]"));
+      if (drSeparationProfileSize)
+        for (size_t i = 0; i < falseOrTrueEnumeration->getNumElements(); ++i)
+          builder.addFunction(new GetSeparationProfileFunction(i, drSeparationProfileSize), drSepPro, position, T("SepProfile[DR]"));
+      if (saSeparationProfileSize)
+        for (size_t i = 0; i < falseOrTrueEnumeration->getNumElements(); ++i)
+          builder.addFunction(new GetSeparationProfileFunction(i, saSeparationProfileSize), saSepPro, position, T("SepProfile[SA]"));
+      
       // dimeric local profiles
       if (aaLocalDimericProfileSize)
         builder.addFunction(new LocalDimericCompositionProxyFunction(aaLocalDimericProfileSize), aaSeq, position, T("Di(AA,") + String((int)aaLocalHistogramSize) + T(")"));
@@ -493,6 +552,17 @@ protected:
         builder.addFunction(new LocalDimericCompositionProxyFunction(drLocalDimericProfileSize), drSeq, position, T("Di(DR,") + String((int)drLocalHistogramSize) + T(")"));
       if (saLocalDimericProfileSize)
         builder.addFunction(new LocalDimericCompositionProxyFunction(saLocalDimericProfileSize), saSeq, position, T("Di(SA,") + String((int)saLocalHistogramSize) + T(")"));
+
+      if (aaSegmentProfileSize)
+        builder.addFunction(new LocalSegmentProfileFunction(aaSegmentProfileSize), aaSegPro, position, T("Segment(AA,") + String((int)aaSegmentProfileSize) + T(")"));
+      if (pssmSegmentProfileSize)
+        builder.addFunction(new LocalSegmentProfileFunction(pssmSegmentProfileSize), pssmSegPro, position, T("Segment(PSSM,") + String((int)pssmSegmentProfileSize) + T(")"));
+      if (ss3SegmentProfileSize)
+        builder.addFunction(new LocalSegmentProfileFunction(ss3SegmentProfileSize), ss3SegPro, position, T("Segment(SS3,") + String((int)ss3SegmentProfileSize) + T(")"));
+      if (drSegmentProfileSize)
+        builder.addFunction(new LocalSegmentProfileFunction(drSegmentProfileSize), drSegPro, position, T("Segment(DR,") + String((int)drSegmentProfileSize) + T(")"));
+      if (saSegmentProfileSize)
+        builder.addFunction(new LocalSegmentProfileFunction(saSegmentProfileSize), saSegPro, position, T("Segment(SA,") + String((int)saSegmentProfileSize) + T(")"));
 
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }

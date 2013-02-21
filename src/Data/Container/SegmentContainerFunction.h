@@ -108,6 +108,9 @@ public:
   virtual void setElement(size_t index, const Variable& value)
     {jassert(false);}
 
+  size_t getSegmentIndex(size_t elementIndex) const
+    {jassert(elementIndex < elementToSegmentIndex.size()); return elementToSegmentIndex[elementIndex];}
+
   void appendSegment(size_t beginIndex, size_t endIndex, const Variable& value)
   {
     jassert(beginIndex < endIndex && endIndex <= elementToSegmentIndex.size());
@@ -121,6 +124,8 @@ private:
   std::vector<impl::Segment> segments;
 };
 
+typedef ReferenceCountedObjectPtr<SegmentContainer> SegmentContainerPtr;
+
 /*
 ** SegmentContainerFunction
 */
@@ -132,16 +137,13 @@ public:
     {return 1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return containerClass(anyType);}
+    {return containerClass(getInputElementsType());}
 
   virtual String getOutputPostFix() const
     {return T("Segmented");}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    TypePtr elementsType = Container::getTemplateParameter(inputVariables[0]->getType());
-    return segmentContainerClass(elementsType);
-  }
+    {return segmentContainerClass(getOutputEnumeration(inputVariables[0]->getType()));}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
@@ -153,10 +155,10 @@ public:
     size_t beginIndex = 0;
     while (beginIndex < n)
     {
-      Variable value = container->getElement(beginIndex);
+      Variable value = getValue(container->getElement(beginIndex));
       size_t endIndex;
       for (endIndex = beginIndex + 1; endIndex < n; ++endIndex)
-        if (container->getElement(endIndex) != value)
+        if (getValue(container->getElement(endIndex)) != value)
           break;
       res->appendSegment(beginIndex, endIndex, value);
       beginIndex = endIndex;
@@ -167,7 +169,14 @@ public:
 protected:
   friend class SegmentContainerFunctionClass;
 
-  TypePtr elementsType;
+  virtual TypePtr getInputElementsType() const
+    {return anyType;}
+
+  virtual EnumerationPtr getOutputEnumeration(const TypePtr& inputType)
+    {return Container::getTemplateParameter(inputType);}
+
+  virtual Variable getValue(const Variable& v) const
+    {return v;}
 };
 
 }; /* namespace lbcpp */

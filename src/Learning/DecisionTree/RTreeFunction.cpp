@@ -14,6 +14,8 @@
 #define LOAD_MULTIREGR
 #define LOAD_OK3
 
+#define X3_PRINT_ATTRIBUTES
+
 static void rtree_update_progression(size_t, size_t);
 static void context_result(const String&, double);
 
@@ -581,10 +583,14 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
         value = (CORETABLE_TYPE)objVariable.getInteger();
       else
         jassertfalse;
-//      std::cout << value << " ";
+# ifdef X3_PRINT_ATTRIBUTES && JUCE_MAC && JUCE_DEBUG
+      std::cout << value << " ";
+# endif
       core_table[nb_obj_in_core_table * j + i] = value;
     }
-//    std::cout << std::endl;
+# ifdef X3_PRINT_ATTRIBUTES && JUCE_MAC && JUCE_DEBUG
+    std::cout << std::endl;
+# endif
   }
 
   length_attribute_descriptors = nb_attributes;

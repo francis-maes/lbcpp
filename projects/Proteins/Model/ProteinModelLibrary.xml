@@ -57,49 +57,54 @@
     <!-- Residue Parameters -->
     <variable type="Boolean" name="usePosition"/>
     <variable type="Boolean" name="useRelativePosition"/>
-    <variable type="PositiveInteger" name="aaSeparationProfileSize"/>
 
     <variable type="PositiveInteger" name="aaWindowSize"/>
     <variable type="PositiveInteger" name="aaLocalHistogramSize"/>
     <variable type="PositiveInteger" name="aaLocalDimericProfileSize"/>
+    <variable type="PositiveInteger" name="aaSeparationProfileSize"/>
+    <variable type="PositiveInteger" name="aaSegmentProfileSize"/>
 
     <variable type="PositiveInteger" name="pssmWindowSize"/>
     <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
     <variable type="PositiveInteger" name="pssmLocalDimericProfileSize"/>
+    <variable type="PositiveInteger" name="pssmSeparationProfileSize"/>
+    <variable type="PositiveInteger" name="pssmSegmentProfileSize"/>
 
     <variable type="PositiveInteger" name="ss3WindowSize"/>
     <variable type="PositiveInteger" name="ss3LocalHistogramSize"/>
     <variable type="PositiveInteger" name="ss3LocalDimericProfileSize"/>
+    <variable type="PositiveInteger" name="ss3SeparationProfileSize"/>
+    <variable type="PositiveInteger" name="ss3SegmentProfileSize"/>
 
     <variable type="PositiveInteger" name="drWindowSize"/>
     <variable type="PositiveInteger" name="drLocalHistogramSize"/>
     <variable type="PositiveInteger" name="drLocalDimericProfileSize"/>
+    <variable type="PositiveInteger" name="drSeparationProfileSize"/>
+    <variable type="PositiveInteger" name="drSegmentProfileSize"/>
 
     <variable type="PositiveInteger" name="saWindowSize"/>
     <variable type="PositiveInteger" name="saLocalHistogramSize"/>
     <variable type="PositiveInteger" name="saLocalDimericProfileSize"/>
+    <variable type="PositiveInteger" name="saSeparationProfileSize"/>
+    <variable type="PositiveInteger" name="saSegmentProfileSize"/>
   </class>
   
 
 
 
   <!-- BEGIN Model Function -->
-  <class name="NumOfEachResidueFunction" base="SimpleUnaryFunction"/>
 
-  <class name="SeparationProfile" base="Object">
-    <variable type="GenericVector[GenericVector[PositiveInteger]]" name="profiles"/>
-  </class>
-  <class name="CreateSeparationProfileFunction" base="SimpleUnaryFunction"/>
-  <class name="GetSeparationProfileFunction" base="Function">
-    <variable type="PositiveInteger" name="index"/>
-    <variable type="PositiveInteger" name="windowSize"/>
-  </class>
+  <class name="NumOfEachResidueFunction" base="SimpleUnaryFunction"/>
 
   <class name="EnsureProteinTargetIsComputedFunction" base="SimpleUnaryFunction">
     <variable type="VariablesEnumeration[Protein]" name="target"/>
   </class>
+
+  <!-- END Model Function -->
+
   
-  <!-- Dimeric Functions -->
+  <!-- BEGIN Dimeric Functions -->
+
   <class name="DimericCompositionFunction" base="Function" abstract="yes">
     <variable type="PositiveInteger" name="numEnumerationElements"/>
   </class>
@@ -117,6 +122,39 @@
   <class name="ProbabilityLocalDimericCompositionFunction" base="LocalDimericCompositionFunction"/>
   <class name="LocalDimericCompositionProxyFunction" base="ProxyFunction"/>
 
-  <!-- END Model Function -->
+  <!-- END Dimeric Functions -->
 
+  <!-- BEGIN Separation Profile Functions -->
+
+  <class name="SeparationProfile" base="Object">
+    <variable type="GenericVector[GenericVector[PositiveInteger]]" name="profiles"/>
+  </class>
+  <class name="CreateSeparationProfileFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numEnumerationElements"/>
+  </class>
+  <class name="AminoAcidCreateSeparationProfileFunction" base="CreateSeparationProfileFunction"/>
+  <class name="DoubleVectorCreateSeparationProfileFunction" base="CreateSeparationProfileFunction"/>
+  <class name="ProbabilityCreateSeparationProfileFunction" base="CreateSeparationProfileFunction"/>
+  <class name="CreateSeparationProfileProxyFunction" base="ProxyFunction"/>
+
+  <class name="GetSeparationProfileFunction" base="Function">
+    <variable type="PositiveInteger" name="index"/>
+    <variable type="PositiveInteger" name="windowSize"/>
+  </class>
+
+  <!-- END Separation Profile Functions -->
+
+  <!-- BEGIN Segment Profile Function -->
+
+  <class name="AminoAcidSegmentContainerFunction" base="SegmentContainerFunction"/>
+  <class name="DoubleVectorSegmentContainerFunction" base="SegmentContainerFunction"/>
+  <class name="ProbabilitySegmentContainerFunction" base="SegmentContainerFunction"/>
+  <class name="SegmentContainerProxyFunction" base="ProxyFunction"/>
+
+  <class name="LocalSegmentProfileFunction" base="Function">
+    <variable type="PositiveInteger" name="windowSize"/>
+    <variable type="PositiveInteger" name="numEnumerationElements"/>
+  </class>
+
+  <!-- END Segment Profile Function -->
 </library>
