@@ -190,6 +190,8 @@ enum BinaryClassificationScore
   binaryClassificationAreaUnderCurve
 };
 
+extern EnumerationPtr binaryClassificationScoreEnumeration;
+
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
 extern SupervisedEvaluatorPtr binaryClassificationCurveEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false);
