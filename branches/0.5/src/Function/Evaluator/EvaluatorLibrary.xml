@@ -41,33 +41,31 @@
 
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
-    <!-- <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/> -->
+    <variable type="BinaryClassificationScore" name="scoreToMinimize" enumeration="yes"/>
+    <variable type="Double" name="threshold"/>
     <variable type="PositiveInteger" name="truePositive"/>
     <variable type="PositiveInteger" name="falsePositive"/>
     <variable type="PositiveInteger" name="falseNegative"/>
     <variable type="PositiveInteger" name="trueNegative"/>
   </class>
 
-  <class name="ROCScoreObjectElement" base="Object">
+  <class name="BinaryClassificationCurveElement" base="Object">
+    <variable type="Double" name="threshold"/>
+    <variable type="Probability" name="accuracy"/>
     <variable type="Probability" name="falsePositiveRate"/>
     <variable type="Probability" name="recallOrSensitivity"/>
-    <variable type="Probability" name="accuracy"/>
     <variable type="Double" name="f1Score"/>
     <variable type="Probability" name="precision"/>
     <variable type="Probability" name="specificity"/>
     <variable type="Double" name="matthewsCorrelation"/>
   </class>
 
-  <class name="ROCScoreObject" base="ScoreObject">
-    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
-    <variable type="Double" name="bestThreshold"/>
-    <variable type="Double" name="bestThresholdScore"/>
+  <class name="BinaryClassificationCurveScoreObject" base="ScoreObject">
+    <variable type="BinaryClassificationScore" name="scoreToMinimize" enumeration="yes"/>
     <variable type="BinaryClassificationConfusionMatrix" name="bestConfusionMatrix"/>
     <variable type="GenericVector[BinaryClassificationConfusionMatrix]" name="confusionMatrices"/>
-<!--
-    <variable type="ObjectVector[Pair[Double, Probability]]" name="precision"/>
-    <variable type="ObjectVector[Pair[Double, Probability]]" name="recall"/>
--->
+    <variable type="Double" name="areaUnderCurve"/>
+    <variable type="Double" name="accuracyAt5Fpr"/>
   </class>
 
   <!-- Regression -->
@@ -88,7 +86,7 @@
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
   
-  <class name="ROCAnalysisEvaluator" base="SupervisedEvaluator">
+  <class name="BinaryClassificationCurveEvaluator" base="SupervisedEvaluator">
     <constructor arguments="BinaryClassificationScore scoreToOptimize, bool saveConfusionMatrices"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>

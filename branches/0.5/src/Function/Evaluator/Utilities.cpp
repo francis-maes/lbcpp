@@ -1,39 +1,14 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: Utilities.cpp                  | Utilities for evaluators        |
 | Author  : Julien Becker                  |                                 |
-| Started : 23/02/2011 11:42               |                                 |
+| Started : 22/02/2013 11:33               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "Utilities.h"
-#include <lbcpp/Core/Variable.h>
-#include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
+
 using namespace lbcpp;
-
-/*
-** BinaryClassificationConfusionMatrix
-*/
-BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& other)
-  : scoreToOptimize(other.scoreToOptimize),
-    truePositive(other.truePositive),
-    falsePositive(other.falsePositive),
-    falseNegative(other.falseNegative),
-    trueNegative(other.trueNegative),
-    totalCount(other.totalCount)
-{
-}
-
-BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(BinaryClassificationScore scoreToOptimize)
-  : scoreToOptimize(scoreToOptimize),
-    truePositive(0),
-    falsePositive(0),
-    falseNegative(0),
-    trueNegative(0),
-    totalCount(0)
-{
-}
 
 inline String toFixedLengthString(const String& str, int size)
 {
@@ -47,118 +22,105 @@ inline String toFixedLengthString(const String& str, int size)
   return res;
 }
 
+/*
+** BinaryClassificationConfusionMatrix
+*/
+BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(
+                    BinaryClassificationScore scoreToMinimize, double threshold)
+  : scoreToMinimize(scoreToMinimize), threshold(threshold),
+    truePositive(0), falsePositive(0),
+    falseNegative(0), trueNegative(0),
+    totalCount(0) {}
+
+double BinaryClassificationConfusionMatrix::getScoreToMinimize() const
+{
+  switch (scoreToMinimize)
+  {
+    case binaryClassificationAccuracyScore:
+    case binaryClassificationAreaUnderCurve:
+      return 1.0 - computeAccuracy();
+    case binaryClassificationF1Score:
+      return 1.0 - computeF1Score();
+    case binaryClassificationMCCScore:
+      return 1.0 - computeMatthewsCorrelation();
+    case binaryClassificationSensitivityAndSpecificityScore:
+      return 1.0 - computeSensitivityAndSpecificity();
+    default:
+      jassertfalse;
+  }
+  return DBL_MAX;
+}
+
 String BinaryClassificationConfusionMatrix::toString() const
 {
-  return toFixedLengthString(T("Actual value: "), 20) + toFixedLengthString(T("positive"), 15) + toFixedLengthString(T("negative"), 15) + T("\n") +
-    toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n") +
-    toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n")
-    + T("ACC = ") + String(computeAccuracy() * 100.0, 2)
-    + T("% P = ") + String(computePrecision() * 100.0, 2)
-    + T("% R = ") + String(computeRecall() * 100.0, 2)
-    + T("% F1 = ") + String(computeF1Score() * 100.0, 2)
-    + T("% MCC = ") + String(computeMatthewsCorrelation(), 4) + T("\n");
+  return toFixedLengthString(T("Actual value: "), 20) + toFixedLengthString(T("positive"), 15) + toFixedLengthString(T("negative"), 15) + T("\n")
+         + toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n")
+         + toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n")
+         + T("Accuracy @ ") + String(threshold, 2) + (" = ") + String(computeAccuracy() * 100.0, 2) + T("%")
+         + T("Precision @ ") + String(threshold, 2) + (" = ") + String(computePrecision() * 100.0, 2) + T("%")
+         + T("Recall @ ") + String(threshold, 2) + (" = ") + String(computeRecall() * 100.0, 2) + T("%")
+         + T("F1 @ ") + String(threshold, 2) + (" = ") + String(computeF1Score() * 100.0, 2) + T("%")
+         + T("MCC @ ") + String(threshold, 2) + (" = ") + String(computeMatthewsCorrelation(), 4) + T("\n");
 }
 
-bool BinaryClassificationConfusionMatrix::convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
+void BinaryClassificationConfusionMatrix::addPredictionIfExists(const Variable& predicted, const Variable& correct)
 {
-  if (!variable.exists())
-    return false;
-  if (!lbcpp::convertSupervisionVariableToBoolean(variable, res))
-  {
-    context.errorCallback(T("BinaryClassificationConfusionMatrix::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
-    jassert(false);
-    return false;
-  }
-  return true;
+  if (!correct.exists())
+    return;
+  jassert(predicted.exists());
+  jassert(correct.inheritsFrom(sumType(booleanType, probabilityType)));
+  jassert(predicted.inheritsFrom(sumType(booleanType, probabilityType)));
+  
+  const bool predictedValue = predicted.isBoolean() ? predicted.getBoolean() : predicted.getDouble() >= threshold;
+  const bool correctValue = correct.isBoolean() ? correct.getBoolean() : correct.getDouble() > 0.5f;
+  addPrediction(predictedValue, correctValue);
 }
 
-void BinaryClassificationConfusionMatrix::clear()
-{
-  truePositive = falsePositive = falseNegative = trueNegative = totalCount = 0;
-}
-
-void BinaryClassificationConfusionMatrix::set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative)
-{
-  this->truePositive = truePositive;
-  this->falsePositive = falsePositive;
-  this->falseNegative = falseNegative;
-  this->trueNegative = trueNegative;
-  totalCount = truePositive + falsePositive + falseNegative + trueNegative;
-}
-
-void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool correct, size_t count)
+void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool correct)
 {
   if (predicted)
-    correct ? (truePositive += count) : (falsePositive += count);
+    correct ? ++truePositive : ++falsePositive;
   else
-    correct ? (falseNegative += count) : (trueNegative += count);
-  totalCount += count;
+    correct ? ++falseNegative : ++trueNegative;
+  ++totalCount;
 }
 
-void BinaryClassificationConfusionMatrix::addPredictionIfExists(ExecutionContext& context, const Variable& predicted, const Variable& correct, size_t count)
-{
-  bool p, c;
-  if (convertToBoolean(context, predicted, p) && convertToBoolean(context, correct, c))
-    addPrediction(p, c, count);
-}
-
-void BinaryClassificationConfusionMatrix::removePrediction(bool predicted, bool correct, size_t count)
-{
-  jassert(totalCount);
-  if (predicted)
-    correct ? (truePositive -= count) : (falsePositive -= count);
-  else
-    correct ? (falseNegative -= count) : (trueNegative -= count);
-  totalCount -= count;
-}
-
-size_t BinaryClassificationConfusionMatrix::getCount(bool predicted, bool correct) const
-{
-  return predicted
-    ? (correct ? truePositive : falsePositive)
-    : (correct ? falseNegative : trueNegative);
-}
-
-double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
-{
-  size_t positiveCount = truePositive + falseNegative;
-  size_t negativeCount = falsePositive + trueNegative;
-  
-  size_t predictedPositiveCount = truePositive + falsePositive;
-  size_t predictedNegativeCount = falseNegative + trueNegative;
-  
-  double mccNo = (double)(truePositive * trueNegative) - (double)(falsePositive * falseNegative);
-  double mccDeno = (double)positiveCount * (double)negativeCount * (double)predictedPositiveCount * (double)predictedNegativeCount;
-  return mccDeno ? (mccNo / sqrt(mccDeno)) : mccNo;
-}
 
 double BinaryClassificationConfusionMatrix::computeAccuracy() const
-  {return totalCount ? (truePositive + trueNegative) / (double)totalCount : 0.0;}
-
-void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const
 {
-  precision = (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;
-  recall = (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;
-  f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
+  return totalCount ? (truePositive + trueNegative) / (double)totalCount : 0.0;
 }
 
 double BinaryClassificationConfusionMatrix::computeF1Score() const
 {
   double denom = truePositive + (falseNegative + falsePositive) / 2.0;
-  return denom ? truePositive / (double)denom : 1.0;
+  return denom ? truePositive / denom : 1.0;
 }
 
 double BinaryClassificationConfusionMatrix::computePrecision() const
-  {return (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;}
+{
+  return (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;
+}
 
 double BinaryClassificationConfusionMatrix::computeRecall() const
-  {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
-
-double BinaryClassificationConfusionMatrix::computeSensitivity() const
-  {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
+{
+  return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;
+}
 
 double BinaryClassificationConfusionMatrix::computeSpecificity() const
-  {return (trueNegative || falsePositive) ? trueNegative / (double)(trueNegative + falsePositive) : 0.0;}
+{
+  return (trueNegative || falsePositive) ? trueNegative / (double)(trueNegative + falsePositive) : 0.0;
+}
+
+double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
+{
+  size_t predictedPositiveCount = truePositive + falsePositive;
+  size_t predictedNegativeCount = falseNegative + trueNegative;
+  
+  double mccNo = (truePositive * trueNegative) - (falsePositive * falseNegative);
+  double mccDeno = getPositives() * getNegatives() * predictedPositiveCount * predictedNegativeCount;
+  return mccDeno ? (mccNo / sqrt(mccDeno)) : 0.f;
+}
 
 double BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity() const
 {
@@ -168,15 +130,15 @@ double BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity() c
   if (sum < 10e-6)
     return 0.0;
   return 2 * (sensitivity * specificity) / sum;
-  //return (computeSensitivity() + computeSpecificity() / 2;
 }
 
+/*
 void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
 {
   String res = String((int)truePositive) + T(" ")
-             + String((int)falsePositive) + T(" ")
-             + String((int)falseNegative) + T(" ")
-             + String((int)trueNegative);
+  + String((int)falsePositive) + T(" ")
+  + String((int)falseNegative) + T(" ")
+  + String((int)trueNegative);
   exporter.addTextElement(res);
 }
 
@@ -186,230 +148,157 @@ bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
   tokens.addTokens(importer.getAllSubText(), true);
   if (tokens.size() != 4)
     return false;
-
+  
   Variable v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[0]);
   if (!v.exists())
     return false;
   truePositive = v.getInteger();
-
+  
   v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[1]);
   if (!v.exists())
     return false;
   falsePositive = v.getInteger();
-
+  
   v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[2]);
   if (!v.exists())
     return false;
   falseNegative = v.getInteger();
-
+  
   v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[3]);
   if (!v.exists())
     return false;
   trueNegative = v.getInteger();
-
+  
   totalCount = truePositive + falsePositive + falseNegative + trueNegative;
   return true;
 }
-
-bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassificationConfusionMatrix& other) const
-{return truePositive == other.truePositive && falsePositive == other.falsePositive && 
-  falseNegative == other.falseNegative && trueNegative == other.trueNegative && totalCount == other.totalCount;}
+*/
 
 /*
-** ROCScoreObject
+** BinaryClassificationCurveScoreObject
 */
-void ROCScoreObject::addPrediction(ExecutionContext& context, double predictedScore, bool isPositive)
+BinaryClassificationCurveScoreObject::BinaryClassificationCurveScoreObject(BinaryClassificationScore scoreToMinimize)
+: scoreToMinimize(scoreToMinimize), areaUnderCurve(0.f), accuracyAt5Fpr(0.f)
 {
-  ScopedLock _(lock);
-  isPositive ? ++numPositives : ++numNegatives;
-  std::pair<size_t, size_t>& counters = predictedScores[predictedScore];
-  if (isPositive)
-    ++counters.second;
-  else
-    ++counters.first;
+  thresholds[0.f] = true;
+  thresholds[1.f] = true;
 }
 
-double ROCScoreObject::findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const
+double BinaryClassificationCurveScoreObject::getScoreToMinimize() const
 {
-  ScoreFunction scoreFunction;
-  switch (scoreToOptimize)
-  {
-  case binaryClassificationAccuracyScore:
-    scoreFunction = &BinaryClassificationConfusionMatrix::computeAccuracy;
-    break;
-
-  case binaryClassificationF1Score:
-    scoreFunction = &BinaryClassificationConfusionMatrix::computeF1Score;
-    break;
-
-  case binaryClassificationMCCScore:
-    scoreFunction = &BinaryClassificationConfusionMatrix::computeMatthewsCorrelation;
-    break;
-  
-  case binaryClassificationSensitivityAndSpecificityScore:
-    scoreFunction = &BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity;
-    break;
-
-  default:
-    jassert(false);
-    return 0.0;
-  };
-
-  return findBestThreshold(scoreFunction, bestScore);
+  if (!bestConfusionMatrix)
+    return DBL_MAX;
+  if (scoreToMinimize == binaryClassificationAreaUnderCurve)
+    return 1.f - areaUnderCurve;
+  return bestConfusionMatrix->getScoreToMinimize();
 }
 
-double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
+void BinaryClassificationCurveScoreObject::addPrediction(const Variable& predicted, const Variable& correct)
 {
-  ScopedLock _(lock);
-  
-  //jassert(predictedScores.size());
-  
-  BinaryClassificationConfusionMatrix confusionMatrix;
-  confusionMatrix.set(numPositives, numNegatives, 0, 0);
-  bestScore = (confusionMatrix.*measure)(); 
-  double bestThreshold = predictedScores.size() ? predictedScores.begin()->first - margin : 0.0;
-  
-  BinaryClassificationConfusionMatrix bestMatrix = confusionMatrix;  
-  for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-  {
-    if (it->second.first)
-    {
-      confusionMatrix.removePrediction(true, false, it->second.first);
-      confusionMatrix.addPrediction(false, false, it->second.first);
-    }
-    if (it->second.second)
-    {
-      confusionMatrix.removePrediction(true, true, it->second.second);
-      confusionMatrix.addPrediction(false, true, it->second.second);
-    }
-    jassert(confusionMatrix.getSampleCount() == numPositives + numNegatives);
-    
-    double result = (confusionMatrix.*measure)(); 
-    if (result >= bestScore)
-    {
-      bestScore = result;
-      bestThreshold = getBestThreshold(it, margin);
-      bestMatrix = confusionMatrix;
-    }
-  }
-
-  const_cast<ROCScoreObject*>(this)->bestConfusionMatrix = new BinaryClassificationConfusionMatrix(bestMatrix);
-  const_cast<ROCScoreObject*>(this)->bestThreshold = bestThreshold;
-  bestConfusionMatrix->setName(getName() + T(" confusion matrix"));
-
-#ifdef JUCE_DEBUG
-  BinaryClassificationConfusionMatrix debugMatrix;
-  for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-    if (it->first > bestThreshold)
-    {
-      debugMatrix.addPrediction(true, false, it->second.first);
-      debugMatrix.addPrediction(true, true, it->second.second);
-    }
-    else
-    {
-      debugMatrix.addPrediction(false, false, it->second.first);
-      debugMatrix.addPrediction(false, true, it->second.second);
-    }
-  double debugScore = (debugMatrix.*measure)(); 
-  jassert(debugMatrix == bestMatrix);
-  jassert(debugScore == bestScore);
-#endif // JUCE_DEBUG
-  
-  return bestThreshold;
+  predictions.push_back(std::make_pair(predicted, correct));
+  if (predicted.isDouble())
+    thresholds[predicted.getDouble()] = true;
 }
 
-double ROCScoreObject::getBestThreshold(ScoresMap::const_iterator lastLower, double margin) const
+void BinaryClassificationCurveScoreObject::finalize(bool saveConfusionMatrices)
 {
-  ScoresMap::const_iterator nxt = lastLower;
-  ++nxt;
-  if (nxt == predictedScores.end())
-    return lastLower->first + margin;
-  else
-    return (lastLower->first + nxt->first) / 2.0;
+  // Create one confusion matrix per threshold
+  confusionMatrices.clear();
+  confusionMatrices.reserve(thresholds.size());
+  for (std::map<double, bool>::iterator it = thresholds.begin();
+       it != thresholds.end(); ++it)
+    confusionMatrices.push_back(createBinaryConfusionMatrix(it->first));
+  // Determine the best confusion matrix according to the score to minimize
+  double bestScore = DBL_MAX;
+  for (size_t i = 0; i < confusionMatrices.size(); ++i)
+    if (confusionMatrices[i]->getScoreToMinimize() < bestScore)
+    {
+      bestConfusionMatrix = confusionMatrices[i];
+      bestScore = confusionMatrices[i]->getScoreToMinimize();
+    }
+  // Compute the area under the curve
+  computeAreaUnderCurve();
+
+  // Compute Accuracy at 5% FPR
+  computeAccuracyAt5Fpr();
+
+  if (!saveConfusionMatrices)
+    confusionMatrices.clear();
 }
 
-BinaryClassificationConfusionMatrixPtr ROCScoreObject::findBestSensitivitySpecificityTradeOff() const
+ContainerPtr BinaryClassificationCurveScoreObject::createBinaryClassificationCurveElements() const
 {
-  const size_t n = confusionMatrices.size();
-  if (n == 0)
-    return BinaryClassificationConfusionMatrixPtr();
+  VectorPtr res = vector(binaryClassificationCurveElementClass, confusionMatrices.size());
+  for (size_t i = 0; i < confusionMatrices.size(); ++i)
+    res->setElement(i, new BinaryClassificationCurveElement(confusionMatrices[i]));
+  return res;
+}
 
-  double bestDistance = DBL_MAX;
-  size_t bestIndex = (size_t)-1;
+void BinaryClassificationCurveScoreObject::getAllThresholds(std::vector<double>& result) const
+{
+  result.clear();
+  for (std::map<double, bool>::const_iterator it = thresholds.begin();
+       it != thresholds.end(); ++it)
+    result.push_back(it->first);
+}
+
+BinaryClassificationConfusionMatrixPtr BinaryClassificationCurveScoreObject::createBinaryConfusionMatrix(double threshold) const
+{
+  BinaryClassificationConfusionMatrixPtr res = new BinaryClassificationConfusionMatrix(scoreToMinimize, threshold);
+  const size_t n = predictions.size();
   for (size_t i = 0; i < n; ++i)
-  {
-    double sensitivity = 1 - confusionMatrices[i]->computeRecall();
-    double specificity = 1 - confusionMatrices[i]->computeSpecificity();
-    sensitivity *= sensitivity;
-    specificity *= specificity;
-    const double euclideanDistance = sqrt(sensitivity + specificity);
-    if (euclideanDistance < bestDistance)
-    {
-      bestDistance = euclideanDistance;
-      bestIndex = i;
-    }
-  }
-  jassert(bestIndex != (size_t)-1);
-  return confusionMatrices[bestIndex];
+    res->addPredictionIfExists(predictions[i].first, predictions[i].second);
+  return res;
 }
 
-void ROCScoreObject::finalize(bool saveConfusionMatrices)
+void BinaryClassificationCurveScoreObject::computeAreaUnderCurve()
 {
-  ScopedLock _(lock);
+  std::map<double, double> falsePositiveRates;
+  falsePositiveRates[1.f] = 1.f;
 
-  bestThreshold = findBestThreshold(scoreToOptimize, bestThresholdScore);
+  for (size_t i = 0; i < confusionMatrices.size(); ++i)
+    falsePositiveRates[1.f - confusionMatrices[i]->computeSpecificity()] = confusionMatrices[i]->computeSensitivity();
 
-  if (saveConfusionMatrices)
+  areaUnderCurve = 0.f;
+  accuracyAt5Fpr = 0.f;
+  double prevFpr = 0.f;
+  double prevTpr = 0.f;
+  for (std::map<double, double>::iterator it = falsePositiveRates.begin();
+       it != falsePositiveRates.end(); ++it)
   {
-    BinaryClassificationConfusionMatrix confusionMatrix;
-    confusionMatrix.set(numPositives, numNegatives, 0, 0);
-    for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-    {
-      if (it->second.first)
-      {
-        confusionMatrix.removePrediction(true, false, it->second.first);
-        confusionMatrix.addPrediction(false, false, it->second.first);
-      }
-      if (it->second.second)
-      {
-        confusionMatrix.removePrediction(true, true, it->second.second);
-        confusionMatrix.addPrediction(false, true, it->second.second);
-      }
-      jassert(confusionMatrix.getSampleCount() == numPositives + numNegatives);
-      
-      confusionMatrices.push_back(new BinaryClassificationConfusionMatrix(confusionMatrix));
-    }
+    const double width = it->first - prevFpr;
+    const double height = it->second + prevTpr;
+    // Compute Area Under Curve
+    areaUnderCurve += width * height / 2;
+    prevFpr = it->first;
+    prevTpr = it->second;
   }
-
-  predictedScores.clear();
 }
 
-void ROCScoreObject::getAllThresholds(std::vector<double>& results) const
+void BinaryClassificationCurveScoreObject::computeAccuracyAt5Fpr()
 {
-  const double margin = 1.0;
+  std::map<double, double> falsePositiveRates;
+  falsePositiveRates[1.f] = 1.f;
   
-  if (!predictedScores.size())
-    return;
-
-  BinaryClassificationConfusionMatrix confusionMatrix;
-  confusionMatrix.set(numPositives, numNegatives, 0, 0);
-
-  results.push_back(predictedScores.begin()->first - margin);
+  for (size_t i = 0; i < confusionMatrices.size(); ++i)
+    falsePositiveRates[1.f - confusionMatrices[i]->computeSpecificity()] = confusionMatrices[i]->computeAccuracy();
   
-  for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  accuracyAt5Fpr = 0.f;
+  double prevFpr = 0.f;
+  double prevAccuracy = 0.f;
+  for (std::map<double, double>::iterator it = falsePositiveRates.begin();
+       it != falsePositiveRates.end(); ++it)
   {
-    if (it->second.first)
+    if (it->first >= 0.05f)
     {
-      confusionMatrix.removePrediction(true, false, it->second.first);
-      confusionMatrix.addPrediction(false, false, it->second.first);
+      const double width = it->first - prevFpr;
+      const double deltaHeight = it->second - prevAccuracy;
+      // Compute Accuracy at 5% FPR
+      accuracyAt5Fpr = prevAccuracy + deltaHeight / width * (0.05f - prevFpr);
+      break;
     }
-    if (it->second.second)
-    {
-      confusionMatrix.removePrediction(true, true, it->second.second);
-      confusionMatrix.addPrediction(false, true, it->second.second);
-    }
-    jassert(confusionMatrix.getSampleCount() == numPositives + numNegatives);
-    
-    results.push_back(getBestThreshold(it, margin));
+    prevFpr = it->first;
+    prevAccuracy = it->second;
   }
 }
+

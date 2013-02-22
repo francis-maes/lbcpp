@@ -15,15 +15,16 @@
 namespace lbcpp
 {
 
-class ROCScoreObjectComponent : public Component, public ComponentWithPreferedSize
+class BinaryClassificationCurveScoreObjectComponent : public Component, public ComponentWithPreferedSize
 {
 public:
-  ROCScoreObjectComponent(ROCScoreObjectPtr rocScore, const String& name)
+  BinaryClassificationCurveScoreObjectComponent(BinaryClassificationCurveScoreObjectPtr rocScore, const String& name)
   {
-    addAndMakeVisible(curveEditorComponent = new ContainerCurveEditor(defaultExecutionContext(), rocScore->createROCCurveElements(), createCurveEditorConfiguration()));
+    addAndMakeVisible(curveEditorComponent = new ContainerCurveEditor(defaultExecutionContext(), rocScore->createBinaryClassificationCurveElements(), createCurveEditorConfiguration()));
+
     addAndMakeVisible(confusionMatrixLabel = new juce::Label(T("bestButtonLabel"), T("Best Confusion Matrix: ")));
-    addAndMakeVisible(rocTextButton = new juce::TextButton(T("ROC Curve")));
-    BinaryClassificationConfusionMatrixPtr confusionMatrix = rocScore->findBestSensitivitySpecificityTradeOff();
+    addAndMakeVisible(rocTextButton = new juce::TextButton(T("Area Under Curve: ") + String(rocScore->getAreaUnderCurve(), 3)));
+    BinaryClassificationConfusionMatrixPtr confusionMatrix;// = rocScore->findBestSensitivitySpecificityTradeOff();
     String txt;
     if (confusionMatrix)
       txt = String(confusionMatrix->computeRecall(), 4) + T(" ") + String(confusionMatrix->computeSpecificity(), 4);
@@ -55,7 +56,7 @@ protected:
 
   ContainerCurveEditorConfigurationPtr createCurveEditorConfiguration() const
   {
-    ContainerCurveEditorConfigurationPtr res = new ContainerCurveEditorConfiguration(rocScoreObjectElementClass);
+    ContainerCurveEditorConfigurationPtr res = new ContainerCurveEditorConfiguration(binaryClassificationCurveElementClass);
     res->setXAxis(new PlotAxis(0.0, 1.0, T(""), false));
     res->setYAxis(new PlotAxis(0.0, 1.0, T(""), false));
     return res;

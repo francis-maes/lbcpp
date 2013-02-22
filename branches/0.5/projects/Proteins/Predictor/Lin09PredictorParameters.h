@@ -505,7 +505,7 @@ public:
           return binaryClassificationExtraTree(numTrees, numAttributes, kmin);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
-        classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        classifier->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore));
         return classifier;
       }
     default:

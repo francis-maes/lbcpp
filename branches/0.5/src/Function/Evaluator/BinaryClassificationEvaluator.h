@@ -19,8 +19,9 @@ namespace lbcpp
 class BinaryClassificationEvaluator : public SupervisedEvaluator
 {
 public:
-  BinaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
-    : scoreToOptimize(scoreToOptimize) {}
+  BinaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore,
+                                double threshold = 0.5f)
+    : scoreToOptimize(scoreToOptimize), threshold(threshold) {}
   
   virtual TypePtr getRequiredPredictionType() const
     {return probabilityType;}
@@ -32,18 +33,19 @@ protected:
   friend class BinaryClassificationEvaluatorClass;
   
   BinaryClassificationScore scoreToOptimize;
+  double threshold;
   
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
-    {return new BinaryClassificationConfusionMatrix(scoreToOptimize);}
+    {return new BinaryClassificationConfusionMatrix(scoreToOptimize, threshold);}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
-    {result.staticCast<BinaryClassificationConfusionMatrix>()->addPredictionIfExists(context, predictedObject, correctObject);}
+    {result.staticCast<BinaryClassificationConfusionMatrix>()->addPredictionIfExists(predictedObject, correctObject);}
 };
 
-class ROCAnalysisEvaluator : public SupervisedEvaluator
+class BinaryClassificationCurveEvaluator : public SupervisedEvaluator
 {
 public:
-  ROCAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false)
+  BinaryClassificationCurveEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false)
     : scoreToOptimize(scoreToOptimize), saveConfusionMatrices(saveConfusionMatrices) {}
 
   virtual TypePtr getRequiredPredictionType() const
@@ -53,25 +55,19 @@ public:
     {return booleanType;}
 
 protected:
-  friend class ROCAnalysisEvaluatorClass;
+  friend class BinaryClassificationCurveEvaluatorClass;
 
   BinaryClassificationScore scoreToOptimize;
   bool saveConfusionMatrices;
 
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
-    {return new ROCScoreObject(scoreToOptimize);}
+    {return new BinaryClassificationCurveScoreObject(scoreToOptimize);}
   
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& scores) const
-  {
-    bool isPositive;
-    if (convertSupervisionVariableToBoolean(correct, isPositive))
-      scores.staticCast<ROCScoreObject>()->addPrediction(context, predicted.getDouble(), isPositive);
-    else
-      jassert(false);
-  }
+    {scores.staticCast<BinaryClassificationCurveScoreObject>()->addPrediction(predicted, correct);}
 
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
-    {scores.staticCast<ROCScoreObject>()->finalize(saveConfusionMatrices);}
+    {scores.staticCast<BinaryClassificationCurveScoreObject>()->finalize(saveConfusionMatrices);}
 };
 
 }; /* namespace lbcpp */

@@ -87,15 +87,15 @@ public:
 //    addEvaluator(stalTarget, elementContainerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
 //    addEvaluator(cma8Target, elementContainerSupervisedEvaluator(new ContactMapEvaluator(8)));
 //    addEvaluator(cmb8Target, elementContainerSupervisedEvaluator(new ContactMapEvaluator(8)));
-//    addEvaluator(cbsTarget,  elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
+//    addEvaluator(cbsTarget,  elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
 //    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
 //    addEvaluator(fdsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Symmetric Bonds (Greedy L=6)"));
 //    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), 10), T("Disulfide Bonds (Greedy L=6 & # <= 10)"));
 //    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternBuilder()), 10), T("Disulfide Bonds (Exhaustive & # <= 10)"));
 #endif // 0
 /* Use ProteinEvaluator::addEvaluator outside of default constructor
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
     addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));
     addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));
 */
