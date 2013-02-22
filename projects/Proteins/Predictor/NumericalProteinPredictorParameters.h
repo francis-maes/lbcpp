@@ -480,20 +480,20 @@ public:
     case cbsTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationSensitivityAndSpecificityScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore));
         return res;
       }
     case dsbTarget:
     case drTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationMCCScore));
         return res;
       }
     case sa20Target:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore));
         return res;
       }
 

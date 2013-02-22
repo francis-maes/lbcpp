@@ -111,6 +111,9 @@ protected:
   
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const   ScoreObjectPtr& result) const
   {
+    jassertfalse;
+    // FIXME !!!
+    /*
     const ObjectPtr& predictedObject = predicted.getObject();
     const ObjectPtr& correctObject = correct.getObject();
     MultiLabelClassificationScoreObjectPtr score = result.staticCast<MultiLabelClassificationScoreObject>();
@@ -129,6 +132,7 @@ protected:
     score->pushAccuracy(confusionMatrix.getTruePositives() / (double)(confusionMatrix.getSampleCount() - confusionMatrix.getTrueNegatives()));
     score->pushPrecision(confusionMatrix.computePrecision());
     score->pushRecall(confusionMatrix.computeRecall());
+    */
   }
 };
 

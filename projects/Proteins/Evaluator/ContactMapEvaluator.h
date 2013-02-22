@@ -22,7 +22,7 @@ public:
     : minimumDistance(minimumDistance)
   {
     addEvaluator(classificationEvaluator());
-    addEvaluator(rocAnalysisEvaluator());
+    addEvaluator(binaryClassificationCurveEvaluator());
   }
   ContactMapEvaluator() {}
 

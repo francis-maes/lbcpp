@@ -78,9 +78,9 @@ public:
   {
     const ReferenceCountedObjectPtr<AddConnectivityPatternBiasLearnableFunction>& function = f.staticCast<AddConnectivityPatternBiasLearnableFunction>();
     
-    ROCScoreObject roc;
-    insertToROCScoreObject(context, trainingData, roc);
-    //insertToROCScoreObject(context, validationData, roc);
+    BinaryClassificationCurveScoreObject roc;
+    insertToBinaryClassificationCurveScoreObject(context, trainingData, roc);
+    //insertToBinaryClassificationCurveScoreObject(context, validationData, roc);
     
     if (!roc.getSampleCount())
     {
@@ -131,7 +131,7 @@ public:
   }
   
 protected:  
-  void insertToROCScoreObject(ExecutionContext& context, const std::vector<ObjectPtr>& data, ROCScoreObject& roc) const
+  void insertToBinaryClassificationCurveScoreObject(ExecutionContext& context, const std::vector<ObjectPtr>& data, BinaryClassificationCurveScoreObject& roc) const
   {
     for (size_t i = 0; i < data.size(); ++i)
     {
@@ -143,11 +143,7 @@ protected:
 
       const size_t n = supervision->getNumElements();
       for (size_t j = 0; j < n; ++j)
-      {
-        bool isPositive;
-        if (convertSupervisionVariableToBoolean(supervision->getElement(j), isPositive))
-          roc.addPrediction(context, prediction->getElement(j).getDouble(), isPositive);
-      }
+        roc.addPrediction(prediction->getElement(j), supervision->getElement(j));
     }
   }
   

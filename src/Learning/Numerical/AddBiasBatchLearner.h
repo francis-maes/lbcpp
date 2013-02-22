@@ -34,14 +34,15 @@ public:
       context.warningCallback(T("AddBiasBatchLearner::train"), T("Learning bias using validation data only"));
     const std::vector<ObjectPtr>& data = learnBiasOnValidationData ? validationData : trainingData;
 
-    ROCScoreObject roc;
+    BinaryClassificationCurveScoreObject roc(scoreToOptimize);
     for (size_t i = 0; i < data.size(); ++i)
     {
       const ObjectPtr& example = data[i];
       bool isPositive;
       if (convertSupervisionVariableToBoolean(example->getVariable(1), isPositive))
-        roc.addPrediction(context, example->getVariable(0).getDouble(), isPositive);
+        roc.addPrediction(example->getVariable(0).getDouble(), isPositive);
     }
+    roc.finalize(false);
 
     if (!roc.getSampleCount())
     {
@@ -49,8 +50,8 @@ public:
       return false;
     }
 
-    double bestScore;
-    double bestThreshold = roc.findBestThreshold(scoreToOptimize, bestScore);
+    double bestScore = roc.getScoreToMinimize();
+    double bestThreshold = roc.getBestConfusionMatrix()->getThreshold();
     context.resultCallback(T("Best threshold"), bestThreshold);
     context.resultCallback(T("Best threshold score"), bestScore);
     function->setBias(-bestThreshold);

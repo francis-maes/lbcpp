@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: Utilities.h                    | Utilities for evaluators        |
 | Author  : Julien Becker                  |                                 |
-| Started : 23/02/2011 11:37               |                                 |
+| Started : 23/02/2013 11:33               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -19,48 +19,28 @@ namespace lbcpp
 class BinaryClassificationConfusionMatrix : public ScoreObject
 {
 public:
-  BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& otherMatrix);
-  BinaryClassificationConfusionMatrix(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+  BinaryClassificationConfusionMatrix(BinaryClassificationScore scoreToMinimize = binaryClassificationAccuracyScore,
+                                      double threshold = 0.5f);
 
-  // ScoreObject
-  virtual double getScoreToMinimize() const
-  {
-    switch (scoreToOptimize) {
-      case binaryClassificationAccuracyScore:
-        return 1.0 - computeAccuracy();
-      case binaryClassificationF1Score:
-        return 1.0 - computeF1Score();
-      case binaryClassificationMCCScore:
-        return 1.0 - computeMatthewsCorrelation();
-      case binaryClassificationSensitivityAndSpecificityScore:
-        return 1.0 - computeSensitivityAndSpecificity();
-      default:
-        jassertfalse;
-    }
-    return DBL_MAX;
-  }
-
+  /* ScoreObject */
+  virtual double getScoreToMinimize() const;
   virtual String toString() const;
 
-  static bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res);
-
-  void clear();
-  void set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative);
-  void addPrediction(bool predicted, bool correct, size_t count = 1);
-  void removePrediction(bool predicted, bool correct, size_t count = 1);
-
-  void addPredictionIfExists(ExecutionContext& context, const Variable& predicted, const Variable& correct, size_t count = 1);
+  void addPredictionIfExists(const Variable& predicted, const Variable& correct);
+  void addPrediction(bool predicted, bool correct);
 
   double computeAccuracy() const;
   double computeF1Score() const;
   double computePrecision() const;
   double computeRecall() const;
-  double computeMatthewsCorrelation() const;
-  double computeSensitivity() const;
   double computeSpecificity() const;
+  double computeMatthewsCorrelation() const;
   double computeSensitivityAndSpecificity() const;
-  
-  void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const;
+  double computeSensitivity() const
+    {return computeRecall();}
+
+  double getThreshold() const
+    {return threshold;}
 
   size_t getSampleCount() const
     {return totalCount;}
@@ -77,41 +57,35 @@ public:
   size_t getTrueNegatives() const
     {return trueNegative;}
 
-  size_t getCount(bool predicted, bool correct) const;
-
   size_t getPositives() const
     {return truePositive + falseNegative;}
 
   size_t getNegatives() const
     {return trueNegative + falsePositive;}
-  
-  /* Object */
-  virtual void saveToXml(XmlExporter& exporter) const;
-  virtual bool loadFromXml(XmlImporter& importer);
-
-  bool operator ==(const BinaryClassificationConfusionMatrix& other) const;
-  bool operator !=(const BinaryClassificationConfusionMatrix& other) const
-    {return !(*this == other);}
 
 protected:
   friend class BinaryClassificationConfusionMatrixClass;
 
-  BinaryClassificationScore scoreToOptimize;
+  BinaryClassificationScore scoreToMinimize;
+  double threshold;
 
- // correct: positive   negative
+  // correct: positive   negative
   size_t truePositive, falsePositive; // predicted as positive
   size_t falseNegative, trueNegative; // predicted as negative
 
   size_t totalCount;
 };
+  
 
 typedef ReferenceCountedObjectPtr<BinaryClassificationConfusionMatrix> BinaryClassificationConfusionMatrixPtr;
 
-class ROCScoreObjectElement : public Object
+/* User interface element */
+class BinaryClassificationCurveElement : public Object
 {
 public:
-  ROCScoreObjectElement(const BinaryClassificationConfusionMatrixPtr& confusionMatrix)
+  BinaryClassificationCurveElement(const BinaryClassificationConfusionMatrixPtr& confusionMatrix)
   {
+    threshold = confusionMatrix->getThreshold();
     accuracy = confusionMatrix->computeAccuracy();
     f1Score = confusionMatrix->computeF1Score();
     precision = confusionMatrix->computePrecision();
@@ -121,11 +95,12 @@ public:
     matthewsCorrelation = confusionMatrix->computeMatthewsCorrelation();
   }
 
-  ROCScoreObjectElement() {}
-
 protected:
-  friend class ROCScoreObjectElementClass;
+  friend class BinaryClassificationCurveElementClass;
 
+  BinaryClassificationCurveElement() {}
+
+  double threshold;
   double accuracy;
   double f1Score;
   double precision;
@@ -135,77 +110,50 @@ protected:
   double matthewsCorrelation;
 };
 
-extern ClassPtr rocScoreObjectElementClass;
+extern ClassPtr binaryClassificationCurveElementClass;
+typedef ReferenceCountedObjectPtr<BinaryClassificationCurveElement> BinaryClassificationCurveElementPtr;
 
-class ROCScoreObject : public ScoreObject
+class BinaryClassificationCurveScoreObject : public ScoreObject
 {
 public:
-  ROCScoreObject(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
-    : scoreToOptimize(scoreToOptimize), bestThreshold(0.0), bestThresholdScore(0.0), numPositives(0), numNegatives(0) {}
+  BinaryClassificationCurveScoreObject(BinaryClassificationScore scoreToMinimize = binaryClassificationAccuracyScore);
 
-  virtual double getScoreToMinimize() const
-    {return 1.0 - bestThresholdScore;}
-  
-  typedef double (BinaryClassificationConfusionMatrix::*ScoreFunction)() const;
-
-  void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
+  virtual double getScoreToMinimize() const;
+  void addPrediction(const Variable& predicted, const Variable& correct);
   void finalize(bool saveConfusionMatrices);
-  double findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const;
-  void getAllThresholds(std::vector<double>& results) const;
-  
-  BinaryClassificationConfusionMatrixPtr findBestSensitivitySpecificityTradeOff() const;
 
   size_t getSampleCount() const
-    {ScopedLock _(lock); return numPositives + numNegatives;}
+    {return predictions.size();}
 
-  size_t getNumPositives() const
-    {ScopedLock _(lock); return numPositives;}
-
-  size_t getNumNegatives() const
-    {ScopedLock _(lock); return numNegatives;}
-
-  void clear()
-    {ScopedLock _(lock); predictedScores.clear(); numPositives = numNegatives = 0;}
-
-  virtual String toString() const
-  {
-    if (!getSampleCount())
-      return String::empty;
-    return T("tuned score: ") + String(bestThresholdScore * 100, 2) + T("% threshold = ") + String(bestThreshold);
-  }
+  BinaryClassificationConfusionMatrixPtr getBestConfusionMatrix() const
+    {return bestConfusionMatrix;}
   
-  ContainerPtr createROCCurveElements() const
-  {
-    const size_t n = confusionMatrices.size();
-    ContainerPtr res = vector(rocScoreObjectElementClass, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, new ROCScoreObjectElement(confusionMatrices[i]));
-    return res;
-  }
+  ContainerPtr createBinaryClassificationCurveElements() const;
+  void getAllThresholds(std::vector<double>& result) const;
+
+  double getAreaUnderCurve() const
+    {return areaUnderCurve;}
 
 protected:
-  friend class ROCScoreObjectClass;
-  
-  BinaryClassificationScore scoreToOptimize;
-  double bestThreshold;
-  double bestThresholdScore;
+  friend class BinaryClassificationCurveScoreObjectClass;
 
+  BinaryClassificationScore scoreToMinimize;
+  std::vector<BinaryClassificationConfusionMatrixPtr> confusionMatrices;
   BinaryClassificationConfusionMatrixPtr bestConfusionMatrix;
-  std::vector< BinaryClassificationConfusionMatrixPtr > confusionMatrices;
+  double areaUnderCurve;
+  double accuracyAt5Fpr;
+
+  BinaryClassificationConfusionMatrixPtr createBinaryConfusionMatrix(double threshold) const;
+  void computeAreaUnderCurve();
+  void computeAccuracyAt5Fpr();
 
 private:
-  typedef std::map<double, std::pair<size_t, size_t> > ScoresMap;
-
-  CriticalSection lock;
-  ScoresMap predictedScores;
-  size_t numPositives, numNegatives;
-
-  double getBestThreshold(ScoresMap::const_iterator lastLower, double margin = 1.0) const;
-  double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
+  std::vector< std::pair<Variable, Variable> > predictions;
+  std::map<double, bool> thresholds;
 };
 
-typedef ReferenceCountedObjectPtr<ROCScoreObject> ROCScoreObjectPtr;
+typedef ReferenceCountedObjectPtr<BinaryClassificationCurveScoreObject> BinaryClassificationCurveScoreObjectPtr;
 
-};
+}; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_EVALUATOR_UTILITIES_H_

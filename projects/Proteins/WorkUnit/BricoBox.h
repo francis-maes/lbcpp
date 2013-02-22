@@ -709,7 +709,7 @@ public:
     ContainerPtr testingData;
     //testingData = (new SpaceSeparateDataParser(context, context.getFile(T("/Users/jbecker/Desktop/E2LSH-0.1/mnist1k.q")), features))->load()->randomize();
     testingData = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.test")), features)->load()->randomize();
-    ScoreObjectPtr score = lsh->evaluate(context, testingData, rocAnalysisEvaluator(binaryClassificationAccuracyScore, true), T("Evaluation - Examples: ") + String((int)testingData->getNumElements()));
+    ScoreObjectPtr score = lsh->evaluate(context, testingData, binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore, true), T("Evaluation - Examples: ") + String((int)testingData->getNumElements()));
 
 #if 0
     double sum = 0.f;

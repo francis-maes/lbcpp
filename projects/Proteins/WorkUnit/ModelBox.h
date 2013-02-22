@@ -60,7 +60,8 @@ protected:
 //    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
 //    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
 //    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
-    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DR"), true);
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore, true)), T("DR"), true);
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
 
     return evaluator;
   }
@@ -69,7 +70,7 @@ protected:
   {
     size_t numProteinsToLoad = 0;
 #if JUCE_MAC && JUCE_DEBUG
-    numProteinsToLoad = 10;
+    numProteinsToLoad = 100;
 #endif
 
     if (supervisionDirectory.getChildFile(T("train/")).exists()

@@ -722,12 +722,12 @@ protected:
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator(oxidizedCysteineThreshold);
 /*
     evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
-    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
-    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
+    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
+    evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
 
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DSB Tuned Q2"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("DSB Tuned S&S"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore, true)), T("DSB Tuned Q2"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("DSB Tuned S&S"));
 
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("DSB QP"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"));
@@ -1151,7 +1151,7 @@ protected:
       return DBL_MAX;
     
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    //evaluator->addEvaluator(cbpTarget, rocAnalysisEvaluator(binaryClassificationAccuracyScore, true), T("Cystein Bonding Property (Acc.)"));
+    //evaluator->addEvaluator(cbpTarget, binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore, true), T("Cystein Bonding Property (Acc.)"));
     evaluator->addEvaluator(cbpTarget, binaryClassificationEvaluator(), T("Cystein Bonding Property (Classif.)"));
     
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));

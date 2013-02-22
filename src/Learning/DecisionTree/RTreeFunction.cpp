@@ -14,7 +14,7 @@
 #define LOAD_MULTIREGR
 #define LOAD_OK3
 
-#define X3_PRINT_ATTRIBUTES
+//#define X3_PRINT_ATTRIBUTES
 
 static void rtree_update_progression(size_t, size_t);
 static void context_result(const String&, double);

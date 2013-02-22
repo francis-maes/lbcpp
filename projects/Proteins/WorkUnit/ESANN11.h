@@ -364,13 +364,13 @@ public:
       case drTarget:
       {
         res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationMCCScore));
         break;
       }
       case sa20Target:
       {
         res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore));
         break;
       }
       default:

@@ -886,13 +886,13 @@ public:
     case cbsTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore));
         return res;
       }
     case dsbTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        res->setEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore));
         return res;
       }
 

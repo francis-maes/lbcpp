@@ -186,12 +186,13 @@ enum BinaryClassificationScore
   binaryClassificationAccuracyScore = 0,
   binaryClassificationF1Score,
   binaryClassificationMCCScore,
-  binaryClassificationSensitivityAndSpecificityScore
+  binaryClassificationSensitivityAndSpecificityScore,
+  binaryClassificationAreaUnderCurve
 };
 
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
-extern SupervisedEvaluatorPtr rocAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false);
+extern SupervisedEvaluatorPtr binaryClassificationCurveEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false);
 
 extern SupervisedEvaluatorPtr classificationEvaluator();
 
