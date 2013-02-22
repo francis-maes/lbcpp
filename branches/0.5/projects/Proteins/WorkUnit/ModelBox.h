@@ -29,9 +29,9 @@ public:
     if (!loadProteins(context, trainingProteins, testingProteins))
       return false;
 
-    SimpleProteinModelPtr m = new SimpleProteinModel(ss3Target);
+    SimpleProteinModelPtr m = new SimpleProteinModel(drTarget);
 
-    m->saSegmentProfileSize = 5;
+    m->pssmWindowSize = 15;
 
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
 
@@ -57,9 +57,10 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
-    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
-    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
+//    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
+//    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
+//    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DR"), true);
 
     return evaluator;
   }
