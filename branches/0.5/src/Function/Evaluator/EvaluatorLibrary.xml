@@ -43,10 +43,6 @@
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToMinimize" enumeration="yes"/>
     <variable type="Double" name="threshold"/>
-    <variable type="PositiveInteger" name="truePositive"/>
-    <variable type="PositiveInteger" name="falsePositive"/>
-    <variable type="PositiveInteger" name="falseNegative"/>
-    <variable type="PositiveInteger" name="trueNegative"/>
   </class>
 
   <class name="BinaryClassificationCurveElement" base="Object">

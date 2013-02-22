@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "Utilities.h"
+#include <lbcpp/Core/XmlSerialisation.h>
 
 using namespace lbcpp;
 
@@ -30,7 +31,11 @@ BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(
   : scoreToMinimize(scoreToMinimize), threshold(threshold),
     truePositive(0), falsePositive(0),
     falseNegative(0), trueNegative(0),
-    totalCount(0) {}
+    totalCount(0)
+  {
+    setName(binaryClassificationScoreEnumeration->getElementName(scoreToMinimize)
+           + T(" @ ") + String(threshold, 3));
+  }
 
 double BinaryClassificationConfusionMatrix::getScoreToMinimize() const
 {
@@ -132,18 +137,23 @@ double BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity() c
   return 2 * (sensitivity * specificity) / sum;
 }
 
-/*
 void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
 {
+  ScoreObject::saveToXml(exporter);
+  exporter.enter(T("values"));
   String res = String((int)truePositive) + T(" ")
-  + String((int)falsePositive) + T(" ")
-  + String((int)falseNegative) + T(" ")
-  + String((int)trueNegative);
+             + String((int)falsePositive) + T(" ")
+             + String((int)falseNegative) + T(" ")
+             + String((int)trueNegative);
   exporter.addTextElement(res);
+  exporter.leave();
 }
 
 bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
 {
+  ScoreObject::loadFromXml(importer);
+
+  importer.enter(T("values"));
   StringArray tokens;
   tokens.addTokens(importer.getAllSubText(), true);
   if (tokens.size() != 4)
@@ -170,9 +180,10 @@ bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
   trueNegative = v.getInteger();
   
   totalCount = truePositive + falsePositive + falseNegative + trueNegative;
+  importer.leave();
+
   return true;
 }
-*/
 
 /*
 ** BinaryClassificationCurveScoreObject
@@ -282,7 +293,7 @@ void BinaryClassificationCurveScoreObject::computeAccuracyAt5Fpr()
   
   for (size_t i = 0; i < confusionMatrices.size(); ++i)
     falsePositiveRates[1.f - confusionMatrices[i]->computeSpecificity()] = confusionMatrices[i]->computeAccuracy();
-  
+
   accuracyAt5Fpr = 0.f;
   double prevFpr = 0.f;
   double prevAccuracy = 0.f;

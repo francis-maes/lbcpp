@@ -259,6 +259,14 @@ public:
   virtual void setName(const String& name)
     {this->name = name;}
 
+  virtual void saveToXml(XmlExporter& exporter) const
+  {
+    if (name == T("Unnamed"))
+      const_cast<NameableObject*>(this)->name = String::empty;
+    Object::saveToXml(exporter);
+  }
+
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

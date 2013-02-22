@@ -63,6 +63,10 @@ public:
   size_t getNegatives() const
     {return trueNegative + falsePositive;}
 
+  /* Object */
+  void saveToXml(XmlExporter& exporter) const;
+  bool loadFromXml(XmlImporter& importer);
+
 protected:
   friend class BinaryClassificationConfusionMatrixClass;
 
