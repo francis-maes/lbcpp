@@ -349,20 +349,19 @@ public:
         if (problem->getValidation())
         {
           context.enterScope(T("Validation"));
-          const Variable validationScore;// = context.run(new FunctionWorkUnit(problem->getValidation(), baseObject), false);
+          const Variable validationScore = context.run(new FunctionWorkUnit(problem->getValidation(), baseObject), false);
           iteration->setValidationScore(validationScore);
           saveOptimizerState(context, state);
           context.leaveScope(validationScore);
         }
 
-        if(iteration->getBestScore().toDouble() >= state->getBestScore())
-        {
-          pushIterationIntoStack(context, state, iteration);
+        pushIterationIntoStack(context, state, iteration);
+        //if (iteration->getBestScore().toDouble() >= state->getBestScore())
+        if (numIteration + 1 == 5)
           break;
-        }
       }
-
-      pushIterationIntoStack(context, state, iteration);
+      else
+        pushIterationIntoStack(context, state, iteration);
     }
 
     return state;

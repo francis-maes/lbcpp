@@ -380,8 +380,22 @@
     <variable type="PositiveInteger" name="numFolds" shortName="n"/>
     <variable type="PositiveInteger" name="fold" shortName="f"/>
   </class>
-  <class name="TestSegmentOverlapWorkUnit" base="WorkUnit"/>
+  <class name="ProteinModelLearnerFunction" base="Function">
+    <variable type="String" name="inputDirectory"/>
+    <variable type="String" name="supervisionDirectory"/>
+    <variable type="Boolean" name="isValidation"/>
+  </class>
+  <class name="ProteinModelFeatureFunctionSelectionWorkUnit" base="WorkUnit">
+    <variable type="String" name="inputDirectory" shortName="in"/>
+    <variable type="String" name="supervisionDirectory" shortName="sup"/>
+    <variable type="File" name="optimizerStateFile" shortName="st"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
+    <variable type="String" name="projectName" shortName="p"/>
+    <variable type="String" name="gridName" shortName="g"/>
+    <variable type="PositiveInteger" name="memoryResourceInGb" shortName="mem"/>
+  </class>
   <!-- END ModelBox -->
+
 
 
 

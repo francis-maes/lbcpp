@@ -34,6 +34,12 @@
 
   <!-- Simple Model -->
   <class name="SimpleProteinModel" base="ProteinModel">
+    <!-- Machine Learning -->
+    <variable type="PositiveInteger" name="x3Trees"/>
+    <variable type="PositiveInteger" name="x3Attributes"/>
+    <variable type="PositiveInteger" name="x3Splits"/>
+    <variable type="PositiveInteger" name="x3LowMemory"/>
+
     <!-- Global Parameters -->
     <variable type="Boolean" name="useProteinLength"/>
     <variable type="Boolean" name="useNumCysteines"/>
