@@ -77,6 +77,7 @@ protected:
   virtual void residueFeatures(CompositeFunctionBuilder& builder) const = 0;
 };
 
+extern ClassPtr proteinModelClass;
 typedef ReferenceCountedObjectPtr<ProteinModel> ProteinModelPtr;
 
 class ProteinParallelModel : public CompositeFunction

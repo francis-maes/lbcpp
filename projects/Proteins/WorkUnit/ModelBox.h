@@ -29,7 +29,8 @@ public:
     if (!loadProteins(context, trainingProteins, testingProteins))
       return false;
 
-    SimpleProteinModelPtr m = new SimpleProteinModel(drTarget);
+    ProteinTarget target = drTarget;
+    SimpleProteinModelPtr m = new SimpleProteinModel(target);
 
     m->pssmWindowSize = 15;
 
@@ -38,7 +39,7 @@ public:
     if (outputDirectory != File::nonexistent)
       m->evaluate(context, testingProteins, saveToDirectoryEvaluator(outputDirectory, T(".xml")), T("Saving test predictions to directory"));
 
-    ProteinEvaluatorPtr evaluator = createProteinEvaluator();
+    ProteinEvaluatorPtr evaluator = createEvaluator(target);
     CompositeScoreObjectPtr scores = m->evaluate(context, testingProteins, evaluator, T("EvaluateTest"));
 
     return evaluator->getScoreToMinimize(scores);
@@ -53,18 +54,6 @@ protected:
 
   size_t numFolds;
   size_t fold;
-
-  ProteinEvaluatorPtr createProteinEvaluator() const
-  {
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-//    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
-//    evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
-//    evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
-    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAccuracyScore, true)), T("DR"), true);
-    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
-
-    return evaluator;
-  }
 
   bool loadProteins(ExecutionContext& context, ContainerPtr& trainingProteins, ContainerPtr& testingProteins) const
   {
@@ -96,49 +85,174 @@ protected:
     }
     return true;
   }
+
+  EvaluatorPtr createEvaluator(ProteinTarget target) const
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    if (target == ss3Target)
+    {
+      //evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
+      evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
+      //evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
+    }
+    else if (target == drTarget)
+    {
+      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, false)), T("DR-AUC"), true);
+      //evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
+    }
+    else
+      jassertfalse;
+    
+    return evaluator;
+  }
 };
 
-class TestSegmentOverlapWorkUnit : public WorkUnit
+class ProteinModelLearnerFunction : public Function
 {
 public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    VectorPtr obs = createVectorFromString(T("CEEEEEEEEEEC"));
-    VectorPtr pre = createVectorFromString(T("CCCEEEEEECCC"));
+  ProteinModelLearnerFunction(const String& inputDirectory,
+                              const String& supervisionDirectory,
+                              bool isValidation)
+    : inputDirectory(inputDirectory),
+      supervisionDirectory(supervisionDirectory),
+      isValidation(isValidation) {}
 
-    SupervisedEvaluatorPtr f = new SegmentOverlapEvaluator(secondaryStructureElementEnumeration);
-    ScoreObjectPtr so = f->createEmptyScoreObject(context, FunctionPtr());
-    f->addPrediction(context, pre, obs, so);
-    f->finalizeScoreObject(so, FunctionPtr());
-    
-    std::cout << so->toString() << std::endl;
-    return so;
-  }
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
 
-  VectorPtr createVectorFromString(const String str) const
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return proteinModelClass;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context,
+                                     const std::vector<VariableSignaturePtr>& inputVariables,
+                                     String& outputName, String& outputShortName)
+    {return scalarVariableMeanAndVarianceClass;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    DoubleVectorPtr coil = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
-    coil->setElement(2, 1.f);
-    DoubleVectorPtr helix = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
-    helix->setElement(0, 1.f);
+    ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train/")), context.getFile(supervisionDirectory).getChildFile(T("train/")), 0, T("Loading proteins"));
     
-    VectorPtr res = vector(doubleVectorClass(secondaryStructureElementEnumeration, probabilityType), str.length());
-    for (size_t i = 0; i < (size_t)str.length(); ++i)
+    ProteinModelPtr model = input.getObjectAndCast<ProteinModel>(context);
+    context.resultCallback(T("Model"), model);
+
+    ScalarVariableMeanAndVariancePtr res = new ScalarVariableMeanAndVariance();
+    if (isValidation)
     {
-      switch (str[i])
-      {
-        case T('C'):
-          res->setElement(i, coil);
-          break;
-        case T('E'):
-          res->setElement(i, helix);
-          break;
-        default:
-          jassertfalse;
-      }
+      ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test/")), context.getFile(supervisionDirectory).getChildFile(T("test/")), 0, T("Loading proteins"));
+      res->push(computeFold(context, model, trainingProteins, testingProteins));
     }
+    else
+    {
+      for (size_t i = 0; i < 10; ++i)
+        res->push(computeFold(context, model, trainingProteins->invFold(i, 10), trainingProteins->fold(i, 10)));
+    }
+
     return res;
   }
+
+  double computeFold(ExecutionContext& context, const ProteinModelPtr& model,
+                     const ContainerPtr& trainingProteins, const ContainerPtr& testingProteins) const
+  {
+    ProteinModelPtr clone = model->cloneAndCast<Model>(context);
+
+    if (!clone->train(context, trainingProteins, testingProteins, T("Training")))
+      return 101.f;
+
+    ProteinEvaluatorPtr evaluator = createEvaluator(clone->getProteinTarget());
+    CompositeScoreObjectPtr scores = clone->evaluate(context, testingProteins, evaluator, T("EvaluateTest"));
+    return evaluator->getScoreToMinimize(scores);
+  }
+
+protected:
+  friend class ProteinModelLearnerFunctionClass;
+
+  String inputDirectory;
+  String supervisionDirectory;
+  bool isValidation;
+
+  ProteinModelLearnerFunction() {}
+
+  EvaluatorPtr createEvaluator(ProteinTarget target) const
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    if (target == ss3Target)
+    {
+      //evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Protein"));
+      evaluator->addEvaluator(ss3Target, elementContainerSupervisedEvaluator(classificationEvaluator()), T("SS3-By-Residue"), true);
+      //evaluator->addEvaluator(ss3Target, new SegmentOverlapEvaluator(secondaryStructureElementEnumeration), T("SS3-SegmentOverlap"));
+    }
+    else if (target == drTarget)
+    {
+      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, false)), T("DR-AUC"), true);
+      //evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
+    }
+    else
+      jassertfalse;
+    
+    return evaluator;
+  }
+};
+
+class ProteinModelFeatureFunctionSelectionWorkUnit : public WorkUnit
+{
+public:
+  ProteinModelFeatureFunctionSelectionWorkUnit()
+    : target(noTarget), memoryResourceInGb(0) {}
+  
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (projectName == String::empty)
+    {
+      context.errorCallback(T("Please provide a projet name"));
+      return false;
+    }
+    
+    if (gridName == String::empty)
+    {
+      context.errorCallback(T("Please provide the grid identifier (user@grid)"));
+      return false;
+    }
+
+    if (!memoryResourceInGb)
+    {
+      context.errorCallback(T("Please provide the amout of expected memory (in Gb)"));
+      return false;
+    }
+
+    ExecutionContextPtr remoteContext = distributedExecutionContext(context,
+                                            T("m24.big.ulg.ac.be"), 1664,
+                                            projectName, T("jbecker@screen"), gridName,
+                                            fixedResourceEstimator(1, memoryResourceInGb * 1024, 300), false);
+
+    SimpleProteinModelPtr initialModel = new SimpleProteinModel(target);
+    initialModel->x3Trees = 1000;
+    initialModel->x3Attributes = 0;
+    initialModel->x3Splits = 1;
+
+    OptimizationProblemPtr problem = new OptimizationProblem(
+        new ProteinModelLearnerFunction(inputDirectory, supervisionDirectory, false),
+        initialModel, SamplerPtr(),
+        new ProteinModelLearnerFunction(inputDirectory, supervisionDirectory, true));
+
+    std::vector<StreamPtr> streams;
+    SimpleProteinModel::createStreamsExceptFor(T("dr"), streams);
+
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(streams, optimizerStateFile);
+
+    return optimizer->compute(*remoteContext.get(), problem);
+  }
+
+protected:
+  friend class ProteinModelFeatureFunctionSelectionWorkUnitClass;
+
+  String inputDirectory;
+  String supervisionDirectory;
+  File optimizerStateFile;
+  ProteinTarget target;
+  
+  String projectName;
+  String gridName;
+  size_t memoryResourceInGb;
 };
 
 };

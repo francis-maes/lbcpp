@@ -299,7 +299,7 @@ class GenerateFoldsWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    const String prefix(T("fold_"));
+    const String prefix(T(""));
 
     if (sourceDirectory == File::nonexistent)
       sourceDirectory = File::getCurrentWorkingDirectory();
@@ -314,7 +314,6 @@ public:
       destinationDirectory.getChildFile(dirName).createDirectory();
       destinationDirectory.getChildFile(dirName + T("/test")).createDirectory();
       destinationDirectory.getChildFile(dirName + T("/train")).createDirectory();
-      destinationDirectory.getChildFile(dirName + T("/validation")).createDirectory();
     }
 
     /* List source folder */
@@ -330,7 +329,7 @@ public:
       // testing fold
       toCopy->copyFileTo(destinationDirectory.getChildFile(prefix + String((int)currentFold) + T("/test/") + toCopy->getFileName()));
       // training fold
-      for (size_t j = 0; j < n; ++j)
+      for (size_t j = 0; j < numFolds; ++j)
       {
         if (j == currentFold)
           continue;

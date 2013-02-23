@@ -235,6 +235,8 @@ protected:
   GetSimpleProteinMapElement() {}
 };
 
+extern ClassPtr simpleProteinModelClass;
+
 class SimpleProteinModel : public ProteinModel
 {
 public:
@@ -358,7 +360,7 @@ public:
       saSeparationProfileSize(0),
       saSegmentProfileSize(0)
   {}
-
+  
 protected:
   friend class SimpleProteinModelClass;
 
@@ -434,7 +436,7 @@ protected:
     /* Data */
     size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinMap);
 
-    size_t length = !useRelativePosition ? (size_t)-1 :
+    size_t length = !useRelativePosition && !usePosition ? (size_t)-1 :
                      builder.addFunction(getVariableFunction(T("length")), proteinMap);
 
     size_t aa = !aaWindowSize ? (size_t)-1 :
@@ -496,7 +498,10 @@ protected:
     builder.startSelection();
     {
       if (usePosition)
+      {
         builder.addFunction(integerFeatureGenerator(), position, T("position"));
+        builder.addFunction(new SubtractFunction(), length, position, T("length-position"));        
+      }
       if (useRelativePosition)
         builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("pos/len"));
 
@@ -567,6 +572,89 @@ protected:
       builder.addConstant(new DenseDoubleVector(emptyEnumeration, doubleType, 0, 1.0), T("empty")); // anti-crash
     }
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
+
+public:
+  static void createStreams(std::vector<StreamPtr>& result)
+  {
+    const size_t n = simpleProteinModelClass->getNumMemberVariables();
+    result.clear();
+    result.resize(n);
+    const size_t firstFeatureIndex = simpleProteinModelClass->findMemberVariable(T("useProteinLength"));
+
+    for (size_t i = firstFeatureIndex; i < n; ++i)
+    {
+      const TypePtr varType = simpleProteinModelClass->getMemberVariableType(i);
+      const String varName = simpleProteinModelClass->getMemberVariableName(i);
+
+      if (varType->inheritsFrom(booleanType))
+        result[i] = booleanStream(true);
+      else if (varName.endsWith(T("WindowSize")))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName.endsWith(T("LocalHistogramSize")))
+      {
+        std::vector<int> values;
+        for (int j = 10; j < 100; j += 10)
+          values.push_back(j);
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName.endsWith(T("SeparationProfileSize")))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName.endsWith(T("SegmentProfileSize")))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+        
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      if (varName.startsWith(T("LocalDimericProfileSize")))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else
+        jassertfalse;
+    }
+  }
+
+  static void createStreamsExceptFor(const String& prefix, std::vector<StreamPtr>& result)
+  {
+    SimpleProteinModel::createStreams(result);
+    
+    const size_t n = simpleProteinModelClass->getNumMemberVariables();
+    const size_t firstFeatureIndex = simpleProteinModelClass->findMemberVariable(T("useProteinLength"));
+    
+    for (size_t i = firstFeatureIndex; i < n; ++i)
+      if (simpleProteinModelClass->getMemberVariableName(i).startsWith(prefix))
+        result[i] = StreamPtr();
   }
 };
 
