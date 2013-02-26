@@ -760,4 +760,120 @@ protected:
   File outputDirectory;
 };
 
+/*
+ * Input:
+ *  >Name
+ *  $ sn: prot_size: total_dr: num_dr: size_dr: #...
+ *  Sequence AA
+ *  Sequence disordered residue (+, -)
+ * Ouput:
+ *  Protein
+ */
+class SpineFileParser : public TextParser
+{
+public:
+  SpineFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass;}
+  
+  virtual void parseBegin() {}
+  
+  virtual bool parseLine(const String& srcLine)
+  {
+    String line = srcLine.trim();
+    if (line == String::empty)
+      return true;
+
+    if (!protein)
+    {
+      if (!line.startsWithChar(T('>')))
+      {
+        context.errorCallback(T("SpineFileParser::parseLine"),
+                              T("Invalid line. The line must start with '>' : ") +
+                              line);
+        return false;
+      }
+
+      int endIndex = line.indexOfChar(0, T(' '));
+      String name = line.substring(1, endIndex == -1 ? line.length() : endIndex);
+      if (name.startsWith(T("DisProt")))
+        name = name.substring(8, 15);
+      else
+        name = name.removeCharacters(T(":"));
+      std::cout << name << std::endl;
+      protein = new Protein(name);
+      return true;
+    }
+
+    if (line.startsWithChar(T('$')))
+      return true;
+
+    if (!protein->getPrimaryStructure())
+    {
+      protein->setPrimaryStructure(line);
+      return true;
+    }
+
+    if ((size_t)line.length() != protein->getLength())
+    {
+      context.errorCallback(T("SpineFileParser::parseLine"),
+                            T("Invalid DR sequence length: ") +
+                            String(line.length()) + T("instead of ") +
+                            String((int)protein->getLength()));
+      return false;
+    }
+
+    const size_t n = protein->getLength();
+    DenseDoubleVectorPtr dr = Protein::createEmptyProbabilitySequence(n);
+    for (size_t i = 0; i < n; ++i)
+      dr->setElement(i, probability(line[i] == T('+') ? 1.f : 0.f));
+    protein->setDisorderRegions(dr);
+
+    setResult(protein);
+    protein = ProteinPtr();
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+    {return true;}
+  
+protected:
+  ProteinPtr protein;
+};
+
+class ConvertSpineFileToProteins : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputFile == File::nonexistent || outputDirectory == File::nonexistent)
+    {
+      context.errorCallback(T("ConvertSpineFileToProteins::run"), T("At least one of argument is wrong !"));
+      return false;
+    }
+    
+    outputDirectory.getChildFile(T("sup/")).createDirectory();
+    
+    StreamPtr stream = StreamPtr(new SpineFileParser(context, inputFile));
+    while (!stream->isExhausted())
+    {
+      ProteinPtr protein = stream->next().getObjectAndCast<Protein>();
+      if (!protein)
+        continue;
+      protein->saveToFile(context, outputDirectory.getChildFile(T("sup/") + protein->getName() + T(".xml")));
+    }
+
+    return true;
+  }
+  
+protected:
+  friend class ConvertSpineFileToProteinsClass;
+  
+  File inputFile;
+  File outputDirectory;
+};
+
 };

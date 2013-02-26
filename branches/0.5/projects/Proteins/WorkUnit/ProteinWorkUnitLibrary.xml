@@ -97,6 +97,11 @@
     <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
 
+  <class name="ConvertSpineFileToProteins" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
   <class name="CountCysteinesWorkUnit" base="WorkUnit">
     <variable type="File" name="proteinDirectory"/>
   </class>
