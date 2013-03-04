@@ -11,10 +11,12 @@
 
 # include "ColoProblem.h"
 # include "SurrogateBasedColoSolver.h"
+# include "ColoVariableEncoder.h"
 # include <ml/RandomVariable.h>
 
 # include <ml/ExpressionSampler.h>
 # include <ml/SplittingCriterion.h>
+# include <ml/SelectionCriterion.h>
 
 namespace lbcpp
 {
@@ -69,13 +71,13 @@ public:
     SolverPtr surrogateSolver = crossEntropySolver(new ColoSampler(), 100, 10, 10, true);
     if (verbose)
       surrogateSolver->setVerbosity(verbosityDetailed);
-    IterativeSolverPtr surrogateBasedSolver = new ColoSurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, numEvaluations);
+    IterativeSolverPtr surrogateBasedSolver = new SurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, coloVariableEncoder(), greedySelectionCriterion(), numEvaluations);
     infos.push_back(runSolver(context, problem, surrogateBasedSolver, "surrogate-100-10-eda1-100-10-10-el"));
 
     surrogateSolver = crossEntropySolver(new ColoSampler2(), 100, 10, 10, true);
     if (verbose)
       surrogateSolver->setVerbosity(verbosityDetailed);
-    surrogateBasedSolver = new ColoSurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, numEvaluations);
+    surrogateBasedSolver = new SurrogateBasedMOSolver(new ColoSampler(), 100, surrogateLearner, surrogateSolver, coloVariableEncoder(), greedySelectionCriterion(), numEvaluations);
     infos.push_back(runSolver(context, problem, surrogateBasedSolver, "surrogate-100-100-eda2-100-10-10-el"));
     
     context.leaveScope();

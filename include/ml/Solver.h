@@ -11,6 +11,9 @@
 
 # include "Problem.h"
 # include "SolutionContainer.h"
+# include "VariableEncoder.h"
+# include "RandomVariable.h"
+# include "Fitness.h"
 
 namespace lbcpp
 {
@@ -126,7 +129,7 @@ protected:
 extern IterativeSolverPtr randomSolver(SamplerPtr sampler, size_t numIterations = 0);
 extern IterativeSolverPtr repeatSolver(SolverPtr solver, size_t numIterations = 0);
 extern IterativeSolverPtr lbfgsOptimizer(size_t numIterations = 0);
-extern IterativeSolverPtr continuousSurrogateBasedSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, size_t numIterations = 0);
+extern IterativeSolverPtr surrogateBasedSolver(SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
 
 class PopulationBasedSolver : public IterativeSolver
 {
@@ -147,7 +150,7 @@ protected:
 extern PopulationBasedSolverPtr crossEntropySolver(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr());
 extern PopulationBasedSolverPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
 extern PopulationBasedSolverPtr cmaesmoOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0);
-
+  
 }; /* namespace lbcpp */
 
 #endif // !ML_OPTIMIZER_H_

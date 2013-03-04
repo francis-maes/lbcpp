@@ -94,7 +94,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = worstScore; best = bestScore;}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
     std::vector<double> scores = evaluateColoJavaWrapper(wrapper, object.staticCast<ColoObject>()); // FIXME: evaluate single objective at a time
     jassert(objectiveNumber < scores.size());

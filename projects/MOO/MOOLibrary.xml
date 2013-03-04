@@ -28,6 +28,7 @@
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numObjectives"/>
+    <variable type="PositiveInteger" name="randomSeed"/>
   </class>
   
   <!-- FQI Based Solver -->

@@ -45,6 +45,9 @@ typedef ReferenceCountedObjectPtr<SupervisedLearningObjective> SupervisedLearnin
 class SplittingCriterion;
 typedef ReferenceCountedObjectPtr<SplittingCriterion> SplittingCriterionPtr;
 
+class SelectionCriterion;
+typedef ReferenceCountedObjectPtr<SelectionCriterion> SelectionCriterionPtr;
+
 class FitnessLimits;
 typedef ReferenceCountedObjectPtr<FitnessLimits> FitnessLimitsPtr;
 
@@ -71,6 +74,9 @@ typedef ReferenceCountedObjectPtr<SolverCallback> SolverCallbackPtr;
 
 class Solver;
 typedef ReferenceCountedObjectPtr<Solver> SolverPtr;
+
+class VariableEncoder;
+typedef ReferenceCountedObjectPtr<VariableEncoder> VariableEncoderPtr;
 
 class IterativeSolver;
 typedef ReferenceCountedObjectPtr<IterativeSolver> IterativeSolverPtr;

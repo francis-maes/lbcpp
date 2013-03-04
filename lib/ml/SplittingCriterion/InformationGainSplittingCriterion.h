@@ -77,9 +77,9 @@ public:
     labelConditionalProbabilities[1]->incrementValue(supervision, weight);
   }
 
-  virtual double computeCriterion()
+  virtual double computeCriterion() const
   {
-    ensureIsUpToDate();
+    const_cast<InformationGainSplittingCriterion* >(this)->ensureIsUpToDate();
 
     double currentEntropy = labelWeights->computeEntropy(sumOfWeights);
     double splitEntropy = splitWeights->computeEntropy(sumOfWeights);

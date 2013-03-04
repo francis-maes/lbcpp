@@ -107,7 +107,7 @@ protected:
 
     virtual void getObjectiveRange(double& worst, double& best) const
       {decorated->getObjectiveRange(worst, best);}
-    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
     {
       SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
       ExpressionPtr expression = trajectory->getFinalState()->getConstructedObject().staticCast<Expression>();
@@ -182,7 +182,7 @@ public:
       best = owner->problem->getFitnessLimits()->getUpperLimit(0);
     }
 
-    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex) const
     {
       ProblemPtr searchProblem = new ExpressionToSearchProblem(owner->problem, owner->maxExpressionSize, owner->usePostfixNotation);
       SamplerPtr sampler = logLinearActionCodeSearchSampler(owner->codeGenerator);

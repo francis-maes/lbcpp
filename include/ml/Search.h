@@ -113,7 +113,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = DBL_MAX;}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
     {return (double)object.staticCast<SearchTrajectory>()->getLength();}
 };
 

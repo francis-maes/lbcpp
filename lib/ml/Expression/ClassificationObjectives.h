@@ -32,7 +32,7 @@ public:
     {configure(data, supervision);}
   BinaryAccuracyObjective() {}
 
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
   {
     BVectorPtr supervisions = getSupervisions().staticCast<BVector>();
     
@@ -57,7 +57,7 @@ public:
     {configure(data, supervision);}
   MultiClassAccuracyObjective() {}
 
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
   {
     IVectorPtr supervisions = getSupervisions().staticCast<IVector>();
     

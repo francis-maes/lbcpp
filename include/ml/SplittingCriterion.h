@@ -25,7 +25,7 @@ public:
 
   virtual void update() = 0;
   virtual void flipPrediction(size_t index) = 0; // flip from negative prediction to positive prediction
-  virtual double computeCriterion() = 0;
+  virtual double computeCriterion() const = 0;
   virtual ObjectPtr computeVote(const IndexSetPtr& indices) = 0;
 
   void ensureIsUpToDate();
@@ -33,7 +33,7 @@ public:
     {upToDate = false;}
 
   // LearningObjective
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions);
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const;
 
 protected:
   bool upToDate;

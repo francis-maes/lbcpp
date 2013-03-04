@@ -500,7 +500,7 @@
 
       @see jassert()
   */
-  #define jassertfalse                  { juce_LogCurrentAssertion; if (JUCE_NAMESPACE::juce_isRunningUnderDebugger()) juce_breakDebugger; }
+  #define jassertfalse                  { juce_LogCurrentAssertion; assert(false); } // if (JUCE_NAMESPACE::juce_isRunningUnderDebugger()) juce_breakDebugger; }
 
   /** Platform-independent assertion macro.
 

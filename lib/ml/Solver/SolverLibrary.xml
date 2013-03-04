@@ -91,15 +91,13 @@
     <variable type="Double" name="explorationCoefficient"/>
   </class>
   
-  <class name="SurrogateBasedSolver" base="IterativeSolver" abstract="yes">
-    <variable type="Sampler" name="initialSampler"/>
-    <variable type="PositiveInteger" name="numInitialSamples"/>
+  <class name="SurrogateBasedSolver" base="IterativeSolver">
+    <constructor arguments="SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations" returnType="IterativeSolver"/>
+    <variable type="Sampler" name="initialVectorSampler"/>
     <variable type="Solver" name="surrogateLearner"/>
     <variable type="Solver" name="surrogateSolver"/>
+    <variable type="VariableEncoder" name="variableEncoder"/>
+    <variable type="SelectionCriterion" name="selectionCriterion"/>
+    <variable type="Fitness" name="currentBest"/>
   </class>
-
-  <class name="ContinuousSurrogateBasedSolver" base="SurrogateBasedSolver">
-    <constructor arguments="SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, size_t numIterations" returnType="IterativeSolver"/>
-  </class>
-  
 </library>

@@ -2,6 +2,7 @@
 
 <library name="Sampler" directory="Sampler">
 
+  <!-- Base classes -->
   <class name="Sampler" abstract="yes"/>
   <class name="DecoratorSampler" base="Sampler" abstract="yes">
     <variable type="Sampler" name="sampler"/>
@@ -15,13 +16,15 @@
     <variable type="Probability" name="probability"/>
   </class>
 
-  <class name="SubsetVectorSampler" base="Sampler">
-    <constructor arguments="SamplerPtr vectorSampler, size_t subsetSize"/>
-    <variable type="Sampler" name="vectorSampler"/>
-    <variable type="PositiveInteger" name="subsetSize"/>
+  <!-- Scalar Samplers -->
+  <class name="GaussianSampler" base="Sampler">
+    <constructor arguments="double mean, double standardDeviation"/>
+    
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="standardDeviation"/>
   </class>
   
-  <!-- Continuous Samplers -->
+  <!-- ScalarVector Samplers -->
   <class name="UniformScalarVectorSampler" base="Sampler">
     <constructor/>
   </class>
@@ -50,5 +53,23 @@
     <variable type="Double" name="learningRate"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="parameters"/>
   </class>
-
+  
+  <!-- Vector Samplers -->
+  <class name="SamplerToVectorSampler" base="Sampler">
+    <constructor arguments="SamplerPtr sampler, size_t numSamples"/>
+    <variable type="Sampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numSamples"/>
+  </class>
+  
+  <class name="LatinHypercubeVectorSampler" base="Sampler">
+    <constructor arguments="size_t numIntervals"/>
+    <variable type="PositiveInteger" name="numIntervals"/>
+  </class>
+  
+  <class name="SubsetVectorSampler" base="Sampler">
+    <constructor arguments="SamplerPtr vectorSampler, size_t subsetSize"/>
+    <variable type="Sampler" name="vectorSampler"/>
+    <variable type="PositiveInteger" name="subsetSize"/>
+  </class>
+  
 </library>

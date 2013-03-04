@@ -24,7 +24,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = DBL_MAX; best = 0.0;}
 
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
   {
     OVectorPtr supervisions = getSupervisions().staticCast<OVector>();
     EnumerationPtr enumeration = DenseDoubleVector::getElementsEnumeration(supervisions->getElementsType());

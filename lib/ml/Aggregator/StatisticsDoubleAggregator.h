@@ -56,7 +56,7 @@ public:
     const AccumulatorDataPtr& data = d.staticCast<AccumulatorData>();
     
     jassert(data->indices == inputs->getIndices());
-    jassert(inputs->getElementsType()->inheritsFrom(data->elementsType));
+    jassert(inputs->getElementsType()->inheritsFrom(doubleClass));
     
     ScalarVariableStatisticsPtr* dest = &data->v[0];
     for (DataVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)

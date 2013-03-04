@@ -86,7 +86,7 @@ protected:
     virtual void getObjectiveRange(double& worst, double& best) const
       {worst = 0.0; best = 1.0;}
 
-    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex)
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex) const
     {
       const PairPtr& pair = object.staticCast<Pair>();
       IterativeSolverPtr optimizer = pair->getFirst().staticCast<IterativeSolver>();
@@ -94,7 +94,7 @@ protected:
       jassert(optimizer);
       double score = currentScore;
       bool shouldContinue = optimizer->iterateSolver(context, instanceIndex);
-      currentScore = front->computeHyperVolume();
+      const_cast<BPObjective* >(this)->currentScore = front->computeHyperVolume();
       if (!shouldContinue)
         return -DBL_MAX; // optimizer has converged, kill the arm
       else
