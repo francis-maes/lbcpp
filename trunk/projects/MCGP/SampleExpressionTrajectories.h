@@ -28,7 +28,7 @@ public:
     //worst = DBL_MAX; best = 0.0; // objective: minimize error between expectation
   }
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
     enum {precision = 1000};
     DenseDoubleVectorPtr probabilities = normalizeProbabilities(object.staticCast<DenseDoubleVector>());

@@ -7,6 +7,7 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(LBCppMLLibrary.xml LBCppMLLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Comparator/ComparatorLibrary.xml ComparatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(VariableEncoder/VariableEncoderLibrary.xml VariableEncoderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Solver/SolverLibrary.xml SolverLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
@@ -15,6 +16,7 @@ GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.c
 GENERATE_INTROSPECTION_CODE(Search/SearchLibrary.xml SearchLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Loader/LoaderLibrary.xml LoaderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SplittingCriterion/SplittingCriterionLibrary.xml SplittingCriterionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(SelectionCriterion/SelectionCriterionLibrary.xml SelectionCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learner/LearnerLibrary.xml LearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
@@ -30,6 +32,7 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/Problem.h
   ${ML_INCLUDES}/Sampler.h
   ${ML_INCLUDES}/Perturbator.h
+  ${ML_INCLUDES}/VariableEncoder.h
   ${ML_INCLUDES}/Solver.h
   ${ML_INCLUDES}/Search.h
   ${ML_INCLUDES}/Function.h
@@ -40,6 +43,7 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/ExpressionSampler.h
   ${ML_INCLUDES}/BanditPool.h
   ${ML_INCLUDES}/SplittingCriterion.h
+  ${ML_INCLUDES}/SelectionCriterion.h
   ${ML_INCLUDES}/DoubleVector.h
   ${ML_INCLUDES}/RandomVariable.h  
   ${ML_INCLUDES}/IndexSet.h
@@ -48,6 +52,11 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/IterationFunction.h
 )
 
+SET(ML_VARIABLE_ENCODER_SOURCES
+  VariableEncoder/ScalarVectorVariableEncoder.h
+  VariableEncoder/VariableEncoderLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/VariableEncoderLibrary.cpp
+)
 
 SET(ML_SOLVER_SOURCES
   Solver/Solver.cpp
@@ -73,11 +82,13 @@ SET(ML_OPTIMIZER_SOURCES
 
 SET(ML_SAMPLER_SOURCES
   Sampler/UniformScalarVectorSampler.h
+  Sampler/LatinHypercubeSampler.h
   Sampler/DiagonalGaussianSampler.h
   Sampler/RandomSearchSampler.h
   Sampler/LogLinearActionCodeSearchSampler.h
   Sampler/BinaryMixtureSampler.h
   Sampler/SubsetVectorSampler.h
+  Sampler/SamplerToVectorSampler.h
   Sampler/SamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )
@@ -176,6 +187,15 @@ SET(ML_SPLITTING_CRITERION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/SplittingCriterionLibrary.cpp
 )
 
+SET(ML_SELECTION_CRITERION_SOURCES
+  SelectionCriterion/GreedySelectionCriterion.h
+  SelectionCriterion/OptimisticSelectionCriterion.h
+  SelectionCriterion/ProbabilityOfImprovementSelectionCriterion.h
+  SelectionCriterion/ExpectedImprovementSelectionCriterion.h
+  SelectionCriterion/SelectionCriterionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SelectionCriterionLibrary.cpp
+)
+
 SET(ML_LEARNER_SOURCES
   Learner/ExhaustiveConditionLearner.h
   Learner/RandomSplitConditionLearner.h
@@ -216,6 +236,7 @@ SET(ML_MAIN_SOURCES
 
 SET(ML_SOURCES 
   ${ML_INCLUDES}
+  ${ML_VARIABLE_ENCODER_SOURCES}
   ${ML_SOLVER_SOURCES}
   ${ML_OPTIMIZER_SOURCES}
   ${ML_SAMPLER_SOURCES}
@@ -230,6 +251,7 @@ SET(ML_SOURCES
   ${ML_SEARCH_SOURCES}
   ${ML_LOADER_SOURCES}
   ${ML_SPLITTING_CRITERION_SOURCES}
+  ${ML_SELECTION_CRITERION_SOURCES}
   ${ML_LEARNER_SOURCES}
   ${ML_DATA_SOURCES}
 
@@ -239,6 +261,7 @@ SET(ML_SOURCES
 GENERATE_LBCPP_PRECOMPILED(precompiled ML_SOURCES)
 
 SOURCE_GROUP(Include FILES ${ML_INCLUDES})
+SOURCE_GROUP(VariableEncoder FILES ${ML_VARIABLE_ENCODER_SOURCES})
 SOURCE_GROUP(Solver FILES ${ML_SOLVER_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${ML_OPTIMIZER_SOURCES})
 SOURCE_GROUP(Sampler FILES ${ML_SAMPLER_SOURCES})
@@ -253,6 +276,7 @@ SOURCE_SUB_GROUP(Expression Objective FILES ${ML_EXPRESSION_OBJECTIVE_SOURCES})
 SOURCE_GROUP(Search FILES ${ML_SEARCH_SOURCES})
 SOURCE_GROUP(Loader FILES ${ML_LOADER_SOURCES})
 SOURCE_GROUP(SplittingCriterion FILES ${ML_SPLITTING_CRITERION_SOURCES})
+SOURCE_GROUP(SelectionCriterion FILES ${ML_SELECTION_CRITERION_SOURCES})
 SOURCE_GROUP(Learner FILES ${ML_LEARNER_SOURCES})
 SOURCE_GROUP(Data FILES ${ML_DATA_SOURCES})
 

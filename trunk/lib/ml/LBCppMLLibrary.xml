@@ -4,6 +4,7 @@
 
   <import name="Comparator"/>
   <import name="Sampler"/>
+  <import name="VariableEncoder"/>
   <import name="Solver"/>
   <import name="Optimizer"/>
   <import name="Search"/>
@@ -12,6 +13,7 @@
   <import name="Expression"/>
   <import name="Loader"/>
   <import name="SplittingCriterion"/>
+  <import name="SelectionCriterion"/>
   <import name="Learner"/>
   <import name="Data"/>
 

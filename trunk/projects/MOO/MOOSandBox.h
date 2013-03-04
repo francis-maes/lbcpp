@@ -16,6 +16,7 @@
 # include <ml/SolutionContainer.h>
 
 # include <ml/SplittingCriterion.h>
+# include <ml/SelectionCriterion.h>
 # include <ml/ExpressionSampler.h>
 
 # include "SharkProblems.h"
@@ -31,8 +32,8 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    //testSingleObjectiveOptimizers(context);
-    testBiObjectiveOptimizers(context);
+    testSingleObjectiveOptimizers(context);
+    //testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
     return ObjectPtr();
   }
@@ -92,12 +93,53 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
+      
       solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize));
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true));
       
-      SolverPtr fqiBSolver = new ScalarVectorFQIBasedSolver(populationSize, numEvaluations / populationSize);
-      solveWithSingleObjectiveOptimizer(context, problem, fqiBSolver);
+      // set up random forest and extremely randomized trees learners for surrogate based optimization
+      size_t numTrees = 100;
+      
+      // create the splitting criterion    
+      SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
+      
+      // create the sampler
+      SamplerPtr sampler = scalarExpressionVectorSampler();
+      
+      // create DT learner
+      SolverPtr dtLearner = treeLearner(splittingCriterion, exhaustiveConditionLearner(sampler));
+      dtLearner->setVerbosity(verbosityDetailed);
+  
+      // create RF learner
+      SolverPtr rfLearner = treeLearner(splittingCriterion, exhaustiveConditionLearner(sampler)); 
+      rfLearner = baggingLearner(rfLearner, numTrees);
+      rfLearner->setVerbosity(verbosityDetailed);     
+      
+      // create XT learner
+      // these trees should choose random splits 
+      SolverPtr xtLearner = treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)); 
+      xtLearner = simpleEnsembleLearner(xtLearner, numTrees);
+      xtLearner->setVerbosity(verbosityDetailed);
+      
+      // create inner optimization loop solver
+      SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
+      ceSolver->setVerbosity(verbosityDetailed);
+      
+      // these just optimize surrogate prediction value
+     /* solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), rfLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
+      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), rfLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
+      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), xtLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
+      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), xtLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
+*/
+      // these optimize probability of improvement
+      /*solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), rfLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
+      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), rfLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
+      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), xtLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
+      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), xtLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
+       */
+     // SolverPtr fqiBSolver = new ScalarVectorFQIBasedSolver(populationSize, numEvaluations / populationSize);
+     // solveWithSingleObjectiveOptimizer(context, problem, fqiBSolver);
       
       /*SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), 100, 30, 10);
       ceSolver->setVerbosity((SolverVerbosity)verbosity);
@@ -106,6 +148,14 @@ protected:
 
       context.leaveScope(); 
     }
+    
+    /*
+    FitnessPtr bestFitness;
+    SolverCallbackPtr callback = storeBestFitnessSolverCallback(bestFitness);
+    SelectionCriterionPtr criterion = expectedImprovementCriterion(bestFitness);
+     
+     */ 
+    
   }
 
   double evaluateSingleObjectiveOptimizer(ExecutionContext& context, const std::vector<ProblemPtr>& problems, SolverPtr optimizer, size_t numRuns = 5)

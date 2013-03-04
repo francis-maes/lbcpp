@@ -19,7 +19,7 @@ namespace lbcpp
 class ScalarProperty : public Object
 {
 public:
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) = 0;
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const = 0;
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -29,15 +29,21 @@ class Objective : public ScalarProperty
 public:
   virtual void getObjectiveRange(double& worst, double& best) const = 0;
 
+  bool isMinimization() const
+    {double worst, best; getObjectiveRange(worst, best); return best < worst;}
+  
+  bool isMaximization() const
+    {return !isMinimization();}
+  
   lbcpp_UseDebuggingNewOperator
 };
 
 class DifferentiableObjective : public Objective
 {
 public:
-  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, double* value, DoubleVectorPtr* gradient) = 0;
+  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, double* value, DoubleVectorPtr* gradient) const = 0;
   
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
     {double res; evaluate(context, object.staticCast<DenseDoubleVector>(), &res, NULL); return res;}
 
   bool testDerivativeWithRandomDirection(ExecutionContext& context, const DenseDoubleVectorPtr& parameters);
@@ -50,9 +56,9 @@ class StochasticObjective : public Objective
 {
 public:
   virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex) = 0;
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object, size_t instanceIndex) const = 0;
   
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
     size_t numInstances = getNumInstances();
     if (!numInstances)
@@ -69,9 +75,9 @@ public:
 class LearningObjective : public Objective
 {
 public:
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) = 0;
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const = 0;
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
     ExpressionPtr expression = object.staticCast<Expression>();
     DataVectorPtr predictions = computePredictions(context, expression);

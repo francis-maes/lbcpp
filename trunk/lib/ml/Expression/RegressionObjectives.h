@@ -24,15 +24,16 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = DBL_MAX; best = 0.0;}
 
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
   {
     DVectorPtr supervisions = getSupervisions().staticCast<DVector>();
     
     // compute mean absolute error
     double squaredError = 0.0;
+    bool areDoubles = predictions->getElementsType()->inheritsFrom(doubleClass);
     for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
-      double prediction = it.getRawDouble();
+      double prediction =  (areDoubles ? it.getRawDouble() : it.getRawObject()->toDouble());
       if (prediction == DVector::missingValue || !isNumberValid(prediction))
         prediction = 0.0;
       double delta = supervisions->get(it.getIndex()) - prediction;
@@ -50,7 +51,7 @@ public:
     : MSERegressionObjective(data, supervision) {}
   RMSERegressionObjective() {}
 
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
     {return sqrt(MSERegressionObjective::evaluatePredictions(context, predictions));}
 };
 
@@ -64,7 +65,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = 1.0;}
 
-  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions)
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
   {
     double rmse = RMSERegressionObjective::evaluatePredictions(context, predictions);
     return 1.0 / (1.0 + rmse);

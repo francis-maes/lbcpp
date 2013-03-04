@@ -14,6 +14,7 @@ SET(LBCPP_COLO_SOURCES
   precompiled.cpp
   ColoJavaWrapper.cpp
   ColoProblem.h
+  ColoVariableEncoder.h
   SurrogateBasedColoSolver.h
   ColoSandBox.h
   ColoLibrary.xml

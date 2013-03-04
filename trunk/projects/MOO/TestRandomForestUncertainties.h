@@ -11,6 +11,7 @@
 
 # include <oil/Execution/WorkUnit.h>
 # include <ml/Solver.h>
+# include <ml/SelectionCriterion.h>
 
 namespace lbcpp
 {
@@ -20,11 +21,13 @@ namespace lbcpp
   class TestRandomForestUncertainties : public WorkUnit
   {
   public:
-    TestRandomForestUncertainties() : numSamples(25), numTrees(100), numObjectives(1) {}
+    TestRandomForestUncertainties() : numSamples(25), numTrees(100), numObjectives(1), randomSeed(0) {}
     
     virtual ObjectPtr run(ExecutionContext& context)
     {
       lbCppMLLibraryCacheTypes(context);
+      
+      context.getRandomGenerator()->setSeed(randomSeed);
       
       moFunctionIdx.resize(numObjectives);
       for (size_t i = 0; i < numObjectives; ++i)
@@ -36,7 +39,7 @@ namespace lbcpp
         return new Boolean(false);
       }
       
-      
+
       // create the domain
       ExpressionDomainPtr domain = new ExpressionDomain();
       VariableExpressionPtr x = domain->addInput(doubleClass, "x");
@@ -89,7 +92,7 @@ namespace lbcpp
       // put learners in a vector
       std::vector<SolverPtr> solvers;
       
-      solvers.push_back(dtLearner);
+      //solvers.push_back(dtLearner);
       solvers.push_back(rfLearner);
       solvers.push_back(xtLearner);
       
@@ -122,6 +125,31 @@ namespace lbcpp
         
         VectorPtr predictions = model->compute(context, testTable)->getVector();
         context.resultCallback("predictions", predictions);
+        
+        // find best fitness
+        FitnessPtr bestFitness;
+        if (numObjectives == 1)
+        {
+          FitnessLimitsPtr limits = new FitnessLimits();
+          double worst, best;
+          problem->getObjective(0)->getObjectiveRange(worst, best);
+          limits->addObjective(worst, best);
+          for (size_t r = 0; r < problemData->getNumRows(); r++)
+          {
+            ObjectPtr supervision = problemData->getElement(r, 1);
+            FitnessPtr fitnessR = new Fitness(getIthValue(supervision, 0), limits);
+            bestFitness = (!bestFitness || fitnessR->dominates(bestFitness) ? fitnessR : bestFitness);
+          }
+        }
+        
+        SelectionCriterionPtr greedy = greedySelectionCriterion();
+        greedy->initialize(problem);
+        SelectionCriterionPtr optimistic = optimisticSelectionCriterion(2.0);
+        optimistic->initialize(problem);
+        SelectionCriterionPtr probabilityOfImprovement = probabilityOfImprovementSelectionCriterion(bestFitness);
+        probabilityOfImprovement->initialize(problem);
+        SelectionCriterionPtr expectedImprovement = expectedImprovementSelectionCriterion(bestFitness);
+        expectedImprovement->initialize(problem);
         
         double x = -1.0;
         for (size_t i = 0; i < 200; ++i, x += 0.01)
@@ -158,8 +186,18 @@ namespace lbcpp
               double pred = prediction->getMean();
               double stddev = prediction->getStandardDeviation();
               context.resultCallback("prediction" + string((int)j), pred);
-              context.resultCallback("stddevUp" + string((int)j), pred + stddev);
-              context.resultCallback("stddevDown" + string((int)j), pred - stddev);
+              //context.resultCallback("stddevUp" + string((int)j), pred + stddev);
+              //context.resultCallback("stddevDown" + string((int)j), pred - stddev);
+              context.resultCallback("stddev" + string((int)j), stddev);
+              if (numObjectives == 1)
+              {
+                if (fabs(x - 0.2) < 1e-6)
+                  jassert(true);
+                context.resultCallback("greedySelectionCriterion", greedy->evaluate(context, prediction));
+                context.resultCallback("optimisticSelectionCriterion", optimistic->evaluate(context, prediction));
+                context.resultCallback("probabilityOfImprovementSelectionCriterion", probabilityOfImprovement->evaluate(context, prediction));
+                context.resultCallback("expectedImprovementSelectionCriterion", expectedImprovement->evaluate(context, prediction));
+              }
 
             }
             else
@@ -182,6 +220,8 @@ namespace lbcpp
     size_t numSamples;
     size_t numTrees;
     size_t numObjectives;
+    
+    int randomSeed;
     
   private:
     
@@ -224,7 +264,7 @@ namespace lbcpp
         
         if (numObjectives == 1)
         {
-          double y = targetFunction(x, moFunctionIdx[i]);
+          double y = targetFunction(x, moFunctionIdx[0]);
           res->setElement(i, 1, new Double(y));
         }
         else
@@ -256,8 +296,8 @@ namespace lbcpp
       double x2 = x * x;
       switch (functionIndex)
       {
-        case 0: return x * x2 + x2 + x;
-        case 1: return sin(x2) * cos(x) - 1.0;
+        case 0: return sin(x2) * cos(x) + 1.0;
+        case 1: return x * x2 + x2 + x;
         case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
         case 3: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
         case 4: return x2 * x2 + x * x2 + x2 + x;

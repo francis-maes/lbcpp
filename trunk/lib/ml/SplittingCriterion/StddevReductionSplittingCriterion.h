@@ -60,9 +60,9 @@ public:
     positives.push(value, weight);
   }
 
-  virtual double computeCriterion()
+  virtual double computeCriterion() const
   {
-    ensureIsUpToDate();
+    const_cast<StddevReductionSplittingCriterion* >(this)->ensureIsUpToDate();
 
     double res = 0.0;
     if (positives.getCount())

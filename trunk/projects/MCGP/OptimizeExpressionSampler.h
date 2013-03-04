@@ -26,7 +26,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {targetProblem->getObjective(0)->getObjectiveRange(worst, best);}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
     DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
     SamplerPtr sampler = this->sampler->cloneAndCast<Sampler>();

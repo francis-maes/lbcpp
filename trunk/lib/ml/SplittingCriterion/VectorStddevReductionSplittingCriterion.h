@@ -69,15 +69,15 @@ public:
     }
   }
 
-  virtual double computeCriterion()
+  virtual double computeCriterion() const
   {
-    ensureIsUpToDate();
+    const_cast<VectorStddevReductionSplittingCriterion*>(this)->ensureIsUpToDate();
 
     double oldVariance = 0.0;
     double newVariance = 0.0;
     for (size_t i = 0; i < infos.size(); ++i)
     {
-      VarianceInfo& info = infos[i];
+      const VarianceInfo& info = infos[i];
       double var = 0.0;
       if (info.positives.getCount())
         var += info.positives.getCount() * info.positives.getVariance();

@@ -364,7 +364,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = (double)world->getInitialNumPellets();}
 
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
 #if 0
 	  std::vector<SantaFeTrailActionPtr> elseActions;

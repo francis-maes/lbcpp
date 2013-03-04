@@ -12,36 +12,46 @@
 # include <ml/Solver.h>
 # include <ml/Sampler.h>
 # include <ml/ExpressionDomain.h>
+# include <ml/RandomVariable.h>
+# include <ml/VariableEncoder.h>
+# include <ml/SelectionCriterion.h>
 
 namespace lbcpp
 {
 
+/** Class for surrogate-based optimization.
+ *  In this class, the initial sampler should return an OVector with all \f$N\f$ initial samples
+ *  as a result of its sample() function. The initial sample will be retrieved upon calling
+ *  startSolver(), and will be added to the surrogate data in the first \f$N\f$ calls to iterateSolver.
+ **/
 class SurrogateBasedSolver : public IterativeSolver
 {
 public:
-  SurrogateBasedSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, size_t numIterations)
-    : IterativeSolver(numIterations), initialSampler(initialSampler), numInitialSamples(numInitialSamples),
-      surrogateLearner(surrogateLearner), surrogateSolver(surrogateSolver) {}
-  SurrogateBasedSolver() : numInitialSamples(0) {}
+  SurrogateBasedSolver(SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver,
+                       VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations)
+    : IterativeSolver(numIterations), initialVectorSampler(initialVectorSampler), surrogateLearner(surrogateLearner),
+      surrogateSolver(surrogateSolver), variableEncoder(variableEncoder), selectionCriterion(selectionCriterion) {}
+  SurrogateBasedSolver() {}
 
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
-    initialSampler->initialize(context, problem->getDomain());
+    initialVectorSampler->initialize(context, new VectorDomain(problem->getDomain()));
     
     std::pair<ProblemPtr, TablePtr> p = createSurrogateLearningProblem(context, problem);
     surrogateLearningProblem = p.first;
     surrogateData = p.second;
+
+    // initialize the surrogate data
+    initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
   }
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     ObjectPtr object;
-    if (iter < numInitialSamples)
-    {
-      // make random sample
-      object = initialSampler->sample(context);
-    }
+    
+    if (iter < initialSamples->getNumElements())
+      object = initialSamples->getAndCast<Object>(iter);
     else
     {
       // learn surrogate
@@ -62,32 +72,57 @@ public:
       {
         context.resultCallback("object", object);
         context.leaveScope();
-      }        
+      }
     }
-    
     // evaluate point and add to training data
     FitnessPtr fitness = evaluate(context, object);
+    
+    currentBest = (!currentBest || fitness->dominates(currentBest) ? fitness : currentBest);
+    
     if (verbosity >= verbosityDetailed)
       context.resultCallback("fitness", fitness);
     addSurrogateData(context, object, fitness, surrogateData);      
     return true;
   }
-  
-protected:
-  virtual void createEncodingVariables(ExecutionContext& context, DomainPtr domain, ExpressionDomainPtr res) = 0;
-  virtual void encodeIntoVariables(ExecutionContext& context, ObjectPtr object, std::vector<ObjectPtr>& res) = 0;
 
 protected:
   friend class SurrogateBasedSolverClass;
 
-  SamplerPtr initialSampler;
-  size_t numInitialSamples;
+  SamplerPtr initialVectorSampler;
   SolverPtr surrogateLearner;
   SolverPtr surrogateSolver;
+  VariableEncoderPtr variableEncoder;
+  SelectionCriterionPtr selectionCriterion;
+  
+  OVectorPtr initialSamples;
+  
+  FitnessPtr currentBest;
   
   ProblemPtr surrogateLearningProblem;
 
   TablePtr surrogateData;
+  
+  struct SurrogateBasedSelectionObjective : public Objective
+  {
+    SurrogateBasedSelectionObjective(VariableEncoderPtr encoder, ExpressionPtr model, SelectionCriterionPtr selectionCriterion)
+      : encoder(encoder), model(model), selectionCriterion(selectionCriterion) {}
+    
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {return selectionCriterion->getObjectiveRange(worst, best);}
+    
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+    {
+      std::vector<ObjectPtr> row;
+      encoder->encodeIntoVariables(context, object, row);
+      return selectionCriterion->evaluate(context, model->compute(context, &row[0]));
+    }
+    
+    VariableEncoderPtr encoder;
+    ExpressionPtr model;
+    SelectionCriterionPtr selectionCriterion;
+    
+  };
+  
   ClassPtr getSurrogateSupervisionClass() const
     {return surrogateLearningProblem->getDomain().staticCast<ExpressionDomain>()->getSupervision()->getType();}
 
@@ -98,7 +133,7 @@ protected:
     ProblemPtr res = new Problem();
     res->setDomain(surrogateDomain);
     if (problem->getNumObjectives() == 1)
-      res->addObjective(normalizedRMSERegressionObjective(data, surrogateDomain->getSupervision()));
+      res->addObjective(mseRegressionObjective(data, surrogateDomain->getSupervision()));
     else
       res->addObjective(mseMultiRegressionObjective(data, surrogateDomain->getSupervision()));
     return std::make_pair(res, data);
@@ -109,7 +144,7 @@ protected:
     ExpressionDomainPtr res = new ExpressionDomain();
     
     DomainPtr domain = problem->getDomain();
-    createEncodingVariables(context, domain, res);
+    variableEncoder->createEncodingVariables(context, domain, res);
       
     if (problem->getNumObjectives() == 1)
       res->createSupervision(doubleClass, "y");
@@ -127,7 +162,7 @@ protected:
   void addSurrogateData(ExecutionContext& context, ObjectPtr object, FitnessPtr fitness, TablePtr data)
   {
     std::vector<ObjectPtr> row;
-    encodeIntoVariables(context, object, row);
+    variableEncoder->encodeIntoVariables(context, object, row);
       
     if (fitness->getNumValues() == 1)
       row.push_back(new Double(fitness->getValue(0)));
@@ -149,50 +184,17 @@ protected:
     surrogateLearner->solve(context, surrogateLearningProblem, storeBestSolutionSolverCallback(*(ObjectPtr* )&res));
     return res;
   }
-  
-  struct SurrogateObjective : public Objective
-  {
-    SurrogateObjective(SurrogateBasedSolver* owner, size_t objectiveNumber, ExpressionPtr surrogateModel)
-      : owner(owner), objectiveNumber(objectiveNumber), surrogateModel(surrogateModel) {}
-
-    // FIXME: add an exploration term
-
-    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
-    {
-      std::vector<ObjectPtr> row;
-      owner->encodeIntoVariables(context, object, row);
-      ObjectPtr prediction = surrogateModel->compute(context, &row[0]);
-      if (prediction.isInstanceOf<Double>())
-      {
-        jassert(objectiveNumber == 0);
-        return Double::get(prediction);
-      }
-      else
-      {
-        DenseDoubleVectorPtr pred = prediction.staticCast<DenseDoubleVector>();
-        jassert(objectiveNumber < pred->getNumValues());
-        return pred->getValue(objectiveNumber);
-      }
-    }
-
-    virtual void getObjectiveRange(double& worst, double& best) const
-      {return owner->problem->getObjective(objectiveNumber)->getObjectiveRange(worst, best);}
-
-  private:
-    SurrogateBasedSolver* owner;
-    size_t objectiveNumber;
-    ExpressionPtr surrogateModel;
-  };
-  
+   
   ProblemPtr createSurrogateOptimizationProblem(ExpressionPtr surrogateModel)
   {
     ProblemPtr res = new Problem();
     res->setDomain(problem->getDomain());
+    selectionCriterion->initialize(problem);
+    res->addObjective(new SurrogateBasedSelectionObjective(variableEncoder, surrogateModel, selectionCriterion));
+    
     for (size_t i = 0; i < problem->getNumObjectives(); ++i)
-    {
-      res->addObjective(new SurrogateObjective(this, i, surrogateModel));
       res->addValidationObjective(problem->getObjective(i));
-    }
+    
     return res;
   }
 
@@ -206,31 +208,10 @@ protected:
       context.resultCallback("surrogateObjectiveValue", bestFitness);
     return res;
   }
+  
 };
-
-class ContinuousSurrogateBasedSolver : public SurrogateBasedSolver
-{
-public:
-  ContinuousSurrogateBasedSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, size_t numIterations)
-    : SurrogateBasedSolver(initialSampler, numInitialSamples, surrogateLearner, surrogateSolver, numIterations) {}
-  ContinuousSurrogateBasedSolver() {}
-
-  virtual void createEncodingVariables(ExecutionContext& context, DomainPtr domain, ExpressionDomainPtr res)
-  {
-    ScalarVectorDomainPtr continuousDomain = domain.dynamicCast<ScalarVectorDomain>();
-    jassert(continuousDomain);
-    for (size_t i = 0; i < continuousDomain->getNumDimensions(); ++i)
-      res->addInput(doubleClass, "x" + string((int)i+1));
-  }
-
-  virtual void encodeIntoVariables(ExecutionContext& context, ObjectPtr object, std::vector<ObjectPtr>& res)
-  {
-    DenseDoubleVectorPtr vector = object.dynamicCast<DenseDoubleVector>();
-    jassert(vector);
-    for (size_t i = 0; i < vector->getNumValues(); ++i)
-      res.push_back(new Double(vector->getValue(i)));
-  }
-};
+  
+typedef ReferenceCountedObjectPtr<SurrogateBasedSolver> SurrogateBasedSolverPtr;
 
 }; /* namespace lbcpp */
 

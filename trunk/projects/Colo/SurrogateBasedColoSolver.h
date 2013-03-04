@@ -12,6 +12,7 @@
 # include <ml/Solver.h>
 # include <ml/Sampler.h>
 # include <ml/ExpressionDomain.h>
+# include <ml/VariableEncoder.h>
 # include "ColoProblem.h"
 # include "../../lib/ml/Solver/SurrogateBasedSolver.h"
 
@@ -21,8 +22,8 @@ namespace lbcpp
 class SurrogateBasedMOSolver : public SurrogateBasedSolver
 {
 public:
-  SurrogateBasedMOSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, size_t numIterations)
-    : SurrogateBasedSolver(initialSampler, numInitialSamples, surrogateLearner, surrogateSolver, numIterations) {}
+  SurrogateBasedMOSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations)
+    : SurrogateBasedSolver(samplerToVectorSampler(initialSampler, numInitialSamples), surrogateLearner, surrogateSolver, variableEncoder, selectionCriterion, numIterations) {}
   SurrogateBasedMOSolver() {}
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -31,9 +32,11 @@ public:
     if (iter == 0)
     {
       // make random samples
-      objects.resize(numInitialSamples);
-      for (size_t i = 0; i < numInitialSamples; ++i)
-        objects[i] = initialSampler->sample(context);
+      OVectorPtr samples = initialVectorSampler->sample(context).dynamicCast<OVector>();
+      jassert(samples);
+      objects.resize(samples->getNumElements());
+      for (size_t i = 0; i < samples->getNumElements(); ++i)
+        objects[i] = samples->getElement(i);
     }
     else
     {
@@ -99,61 +102,6 @@ protected:
     ParetoFrontPtr front = new ParetoFront(surrogateProblem->getFitnessLimits());
     surrogateSolver->solve(context, surrogateProblem, fillParetoFrontSolverCallback(front));
     return front;
-  }
-};
-
-class ColoSurrogateBasedMOSolver : public SurrogateBasedMOSolver
-{
-public:
-  ColoSurrogateBasedMOSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, size_t numIterations)
-    : SurrogateBasedMOSolver(initialSampler, numInitialSamples, surrogateLearner, surrogateSolver, numIterations) {}
-  ColoSurrogateBasedMOSolver() {}
-
-  virtual void createEncodingVariables(ExecutionContext& context, DomainPtr domain, ExpressionDomainPtr res)
-  {
-    ColoDomainPtr coloDomain = domain.staticCast<ColoDomain>();
-    size_t numFlags = coloDomain->getNumFlags();
-    for (size_t i = 0; i < numFlags; ++i)
-      res->addInput(positiveIntegerClass, "flag" + string((int)i+1));
-    for (size_t i = 0; i < numFlags; ++i)
-      for (size_t j = 0; j < numFlags; ++j)
-        res->addInput(positiveIntegerClass, "flag" + string((int)i+1) + "before" + string((int)j+1));
-  }
-
-  virtual void encodeIntoVariables(ExecutionContext& context, ObjectPtr solution, std::vector<ObjectPtr>& res)
-  {
-    ColoDomainPtr coloDomain = problem->getDomain().staticCast<ColoDomain>();
-    size_t numFlags = coloDomain->getNumFlags();
-
-    ColoObjectPtr coloObject = solution.staticCast<ColoObject>();
-    std::vector<size_t> counts(numFlags * (numFlags + 1));
-    for (size_t j = 0; j < coloObject->getLength(); ++j)
-    {
-      size_t flag = coloObject->getFlag(j);
-      counts[flag]++;
-      for (size_t i = 0; i < j; ++i)
-      {
-        size_t previousFlag = coloObject->getFlag(i);
-        counts[numFlags + previousFlag * numFlags + flag]++;
-      }
-    }
-
-    res.resize(counts.size());
-    for (size_t i = 0; i < res.size(); ++i)
-      res[i] = getPositiveInteger(counts[i]);
-  }
-
-private:
-  std::vector<ObjectPtr> integers; // avoid allocating dozens of PositiveIntegers
-
-  ObjectPtr getPositiveInteger(size_t i)
-  {
-    while (i >= integers.size())
-    {
-      ObjectPtr posInt = new PositiveInteger(integers.size());
-      integers.push_back(posInt);
-    }
-    return integers[i];
   }
 };
 

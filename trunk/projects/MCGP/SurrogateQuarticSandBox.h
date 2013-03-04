@@ -12,6 +12,8 @@
 # include <oil/Execution/WorkUnit.h>
 # include <ml/Solver.h>
 
+# include <ml/SelectionCriterion.h>
+
 namespace lbcpp
 {
 
@@ -49,7 +51,7 @@ public:
     context.leaveScope();
     
     context.enterScope("Solve with Surrogate based");
-    SolverPtr sbSolver = continuousSurrogateBasedSolver(uniformScalarVectorSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, 5000);
+    SolverPtr sbSolver = surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 20), createRegressionExtraTreeLearner(), ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 5000);
     sbSolver->setVerbosity(verbosityDetailed);
     sbSolver->solve(context, problem, storeBestSolutionSolverCallback(solution));
     context.resultCallback("solution2", solution);
@@ -68,7 +70,7 @@ private:
     virtual void getObjectiveRange(double& worst, double& best) const
       {worst = 0.0; best = 1.0;}
   
-    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object)
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
     {
       double err = 0.0;
       for (size_t i = 0; i < 21; ++i)

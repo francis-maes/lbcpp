@@ -35,7 +35,7 @@ public:
     // minimize sum_examples (-sum_selectedActions (actionSelectedCount * theta[selectedAction])
   //                        +sum_selectedActions (actionSelectedCount) * log sum_i exp(theta[example.availableAction[i])) / num_examples
   //                + lambda * sumOfSquares(theta) / 2
-  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, double* value, DoubleVectorPtr* gradient)
+  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, double* value, DoubleVectorPtr* gradient) const
   {
     jassert(!value || *value == 0.0);
 
