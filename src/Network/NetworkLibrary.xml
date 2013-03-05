@@ -75,4 +75,10 @@
   <class name="XmlElementWorkUnit" base="WorkUnit">
     <variable type="File" name="xmlElementFile" shortName="f"/>
   </class>
+
+  <class name="ResubmitNetworkRequestWorkUnit" base="WorkUnit">
+    <variable type="String" name="identifier" shortName="id" />
+    <variable type="PositiveInteger" name="requiredMemory" shortName="m" />
+    <variable type="PositiveInteger" name="requiredTime" shortName="t" />
+  </class>
 </library>
