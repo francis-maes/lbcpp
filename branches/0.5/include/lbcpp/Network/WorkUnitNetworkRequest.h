@@ -48,6 +48,12 @@ public:
   const size_t& getRequiredTime() const
     {return requiredTime;}
 
+  void setRequiredMemory(size_t mem)
+    {requiredMemory = mem;}
+  
+  void setRequiredTime(size_t time)
+    {requiredTime = time;}
+
   WorkUnitPtr getWorkUnit(ExecutionContext& context) const
     {return workUnit ? workUnit->createObjectAndCast<WorkUnit>(context) : WorkUnitPtr();}
 
@@ -65,7 +71,7 @@ protected:
   String source;
   String destination;
   size_t requiredCpus;
-  size_t requiredMemory; // Gb
+  size_t requiredMemory; // Mb
   size_t requiredTime; // Hour
 };
 

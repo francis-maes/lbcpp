@@ -117,6 +117,52 @@ protected:
   File xmlElementFile;
 };
 
+class ResubmitNetworkRequestWorkUnit : public WorkUnit
+{
+public:
+  ResubmitNetworkRequestWorkUnit()
+    : requiredMemory(0), requiredTime(0) {}
+
+  Variable run(ExecutionContext& context)
+  {
+    if (!getRequestFile(context).exists())
+    {
+      context.errorCallback(T("File does not exists !"));
+      return false;
+    }
+
+    WorkUnitNetworkRequestPtr request = WorkUnitNetworkRequest::createFromFile(context, getRequestFile(context));
+    if (!request)
+    {
+      context.errorCallback(T("File does not contain request !"));
+      return false;
+    }
+
+    if (requiredMemory)
+      request->setRequiredMemory(requiredMemory * 1024 - 10);
+    if (requiredTime)
+      request->setRequiredTime(requiredTime);
+
+    request->saveToFile(context, getRequestFile(context));
+    request->getXmlElementWorkUnit()->saveToFile(context, getWaitingFile(context, request));
+
+    return true;
+  }
+
+protected:
+  friend class ResubmitNetworkRequestWorkUnitClass;
+
+  String identifier;
+  size_t requiredMemory; //Gb
+  size_t requiredTime;
+  
+  File getWaitingFile(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+    {return context.getFile(T("PreProcessing/") + request->getUniqueIdentifier() + T(".workUnit"));}
+
+  File getRequestFile(ExecutionContext& context)
+    {return context.getFile(T("Requests/") + identifier + T(".request"));}
+};
+
 }; /* namespace */
 
 #endif // !LBCPP_NETWORK_WORK_UNIT_H_
