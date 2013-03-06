@@ -415,6 +415,7 @@ public:
 
     SymmetricMatrixPtr res = symmetricMatrix(elementGeneratorFunction->getOutputType(), n);
     std::vector<Variable> subInputs(numInputs + 1);
+    size_t nE = 0;
     for (size_t i = 2; i < subInputs.size(); ++i)
       subInputs[i] = inputs[i - 1];
 
@@ -428,11 +429,12 @@ public:
       {
         if (!oxidizedCysteines[j])
           continue;
-
+        ++nE;
         subInputs[1] = Variable(cysteinIndices[j], positiveIntegerType);
         res->setElement(i, j, elementGeneratorFunction->compute(context, subInputs));
       }
     }
+
     return res;
   }
 

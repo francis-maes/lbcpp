@@ -758,7 +758,7 @@ public:
       builder.addInSelection(proteinPerception);
     
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), getOxidizedCysteineThreshold())
+                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), 0.5f)
                                         , T("oxidizedCysteinResiduePairFeatures"));
   }
 
