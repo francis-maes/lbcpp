@@ -495,6 +495,11 @@
     <variable type="File" name="outputFile" shortName="o"/>
   </class>
 
+  <class name="ExtraTreesCysBridgesLearner" base="WorkUnit">
+    <variable type="File" name="cbsProteinsDirectory" shortName="cbs"/>
+    <variable type="File" name="dsbProteinsDirectory" shortName="dsb"/>
+  </class>
+
   <class name="TestStudentDistributionWorkUnit" base="WorkUnit"/>
 
 

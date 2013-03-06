@@ -348,7 +348,7 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
   const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
 
   // --- Filter: Discard chain predicted as having no bridges ---
-
+/*
   size_t numBondedCysteins = 0;
   for (size_t i = 0; i < n; ++i)
     if (cysteinBondingStates->getElement(i).getDouble() > 0.5)
@@ -361,23 +361,24 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
                                                       : Variable::missingValue(probabilityType);
       const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
     }
-/*
+
    std::cout << "CBS" << std::endl;
    std::cout << cysteinBondingStates->toString() << std::endl;
    std::cout << "From DSB" << std::endl;
    std::cout << disulfideBonds->toString();
    std::cout << "To ODSB" << std::endl;
    std::cout << oxidizedDisulfideBonds->toString() << std::endl;
-*/
-  return oxidizedDisulfideBonds;
 
+  return oxidizedDisulfideBonds;
+*/
   // --- Filter: Discard cysteines predicted as not involved in a bridge
   for (size_t i = 0; i < n; ++i)
     for (size_t j = i; j < n; ++j)
     {
       const Variable element = (cysteinBondingStates->getValue(i) >= oxidizedCysteineThreshold
                                 && cysteinBondingStates->getValue(j) >= oxidizedCysteineThreshold)
-      ? disulfideBonds->getElement(i, j) : Variable::missingValue(probabilityType);
+                             ? disulfideBonds->getElement(i, j)
+                             : Variable::missingValue(probabilityType);
       const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
     }
 

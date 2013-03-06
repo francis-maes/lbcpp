@@ -166,5 +166,105 @@ private:
   }
 };
 
+class ExtraTreesCysBridgesLearner : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    enum {numFolds = 10};
+    size_t numProteinsToLoad = 0;
+#if JUCE_MAC && JUCE_DEBUG
+    numProteinsToLoad = 10;
+#endif
+    ContainerPtr cbsProteins = Protein::loadProteinsFromDirectoryPair(context, File(), cbsProteinsDirectory, numProteinsToLoad, T("Loading CBS proteins"));
+    ContainerPtr dsbProteins = Protein::loadProteinsFromDirectoryPair(context, File(), dsbProteinsDirectory, numProteinsToLoad, T("Loading DSB proteins"));
+    if (!cbsProteins || cbsProteins->getNumElements() == 0
+        || !dsbProteins || dsbProteins->getNumElements() == 0)
+    {
+      context.errorCallback(T("No proteins found !"));
+      return false;
+    }
+
+    File cbsDirectory = context.getFile(T(".x3CysBridges.cbs"));
+    cbsDirectory.createDirectory();
+
+    /* Cystein Bonding State */
+    LargeProteinParametersPtr cbsParameters = new LargeProteinParameters();
+    cbsParameters->pssmWindowSize = 11;
+    cbsParameters->usePSSMGlobalHistogram = true;
+    cbsParameters->useNumCysteins = true;
+
+    // Make CBS predictions
+    {
+      LargeProteinPredictorParametersPtr model = new LargeProteinPredictorParameters(cbsParameters);
+      model->learner = binaryClassificationExtraTree(1000, 0, 1, true);
+
+      ProteinPredictorPtr predictor = new ProteinPredictor(model);
+      predictor->addTarget(cbsTarget);
+
+      if (!predictor->train(context, cbsProteins, dsbProteins, T("Learning Cystein Bonding State predictor")))
+        return false;
+      predictor->evaluate(context, dsbProteins, saveToDirectoryEvaluator(cbsDirectory, T(".xml")), T("Saving predictions to directory"));
+      
+      ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+      evaluator->addEvaluator(cbsTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
+      CompositeScoreObjectPtr scores = predictor->evaluate(context, dsbProteins, evaluator, T("Evaluate CBS on DSB-Proteins"));
+      context.informationCallback(T("CBS Error on DSB-Proteins: ") + String(evaluator->getScoreToMinimize(scores)));
+    }
+
+    // Save CBS Model
+    {
+      LargeProteinPredictorParametersPtr model = new LargeProteinPredictorParameters(cbsParameters);
+      model->learner = binaryClassificationExtraTree(1000, 0, 1, true, context.getFile(T("x3CysBridges.cbs")));
+      
+      ProteinPredictorPtr predictor = new ProteinPredictor(model);
+      predictor->addTarget(cbsTarget);
+
+      if (!predictor->train(context, cbsProteins, dsbProteins, T("Learning Cystein Bonding State predictor")))
+        return false;
+      predictor->saveToFile(context, context.getFile(T("x3CysBridges.cbs.xml")));
+    }
+
+    dsbProteins = Protein::loadProteinsFromDirectoryPair(context, cbsDirectory, dsbProteinsDirectory, numProteinsToLoad, T("Loading intermediate predictions"));
+    // In order to predict bridges for cysteines predicted as bonded,
+    // we have to copy cysteine state predictions into the supervised
+    // proteins.
+    copyCysteineBondingStatePredictions(context, dsbProteins);
+
+    /* Disulfide Connectivity Parttern */
+    {
+      LargeProteinParametersPtr dsbParameters = new LargeProteinParameters();
+      dsbParameters->pssmWindowSize = 15;
+      dsbParameters->separationProfilSize = 17;
+
+      LargeProteinPredictorParametersPtr model = new LargeProteinPredictorParameters(dsbParameters);
+      model->learner = binaryClassificationExtraTree(1000, 0, 1, true, context.getFile(T("x3CysBridges.dsb")));
+
+      ProteinPredictorPtr predictor = new ProteinPredictor(model);
+      predictor->addTarget(odsbTarget);
+
+      if (!predictor->train(context, dsbProteins, ContainerPtr(), T("Learning Disulfide Bond predictor")))
+        return false;
+      predictor->saveToFile(context, context.getFile(T("x3CysBridges.dsb.xml")));
+    }
+
+    cbsDirectory.deleteRecursively();
+
+    return true;
+  }
+
+protected:
+  friend class ExtraTreesCysBridgesLearnerClass;
+
+  File cbsProteinsDirectory;
+  File dsbProteinsDirectory;
+
+  void copyCysteineBondingStatePredictions(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+      proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
+  }  
+};
+
 }
 
