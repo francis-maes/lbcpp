@@ -1,0 +1,322 @@
+/*-----------------------------------------.---------------------------------.
+ | Filename: SBOExperiments                 | Surrogate-Based Optimization    |
+ | Author  : Denny Verbeeck                 | Experimental Evaluation         |
+ | Started : 04/03/2013 17:20               |                                 |
+ `------------------------------------------/                                 |
+                                |                                             |
+                                `--------------------------------------------*/
+
+#ifndef SBO_EXPERIMENTS_H_
+# define SBO_EXPERIMENTS_H_
+
+# include <oil/Execution/WorkUnit.h>
+# include <ml/RandomVariable.h>
+# include <ml/Solver.h>
+# include <ml/Sampler.h>
+# include <ml/SolutionContainer.h>
+
+# include <ml/SplittingCriterion.h>
+# include <ml/SelectionCriterion.h>
+
+# include "SharkProblems.h"
+
+namespace lbcpp
+{
+  
+extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
+
+class SBOExperiments : public WorkUnit
+{
+public:
+  SBOExperiments() :  runBaseline(true),
+                      numEvaluationsBaseline(1000), 
+                      populationSize(20),
+                      runWithRandomForests(false),
+                      runWithXT(true),
+                      uniformSampling(false),
+                      latinHypercubeSampling(true),
+                      numEvaluationsSBO(150), 
+                      numTrees(100),
+                      optimism(2.0),
+                      numDims(6),
+                      numRuns(10), 
+                      verbosity(1),
+                      optimizerVerbosity(0) {}
+  
+  virtual ObjectPtr run(ExecutionContext& context)
+  {
+    lbCppMLLibraryCacheTypes(context);
+    testSingleObjectiveOptimizers(context);
+    //testBiObjectiveOptimizers(context);
+    return ObjectPtr();
+  }
+  
+protected:
+  friend class SBOExperimentsClass;
+  
+  // options for baseline algorithms
+  bool runBaseline;              /**< Run baseline algorithms                                          */
+  size_t numEvaluationsBaseline; /**< Number of evaluations for baseline optimizers                    */
+  size_t populationSize;         /**< Population size for baseline optimizers                          */
+  
+  // options for surrogate-based algorithms
+  bool runWithRandomForests;     /**< Run with random forest surrogate                                 */
+  bool runWithXT;                /**< Run with extremely randomized trees                              */
+
+  bool uniformSampling;          /**< Run with uniform sampling                                        */
+  bool latinHypercubeSampling;   /**< Run with latin hypercube sampling                                */
+
+  size_t numEvaluationsSBO;      /**< Number of evaluations for surrogate-based optimizers             */
+  size_t numTrees;               /**< Size of forest for Random Forest and extremely randomized trees  */
+  
+  double optimism;               /**< Level of optimism for optimistic surrogate-based optimizers      */
+
+  // general options
+  size_t numDims;                /**< Number of dimensions of the decision space                       */
+  size_t numRuns;                /**< Number of runs to average over                                   */
+  
+  size_t verbosity;
+  size_t optimizerVerbosity;
+  
+  struct SolverInfo
+  {
+    string name;
+    size_t evaluationPeriod;
+    std::vector<double> cpuTimes;
+    std::vector<double> scores;
+  };
+  
+  struct SolverSettings
+  { 
+    SolverSettings() : bestFitness(*(FitnessPtr* )0) {}
+    SolverSettings(FitnessPtr bestFitness) : bestFitness(bestFitness) {}
+    
+    SolverPtr solver;
+    FitnessPtr& bestFitness;
+    string description;
+    size_t numEvaluations;
+    
+    SolverSettings& operator= (const SolverSettings& other)
+      {jassertfalse;}
+  };
+  
+  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations)
+    {return createSettings(solver, numEvaluations, solver->toShortString());}
+  
+  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations, const string& description)
+    {FitnessPtr bestFitness; return createSettings(solver, numEvaluations, description, bestFitness);}
+  
+  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations, const string& description, FitnessPtr& bestFitness)
+  {
+    SolverSettings res(bestFitness);
+    res.solver = solver;
+    res.numEvaluations = numEvaluations;
+    res.description = description;
+    return res;
+  }
+  
+  SolverInfo runSolver(ExecutionContext& context, ProblemPtr problem, SolverSettings solverSettings)
+  {
+    context.enterScope(solverSettings.description);
+    context.resultCallback("solver", solverSettings.solver);
+    std::vector<SolverInfo> runInfos(numRuns);
+    for (size_t i = 0; i < numRuns; ++i)
+    {
+      SolverInfo& info = runInfos[i];
+      context.enterScope("Run " + string((int)i));
+      double res = runSolverOnce(context, problem, solverSettings, info);
+      context.leaveScope(res);
+      context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
+    }
+    
+    SolverInfo res;
+    res.name = solverSettings.description;
+    res.scores.resize(runInfos[0].scores.size());
+    res.evaluationPeriod = runInfos[0].evaluationPeriod;
+    double best = DBL_MAX;
+    mergeResults(res.scores, best, runInfos, false);
+    context.leaveScope(best);
+    return res;
+  }
+  
+  double runSolverOnce(ExecutionContext& context, ProblemPtr problem, SolverSettings solverSettings, SolverInfo& info)
+  {
+    FitnessPtr bestFitness;
+    solverSettings.bestFitness = bestFitness;
+    
+    DVectorPtr cpuTimes = new DVector();
+    DVectorPtr scores = new DVector();
+    size_t evaluationPeriod = solverSettings.numEvaluations > 250 ? solverSettings.numEvaluations / 250 : 1;
+    SolverCallbackPtr callback = compositeSolverCallback(storeBestFitnessSolverCallback(bestFitness),
+                                           singleObjectiveEvaluatorSolverCallback(evaluationPeriod, cpuTimes, scores),
+                                           maxEvaluationsSolverCallback(solverSettings.numEvaluations));
+    
+    solverSettings.solver->setVerbosity((SolverVerbosity)optimizerVerbosity);
+    solverSettings.solver->solve(context, problem, callback);
+    
+    if (verbosity >= verbosityDetailed)
+    {
+      context.resultCallback("optimizer", solverSettings.solver);
+      context.enterScope("curve");
+      
+      for (size_t i = 0; i < scores->getNumElements(); ++i)
+      {
+        size_t numEvaluations = i * evaluationPeriod;
+        context.enterScope(string((int)numEvaluations));
+        context.resultCallback("numEvaluations", numEvaluations);
+        context.resultCallback("score", scores->get(i));
+        context.resultCallback("cpuTime", cpuTimes->get(i));
+        context.leaveScope();
+      }
+      context.leaveScope();
+    }
+
+    info.cpuTimes = cpuTimes->getNativeVector();
+    info.scores = scores->getNativeVector();
+    info.evaluationPeriod = evaluationPeriod;
+    return bestFitness->toDouble();
+  }
+  
+  void mergeResults(std::vector<double>& res, double& best, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
+  {
+    for (size_t i = 0; i < res.size(); ++i)
+    {
+      ScalarVariableMean mean;
+      for (size_t j = 0; j < infos.size(); ++j)
+        mean.push(infos[j].scores[i]);
+      res[i] = mean.getMean();
+      best = (best < res[i] ? best : res[i]);
+    }
+  }
+  
+  void displayResults(ExecutionContext& context, const std::vector<SolverInfo>& infos)
+  {
+    for (size_t i = 0; i < infos[0].scores.size(); ++i)
+    {
+      size_t numEvaluations = (i + 1) * infos[0].evaluationPeriod;
+      context.enterScope(string((int)numEvaluations));
+      context.resultCallback("numEvaluations", numEvaluations);
+      for (size_t j = 0; j < infos.size(); ++j)
+        context.resultCallback(infos[j].name, infos[j].scores[i]);
+      context.leaveScope();
+    }
+  }
+  
+  /*
+   ** Single Objective
+   */
+  void testSingleObjectiveOptimizers(ExecutionContext& context)
+  {
+    std::vector<ProblemPtr> problems;
+    problems.push_back(new SphereProblem(numDims));
+    problems.push_back(new AckleyProblem(numDims));
+    problems.push_back(new GriewangkProblem(numDims));
+    problems.push_back(new RastriginProblem(numDims));
+    problems.push_back(new RosenbrockProblem(numDims));
+    problems.push_back(new RosenbrockRotatedProblem(numDims));
+    
+    size_t numInitialSamples = 10 * numDims;
+    
+    std::vector<SolverSettings> solvers;
+    
+    // baseline solvers
+    if (runBaseline)
+    {
+      solvers.push_back(createSettings(randomSolver(uniformScalarVectorSampler(), numEvaluationsBaseline), numEvaluationsBaseline, "Random search"));
+      solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluationsBaseline / populationSize), numEvaluationsBaseline, "Cross-entropy"));
+      solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluationsBaseline / populationSize, true), numEvaluationsBaseline, "Cross-entropy with elitism"));
+    }
+      
+    
+    // SBO solvers
+    // create the splitting criterion    
+    SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
+    
+    // create the sampler
+    SamplerPtr sampler = scalarExpressionVectorSampler();
+
+    // create inner optimization loop solver
+    SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
+    ceSolver->setVerbosity(verbosityDetailed);
+    
+    // Samplers
+    SamplerPtr uniform = samplerToVectorSampler(uniformScalarVectorSampler(), numInitialSamples);
+    SamplerPtr latinHypercube = latinHypercubeVectorSampler(numInitialSamples);
+    
+    // Variable Encoder
+    VariableEncoderPtr encoder = scalarVectorVariableEncoder();
+    
+    // Selection Criteria
+    SelectionCriterionPtr greedy = greedySelectionCriterion();
+    SelectionCriterionPtr optimistic = optimisticSelectionCriterion(optimism);
+    
+    if (runWithRandomForests)
+    {
+      // create RF learner
+      SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(sampler)); 
+      learner = baggingLearner(learner, numTrees);
+      
+      if (uniformSampling)
+      {
+        FitnessPtr bestPOI, bestEI;
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Greedy, Uniform"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Optimistic, Uniform"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Uniform", bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Uniform", bestEI));
+      }
+      
+      if (latinHypercubeSampling)
+      {
+        FitnessPtr bestPOI, bestEI;
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Greedy, Latin Hypercube"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Optimistic, Latin Hypercube"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Latin Hypercube", bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Latin Hypercube", bestEI));
+      }
+    } // runWithRandomForests
+    
+    if (runWithXT)
+    {
+      // create XT learner
+      // these trees should choose random splits 
+      SolverPtr learner = treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)); 
+      learner = simpleEnsembleLearner(learner, numTrees);
+      
+      if (uniformSampling)
+      {
+        FitnessPtr bestPOI, bestEI;
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Greedy, Uniform"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Optimistic, Uniform"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Uniform", bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Uniform", bestEI));
+      }
+      
+      if (latinHypercubeSampling)
+      {
+        FitnessPtr bestPOI, bestEI;
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Greedy, Latin Hypercube"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Optimistic, Latin Hypercube"));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Latin Hypercube", bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Latin Hypercube", bestEI));
+      }
+    } // runWithXT
+    
+    for (size_t i = 0; i < problems.size(); ++i)
+    { 
+      ProblemPtr problem = problems[i];
+      context.enterScope(problem->toShortString());
+      context.resultCallback("problem", problem);
+      std::vector<SolverInfo> infos;
+      for (size_t j = 0; j < solvers.size(); ++j)
+        infos.push_back(runSolver(context, problem, solvers[j]));
+      context.enterScope("Results");
+      displayResults(context, infos);
+      context.leaveScope();
+      context.leaveScope(); 
+    }
+  }
+};
+
+}; /* namespace lbcpp */
+
+#endif // !SBO_EXPERIMENTS_H_
