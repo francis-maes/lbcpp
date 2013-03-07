@@ -5,7 +5,7 @@
 namespace lbcpp
 {
 
-class PlosComputationalBiologyJournal : public WorkUnit
+class ExtraTreesCysBridgesPredictor : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -13,7 +13,7 @@ public:
     // FASTA Parsing
     if (!fastaFile.exists())
     {
-      context.errorCallback(T("FASTA file does not exist !"));
+      context.errorCallback(T("FASTA file does not exist:") + fastaFile.getFullPathName());
       return false;
     }
 
@@ -26,7 +26,7 @@ public:
     // PSSM Parsing
     if (!pssmFile.exists())
     {
-      context.errorCallback(T("PSSM file does not exist !"));
+      context.errorCallback(T("PSSM file does not exist: ") + pssmFile.getFullPathName());
       return false;
     }
 
@@ -41,26 +41,52 @@ public:
     // Add PSSM to the protein
     protein->setPositionSpecificScoringMatrix(pssm);
     protein->setDisulfideBonds(symmetricMatrix(probabilityType, protein->getCysteinIndices().size()));
-    // Features
-    LargeProteinParametersPtr parameter = new LargeProteinParameters();
-    parameter->pssmWindowSize = 15;
-    parameter->separationProfilSize = 17;
-    // Machine learning
-    LargeProteinPredictorParametersPtr learningMachine = new LargeProteinPredictorParameters(parameter);
-    learningMachine->learner = Function::createFromFile(context, context.getFile("extraTrees.xml"));
-    // Protein predictor
-    ProteinPredictorPtr predictor = new ProteinPredictor(learningMachine);
-    predictor->addTarget(dsbTarget);
-    // Evaluators
 
-    Variable res = predictor->compute(context, protein, protein);
+    // Make CBS predictions
+    LargeProteinParametersPtr cbsParameters = new LargeProteinParameters();
+    cbsParameters->pssmWindowSize = 11;
+    cbsParameters->usePSSMGlobalHistogram = true;
+    cbsParameters->useNumCysteins = true;
 
-    exportResult(context, res.getObjectAndCast<Protein>());
+    LargeProteinPredictorParametersPtr cbsModel = new LargeProteinPredictorParameters(cbsParameters);
+    cbsModel->learner = Function::createFromFile(context, context.getFile("x3CysBridges.cbs.xml"));
+
+    ProteinPredictorPtr cbsPredictor = new ProteinPredictor(cbsModel);
+    cbsPredictor->addTarget(cbsTarget);
+
+    ProteinPtr cbsProtein = cbsPredictor->compute(context, protein, protein).getObjectAndCast<Protein>();
+
+    // Make DSB predictions
+    LargeProteinParametersPtr dsbParameters = new LargeProteinParameters();
+    dsbParameters->pssmWindowSize = 15;
+    dsbParameters->separationProfilSize = 17;
+    
+    LargeProteinPredictorParametersPtr dsbModel = new LargeProteinPredictorParameters(dsbParameters);
+    dsbModel->learner = Function::createFromFile(context, context.getFile("x3CysBridges.dsb.xml"));
+    
+    ProteinPredictorPtr dsbPredictor = new ProteinPredictor(dsbModel);
+    dsbPredictor->addTarget(dsbTarget);    
+
+    ProteinPtr dsbProtein = dsbPredictor->compute(context, cbsProtein, cbsProtein).getObjectAndCast<Protein>();
+
+    // Filter DSB using CBS
+    const SymmetricMatrixPtr& dsb = dsbProtein->getDisulfideBonds(context);
+    DenseDoubleVectorPtr cbs = cbsProtein->getCysteinBondingStates(context, 0.f);
+
+    size_t n = protein->getCysteinIndices().size();
+    SymmetricMatrixPtr filteredDsb = symmetricMatrix(probabilityType, n);
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = i + 1; j < n; ++j)
+        if (cbs->getValue(i) >= 0.5f && cbs->getValue(j) >= 0.5f)
+          filteredDsb->setElement(i, j, dsb->getElement(i, j));
+    dsbProtein->setDisulfideBonds(filteredDsb);
+
+    exportResult(context, dsbProtein);
     return true;
   }
 
 protected:
-  friend class PlosComputationalBiologyJournalClass;
+  friend class ExtraTreesCysBridgesPredictorClass;
 
   File fastaFile;
   File pssmFile;
@@ -82,8 +108,8 @@ private:
     *o << "|               x3CysBridges               |-------------------------#\n";
     *o << "#------------------------------------------#          Julien Becker  |\n";
     *o << "                                      |                Francis Maes  |\n";
-    *o << "    Disulfide Bonding Probability     |              Louis Wehenkel  |\n";
-    *o << "                  &                   #------------------------------#\n";
+    *o << "   Cystein Bonding State Probability  |              Louis Wehenkel  |\n";
+    *o << "   Disulfide Bonding Probability      #------------------------------#\n";
     *o << "   Disulfide Connectivity Pattern\n";
     *o << "\n";
     *o << "\n";
@@ -112,6 +138,18 @@ private:
            
     *o << "Sequence : " << formatedPs << "\n";
     *o << "Cysteines: " << cysString << "\n";
+    *o << "\n";
+    *o << "\n";
+    
+    *o << "#- Cysteine Bonding States -------------------- (Cys, Probability) --#\n";
+    DenseDoubleVectorPtr cbs = protein->getCysteinBondingStates(context, 0.f);
+    for (size_t i = 0; i < n; ++i)
+    {
+      *o << toFixedLengthStringLeftJustified(T("Cys") + String((int)cysteinIndices[i] + 1), 6) << " ";
+      *o << toFixedLengthStringLeftJustified(String(cbs->getValue(i), 5), 7);
+      *o << "\n";
+    }
+    
     *o << "\n";
     *o << "\n";
 
@@ -222,7 +260,7 @@ public:
 
       if (!predictor->train(context, cbsProteins, dsbProteins, T("Learning Cystein Bonding State predictor")))
         return false;
-      predictor->saveToFile(context, context.getFile(T("x3CysBridges.cbs.xml")));
+      model->learner->saveToFile(context, context.getFile(T("x3CysBridges.cbs.xml")));
     }
 
     dsbProteins = Protein::loadProteinsFromDirectoryPair(context, cbsDirectory, dsbProteinsDirectory, numProteinsToLoad, T("Loading intermediate predictions"));
@@ -245,7 +283,7 @@ public:
 
       if (!predictor->train(context, dsbProteins, ContainerPtr(), T("Learning Disulfide Bond predictor")))
         return false;
-      predictor->saveToFile(context, context.getFile(T("x3CysBridges.dsb.xml")));
+      model->learner->saveToFile(context, context.getFile(T("x3CysBridges.dsb.xml")));
     }
 
     cbsDirectory.deleteRecursively();
