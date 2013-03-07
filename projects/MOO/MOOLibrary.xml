@@ -30,7 +30,23 @@
     <variable type="PositiveInteger" name="numObjectives"/>
     <variable type="PositiveInteger" name="randomSeed"/>
   </class>
-  
+
+  <class name="SBOExperiments" base="WorkUnit">
+    <variable type="Boolean" name="runBaseline"/>
+    <variable type="PositiveInteger" name="numEvaluationsBaseline"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="Boolean" name="runWithRandomForests"/>
+    <variable type="Boolean" name="runWithXT"/>
+    <variable type="Boolean" name="uniformSampling"/>
+    <variable type="Boolean" name="latinHypercubeSampling"/>
+    <variable type="PositiveInteger" name="numEvaluationsSBO"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="Double" name="optimism"/>
+    <variable type="PositiveInteger" name="numDims"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+    <variable type="PositiveInteger" name="optimizerVerbosity"/>
+  </class>
   <!-- FQI Based Solver -->
   <class name="FQIBasedSolver" base="PopulationBasedSolver" abstract="yes"/>
   
