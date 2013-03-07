@@ -20,7 +20,9 @@
   
   <!-- Probability Of Improvement Selection Criterion -->
   <class name="ProbabilityOfImprovementSelectionCriterion" base="SelectionCriterion">
+    <constructor arguments="FitnessPtr&amp; bestFitness, double improvementFactor"/>
     <constructor arguments="FitnessPtr&amp; bestFitness"/>
+    <variable type="Double" name="improvementFactor"/>
   </class>
   
   <!-- Expected Improvement Selection Criterion -->

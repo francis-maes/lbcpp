@@ -19,14 +19,16 @@ namespace lbcpp
 
 /** Class for probability of improvement selection.
  *  This class's evaluate() function returns the probability of improving upon
- *  the current best solution.
+ *  the current best solution, with at least improvementFactor percent.
  */
 
 class ProbabilityOfImprovementSelectionCriterion : public SelectionCriterion
 {
 public:
-  ProbabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness) : bestFitness(bestFitness) {}
-  ProbabilityOfImprovementSelectionCriterion() : bestFitness(*(FitnessPtr* )0) {}
+  ProbabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness, double improvementFactor) 
+    : bestFitness(bestFitness), improvementFactor(improvementFactor) {}
+  ProbabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness) : bestFitness(bestFitness), improvementFactor(0.1) {}
+  ProbabilityOfImprovementSelectionCriterion() : bestFitness(*(FitnessPtr* )0), improvementFactor(0.1) {}
   
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = 1.0;}
@@ -37,6 +39,7 @@ public:
     double mean = pred->getMean();
     double stddev = pred->getStandardDeviation();
     double curBest = bestFitness->toDouble(); // currentBest should be Fitness with 1 value
+    curBest = curBest + (originalProblem->getObjective(0)->isMinimization() ? - improvementFactor * fabs(curBest) : improvementFactor * fabs(curBest));
     double cdf = GaussianSampler::cumulativeDensityFunction(curBest, mean, stddev);
     return (originalProblem->getObjective(0)->isMinimization() ? cdf : 1 - cdf);
   }
@@ -45,6 +48,7 @@ protected:
   friend class ProbabilityOfImprovementSelectionCriterionClass;
   
   FitnessPtr& bestFitness;
+  double improvementFactor;
 };
 
 }; /* namespace lbcpp */

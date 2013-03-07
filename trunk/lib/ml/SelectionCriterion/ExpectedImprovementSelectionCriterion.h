@@ -13,6 +13,7 @@
 # include <ml/RandomVariable.h>
 # include <ml/Sampler.h>
 # include <ml/Fitness.h>
+# include <ml/Problem.h>
 
 namespace lbcpp
 {
@@ -35,14 +36,15 @@ public:
   {
     ScalarVariableMeanAndVariancePtr pred = object.staticCast<ScalarVariableMeanAndVariance>();
     double mean = pred->getMean();
-    double var = pred->getVariance();
-    if (var < 1e-8) return 0.0;
+    double stddev = pred->getStandardDeviation();
+    if (stddev < 1e-8) return 0.0;
     double curBest = bestFitness->toDouble(); // currentBest should be Fitness with 1 value
-    double term = (curBest - mean) / var;
+    double delta = (originalProblem->getObjective(0)->isMinimization() ? curBest - mean : mean - curBest);
+    double term = delta / stddev;
     double cdf = GaussianSampler::cumulativeDensityFunction(term, 0.0, 1.0);
     double pdf = GaussianSampler::probabilityDensityFunction(term, 0.0, 1.0);
     // expected improvement
-    double ei = (curBest - mean) * pdf  + var * cdf;
+    double ei = delta * cdf  + stddev * pdf;
     //return juce::jmax(0.0, ei);
     return ei;
   }
