@@ -223,6 +223,7 @@ SET(ML_TOPLEVEL_SOURCES
   SolutionContainerComponent.h
   Domain.cpp
   Fitness.cpp
+  Sampler.cpp
   Problem.cpp
   BanditPool.cpp
 )

@@ -22,6 +22,7 @@
 
   ==============================================================================
 */
+#ifdef LBCPP_USER_INTERFACE
 #define JUCE_DLL_BUILD
 #include "juce_amalgamated.h"
 
@@ -905,3 +906,5 @@ void CodeDocument::remove (const int startPos, const int endPos, const bool undo
 }
 
 END_JUCE_NAMESPACE
+
+#endif // !LBCPP_USER_INTERFACE

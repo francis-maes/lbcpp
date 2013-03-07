@@ -42,11 +42,8 @@ public:
   GaussianSampler(double mean = 0.0, double standardDeviation = 1.0)
     : mean(mean), standardDeviation(standardDeviation) {}
   
-  virtual ObjectPtr sample(ExecutionContext& context) const
-    {return new Double(context.getRandomGenerator()->sampleDoubleFromGaussian(mean, standardDeviation));}
-  
-  virtual bool isDeterministic() const
-    {return standardDeviation < 1e-12;}
+  virtual ObjectPtr sample(ExecutionContext& context) const;
+  virtual bool isDeterministic() const;
   
   /** Probability Density Function of the normal distribution.
    * \param x The point at which to evaluate the probability.
@@ -54,10 +51,7 @@ public:
    * \param sigma The standard deviation of the normal distribution.
    * \return The probability of x, given the distribution described by mu and sigma.
    */
-  static double probabilityDensityFunction(double x, double mu, double sigma)
-  {
-    return exp(-1 * (x - mu) * (x - mu) / (2 * sigma * sigma)) / (sigma * sqrt(M_2_TIMES_PI));
-  }
+  static double probabilityDensityFunction(double x, double mu, double sigma);
   
   /** Cumulative Density Function of the normal distribution.
    * \param x The point at which to evaluate the cumulative probability.
@@ -65,15 +59,8 @@ public:
    * \param sigma The standard deviation of the normal distribution.
    * \return The probability of [-inf,x], given the distribution described by mu and sigma.
    */
-  static double cumulativeDensityFunction(double x, double mu, double sigma)
-  {
-    double num = (x - mu);
-    double denom = (sigma * sqrt(2.0));
-    double frac = num / denom;
-    double erfRes = erf(frac);
-    return 0.5 * (1 + erfRes);   
-  }
-                       
+  static double cumulativeDensityFunction(double x, double mu, double sigma);
+
 protected:
   friend class GaussianSamplerClass;
   
@@ -81,7 +68,7 @@ protected:
   double standardDeviation;
 };
 
-  extern SamplerPtr gaussianSampler(double mean = 0.0, double standardDeviation = 1.0);
+extern SamplerPtr gaussianSampler(double mean = 0.0, double standardDeviation = 1.0);
   
 extern SamplerPtr uniformScalarVectorSampler();
 extern SamplerPtr samplerToVectorSampler(SamplerPtr sampler, size_t numSamples);

@@ -22,6 +22,7 @@
 
   ==============================================================================
 */
+#ifdef LBCPP_USER_INTERFACE
 #define JUCE_DLL_BUILD
 #include "juce_amalgamated.h"
 
@@ -594,3 +595,4 @@ const Colour CPlusPlusCodeTokeniser::getDefaultColour (const int tokenType)
 
 
 END_JUCE_NAMESPACE
+#endif // !LBCPP_USER_INTERFACE
