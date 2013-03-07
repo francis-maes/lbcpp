@@ -33,7 +33,6 @@ public:
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
   {
     this->domain = domain.staticCast<VectorDomain>()->getElementsDomain().staticCast<ScalarVectorDomain>();
-    jassert(this->domain);
     intervals.resize(this->domain->getNumDimensions());
     for (size_t d = 0; d < this->domain->getNumDimensions(); ++d)
     {

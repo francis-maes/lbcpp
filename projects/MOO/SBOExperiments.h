@@ -31,21 +31,23 @@ public:
   SBOExperiments() :  runBaseline(true),
                       numEvaluationsBaseline(1000), 
                       populationSize(20),
-                      runWithRandomForests(false),
-                      runWithXT(true),
+                      runRandomForests(true),
+                      runXT(true),
                       uniformSampling(false),
                       latinHypercubeSampling(true),
-                      numEvaluationsSBO(150), 
+                      numEvaluationsSBO(500), 
                       numTrees(100),
                       optimism(2.0),
                       numDims(6),
-                      numRuns(10), 
+                      numRuns(10),
                       verbosity(1),
-                      optimizerVerbosity(0) {}
+                      optimizerVerbosity(1),
+                      problemIdx(1) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
     lbCppMLLibraryCacheTypes(context);
+    jassert(problemIdx >= 1 && problemIdx <= 6);
     testSingleObjectiveOptimizers(context);
     //testBiObjectiveOptimizers(context);
     return ObjectPtr();
@@ -60,8 +62,8 @@ protected:
   size_t populationSize;         /**< Population size for baseline optimizers                          */
   
   // options for surrogate-based algorithms
-  bool runWithRandomForests;     /**< Run with random forest surrogate                                 */
-  bool runWithXT;                /**< Run with extremely randomized trees                              */
+  bool runRandomForests;     /**< Run with random forest surrogate                                 */
+  bool runXT;                /**< Run with extremely randomized trees                              */
 
   bool uniformSampling;          /**< Run with uniform sampling                                        */
   bool latinHypercubeSampling;   /**< Run with latin hypercube sampling                                */
@@ -77,6 +79,8 @@ protected:
   
   size_t verbosity;
   size_t optimizerVerbosity;
+  
+  size_t problemIdx;             /**< The problem to run (1-6)                                         */
   
   struct SolverInfo
   {
@@ -140,7 +144,7 @@ protected:
     
     DVectorPtr cpuTimes = new DVector();
     DVectorPtr scores = new DVector();
-    size_t evaluationPeriod = solverSettings.numEvaluations > 250 ? solverSettings.numEvaluations / 250 : 1;
+    size_t evaluationPeriod = 2;
     SolverCallbackPtr callback = compositeSolverCallback(storeBestFitnessSolverCallback(*solverSettings.bestFitness),
                                            singleObjectiveEvaluatorSolverCallback(evaluationPeriod, cpuTimes, scores),
                                            maxEvaluationsSolverCallback(solverSettings.numEvaluations));
@@ -148,11 +152,10 @@ protected:
     solverSettings.solver->setVerbosity((SolverVerbosity)optimizerVerbosity);
     solverSettings.solver->solve(context, problem, callback);
     
+    context.resultCallback("optimizer", solverSettings.solver);
     if (verbosity >= verbosityDetailed)
     {
-      context.resultCallback("optimizer", solverSettings.solver);
       context.enterScope("curve");
-      
       for (size_t i = 0; i < scores->getNumElements(); ++i)
       {
         size_t numEvaluations = i * evaluationPeriod;
@@ -192,7 +195,8 @@ protected:
       context.resultCallback("numEvaluations", numEvaluations);
       context.resultCallback("log(numEvaluations)", log10((double)numEvaluations));
       for (size_t j = 0; j < infos.size(); ++j)
-        context.resultCallback(infos[j].name, infos[j].scores[i]);
+        if (i < infos[j].scores.size())
+          context.resultCallback(infos[j].name, infos[j].scores[i]);
       context.leaveScope();
     }
   }
@@ -228,7 +232,7 @@ protected:
     SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
     
     // create the sampler
-    SamplerPtr sampler = scalarExpressionVectorSampler();
+    SamplerPtr testExpressionsSampler = subsetVectorSampler(scalarExpressionVectorSampler(), (size_t)(sqrt((double)numDims) + 0.5));
 
     // create inner optimization loop solver
     SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
@@ -242,19 +246,17 @@ protected:
     VariableEncoderPtr encoder = scalarVectorVariableEncoder();
     
     // Selection Criteria
-    SelectionCriterionPtr greedy = greedySelectionCriterion();
     SelectionCriterionPtr optimistic = optimisticSelectionCriterion(optimism);
     
-    if (runWithRandomForests)
+    if (runRandomForests)
     {
       // create RF learner
-      SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(sampler)); 
+      SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(testExpressionsSampler)); 
       learner = baggingLearner(learner, numTrees);
       
       if (uniformSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Greedy, Uniform"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Optimistic, Uniform"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Uniform", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Uniform", &bestEI));
@@ -263,24 +265,22 @@ protected:
       if (latinHypercubeSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Greedy, Latin Hypercube"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Optimistic, Latin Hypercube"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Latin Hypercube", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Latin Hypercube", &bestEI));
       }
-    } // runWithRandomForests
+    } // runRandomForests
     
-    if (runWithXT)
+    if (runXT)
     {
       // create XT learner
       // these trees should choose random splits 
-      SolverPtr learner = treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)); 
+      SolverPtr learner = treeLearner(splittingCriterion, randomSplitConditionLearner(testExpressionsSampler)); 
       learner = simpleEnsembleLearner(learner, numTrees);
       
       if (uniformSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Greedy, Uniform"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Optimistic, Uniform"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Uniform", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Uniform", &bestEI));
@@ -289,26 +289,22 @@ protected:
       if (latinHypercubeSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Greedy, Latin Hypercube"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Optimistic, Latin Hypercube"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Latin Hypercube", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Latin Hypercube", &bestEI));
       }
-    } // runWithXT
+    } // runXT
     
-    for (size_t i = 0; i < problems.size(); ++i)
-    { 
-      ProblemPtr problem = problems[i];
-      context.enterScope(problem->toShortString());
-      context.resultCallback("problem", problem);
-      std::vector<SolverInfo> infos;
-      for (size_t j = 0; j < solvers.size(); ++j)
-        infos.push_back(runSolver(context, problem, solvers[j]));
-      context.enterScope("Results");
-      displayResults(context, infos);
-      context.leaveScope();
-      context.leaveScope(); 
-    }
+    ProblemPtr problem = problems[problemIdx - 1];
+    context.enterScope(problem->toShortString());
+    context.resultCallback("problem", problem);
+    std::vector<SolverInfo> infos;
+    for (size_t j = 0; j < solvers.size(); ++j)
+      infos.push_back(runSolver(context, problem, solvers[j]));
+    context.enterScope("Results");
+    displayResults(context, infos);
+    context.leaveScope();
+    context.leaveScope(); 
   }
 };
 
