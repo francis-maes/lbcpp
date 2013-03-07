@@ -500,7 +500,11 @@
 
       @see jassert()
   */
-  #define jassertfalse                  { juce_LogCurrentAssertion; assert(false); } // if (JUCE_NAMESPACE::juce_isRunningUnderDebugger()) juce_breakDebugger; }
+#if JUCE_MAC
+  #define jassertfalse                  { juce_LogCurrentAssertion; assert(false); }
+#else
+#define jassertfalse              { juce_LogCurrentAssertion;  if (JUCE_NAMESPACE::juce_isRunningUnderDebugger()) juce_breakDebugger; }  
+#endif
 
   /** Platform-independent assertion macro.
 
@@ -635,6 +639,7 @@
 #include <typeinfo>
 #include <cstring>
 #include <cstdio>
+#include <cassert>
 
 #if JUCE_MAC || JUCE_LINUX
   #include <pthread.h>
@@ -866,6 +871,7 @@ typedef unsigned int                uint32;
 #else
   /** A platform-independent 64-bit integer type. */
   typedef long long                 int64;
+
   /** A platform-independent 64-bit unsigned integer type. */
   typedef unsigned long long        uint64;
   /** A platform-independent macro for writing 64-bit literals, needed because
