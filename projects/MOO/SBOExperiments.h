@@ -88,30 +88,21 @@ protected:
   
   struct SolverSettings
   { 
-    SolverSettings() : bestFitness(*(FitnessPtr* )0) {}
-    SolverSettings(FitnessPtr bestFitness) : bestFitness(bestFitness) {}
+    SolverSettings() : bestFitness(NULL) {}
     
     SolverPtr solver;
-    FitnessPtr& bestFitness;
+    FitnessPtr* bestFitness;
     string description;
     size_t numEvaluations;
-    
-    SolverSettings& operator= (const SolverSettings& other)
-      {jassertfalse;}
   };
   
-  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations)
-    {return createSettings(solver, numEvaluations, solver->toShortString());}
-  
-  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations, const string& description)
-    {FitnessPtr bestFitness; return createSettings(solver, numEvaluations, description, bestFitness);}
-  
-  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations, const string& description, FitnessPtr& bestFitness)
+  SolverSettings createSettings(SolverPtr solver, size_t numEvaluations, const string& description = string::empty, FitnessPtr* bestFitness = NULL)
   {
-    SolverSettings res(bestFitness);
+    SolverSettings res;
+    res.bestFitness = bestFitness;
     res.solver = solver;
     res.numEvaluations = numEvaluations;
-    res.description = description;
+    res.description = description.isEmpty() ? solver->toShortString() : description;
     return res;
   }
   
@@ -141,13 +132,16 @@ protected:
   
   double runSolverOnce(ExecutionContext& context, ProblemPtr problem, SolverSettings solverSettings, SolverInfo& info)
   {
-    FitnessPtr bestFitness;
-    solverSettings.bestFitness = bestFitness;
+    FitnessPtr defaultBestFitness;
+    if (solverSettings.bestFitness)
+      *solverSettings.bestFitness = FitnessPtr();
+    else
+      solverSettings.bestFitness = &defaultBestFitness;
     
     DVectorPtr cpuTimes = new DVector();
     DVectorPtr scores = new DVector();
     size_t evaluationPeriod = solverSettings.numEvaluations > 250 ? solverSettings.numEvaluations / 250 : 1;
-    SolverCallbackPtr callback = compositeSolverCallback(storeBestFitnessSolverCallback(bestFitness),
+    SolverCallbackPtr callback = compositeSolverCallback(storeBestFitnessSolverCallback(*solverSettings.bestFitness),
                                            singleObjectiveEvaluatorSolverCallback(evaluationPeriod, cpuTimes, scores),
                                            maxEvaluationsSolverCallback(solverSettings.numEvaluations));
     
@@ -174,7 +168,7 @@ protected:
     info.cpuTimes = cpuTimes->getNativeVector();
     info.scores = scores->getNativeVector();
     info.evaluationPeriod = evaluationPeriod;
-    return bestFitness->toDouble();
+    return (*solverSettings.bestFitness)->toDouble();
   }
   
   void mergeResults(std::vector<double>& res, double& best, const std::vector<SolverInfo>& infos, bool inFunctionOfCpuTime)
@@ -196,6 +190,7 @@ protected:
       size_t numEvaluations = (i + 1) * infos[0].evaluationPeriod;
       context.enterScope(string((int)numEvaluations));
       context.resultCallback("numEvaluations", numEvaluations);
+      context.resultCallback("log(numEvaluations)", log10((double)numEvaluations));
       for (size_t j = 0; j < infos.size(); ++j)
         context.resultCallback(infos[j].name, infos[j].scores[i]);
       context.leaveScope();
@@ -237,7 +232,7 @@ protected:
 
     // create inner optimization loop solver
     SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
-    ceSolver->setVerbosity(verbosityDetailed);
+    ceSolver->setVerbosity(verbosityQuiet);
     
     // Samplers
     SamplerPtr uniform = samplerToVectorSampler(uniformScalarVectorSampler(), numInitialSamples);
@@ -261,8 +256,8 @@ protected:
         FitnessPtr bestPOI, bestEI;
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Greedy, Uniform"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Optimistic, Uniform"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Uniform", bestPOI));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Uniform", bestEI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Uniform", &bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Uniform", &bestEI));
       }
       
       if (latinHypercubeSampling)
@@ -270,8 +265,8 @@ protected:
         FitnessPtr bestPOI, bestEI;
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Greedy, Latin Hypercube"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Optimistic, Latin Hypercube"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Latin Hypercube", bestPOI));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Latin Hypercube", bestEI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Probability of Improvement, Latin Hypercube", &bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, RF, Expected Improvement, Latin Hypercube", &bestEI));
       }
     } // runWithRandomForests
     
@@ -287,8 +282,8 @@ protected:
         FitnessPtr bestPOI, bestEI;
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Greedy, Uniform"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Optimistic, Uniform"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Uniform", bestPOI));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Uniform", bestEI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Uniform", &bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Uniform", &bestEI));
       }
       
       if (latinHypercubeSampling)
@@ -296,8 +291,8 @@ protected:
         FitnessPtr bestPOI, bestEI;
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, greedy, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Greedy, Latin Hypercube"));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Optimistic, Latin Hypercube"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Latin Hypercube", bestPOI));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Latin Hypercube", bestEI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Probability of Improvement, Latin Hypercube", &bestPOI));
+        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluationsSBO), numEvaluationsSBO, "SBO, XT, Expected Improvement, Latin Hypercube", &bestEI));
       }
     } // runWithXT
     

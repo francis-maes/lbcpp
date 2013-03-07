@@ -260,6 +260,7 @@ namespace lbcpp
       for (size_t i = 0; i < count; ++i)
       {
         double x = random->sampleDouble(-1.0,1.0);
+        x = juce::roundDoubleToInt(x * 100) / 100.0;
         res->setElement(i, 0, new Double(x));
         
         if (numObjectives == 1)
@@ -287,6 +288,7 @@ namespace lbcpp
       {
         res->setElement(i, 0, new Double(x));
         x += 0.01;
+        x = juce::roundDoubleToInt(x * 100) / 100.0;
       }
       return res;
     }
