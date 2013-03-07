@@ -489,7 +489,7 @@
   </class>
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
 
-  <class name="PlosComputationalBiologyJournal" base="WorkUnit">
+  <class name="ExtraTreesCysBridgesPredictor" base="WorkUnit">
     <variable type="File" name="fastaFile" shortName="fasta"/>
     <variable type="File" name="pssmFile" shortName="pssm"/>
     <variable type="File" name="outputFile" shortName="o"/>
