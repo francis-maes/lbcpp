@@ -54,6 +54,10 @@ public:
     ProteinPredictorPtr cbsPredictor = new ProteinPredictor(cbsModel);
     cbsPredictor->addTarget(cbsTarget);
 
+    VectorPtr data = vector(pairClass(proteinClass, proteinClass), 1);
+    data->setElement(0, new Pair(protein, ProteinPtr()));    
+    cbsPredictor->train(context, data, data, T("PreComputing ExtraTrees"));
+
     ProteinPtr cbsProtein = cbsPredictor->compute(context, protein, protein).getObjectAndCast<Protein>();
 
     // Make DSB predictions
@@ -66,6 +70,9 @@ public:
     
     ProteinPredictorPtr dsbPredictor = new ProteinPredictor(dsbModel);
     dsbPredictor->addTarget(dsbTarget);    
+
+    data->setElement(0, new Pair(cbsProtein, ProteinPtr()));    
+    dsbPredictor->train(context, data, data, T("PreComputing ExtraTrees"));
 
     ProteinPtr dsbProtein = dsbPredictor->compute(context, cbsProtein, cbsProtein).getObjectAndCast<Protein>();
 
