@@ -113,12 +113,12 @@ ObjectPtr ExecutionTraceTreeViewItem::getTargetObject(ExecutionContext& context)
 ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace, const string& name, ExecutionContextPtr context)
   : GenericTreeView(trace, name)
 {
+  ExecutionCallback::setStaticAllocationFlag();
   if (context)
   {
     this->context = context;
     notificationQueue = new NotificationQueue();
     targetCallback = createTreeBuilderCallback();
-    ExecutionCallback::setStaticAllocationFlag();
     ExecutionCallbackPtr pthis((ExecutionCallback* )this);
     context->appendCallback(pthis);
   }
