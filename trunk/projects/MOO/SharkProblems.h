@@ -20,8 +20,8 @@ namespace lbcpp
 class ObjectiveFromSharkObjectiveFunction : public Objective
 {
 public:
-  ObjectiveFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, size_t objectiveIndex, double worstScore, double bestScore)
-    : objective(objective), objectiveIndex(objectiveIndex), worstScore(worstScore), bestScore(bestScore) {}
+  ObjectiveFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, size_t objectiveIndex, double worstScore, double bestScore, DenseDoubleVectorPtr optimum)
+    : objective(objective), objectiveIndex(objectiveIndex), worstScore(worstScore), bestScore(bestScore), optimum(optimum) {}
 
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = worstScore; best = bestScore;}
@@ -31,7 +31,11 @@ public:
     DenseDoubleVectorPtr vector = object.staticCast<DenseDoubleVector>();
     jassert(vector);
     std::vector<double> res;
-    objective->result(vector->getValues(), res);
+    std::vector<double> point = vector->getValues();
+    jassert(point.size() == optimum->getNumValues());
+    for (size_t i = 0; i < point.size(); ++i)
+      point[i] -= optimum->getValue(i);
+    objective->result(point, res);
     jassert(objectiveIndex < res.size());
     return res[objectiveIndex];
   }
@@ -41,6 +45,7 @@ protected:
   size_t objectiveIndex;
   double worstScore;
   double bestScore;
+  DenseDoubleVectorPtr optimum;
 };
 
 class ProblemFromSharkObjectiveFunction : public Problem
@@ -69,11 +74,14 @@ public:
       }
     }
 
+    ScalarVectorDomainPtr scalarVectorDomain = getDomain().staticCast<ScalarVectorDomain>();
+    DenseDoubleVectorPtr optimum = scalarVectorDomain->sampleUniformly(context.getRandomGenerator());
+
     for (size_t i = 0; i < objective->objectives(); ++i)
     {
       double worst, best;
       getObjectiveRange(i, worst, best);
-      addObjective(new ObjectiveFromSharkObjectiveFunction(objective, i, worst, best));
+      addObjective(new ObjectiveFromSharkObjectiveFunction(objective, i, worst, best, optimum));
     }
 
     DenseDoubleVectorPtr initialGuess = new DenseDoubleVector(domain.staticCast<ScalarVectorDomain>()->getNumDimensions(), 0.0);
@@ -99,19 +107,6 @@ protected:
 /*
 ** Single-objective benchmark functions
 */
-class SingleObjectiveSharkMOProblem : public ProblemFromSharkObjectiveFunction
-{
-public:
-  SingleObjectiveSharkMOProblem(ObjectiveFunctionVS<double>* objective, double max = 10.0)
-    : ProblemFromSharkObjectiveFunction(objective), max(max) {}
-  
-  virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const
-    {res[0].first = max;}
-
-protected:
-  double max;
-};
-
 struct SphereProblem : public ProblemFromSharkObjectiveFunction
 {
   SphereProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Sphere((unsigned)numDimensions)), numDimensions(numDimensions)
@@ -129,7 +124,6 @@ struct SphereProblem : public ProblemFromSharkObjectiveFunction
 protected:
   size_t numDimensions;
 };
-
 
 struct AckleyProblem : public ProblemFromSharkObjectiveFunction
 {
