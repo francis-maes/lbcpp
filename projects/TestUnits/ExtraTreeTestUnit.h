@@ -57,11 +57,13 @@ protected:
     for (size_t i = 0; i < testingData->getNumElements(); ++i)
       allData->append(testingData->getElement(i));
     
-    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, true); //, context.getFile("test.x3"));
+    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, true);//, context.getFile("test.x3"));
     learner->train(context, learningData, allData, T("Training"));
 
     //learner->saveToFile(context, context.getFile(T("test.x3.xml")));
     //FunctionPtr learner = Function::createFromFile(context, context.getFile(T("test.x3.xml")));
+    //learner->train(context, vector(learningData->getElementsType()), learningData, T("Training"));
+
     EvaluatorPtr evaluator = classificationEvaluator();
     ScoreObjectPtr score = learner->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
     checkIsCloseTo(context, 1.0, 0.0, 1 - score->getScoreToMinimize());

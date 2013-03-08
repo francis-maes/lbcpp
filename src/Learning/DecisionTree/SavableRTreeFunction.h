@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-extern BatchLearnerPtr savableRTreeBatchLearner();
+extern BatchLearnerPtr savableRTreeBatchLearner(bool loadFromFile = false);
 
 class SavableRTreeFunction : public ExtraTreesFunction
 {
@@ -26,7 +26,7 @@ public:
                        size_t minimumSizeForSplitting,
                        const File& file)
   : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting),
-    file(file)
+    file(file), predictionIndex((size_t)-1)
   {
     // Tree files are not assumed to exist when using this constructor
     setBatchLearner(filterUnsupervisedExamplesBatchLearner(savableRTreeBatchLearner()));
@@ -34,6 +34,13 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
+    if (predictions.size())
+    {
+      const_cast<SavableRTreeFunction*>(this)->predictionIndex %= predictions.size();
+      jassert(predictionIndex < predictions.size());
+      return predictions[const_cast<SavableRTreeFunction*>(this)->predictionIndex++];
+    }
+
     void* coreTable = RTreeFunction::computeCoreTableOf(context, inputs[0]);
     Variable prediction = createEmptyPrediction();
 
@@ -59,7 +66,8 @@ protected:
 
   File file;
 
-  SavableRTreeFunction() {}
+  SavableRTreeFunction()
+    {setBatchLearner(savableRTreeBatchLearner(true));}
 
   File getTreesFile(size_t index) const
   {
@@ -75,6 +83,10 @@ protected:
   virtual Variable createEmptyPrediction() const = 0;
   virtual Variable addPrediction(const Variable& a, const Variable& b) const = 0;
   virtual Variable finalizePrediction(const Variable& value) const = 0;
+
+private:
+  size_t predictionIndex;
+  std::vector<Variable> predictions;
 };
 
 extern ClassPtr savableRTreeFunctionClass;
@@ -82,7 +94,10 @@ typedef ReferenceCountedObjectPtr<SavableRTreeFunction> SavableRTreeFunctionPtr;
 
 class SavableRTreeBatchLearner : public BatchLearner
 {
-public:  
+public:
+  SavableRTreeBatchLearner(bool loadFromFile = false)
+    : loadFromFile(loadFromFile) {}
+
   virtual TypePtr getRequiredFunctionType() const
     {return savableRTreeFunctionClass;}
 
@@ -92,6 +107,14 @@ public:
                      const std::vector<ObjectPtr>& validationData) const
   {
     const SavableRTreeFunctionPtr& rTreeFunction = function.staticCast<SavableRTreeFunction>();
+    
+    if (loadFromFile)
+    {
+      context.informationCallback(T("SavableRTreeBatchLearner"),
+                                  T("Loading saved trees and making predictions"));
+      return makePredictions(context, rTreeFunction, validationData);
+    }
+
     if (!checkHasAtLeastOneExemples(trainingData))
     {
       context.errorCallback(T("No training examples"));
@@ -112,9 +135,67 @@ public:
       context.progressCallback(new ProgressionState(i + 1, rTreeFunction->numTrees, T("trees")));
     }
 
+    if (rTreeFunction->getTreesFile(0).exists()
+        && checkHasAtLeastOneExemples(validationData))
+    {
+      context.informationCallback(T("SavableRTreeBatchLearner"),
+                                  T("Making predictions on validation data"));
+      return makePredictions(context, rTreeFunction, validationData);
+    }
+
     context.leaveScope();
     return true;
   }
+
+  bool makePredictions(ExecutionContext& context,
+                       const SavableRTreeFunctionPtr& rTreeFunction,
+                       const std::vector<ObjectPtr>& data) const
+  {
+    const size_t numExamples = data.size();
+    
+    std::vector<void*> precomputedCoreTables(numExamples);
+    for (size_t i = 0; i < numExamples; ++i)
+      precomputedCoreTables[i] = RTreeFunction::computeCoreTableOf(context, data[i]->getVariable(0));
+
+    rTreeFunction->predictions.resize(numExamples);
+    for (size_t i = 0; i < numExamples; ++i)
+      rTreeFunction->predictions[i] = rTreeFunction->createEmptyPrediction();
+
+    context.enterScope(T("Savable rTree Predicting"));
+    for (size_t i = 0; i < rTreeFunction->numTrees; ++i)
+    {
+      RTreeFunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation();
+      x3Function->initialize(context, rTreeFunction->inputVariables);
+      x3Function->setVerbosity(false);
+      if (!x3Function->loadTreesFromBinaryFile(context, rTreeFunction->getTreesFile(i)))
+      {
+        context.errorCallback(T("SavableRTreeFunction::computeFunction"), T("Error while loading trees from file: ") + rTreeFunction->getTreesFile(i).getFileName());
+        return false;
+      }
+
+      for (size_t j = 0; j < numExamples; ++j)
+      {
+        const Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
+        rTreeFunction->predictions[j] = rTreeFunction->addPrediction(rTreeFunction->predictions[j], result);
+      }
+      
+      context.progressCallback(new ProgressionState(i + 1, rTreeFunction->numTrees, T("trees")));
+    }
+    
+    for (size_t j = 0; j < numExamples; ++j)
+      rTreeFunction->predictions[j] = rTreeFunction->finalizePrediction(rTreeFunction->predictions[j]);
+    
+    rTreeFunction->predictionIndex = 0;
+
+    for (size_t i = 0; i < numExamples; ++i)
+      RTreeFunction::deleteCoreTable(precomputedCoreTables[i]);
+
+    context.leaveScope();
+    return true;
+  }
+
+protected:
+  bool loadFromFile;
 };
 
 class RegressionSavableRTreeFunction : public SavableRTreeFunction

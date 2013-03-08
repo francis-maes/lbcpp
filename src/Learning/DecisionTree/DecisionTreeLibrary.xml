@@ -53,7 +53,7 @@
   <class name="ClassificationSavableRTreeFunction" base="SavableRTreeFunction"/>
 
   <class name="SavableRTreeBatchLearner" base="BatchLearner">
-    <constructor/>
+    <constructor arguments="bool loadFromFile" />
   </class>
 
 </library>
