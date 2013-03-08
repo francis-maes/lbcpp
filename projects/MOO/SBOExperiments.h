@@ -28,13 +28,13 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class SBOExperiments : public WorkUnit
 {
 public:
-  SBOExperiments() :  runBaseline(true),
+  SBOExperiments() :  runBaseline(false),
                       numEvaluationsBaseline(1000), 
                       populationSize(20),
-                      runRandomForests(true),
-                      runXT(true),
+                      runRandomForests(false),
+                      runXT(false),
                       uniformSampling(false),
-                      latinHypercubeSampling(true),
+                      latinHypercubeSampling(false),
                       numEvaluationsSBO(500), 
                       numTrees(100),
                       optimism(2.0),
@@ -136,6 +136,8 @@ protected:
   
   double runSolverOnce(ExecutionContext& context, ProblemPtr problem, SolverSettings solverSettings, SolverInfo& info)
   {
+    problem->reinitialize(context);
+
     FitnessPtr defaultBestFitness;
     if (solverSettings.bestFitness)
       *solverSettings.bestFitness = FitnessPtr();
@@ -222,8 +224,10 @@ protected:
     if (runBaseline)
     {
       solvers.push_back(createSettings(randomSolver(uniformScalarVectorSampler(), numEvaluationsBaseline), numEvaluationsBaseline, "Random search"));
+      solvers.push_back(createSettings(randomSolver(diagonalGaussianSampler(), numEvaluationsBaseline), numEvaluationsBaseline, "Random gaussian search"));
       solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluationsBaseline / populationSize), numEvaluationsBaseline, "Cross-entropy"));
       solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluationsBaseline / populationSize, true), numEvaluationsBaseline, "Cross-entropy with elitism"));
+      // TODO: add CMA-ES
     }
       
     

@@ -4,13 +4,12 @@
 
   <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes"/>
 
-  <class name="SingleObjectiveSharkMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
-  <class name="SphereProblem" base="SingleObjectiveSharkMOProblem"/>  
-  <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
+  <class name="SphereProblem" base="ProblemFromSharkObjectiveFunction"/>  
+  <class name="AckleyProblem" base="ProblemFromSharkObjectiveFunction"/>
+  <class name="GriewangkProblem" base="ProblemFromSharkObjectiveFunction"/>
+  <class name="RastriginProblem" base="ProblemFromSharkObjectiveFunction"/>
+  <class name="RosenbrockProblem" base="ProblemFromSharkObjectiveFunction"/>
+  <class name="RosenbrockRotatedProblem" base="ProblemFromSharkObjectiveFunction"/>
 
   <class name="ZDTMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
   <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
