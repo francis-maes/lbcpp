@@ -370,7 +370,7 @@ protected:
       solvers.push_back(createSettings(randomSolver(diagonalGaussianSampler(), numEvaluations), numEvaluations, "Random gaussian search"));
       solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize), numEvaluations, "Cross-entropy"));
       solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true), numEvaluations, "Cross-entropy with elitism"));
-      solvers.push_back(createSettings(cmaessoOptimizer(populationSize, populationSize, 10*numEvaluations / populationSize), 10*numEvaluations, "CMA-ES"));
+      solvers.push_back(createSettings(cmaessoOptimizer(populationSize, populationSize, numEvaluations / populationSize), numEvaluations, "CMA-ES"));
     }
       
     
