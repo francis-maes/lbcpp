@@ -185,6 +185,9 @@ public:
     : BaseClass(elementsType, initialSize, initialValue) {}
   IVector(size_t initialSize = 0, juce::int64 initialValue = missingValue)
     : BaseClass(integerClass, initialSize, initialValue) {}
+  
+  void append(juce::int64 value)
+    {v.push_back(value);}
 
   static juce::int64 missingValue;
 

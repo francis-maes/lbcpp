@@ -457,6 +457,45 @@ void CMASearch::init(ObjectiveFunctionVS<double>& fitness, unsigned int mu, unsi
 	m_cma.init(dim, stepsize, *m_parents, recomb, cupdate);
 }
 
+void CMASearch::init(ObjectiveFunctionVS<double>& fitness, unsigned int mu, unsigned int lambda, CMA::RecombType recomb, CMA::UpdateType cupdate)
+{
+	unsigned int i, dim = fitness.dimension();
+  
+	m_fitness = &fitness;
+	m_lambda = lambda;
+	m_mu = mu;
+  
+	// Sample three initial points and determine the
+	// initial step size as the median of their distances.
+	Vector start1(dim);
+	Vector start2(dim);
+	Vector start3(dim);
+	double* p;
+	p = &start1(0);
+	if (! fitness.ProposeStartingPoint(p)) throw SHARKEXCEPTION("[CMASearch::init] The fitness function must propose a starting point");
+	p = &start2(0);
+	if (! fitness.ProposeStartingPoint(p)) throw SHARKEXCEPTION("[CMASearch::init] The fitness function must propose a starting point");
+	p = &start3(0);
+	if (! fitness.ProposeStartingPoint(p)) throw SHARKEXCEPTION("[CMASearch::init] The fitness function must propose a starting point");
+	double d[3];
+	d[0] = (start2 - start1).norm();
+	d[1] = (start3 - start1).norm();
+	d[2] = (start3 - start2).norm();
+	std::sort(d, d + 3);
+	double stepsize = d[1]; if (stepsize == 0.0) stepsize = 1.0;
+  
+	ChromosomeT<double> point(dim);
+	for (i=0; i<dim; i++) point[i] = start1(i);
+  
+	m_parents = new PopulationT<double>(m_mu, point, ChromosomeT<double>(dim));
+	m_offspring = new PopulationT<double>(m_lambda, point, ChromosomeT<double>(dim));
+  
+	m_parents->setMinimize();
+	m_offspring->setMinimize();
+  
+	m_cma.init(dim, stepsize, *m_parents, recomb, cupdate);
+}
+
 void CMASearch::init(ObjectiveFunctionVS<double>& fitness, unsigned int mu, unsigned int lambda, const Array<double>& start, const Array<double>& stepsize, CMA::RecombType recomb, CMA::UpdateType cupdate)
 {
 	unsigned int i, dim = fitness.dimension();

@@ -6,6 +6,12 @@
   <class name="LBFGSOptimizer" base="IterativeSolver">
     <constructor arguments="size_t numIterations"/>
   </class>
+  
+  <!-- Single objective -->
+  <class name="CMAESSOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t populationSize, size_t numOffsprings, size_t numGenerations"/>
+    <variable type="PositiveInteger" name="numOffsprings"/>
+  </class>
 
   <!-- Multi objective -->
   <class name="NSGA2MOOptimizer" base="PopulationBasedSolver">

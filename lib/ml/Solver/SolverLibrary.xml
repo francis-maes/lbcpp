@@ -7,6 +7,16 @@
   <class name="IterativeSolver" base="Solver" abstract="yes">
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
+  
+  <!-- Solver Evaluators -->
+  <class name="SolverEvaluator" abstract="yes"/>
+  <class name="SingleObjectiveSolverEvaluator" base="SolverEvaluator">
+    <constructor arguments="FitnessPtr&amp; bestFitness"/>
+  </class>
+  <class name="HyperVolumeSolverEvaluator" base="SolverEvaluator">
+    <constructor arguments="ParetoFrontPtr front"/>
+    <variable type="ParetoFront" name="front"/>
+  </class>
 
   <!-- Solver Callbacks -->
   <class name="SolverCallback" abstract="yes"/>
@@ -34,16 +44,22 @@
     <variable type="PositiveInteger" name="maxEvaluations"/>
   </class>
   <class name="EvaluatorSolverCallback" base="SolverCallback" abstract="yes">
-    <variable type="PositiveInteger" name="evaluationPeriod"/>
+    <variable type="SolverEvaluator" name="solverEvaluator"/>
+    <variable type="Vector[Integer]" name="evaluations"/>
     <variable type="Vector[Double]" name="cpuTimes"/>
-  </class>
-  <class name="SingleObjectiveEvaluatorSolverCallback" base="EvaluatorSolverCallback">
-    <constructor arguments="size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores" returnType="SolverCallback"/>
     <variable type="Vector[Double]" name="scores"/>
   </class>
-  <class name="HyperVolumeEvaluatorSolverCallback" base="EvaluatorSolverCallback">
-    <constructor arguments="size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores" returnType="SolverCallback"/>
-    <variable type="Vector[Double]" name="scores"/>
+  <class name="EvaluationPeriodEvaluatorSolverCallback" base="EvaluatorSolverCallback">
+    <constructor arguments="SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  size_t evaluationPeriod" returnType="SolverCallback"/>
+    <variable type="PositiveInteger" name="evaluationPeriod"/>
+  </class>
+  <class name="TimePeriodEvaluatorSolverCallback" base="EvaluatorSolverCallback">
+    <constructor arguments="SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod" returnType="SolverCallback"/>
+    <variable type="Double" name="evaluationPeriod"/>
+  </class>
+  <class name="LogTimePeriodEvaluatorSolverCallback" base="TimePeriodEvaluatorSolverCallback">
+    <constructor arguments="SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod, double factor" returnType="SolverCallback"/>
+    <variable type="Double" name="factor"/>
   </class>
 
   <!-- Solvers -->
