@@ -157,95 +157,118 @@ protected:
 class EvaluatorSolverCallback : public SolverCallback
 {
 public:
-  EvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes)
-    : evaluationPeriod(evaluationPeriod), cpuTimes(cpuTimes), numEvaluations(0) {}
-  EvaluatorSolverCallback() : evaluationPeriod(0), numEvaluations(0) {}
-  
-  virtual void evaluate(ExecutionContext& context, SolverPtr solver) = 0;
+  EvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores)
+    : solverEvaluator(solverEvaluator), evaluations(evaluations), cpuTimes(cpuTimes), scores(scores), numEvaluations(0) {}
+  EvaluatorSolverCallback() : numEvaluations(0) {}
 
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
+    {startTime = Time::getHighResolutionCounter(); numEvaluations = 0;}
+  
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness) = 0;
+
+protected:
+  friend class EvaluatorSolverCallbackClass;
+
+  SolverEvaluatorPtr solverEvaluator;
+  IVectorPtr evaluations;
+  DVectorPtr cpuTimes;
+  DVectorPtr scores;
+
+  double startTime;
+  size_t numEvaluations;
+  
+  void appendResult(size_t numEvaluations, double cpuTime, double score)
   {
-    numEvaluations = 0;
-    startTime = Time::getHighResolutionCounter();
+    evaluations->append(numEvaluations);
+    cpuTimes->append(cpuTime);
+    scores->append(score);
   }
+};
+
+/**
+ * Callback for evaluating a Solver every \f$n\f$ number of evaluations.
+ **/
+class EvaluationPeriodEvaluatorSolverCallback : public EvaluatorSolverCallback
+{
+public:
+  EvaluationPeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  size_t evaluationPeriod)
+    : EvaluatorSolverCallback(solverEvaluator, evaluations, cpuTimes, scores), evaluationPeriod(evaluationPeriod) {}
+  EvaluationPeriodEvaluatorSolverCallback() : EvaluatorSolverCallback(), evaluationPeriod(0) {}
   
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
     ++numEvaluations;
     if (numEvaluations % evaluationPeriod == 0)
-    {
-      evaluate(context, solver);
-      cpuTimes->append(Time::getHighResolutionCounter() - startTime);
-    }
+      appendResult(numEvaluations, Time::getHighResolutionCounter() - startTime, solverEvaluator->evaluateSolver(context, solver));
   }
 
 protected:
-  friend class EvaluatorSolverCallbackClass;
+  friend class EvaluationPeriodEvaluatorSolverCallbackClass;
 
   size_t evaluationPeriod;
-  DVectorPtr cpuTimes;
-
-  size_t numEvaluations;
-  double startTime;
 };
 
-class SingleObjectiveEvaluatorSolverCallback : public EvaluatorSolverCallback
+class TimePeriodEvaluatorSolverCallback : public EvaluatorSolverCallback
 {
 public:
-  SingleObjectiveEvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores)
-    : EvaluatorSolverCallback(evaluationPeriod, cpuTimes), scores(scores) {}
-  SingleObjectiveEvaluatorSolverCallback() {}
+  TimePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod)
+    : EvaluatorSolverCallback(solverEvaluator, evaluations, cpuTimes, scores), evaluationPeriod(evaluationPeriod), prevScore(DVector::missingValue) {}
+  TimePeriodEvaluatorSolverCallback() : EvaluatorSolverCallback(), evaluationPeriod(0.0), prevScore(DVector::missingValue) {}
   
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
   {
+    lastEvaluationTime = Time::getHighResolutionCounter();
+    prevScore = DVector::missingValue;
     EvaluatorSolverCallback::solverStarted(context, solver);
-    bestFitness = FitnessPtr();
   }
-
-  virtual void evaluate(ExecutionContext& context, SolverPtr solver)
-    {scores->append(bestFitness->getValue(0));}
-
+  
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
-    if (!bestFitness || fitness->strictlyDominates(bestFitness))
-      bestFitness = fitness;
-    EvaluatorSolverCallback::solutionEvaluated(context, solver, object, fitness);
+    ++numEvaluations;
+    double curTime = Time::getHighResolutionCounter();
+    while (curTime - lastEvaluationTime >= evaluationPeriod)
+    {
+      appendResult(numEvaluations, lastEvaluationTime - startTime, prevScore);
+      lastEvaluationTime += evaluationPeriod;
+    }
+    prevScore = solverEvaluator->evaluateSolver(context, solver);
   }
 
 protected:
-  friend class SingleObjectiveEvaluatorSolverCallbackClass;
+  friend class TimePeriodEvaluatorSolverCallbackClass;
 
-  DVectorPtr scores;
-  FitnessPtr bestFitness;
+  double evaluationPeriod;
+  double lastEvaluationTime;
+  double prevScore;
 };
 
-class HyperVolumeEvaluatorSolverCallback : public EvaluatorSolverCallback
+class LogTimePeriodEvaluatorSolverCallback : public TimePeriodEvaluatorSolverCallback
 {
 public:
-  HyperVolumeEvaluatorSolverCallback(size_t evaluationPeriod, DVectorPtr cpuTimes, DVectorPtr scores)
-    : EvaluatorSolverCallback(evaluationPeriod, cpuTimes), scores(scores) {}
-  HyperVolumeEvaluatorSolverCallback() {}
+  LogTimePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod, double factor)
+    : TimePeriodEvaluatorSolverCallback(solverEvaluator, evaluations, cpuTimes, scores, evaluationPeriod), factor(factor) {}
+  LogTimePeriodEvaluatorSolverCallback() : TimePeriodEvaluatorSolverCallback(), factor(0.0) {}
   
-  virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
-  {
-    EvaluatorSolverCallback::solverStarted(context, solver);
-    front = new ParetoFront(solver->getProblem()->getFitnessLimits());
-  }
-
-  virtual void evaluate(ExecutionContext& context, SolverPtr solver)
-    {scores->append(front->computeHyperVolume(solver->getProblem()->getFitnessLimits()->getWorstPossibleFitness()));}
-
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
-    front->insertSolution(object, fitness);
-    EvaluatorSolverCallback::solutionEvaluated(context, solver, object, fitness);
+    ++numEvaluations;
+    double curTime = Time::getHighResolutionCounter();
+    bool resultsAppended = (curTime - lastEvaluationTime >= evaluationPeriod);
+    while (curTime - lastEvaluationTime >= evaluationPeriod)
+    {
+      double timeElapsed = lastEvaluationTime - startTime;
+      appendResult(numEvaluations, timeElapsed, prevScore);
+      lastEvaluationTime += evaluationPeriod;
+      evaluationPeriod *= factor;
+    }
+    if (resultsAppended)
+      prevScore = solverEvaluator->evaluateSolver(context, solver);
   }
 
 protected:
-  friend class HyperVolumeEvaluatorSolverCallbackClass;
-
-  DVectorPtr scores;
-  ParetoFrontPtr front;
+  friend class LogTimePeriodEvaluatorSolverCallbackClass;
+  
+  double factor;
 };
 
 }; /* namespace lbcpp */

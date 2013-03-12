@@ -145,6 +145,7 @@ protected:
   struct SolverInfo
   {
     string name;
+    std::vector<juce::int64>    evaluations;
     std::vector<double> cpuTimes;
     std::vector<double> hyperVolumes;
   };
@@ -205,14 +206,16 @@ protected:
   {
     DVectorPtr cpuTimes = new DVector();
     DVectorPtr hyperVolumes = new DVector();
+    IVectorPtr evaluations = new IVector();
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     SolverCallbackPtr callback = compositeSolverCallback(
       fillParetoFrontSolverCallback(front),
-      hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),
+      evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
       maxEvaluationsSolverCallback(numEvaluations));
 
     solver->setVerbosity(verbose ? verbosityDetailed : verbosityQuiet);
     solver->solve(context, problem, callback);
+    info.evaluations = evaluations->getNativeVector();
     info.cpuTimes = cpuTimes->getNativeVector();
     info.hyperVolumes = hyperVolumes->getNativeVector();
     return front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());

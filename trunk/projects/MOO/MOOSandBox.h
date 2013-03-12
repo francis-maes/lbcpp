@@ -179,11 +179,12 @@ protected:
 
     DVectorPtr cpuTimes = new DVector(0, 0.0);
     DVectorPtr scores = new DVector(0, 0.0);
+    IVectorPtr evaluations = new IVector(0, 0);
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     SolverCallbackPtr callback = compositeSolverCallback(
       fillParetoFrontSolverCallback(front),
-      singleObjectiveEvaluatorSolverCallback(evaluationPeriod, cpuTimes, scores),
+      evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, scores, evaluationPeriod),
       maxEvaluationsSolverCallback(numEvaluations));
 
     optimizer->setVerbosity((SolverVerbosity)verbosity);
@@ -197,9 +198,8 @@ protected:
 
       for (size_t i = 0; i < scores->getNumElements(); ++i)
       {
-        size_t numEvaluations = i * evaluationPeriod;
-        context.enterScope(string((int)numEvaluations));
-        context.resultCallback("numEvaluations", numEvaluations);
+        context.enterScope(string(evaluations->get(i)));
+        context.resultCallback("numEvaluations", evaluations->get(i));
         context.resultCallback("score", scores->get(i));
         context.resultCallback("cpuTime", cpuTimes->get(i));
         context.leaveScope();
@@ -263,11 +263,12 @@ protected:
 
     DVectorPtr cpuTimes = new DVector();
     DVectorPtr hyperVolumes = new DVector();
+    IVectorPtr evaluations = new IVector();
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     SolverCallbackPtr callback = compositeSolverCallback(
       fillParetoFrontSolverCallback(front),
-      hyperVolumeEvaluatorSolverCallback(evaluationPeriod, cpuTimes, hyperVolumes),
+      evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
       maxEvaluationsSolverCallback(numEvaluations));
 
 
@@ -282,9 +283,8 @@ protected:
 
       for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)
       {
-        size_t numEvaluations = i * evaluationPeriod;
-        context.enterScope(string((int)numEvaluations));
-        context.resultCallback("numEvaluations", numEvaluations);
+        context.enterScope(string(evaluations->get(i)));
+        context.resultCallback("numEvaluations", evaluations->get(i));
         context.resultCallback("hyperVolume", hyperVolumes->get(i));
         context.resultCallback("cpuTime", cpuTimes->get(i));
         context.leaveScope();

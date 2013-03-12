@@ -6,10 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef ML_OPTIMIZER_SHARK_H_
-# define ML_OPTIMIZER_SHARK_H_
+#ifndef ML_MO_OPTIMIZER_SHARK_H_
+# define ML_MO_OPTIMIZER_SHARK_H_
 
 # include <ml/Solver.h>
+# include "SharkSOOptimizers.h"
 # undef T
 # include <MOO-EALib/NSGA2.h>
 # include <MOO-EALib/MO-CMA.h>
@@ -17,56 +18,6 @@
 
 namespace lbcpp
 {
-
-class SharkObjectiveFunctionFromProblem : public ObjectiveFunctionVS<double> 
-{
-public:
-  SharkObjectiveFunctionFromProblem(ExecutionContext& context, ProblemPtr problem, SolverPtr solver)
-    : context(context), problem(problem), solver(solver)
-  {
-  	m_name = (const char* )problem->toShortString();
-    ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
-    m_dimension = domain->getNumDimensions();
-    std::vector<double> lower(domain->getNumDimensions());
-    std::vector<double> upper(domain->getNumDimensions());
-    for (size_t i = 0; i < lower.size(); ++i)
-    {
-      lower[i] = domain->getLowerLimit(i);
-      upper[i] = domain->getUpperLimit(i);
-    }
-    constrainthandler = new BoxConstraintHandler(lower, upper); 
-  }
-  virtual ~SharkObjectiveFunctionFromProblem()
-    {delete constrainthandler;}
-
-  virtual unsigned int objectives() const
-    {return (int)problem->getNumObjectives();}
-
-  virtual void result(double* const& point, std::vector<double>& value)
-  {
-    DenseDoubleVectorPtr solution = new DenseDoubleVector((size_t)m_dimension, 0.0);
-    memcpy(solution->getValuePointer(0), point, sizeof (double) * m_dimension);
-    FitnessPtr fitness = problem->evaluate(context, solution);
-    jassert(fitness);
-    value = fitness->getValues();
-    solver->addSolution(context, solution, fitness);
-	  m_timesCalled++;
-  }
-  
-  virtual bool ProposeStartingPoint(double*& point) const
-  {
-    DenseDoubleVectorPtr solution = problem->getInitialGuess().staticCast<DenseDoubleVector>();
-    if (!solution)
-      return false;
-    memcpy(point, solution->getValuePointer(0), sizeof (double) * m_dimension);
-    return true;
-  }
-
-protected:
-  ExecutionContext& context;
-  ProblemPtr problem;
-  SolverPtr solver;
-};
 
 class NSGA2MOOptimizer : public PopulationBasedSolver
 {
@@ -150,4 +101,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !ML_OPTIMIZER_SHARK_H_
+#endif // !ML_MO_OPTIMIZER_SHARK_H_

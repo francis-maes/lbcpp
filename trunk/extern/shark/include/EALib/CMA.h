@@ -153,6 +153,7 @@ public:
 	void init(ObjectiveFunctionVS<double>& fitness, CMA::RecombType recomb = CMA::superlinear, CMA::UpdateType cupdate = CMA::rankmu);
 	void init(ObjectiveFunctionVS<double>& fitness, const Array<double>& start, double stepsize, CMA::RecombType recomb = CMA::superlinear, CMA::UpdateType cupdate = CMA::rankmu);
 	void init(ObjectiveFunctionVS<double>& fitness, unsigned int mu, unsigned int lambda, const Array<double>& start, double stepsize, CMA::RecombType recomb = CMA::superlinear, CMA::UpdateType cupdate = CMA::rankmu);
+  void init(ObjectiveFunctionVS<double>& fitness, unsigned int mu, unsigned int lambda, CMA::RecombType recomb = CMA::superlinear, CMA::UpdateType cupdate = CMA::rankmu);
 	void init(ObjectiveFunctionVS<double>& fitness, unsigned int mu, unsigned int lambda, const Array<double>& start, const Array<double>& stepsize, CMA::RecombType recomb = CMA::superlinear, CMA::UpdateType cupdate = CMA::rankmu);
 	void run();
 	void bestSolutions(std::vector<double*>& points);

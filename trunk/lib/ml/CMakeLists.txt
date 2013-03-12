@@ -68,11 +68,13 @@ SET(ML_SOLVER_SOURCES
   Solver/MABMetaSolver.h
   Solver/SurrogateBasedSolver.h
   Solver/SolverCallbacks.h
+  Solver/SolverEvaluators.h
   Solver/SolverLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SolverLibrary.cpp
 )
 
 SET(ML_OPTIMIZER_SOURCES
+  Optimizer/SharkSOOptimizers.h
   Optimizer/SharkMOOptimizers.h
   Optimizer/LBFGSOptimizer.h
   Optimizer/LBFGSOptimizer.cpp
