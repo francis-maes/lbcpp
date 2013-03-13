@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "Precompiled.h"
+#include "precompiled.h"
 #include <ml/Sampler.h>
 #include <SharkDefs.h>
 using namespace lbcpp;
