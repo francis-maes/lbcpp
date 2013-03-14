@@ -70,8 +70,8 @@ protected:
 class CMAESSOOptimizer : public IterativeSolver
 {
 public:
-  CMAESSOOptimizer(size_t numIterations = 0)
-  : IterativeSolver(numIterations), objective(NULL), cma(NULL) {}
+  CMAESSOOptimizer(size_t numGenerations = 0)
+    : IterativeSolver(numGenerations), objective(NULL), cma(NULL) {}
   
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {

@@ -19,11 +19,11 @@
 namespace lbcpp
 {
 
-class SurrogateBasedMOSolver : public SurrogateBasedSolver
+class SurrogateBasedMOSolver : public BatchSurrogateBasedSolver
 {
 public:
   SurrogateBasedMOSolver(SamplerPtr initialSampler, size_t numInitialSamples, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations)
-    : SurrogateBasedSolver(samplerToVectorSampler(initialSampler, numInitialSamples), surrogateLearner, surrogateSolver, variableEncoder, selectionCriterion, numIterations) {}
+    : BatchSurrogateBasedSolver(samplerToVectorSampler(initialSampler, numInitialSamples), surrogateLearner, surrogateSolver, variableEncoder, selectionCriterion, numIterations) {}
   SurrogateBasedMOSolver() {}
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -43,7 +43,7 @@ public:
       // learn surrogate
       if (verbosity >= verbosityDetailed)
         context.enterScope("Learn surrogate");
-      ExpressionPtr surrogateModel = learnSurrogateModel(context, surrogateLearningProblem);
+      ExpressionPtr surrogateModel = getSurrogateModel(context);
       if (verbosity >= verbosityDetailed)
       {
         context.resultCallback("surrogateModel", surrogateModel);
@@ -90,7 +90,7 @@ public:
       FitnessPtr fitness = evaluate(context, object);
       if (verbosity >= verbosityDetailed)
         context.informationCallback(object->toShortString() + " => " + fitness->toShortString());
-      addSurrogateData(context, object, fitness, surrogateData);      
+      addFitnessSample(context, object, fitness);      
     }
     return true;
   }

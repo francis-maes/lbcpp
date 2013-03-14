@@ -169,6 +169,9 @@ typedef ReferenceCountedObjectPtr<PostfixExpressionTypeState> PostfixExpressionT
 class PostfixExpressionTypeSpace;
 typedef ReferenceCountedObjectPtr<PostfixExpressionTypeSpace> PostfixExpressionTypeSpacePtr;
 
+class IncrementalLearner;
+typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !ML_PREDECLARATIONS_H_

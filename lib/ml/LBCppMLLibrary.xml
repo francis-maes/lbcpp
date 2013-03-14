@@ -86,5 +86,8 @@
     <variable type="Boolean" name="optimizeMax"/>
     <variable type="Boolean" name="useMultiThreading"/>
   </class>
+  
+  <!-- Incremental Learner -->
+  <class name="IncrementalLearner" abstract="yes"/>
 
 </library>

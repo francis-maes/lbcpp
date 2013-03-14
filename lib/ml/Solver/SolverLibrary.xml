@@ -107,13 +107,22 @@
     <variable type="Double" name="explorationCoefficient"/>
   </class>
   
-  <class name="SurrogateBasedSolver" base="IterativeSolver">
-    <constructor arguments="SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations" returnType="IterativeSolver"/>
+  <!-- Surrogate based solvers -->
+  <class name="SurrogateBasedSolver" base="IterativeSolver" abstract="yes">
     <variable type="Sampler" name="initialVectorSampler"/>
-    <variable type="Solver" name="surrogateLearner"/>
     <variable type="Solver" name="surrogateSolver"/>
     <variable type="VariableEncoder" name="variableEncoder"/>
     <variable type="SelectionCriterion" name="selectionCriterion"/>
-    <variable type="Fitness" name="currentBest"/>
   </class>
+
+  <class name="BatchSurrogateBasedSolver" base="SurrogateBasedSolver">
+    <constructor arguments="SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations" returnType="IterativeSolver"/>
+    <variable type="Solver" name="surrogateLearner"/>
+  </class>
+
+  <class name="IncrementalSurrogateBasedSolver" base="SurrogateBasedSolver">
+    <constructor arguments="SamplerPtr initialVectorSampler, IncrementalLearnerPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations" returnType="IterativeSolver"/>
+    <variable type="IncrementalLearner" name="surrogateLearner"/>
+  </class>
+  
 </library>
