@@ -12,6 +12,7 @@ SET(MOO_SOURCES
   SolverInfo.h
   SharkProblems.h
   FQIBasedSolver.h
+  ExtraTreeIncrementalLearner.h
   MOOSandBox.h
   TestRandomForestUncertainties.h
   SBOExperiments.h

@@ -19,11 +19,14 @@
 # include <ml/SelectionCriterion.h>
 # include <ml/ExpressionSampler.h>
 
+# include "ExtraTreeIncrementalLearner.h"
 # include "SharkProblems.h"
 # include "FQIBasedSolver.h"
 
 namespace lbcpp
 {
+
+extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 
 class MOOSandBox : public WorkUnit
 {
@@ -32,6 +35,7 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
+    lbCppMLLibraryCacheTypes(context);
     testSingleObjectiveOptimizers(context);
     //testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
@@ -91,12 +95,11 @@ protected:
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize, true), bestFitness);
       solveWithSingleObjectiveOptimizer(context, problem, cmaessoOptimizer(numEvaluations), bestFitness);
 
-#if 0
       /*
       ** Common to surrogate based solvers
       */
       SamplerPtr sbsInitialSampler = latinHypercubeVectorSampler(60);
-      SolverPtr sbsInnerSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
+      SolverPtr sbsInnerSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, 5, true);
       sbsInnerSolver->setVerbosity((SolverVerbosity)verbosity);
       VariableEncoderPtr sbsVariableEncoder = scalarVectorVariableEncoder();
       SelectionCriterionPtr sbsSelectionCriterion = expectedImprovementSelectionCriterion(bestFitness);
@@ -104,7 +107,7 @@ protected:
       /*
       ** Incremental surroggate based solver with extremely randomized trees
       */
-      IncrementalLearnerPtr xtIncrementalLearner; // FIXME
+      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new ScalarVectorExtraTreeIncrementalLearner(SplittingCriterionPtr()), numTrees);
       SolverPtr incrementalXTBasedSolver = incrementalSurrogateBasedSolver(sbsInitialSampler, xtIncrementalLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
       solveWithSingleObjectiveOptimizer(context, problem, incrementalXTBasedSolver, bestFitness);
 
@@ -117,8 +120,6 @@ protected:
       xtBatchLearner->setVerbosity((SolverVerbosity)verbosity);
       SolverPtr batchXTBasedSolver = batchSurrogateBasedSolver(sbsInitialSampler, xtBatchLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
       solveWithSingleObjectiveOptimizer(context, problem, batchXTBasedSolver, bestFitness);
-
-#endif // 0
 
       context.leaveScope(); 
     }

@@ -224,7 +224,7 @@ VariableExpression::VariableExpression() : inputIndex(0)
 string VariableExpression::toShortString() const
   {return name;}
 
-ObjectPtr VariableExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
+ObjectPtr VariableExpression::compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const
   {return inputs[inputIndex];}
 
 DataVectorPtr VariableExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
@@ -244,7 +244,7 @@ ConstantExpression::ConstantExpression(const ObjectPtr& value)
 string ConstantExpression::toShortString() const
   {return value->toShortString();}
 
-ObjectPtr ConstantExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
+ObjectPtr ConstantExpression::compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const
   {return value;}
 
 DataVectorPtr ConstantExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
@@ -292,7 +292,7 @@ void FunctionExpression::initialize()
   delete [] inputTypes;
 }
 
-ObjectPtr FunctionExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
+ObjectPtr FunctionExpression::compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const
 {
   size_t n = arguments.size();
   if (n == 0)
@@ -348,7 +348,7 @@ string AggregatorExpression::toShortString() const
   return res;
 }
 
-ObjectPtr AggregatorExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
+ObjectPtr AggregatorExpression::compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const
 {
   std::vector<ObjectPtr> inputValues(nodes.size());
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -403,7 +403,7 @@ string TestExpression::toShortString() const
   return res + T(")");
 }
 
-ObjectPtr TestExpression::compute(ExecutionContext& context, const ObjectPtr* inputs) const
+ObjectPtr TestExpression::compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const
 {
   ObjectPtr condition = conditionNode->compute(context, inputs);
   ExpressionPtr subNode = (condition ? (Boolean::get(condition) ? successNode : failureNode) : missingNode);

@@ -17,8 +17,8 @@ namespace lbcpp
 class IncrementalLearner : public Object
 {
 public:
-  virtual ExpressionPtr createExpression(ExecutionContext& context) = 0;
-  virtual void addTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& sample) = 0;
+  virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const = 0;
+  virtual void addTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& sample, ExpressionPtr expression) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;

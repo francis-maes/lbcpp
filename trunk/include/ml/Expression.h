@@ -172,7 +172,7 @@ public:
   void setType(const ClassPtr& type)
     {this->type = type;}
 
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const = 0;
+  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const = 0;
   
   DataVectorPtr compute(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices = IndexSetPtr()) const;
 
@@ -229,7 +229,7 @@ public:
   VariableExpression();
 
   virtual string toShortString() const;
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const;
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   size_t getInputIndex() const
@@ -254,7 +254,7 @@ public:
   ConstantExpression() {}
 
   virtual string toShortString() const;
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const;
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
   const ObjectPtr& getValue() const
@@ -284,7 +284,7 @@ public:
 
   virtual string toShortString() const;
 
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const;
 
   virtual size_t getNumSubNodes() const
     {return arguments.size();}
@@ -357,7 +357,7 @@ public:
   void setNode(size_t index, const ExpressionPtr& node)
     {jassert(index < nodes.size()); nodes[index] = node;}
   
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const;
   
   lbcpp_UseDebuggingNewOperator
 
@@ -383,7 +383,7 @@ public:
   TestExpression() {}
 
   virtual string toShortString() const;
-  virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const;
+  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const;
 
   virtual size_t getNumSubNodes() const;
   virtual const ExpressionPtr& getSubNode(size_t index) const;

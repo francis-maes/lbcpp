@@ -33,7 +33,7 @@ public:
     
     // create aggregator and aggregator expressions
     ClassPtr supervisionType = objective->getSupervision()->getType();
-    std::pair<AggregatorPtr, ClassPtr> aggregatorAndOutputType = createAggregator(supervisionType);
+    std::pair<AggregatorPtr, ClassPtr> aggregatorAndOutputType = Aggregator::create(supervisionType);
     AggregatorPtr aggregator = aggregatorAndOutputType.first;
     ClassPtr outputType = aggregatorAndOutputType.second;
     AggregatorExpressionPtr res = new AggregatorExpression(aggregator, outputType);
@@ -91,22 +91,6 @@ protected:
   friend class EnsembleLearnerClass;
 
   size_t ensembleSize;
-
-  // returns both the aggregator and the output type of this aggregator
-  std::pair<AggregatorPtr, ClassPtr> createAggregator(ClassPtr supervisionType)
-  {
-    if (supervisionType->inheritsFrom(doubleClass))
-      return std::make_pair(statisticsDoubleAggregator(), scalarVariableStatisticsClass);
-    else if (supervisionType.isInstanceOf<Enumeration>())
-      return std::make_pair(meanDoubleVectorAggregator(), denseDoubleVectorClass(supervisionType.staticCast<Enumeration>(), doubleClass));
-    else if (supervisionType->inheritsFrom(denseDoubleVectorClass()))
-      return std::make_pair(statisticsDoubleVectorAggregator(), vectorClass(scalarVariableStatisticsClass));
-    else
-    {
-      jassertfalse; // not implemented yet
-      return std::make_pair(AggregatorPtr(), ClassPtr());
-    }
-  }
 };
 
 class SimpleEnsembleLearner : public EnsembleLearner

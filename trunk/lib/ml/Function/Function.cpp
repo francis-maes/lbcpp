@@ -9,12 +9,8 @@
 #include "precompiled.h"
 #include <ml/Function.h>
 #include <ml/Expression.h>
-#include <ml/Aggregator.h>
 using namespace lbcpp;
 
-/*
-** Function
-*/
 string Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
 {
   ClassPtr thisClass = getClass();
@@ -93,17 +89,4 @@ bool Function::acceptInputsStack(const std::vector<ExpressionPtr>& stack) const
   }
   return true;
 #endif // 0
-}
-
-/*
-** Aggregator
-*/
-DataVectorPtr Aggregator::compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const
-{
-  if (!inputs.size())
-    return DataVectorPtr();
-  ObjectPtr data = startAggregation(inputs[0]->getIndices(), inputs[0]->getElementsType(), outputType);
-  for (size_t i = 0; i < inputs.size(); ++i)
-    updateAggregation(data, inputs[i]);
-  return finalizeAggregation(data);
 }

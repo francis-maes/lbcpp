@@ -58,8 +58,8 @@ public:
       context.resultCallback("x", x);
       context.resultCallback("supervision", x * x * x + x * x + x);
       
-      ObjectPtr input = new Double(x);
-      ObjectPtr prediction = model->compute(context, &input);
+      std::vector<ObjectPtr> input(1, ObjectPtr(new Double(x)));
+      ObjectPtr prediction = model->compute(context, input);
       
       context.resultCallback("prediction", prediction);
       context.leaveScope();

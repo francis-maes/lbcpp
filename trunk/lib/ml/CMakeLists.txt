@@ -126,6 +126,7 @@ SET(ML_AGGREGATOR_SOURCES
   Aggregator/MeanDoubleVectorAggregator.h
   Aggregator/StatisticsDoubleAggregator.h
   Aggregator/StatisticsDoubleVectorAggregator.h
+  Aggregator/Aggregator.cpp
   Aggregator/AggregatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/AggregatorLibrary.cpp
 )

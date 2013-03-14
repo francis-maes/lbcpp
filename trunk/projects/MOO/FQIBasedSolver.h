@@ -351,7 +351,7 @@ public:
       double x = domain->getLowerLimit() + i * (domain->getUpperLimit() - domain->getLowerLimit()) / 99.0;
       //double x = context.getRandomGenerator()->sampleDouble(domain->getLowerLimit(), domain->getUpperLimit());
       std::vector<ObjectPtr> input = makeRegressionInput(state, new Double(x));
-      double y = Double::get(regressor->compute(context, &input[0]));
+      double y = Double::get(regressor->compute(context, input));
       ScalarVariableStatisticsPtr yup = computeUpperBound(context, input, regressor.staticCast<AggregatorExpression>());
       context.enterScope(string((int)i));
       context.resultCallback("x", x);
@@ -384,7 +384,7 @@ public:
       ExpressionPtr tree = expression->getSubNode(i);
       ScalarVectorDomainPtr leafDomain = computeLeafDomain(context, input, tree);
       double radius = getDomainRadius(leafDomain);
-      res->push(Double::get(tree->compute(context, &input[0])) + radius);
+      res->push(Double::get(tree->compute(context, input)) + radius);
     }
     return res;
   }

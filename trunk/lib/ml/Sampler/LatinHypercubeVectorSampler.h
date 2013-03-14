@@ -83,11 +83,12 @@ public:
       DenseDoubleVectorPtr sample = new DenseDoubleVector(domain->getNumDimensions(), 0.0);
       for (size_t d = 0; d < domain->getNumDimensions(); ++d)
       {
-        int interval = random->sampleInt(numIntervals);
-        sample->setValue(d, random->sampleDouble(remainingIntervals[d][interval].first, remainingIntervals[d][interval].second));
+        std::vector<Interval>& intervals = remainingIntervals[d];
+        int interval = random->sampleInt(intervals.size());
+        sample->setValue(d, random->sampleDouble(intervals[interval].first, intervals[interval].second));
         // O(1) alternative to erase, since order of the elements does not matter
-        remainingIntervals[d][interval] = remainingIntervals[d].back();
-        remainingIntervals[d].pop_back();
+        intervals[interval] = intervals.back();
+        intervals.pop_back();
       }
       res->set(i, sample);
     }
