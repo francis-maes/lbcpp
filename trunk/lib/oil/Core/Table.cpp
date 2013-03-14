@@ -58,6 +58,15 @@ string Table::getDescription(size_t index) const
   return columns[index].key->toShortString();
 }
 
+std::vector<ObjectPtr> Table::getRow(size_t index) const
+{
+  jassert(index < numRows);
+  std::vector<ObjectPtr> res(columns.size());
+  for (size_t i = 0; i < res.size(); ++i)
+    res[i] = getElement(index, i);
+  return res;
+}
+
 void Table::setElement(size_t rowIndex, size_t columnIndex, const ObjectPtr& value)
 {
   jassert(rowIndex < numRows);

@@ -30,6 +30,8 @@ public:
   size_t getNumRows() const
     {return numRows;}
 
+  std::vector<ObjectPtr> getRow(size_t index) const;
+
   string getDescription(size_t index) const;
 
   ObjectPtr getKey(size_t index) const

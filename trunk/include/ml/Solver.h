@@ -103,8 +103,10 @@ protected:
 extern IterativeSolverPtr randomSolver(SamplerPtr sampler, size_t numIterations = 0);
 extern IterativeSolverPtr repeatSolver(SolverPtr solver, size_t numIterations = 0);
 extern IterativeSolverPtr lbfgsOptimizer(size_t numIterations = 0);
-extern IterativeSolverPtr cmaessoOptimizer(size_t numIterations);
-extern IterativeSolverPtr surrogateBasedSolver(SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
+extern IterativeSolverPtr cmaessoOptimizer(size_t numGenerations = 0);
+
+extern IterativeSolverPtr incrementalSurrogateBasedSolver(SamplerPtr initialVectorSampler, IncrementalLearnerPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
+extern IterativeSolverPtr batchSurrogateBasedSolver(SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
 
 class PopulationBasedSolver : public IterativeSolver
 {

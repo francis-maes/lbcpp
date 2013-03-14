@@ -51,6 +51,7 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/BinaryKey.h
   ${ML_INCLUDES}/BinaryConfusionMatrix.h
   ${ML_INCLUDES}/IterationFunction.h
+  ${ML_INCLUDES}/IncrementalLearner.h
 )
 
 SET(ML_VARIABLE_ENCODER_SOURCES

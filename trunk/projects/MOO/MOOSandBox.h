@@ -28,7 +28,7 @@ namespace lbcpp
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : numEvaluations(1000), verbosity(1) {}
+  MOOSandBox() : numDimensions(6), numEvaluations(1000), verbosity(1) {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -53,6 +53,7 @@ public:
 protected:
   friend class MOOSandBoxClass;
 
+  size_t numDimensions;
   size_t numEvaluations;
   size_t verbosity;
 
@@ -61,101 +62,66 @@ protected:
   */
   void testSingleObjectiveOptimizers(ExecutionContext& context)
   {
+    const size_t numTrees = 100;
+    const size_t K = (size_t)(0.5 + sqrt((double)numDimensions));
+
     std::vector<ProblemPtr> problems;
     problems.push_back(new SphereProblem(6));
-/*    problems.push_back(new AckleyProblem(6));
+    problems.push_back(new AckleyProblem(6));
     problems.push_back(new GriewangkProblem(6));
     problems.push_back(new RastriginProblem(6));
     problems.push_back(new RosenbrockProblem(6));
-    problems.push_back(new RosenbrockRotatedProblem(6));*/
-
-#if 0
-    for (size_t numTrainingSamples = 10; numTrainingSamples < 100; numTrainingSamples += 5)
-    {
-      context.enterScope(string((int)numTrainingSamples));
-      context.resultCallback("numTrainingSamples", numTrainingSamples);
-      context.resultCallback("CE", evaluateSingleObjectiveOptimizer(context, problems,
-        new CrossEntropySolver(new DiagonalGaussianSampler(), 100, numTrainingSamples)));
-      context.resultCallback("level1", evaluateSingleObjectiveOptimizer(context, problems, 
-        new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 1, 100, numTrainingSamples)));
-      context.resultCallback("level2", evaluateSingleObjectiveOptimizer(context, problems, 
-        new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 2, 100, numTrainingSamples)));
-      context.resultCallback("level3", evaluateSingleObjectiveOptimizer(context, problems, 
-        new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 3, 100, numTrainingSamples)));
-      context.leaveScope();
-    }
-#endif // 0
+    problems.push_back(new RosenbrockRotatedProblem(6));
 
     for (size_t i = 0; i < problems.size(); ++i)
     {
-      const size_t populationSize = 20;
+      const size_t populationSize = numDimensions * 10;
+      const size_t numBests = populationSize / 3;
       
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      
-      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
-      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize));
-      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true));
-      
-      // set up random forest and extremely randomized trees learners for surrogate based optimization
-      size_t numTrees = 100;
-      
-      // create the splitting criterion    
+      FitnessPtr bestFitness;
+
+      /*
+      ** Baselines
+      */
+      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations), bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize), bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize, true), bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, cmaessoOptimizer(numEvaluations), bestFitness);
+
+#if 0
+      /*
+      ** Common to surrogate based solvers
+      */
+      SamplerPtr sbsInitialSampler = latinHypercubeVectorSampler(60);
+      SolverPtr sbsInnerSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
+      sbsInnerSolver->setVerbosity((SolverVerbosity)verbosity);
+      VariableEncoderPtr sbsVariableEncoder = scalarVectorVariableEncoder();
+      SelectionCriterionPtr sbsSelectionCriterion = expectedImprovementSelectionCriterion(bestFitness);
+
+      /*
+      ** Incremental surroggate based solver with extremely randomized trees
+      */
+      IncrementalLearnerPtr xtIncrementalLearner; // FIXME
+      SolverPtr incrementalXTBasedSolver = incrementalSurrogateBasedSolver(sbsInitialSampler, xtIncrementalLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
+      solveWithSingleObjectiveOptimizer(context, problem, incrementalXTBasedSolver, bestFitness);
+
+      /*
+      ** Batch surroggate based solver with extremely randomized trees
+      */
       SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
-      
-      // create the sampler
-      SamplerPtr sampler = scalarExpressionVectorSampler();
-      
-      // create DT learner
-      SolverPtr dtLearner = treeLearner(splittingCriterion, exhaustiveConditionLearner(sampler));
-      dtLearner->setVerbosity(verbosityDetailed);
-  
-      // create RF learner
-      SolverPtr rfLearner = treeLearner(splittingCriterion, exhaustiveConditionLearner(sampler)); 
-      rfLearner = baggingLearner(rfLearner, numTrees);
-      rfLearner->setVerbosity(verbosityDetailed);     
-      
-      // create XT learner
-      // these trees should choose random splits 
-      SolverPtr xtLearner = treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)); 
-      xtLearner = simpleEnsembleLearner(xtLearner, numTrees);
-      xtLearner->setVerbosity(verbosityDetailed);
-      
-      // create inner optimization loop solver
-      SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
-      ceSolver->setVerbosity(verbosityDetailed);
-      
-      // these just optimize surrogate prediction value
-     /* solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), rfLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
-      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), rfLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
-      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), xtLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
-      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), xtLearner, ceSolver, scalarVectorVariableEncoder(), greedySelectionCriterion(), 300));
-*/
-      // these optimize probability of improvement
-      /*solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), rfLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
-      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), rfLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
-      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(samplerToVectorSampler(uniformScalarVectorSampler(), 60), xtLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
-      solveWithSingleObjectiveOptimizer(context, problem, surrogateBasedSolver(latinHypercubeVectorSampler(60), xtLearner, ceSolver, scalarVectorVariableEncoder(), probabilityOfImprovementSelectionCriterion(), 300));
-       */
-     // SolverPtr fqiBSolver = new ScalarVectorFQIBasedSolver(populationSize, numEvaluations / populationSize);
-     // solveWithSingleObjectiveOptimizer(context, problem, fqiBSolver);
-      
-      /*SolverPtr ceSolver = crossEntropySolver(diagonalGaussianSampler(), 100, 30, 10);
-      ceSolver->setVerbosity((SolverVerbosity)verbosity);
-      SolverPtr sbSolver = surrogateBasedSolver(uniformScalarVectorSampler(), 20, createRegressionExtraTreeLearner(), ceSolver, numEvaluations);
-      solveWithSingleObjectiveOptimizer(context, problem, sbSolver);*/
+      SamplerPtr sampler = subsetVectorSampler(scalarExpressionVectorSampler(), K);
+      SolverPtr xtBatchLearner = simpleEnsembleLearner(treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)), numTrees);
+      xtBatchLearner->setVerbosity((SolverVerbosity)verbosity);
+      SolverPtr batchXTBasedSolver = batchSurrogateBasedSolver(sbsInitialSampler, xtBatchLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
+      solveWithSingleObjectiveOptimizer(context, problem, batchXTBasedSolver, bestFitness);
+
+#endif // 0
 
       context.leaveScope(); 
     }
-    
-    /*
-    FitnessPtr bestFitness;
-    SolverCallbackPtr callback = storeBestFitnessSolverCallback(bestFitness);
-    SelectionCriterionPtr criterion = expectedImprovementCriterion(bestFitness);
-     
-     */ 
-    
   }
 
   double evaluateSingleObjectiveOptimizer(ExecutionContext& context, const std::vector<ProblemPtr>& problems, SolverPtr optimizer, size_t numRuns = 5)
@@ -173,7 +139,7 @@ protected:
     return stats.getMean();
   }
 
-  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
+  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer, FitnessPtr& bestFitness)
   {
     context.enterScope(optimizer->toShortString());
 
@@ -182,15 +148,17 @@ protected:
     IVectorPtr evaluations = new IVector(0, 0);
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+    bestFitness = FitnessPtr();
     SolverCallbackPtr callback = compositeSolverCallback(
-      fillParetoFrontSolverCallback(front),
-      evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, scores, evaluationPeriod),
+      storeBestFitnessSolverCallback(bestFitness),
+      evaluationPeriodEvaluatorSolverCallback(singleObjectiveSolverEvaluator(bestFitness), evaluations, cpuTimes, scores, evaluationPeriod),
       maxEvaluationsSolverCallback(numEvaluations));
 
     optimizer->setVerbosity((SolverVerbosity)verbosity);
     optimizer->solve(context, problem, callback);
     context.resultCallback("optimizer", optimizer);
-    context.resultCallback("front", front);
+    jassert(bestFitness);
+    context.resultCallback("bestFitness", bestFitness);
 
     if (verbosity >= 1)
     {
@@ -207,8 +175,7 @@ protected:
       context.leaveScope();
     }
 
-    jassert(!front->isEmpty());
-    double score = front->getFitness(0)->getValue(0);
+    double score = bestFitness->getValue(0);
     context.resultCallback("score", score);
     context.leaveScope(score);
     return score;
