@@ -36,4 +36,10 @@
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
 
+  <!-- Incremental to batch -->
+  <class name="IncrementalLearnerBasedLearner" base="IterativeSolver">
+    <constructor arguments="IncrementalLearnerPtr learner"/>
+    <variable type="IncrementalLearner" name="learner"/>
+  </class>
+  
 </library>

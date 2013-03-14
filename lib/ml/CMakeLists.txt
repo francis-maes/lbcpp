@@ -207,6 +207,7 @@ SET(ML_LEARNER_SOURCES
   Learner/RandomSplitConditionLearner.h
   Learner/TreeLearner.h
   Learner/EnsembleLearner.h
+  Learner/IncrementalLearnerBasedLearner.h
   Learner/LearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LearnerLibrary.cpp
 )
