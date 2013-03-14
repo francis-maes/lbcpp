@@ -117,6 +117,7 @@ struct SolverInfo
               infos[j].inFunctionOfCpuTime.evaluations->get(i) != DVector::missingValue)
             context.resultCallback(infos[j].name, infos[j].inFunctionOfCpuTime.evaluations->get(i));
         context.leaveScope();
+      }
     }
     context.leaveScope();
   }
@@ -127,12 +128,12 @@ class SolverSettings
 public:
   SolverSettings() : numRuns(0), bestFitness(NULL), numEvaluations(0) {}
   SolverSettings(SolverPtr solver, size_t numRuns, size_t numEvaluations, 
-                 double evaluationPeriod, double evaluationPeriodFactor, SolverVerbosity verbosity,
-                 SolverVerbosity optimizerVerbosity, const string& description = string::empty, FitnessPtr* bestFitness = NULL)
+                 double evaluationPeriod, double evaluationPeriodFactor, size_t verbosity,
+                 size_t optimizerVerbosity, const string& description = string::empty, FitnessPtr* bestFitness = NULL)
     : solver(solver), numRuns(numRuns), 
       bestFitness(bestFitness), description(description.isEmpty() ? solver->toShortString() : description),
       numEvaluations(numEvaluations), evaluationPeriod(evaluationPeriod), evaluationPeriodFactor(evaluationPeriodFactor),
-      verbosity(verbosity), optimizerVerbosity(optimizerVerbosity) {}
+      verbosity((SolverVerbosity)verbosity), optimizerVerbosity((SolverVerbosity)optimizerVerbosity) {}
   
   SolverInfo runSolver(ExecutionContext& context, ProblemPtr problem)
   {
