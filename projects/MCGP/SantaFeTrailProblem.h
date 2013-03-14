@@ -384,8 +384,7 @@ public:
 #endif // 0
 
     ExpressionPtr expression = object.staticCast<Expression>();
-    ObjectPtr dummy;
-    SantaFeTrailActionPtr action = expression->compute(context, &dummy).staticCast<SantaFeTrailAction>();
+    SantaFeTrailActionPtr action = expression->compute(context, std::vector<ObjectPtr>()).staticCast<SantaFeTrailAction>();
 
     SantaFeTrailStatePtr state = new SantaFeTrailState(world, maxNumSteps);
     while (!state->isTimeExhausted() && !state->areAllPelletsEaten())

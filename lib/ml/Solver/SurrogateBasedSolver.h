@@ -73,10 +73,10 @@ public:
       }
       
       // optimize surrogate
-      if (verbosity >= verbosityDetailed)
+      if (verbosity >= verbosityAll)
         context.enterScope("Optimize surrogate");
       object = optimizeSurrogate(context, surrogateModel);
-      if (verbosity >= verbosityDetailed)
+      if (verbosity >= verbosityAll)
       {
         context.resultCallback("object", object);
         context.leaveScope();
@@ -118,7 +118,7 @@ protected:
     {
       std::vector<ObjectPtr> row;
       encoder->encodeIntoVariables(context, object, row);
-      return selectionCriterion->evaluate(context, model->compute(context, &row[0]));
+      return selectionCriterion->evaluate(context, model->compute(context, row));
     }
     
     VariableEncoderPtr encoder;
@@ -184,14 +184,14 @@ public:
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     SurrogateBasedSolver::startSolver(context, problem, callback, startingSolution);
-    surrogateModel = surrogateLearner->createExpression(context);
+    surrogateModel = surrogateLearner->createExpression(context, fitnessClass);
   }
 
   virtual ExpressionPtr getSurrogateModel(ExecutionContext& context)
     {return surrogateModel;}
   
   virtual void addFitnessSample(ExecutionContext& context, ObjectPtr object, FitnessPtr fitness)
-    {surrogateLearner->addTrainingSample(context, makeTrainingSample(context, object, fitness));}
+    {surrogateLearner->addTrainingSample(context, makeTrainingSample(context, object, fitness), surrogateModel);}
 
 protected:
   friend class IncrementalSurrogateBasedSolverClass;

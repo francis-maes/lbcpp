@@ -16,9 +16,15 @@
 namespace lbcpp
 {
 
+class Aggregator;
+typedef ReferenceCountedObjectPtr<Aggregator> AggregatorPtr;
+
 class Aggregator : public Object
 {
 public:
+  // returns both the aggregator and the output type of this aggregator
+  static std::pair<AggregatorPtr, ClassPtr> create(ClassPtr supervisionType);
+
   // types / initialization
   virtual bool doAcceptInputType(const ClassPtr& type) const = 0; 
   virtual ClassPtr initialize(const ClassPtr& inputsType) = 0; // returns the output type
@@ -33,8 +39,6 @@ public:
   virtual void updateAggregation(const ObjectPtr& data, const DataVectorPtr& inputs) const = 0;
   virtual DataVectorPtr finalizeAggregation(const ObjectPtr& data) const = 0;
 };
-
-typedef ReferenceCountedObjectPtr<Aggregator> AggregatorPtr;
 
 extern AggregatorPtr meanDoubleAggregator();
 extern AggregatorPtr statisticsDoubleAggregator();

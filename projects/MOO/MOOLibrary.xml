@@ -49,6 +49,7 @@
     <variable type="PositiveInteger" name="optimizerVerbosity" description="Verbosity of optimizers [1]"/>
     <variable type="PositiveInteger" name="problemIdx" shortName="p" description="The problem to run (1-6) [1]"/>
   </class>
+  
   <!-- FQI Based Solver -->
   <class name="FQIBasedSolver" base="PopulationBasedSolver" abstract="yes"/>
   
@@ -57,5 +58,16 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="vector"/>
   </class>
   <class name="ScalarVectorFQIBasedSolver" base="FQIBasedSolver"/>
-  
+
+  <!-- Incremental XT -->
+  <class name="EnsembleIncrementalLearner" base="IncrementalLearner">
+    <variable type="IncrementalLearner" name="baseLearner"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+  </class>
+
+  <class name="ScalarVectorExtraTreeExpression" base="Expression"/>
+  <class name="ScalarVectorExtraTreeIncrementalLearner" base="IncrementalLearner">
+    <variable type="SplittingCriterion" name="splittingCriterion"/>
+  </class>
+
 </library>
