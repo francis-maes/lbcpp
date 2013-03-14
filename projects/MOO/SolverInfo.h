@@ -104,20 +104,21 @@ struct SolverInfo
             infos[j].inFunctionOfCpuTime.scores->get(i) != DVector::missingValue)
           context.resultCallback(infos[j].name, infos[j].inFunctionOfCpuTime.scores->get(i));
       context.leaveScope();
+    }
+    context.leaveScope();
       
-      context.enterScope("evaluations(cpuTime)");
-      for (size_t i = 0; i < maxLengthCpuTimes; ++i)
-      {
-        context.enterScope(string(longestCpuTimesVector->get(i)));
-        context.resultCallback("cpuTime", longestCpuTimesVector->get(i));
-        if (longestCpuTimesVector->get(i))
-          context.resultCallback("log(cpuTime)", log10((double)longestCpuTimesVector->get(i)));
-        for (size_t j = 0; j < infos.size(); ++j)
-          if (i < infos[j].inFunctionOfCpuTime.evaluations->getNumElements() &&
-              infos[j].inFunctionOfCpuTime.evaluations->get(i) != DVector::missingValue)
-            context.resultCallback(infos[j].name, infos[j].inFunctionOfCpuTime.evaluations->get(i));
-        context.leaveScope();
-      }
+    context.enterScope("evaluations(cpuTime)");
+    for (size_t i = 0; i < maxLengthCpuTimes; ++i)
+    {
+      context.enterScope(string(longestCpuTimesVector->get(i)));
+      context.resultCallback("cpuTime", longestCpuTimesVector->get(i));
+      if (longestCpuTimesVector->get(i))
+        context.resultCallback("log(cpuTime)", log10((double)longestCpuTimesVector->get(i)));
+      for (size_t j = 0; j < infos.size(); ++j)
+        if (i < infos[j].inFunctionOfCpuTime.evaluations->getNumElements() &&
+            infos[j].inFunctionOfCpuTime.evaluations->get(i) != DVector::missingValue)
+          context.resultCallback(infos[j].name, infos[j].inFunctionOfCpuTime.evaluations->get(i));
+      context.leaveScope();
     }
     context.leaveScope();
   }
