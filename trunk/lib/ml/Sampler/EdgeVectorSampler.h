@@ -1,10 +1,10 @@
 /*-----------------------------------------.---------------------------------.
- | Filename: EdgeVectorSampler.h            | Edge Vector Sampler             |
- | Author  : Denny Verbeeck                 |                                 |
- | Started : 14/03/2013 13:58               |                                 |
- `------------------------------------------/                                 |
-                                |                                             |
-                                `--------------------------------------------*/
+ | Filename: EdgeVectorSampler.h           | Edge Vector Sampler             |
+ | Author  : Denny Verbeeck                |                                 |
+ | Started : 14/03/2013 13:58              |                                 |
+ `-----------------------------------------/                                 |
+                                |                                            |
+                                `-------------------------------------------*/
 
 #ifndef ML_SAMPLER_EDGE_VECTOR_H_
 # define ML_SAMPLER_EDGE_VECTOR_H_
@@ -44,6 +44,6 @@ protected:
   ScalarVectorDomainPtr domain;                         /**< Pointer to the domain in which we sample             */
 };
 
-} /* namespace lbcpp */
+}; /* namespace lbcpp */
 
 #endif // !ML_SAMPLER_EDGE_VECTOR_H_

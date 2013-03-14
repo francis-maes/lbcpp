@@ -69,5 +69,6 @@ private:
 
 extern VariableEncoderPtr coloVariableEncoder();
   
-};
-#endif
+}; /* namespace lbcpp */
+
+#endif // !ML_COLO_VARIABLE_ENCODER_H_
