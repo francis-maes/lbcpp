@@ -107,7 +107,7 @@ protected:
       /*
       ** Incremental surroggate based solver with extremely randomized trees
       */
-      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new ScalarVectorExtraTreeIncrementalLearner(SplittingCriterionPtr()), numTrees);
+      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       SolverPtr incrementalXTBasedSolver = incrementalSurrogateBasedSolver(sbsInitialSampler, xtIncrementalLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
       solveWithSingleObjectiveOptimizer(context, problem, incrementalXTBasedSolver, bestFitness);
 
