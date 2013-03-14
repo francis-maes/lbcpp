@@ -66,6 +66,10 @@
     <variable type="PositiveInteger" name="numIntervals"/>
   </class>
   
+  <class name="EdgeVectorSampler" base="Sampler">
+    <constructor/>
+  </class>
+  
   <class name="SubsetVectorSampler" base="Sampler">
     <constructor arguments="SamplerPtr vectorSampler, size_t subsetSize"/>
     <variable type="Sampler" name="vectorSampler"/>

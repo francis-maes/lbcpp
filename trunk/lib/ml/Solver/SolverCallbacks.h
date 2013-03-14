@@ -9,7 +9,9 @@
 #ifndef ML_SOLVER_CALLBACKS_H_
 # define ML_SOLVER_CALLBACKS_H_
 
-# include <ml/Solver.h>
+# include <ml/SolverCallback.h>
+# include <ml/Fitness.h>
+# include <ml/SolutionContainer.h>
 
 namespace lbcpp
 {

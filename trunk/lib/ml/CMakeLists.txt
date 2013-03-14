@@ -34,6 +34,7 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/Perturbator.h
   ${ML_INCLUDES}/VariableEncoder.h
   ${ML_INCLUDES}/Solver.h
+  ${ML_INCLUDES}/SolverCallback.h
   ${ML_INCLUDES}/Search.h
   ${ML_INCLUDES}/Function.h
   ${ML_INCLUDES}/Aggregator.h
@@ -84,7 +85,8 @@ SET(ML_OPTIMIZER_SOURCES
 
 SET(ML_SAMPLER_SOURCES
   Sampler/UniformScalarVectorSampler.h
-  Sampler/LatinHypercubeSampler.h
+  Sampler/LatinHypercubeVectorSampler.h
+  Sampler/EdgeVectorSampler.h
   Sampler/DiagonalGaussianSampler.h
   Sampler/RandomSearchSampler.h
   Sampler/LogLinearActionCodeSearchSampler.h

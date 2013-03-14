@@ -36,10 +36,10 @@ public:
     constrainthandler = new BoxConstraintHandler(lower, upper); 
   }
   virtual ~SharkObjectiveFunctionFromProblem()
-  {delete constrainthandler;}
+    {delete constrainthandler;}
   
   virtual unsigned int objectives() const
-  {return (int)problem->getNumObjectives();}
+    {return (int)problem->getNumObjectives();}
   
   virtual void result(double* const& point, std::vector<double>& value)
   {
@@ -67,15 +67,15 @@ protected:
   SolverPtr solver;
 };
 
-class CMAESSOOptimizer : public PopulationBasedSolver
+class CMAESSOOptimizer : public IterativeSolver
 {
 public:
-  CMAESSOOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
-  : PopulationBasedSolver(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), cma(NULL) {}
+  CMAESSOOptimizer(size_t numIterations = 0)
+  : IterativeSolver(numIterations), objective(NULL), cma(NULL) {}
   
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    PopulationBasedSolver::startSolver(context, problem, callback, startingSolution);
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
     cma = new CMASearch();
   }
@@ -84,7 +84,7 @@ public:
   {
     jassert(cma && objective);
     if (iter == 0)
-      cma->init(*objective, populationSize, numOffsprings);
+      cma->init(*objective);
     else
       cma->run();
     return true;
@@ -94,13 +94,11 @@ public:
   {
     deleteAndZero(cma);
     deleteAndZero(objective);
-    PopulationBasedSolver::stopSolver(context);
+    IterativeSolver::stopSolver(context);
   }
   
 protected:
   friend class CMAESSOOptimizerClass;
-  
-  size_t numOffsprings;
   
   SharkObjectiveFunctionFromProblem* objective;
   CMASearch* cma;
