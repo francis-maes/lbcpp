@@ -9,6 +9,7 @@ GENERATE_INTROSPECTION_CODE(MOOLibrary.xml MOOLibrary.cpp)
 SET(MOO_SOURCES
   precompiled.h
   precompiled.cpp
+  SolverInfo.h
   SharkProblems.h
   FQIBasedSolver.h
   MOOSandBox.h

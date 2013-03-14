@@ -367,12 +367,10 @@ protected:
     if (runBaseline)
     {
       solvers.push_back(createSettings(randomSolver(uniformScalarVectorSampler(), numEvaluations), numEvaluations, "Random search"));
-      solvers.push_back(createSettings(randomSolver(diagonalGaussianSampler(), numEvaluations), numEvaluations, "Random gaussian search"));
       solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize), numEvaluations, "Cross-entropy"));
       solvers.push_back(createSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true), numEvaluations, "Cross-entropy with elitism"));
-      solvers.push_back(createSettings(cmaessoOptimizer(populationSize, populationSize, numEvaluations / populationSize), numEvaluations, "CMA-ES"));
+      solvers.push_back(createSettings(cmaessoOptimizer(numEvaluations), numEvaluations, "CMA-ES"));
     }
-      
     
     // SBO solvers
     // create the splitting criterion    
@@ -404,16 +402,16 @@ protected:
       if (uniformSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, RF, Optimistic, Uniform"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, RF, Probability of Improvement, Uniform", &bestPOI));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, RF, Optimistic, Uniform"));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, RF, Probability of Improvement, Uniform", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numEvaluations, "SBO, RF, Expected Improvement, Uniform", &bestEI));
       }
       
       if (latinHypercubeSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, RF, Optimistic, Latin Hypercube"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, RF, Probability of Improvement, Latin Hypercube", &bestPOI));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, RF, Optimistic, Latin Hypercube"));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, RF, Probability of Improvement, Latin Hypercube", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numEvaluations, "SBO, RF, Expected Improvement, Latin Hypercube", &bestEI));
       }
     } // runRandomForests
@@ -428,16 +426,16 @@ protected:
       if (uniformSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, XT, Optimistic, Uniform"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, XT, Probability of Improvement, Uniform", &bestPOI));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, XT, Optimistic, Uniform"));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, XT, Probability of Improvement, Uniform", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numEvaluations, "SBO, XT, Expected Improvement, Uniform", &bestEI));
       }
       
       if (latinHypercubeSampling)
       {
         FitnessPtr bestPOI, bestEI;
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, XT, Optimistic, Latin Hypercube"));
-        solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, XT, Probability of Improvement, Latin Hypercube", &bestPOI));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, optimistic, numEvaluations), numEvaluations, "SBO, XT, Optimistic, Latin Hypercube"));
+        //solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, probabilityOfImprovementSelectionCriterion(bestPOI), numEvaluations), numEvaluations, "SBO, XT, Probability of Improvement, Latin Hypercube", &bestPOI));
         solvers.push_back(createSettings(surrogateBasedSolver(uniform, learner, ceSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numEvaluations, "SBO, XT, Expected Improvement, Latin Hypercube", &bestEI));
       }
     } // runXT

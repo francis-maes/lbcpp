@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <oil/Core/Double.h>
 #include <oil/Core/DefaultClass.h>
+#include <oil/Core/Vector.h>
 #include <oil/Core/XmlSerialisation.h>
 #include <oil/Execution/ExecutionContext.h>
 using namespace lbcpp;
@@ -76,6 +77,11 @@ void Double::clone(ExecutionContext& context, const ObjectPtr& target) const
 bool Double::loadFromString(ExecutionContext& context, const string& str)
 {
   string v = str.trim().toLowerCase();
+  if (v == T("nan"))
+  {
+    value = DVector::missingValue;
+    return true;
+  }
   if (!v.containsOnly(T("0123456789e.-")))
   {
     context.errorCallback(T("Double::loadFromString"), T("Could not read double value ") + str.quoted());

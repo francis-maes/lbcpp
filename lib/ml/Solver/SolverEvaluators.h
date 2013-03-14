@@ -17,7 +17,7 @@ namespace lbcpp
 class SingleObjectiveSolverEvaluator : public SolverEvaluator
 {
 public:
-  SingleObjectiveSolverEvaluator(FitnessPtr& bestFitness = (*(FitnessPtr*) 0))
+  SingleObjectiveSolverEvaluator(FitnessPtr& bestFitness = (*(FitnessPtr* )0))
     : bestFitness(bestFitness) {} 
   
   double evaluateSolver(ExecutionContext& context, SolverPtr solver)
@@ -36,7 +36,7 @@ public:
     : front(front) {}
   
   double evaluateSolver(ExecutionContext& context, SolverPtr solver)
-  {return front->computeHyperVolume(front->getFitnessLimits()->getWorstPossibleFitness());}
+    {return front->computeHyperVolume(front->getFitnessLimits()->getWorstPossibleFitness());}
   
 protected:
   friend class HyperVolumeSolverEvaluatorClass;

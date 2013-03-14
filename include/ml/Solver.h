@@ -9,6 +9,7 @@
 #ifndef ML_SOLVER_H_
 # define ML_SOLVER_H_
 
+# include "SolverCallback.h"
 # include "Problem.h"
 # include "SolutionContainer.h"
 # include "VariableEncoder.h"
@@ -17,47 +18,6 @@
 
 namespace lbcpp
 {
-
-/*
-** SolverEvaluator
-*/
-class SolverEvaluator : public Object
-{
-public:
-  virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver) = 0;
-};
-
-  
-/*
-** SolverCallback
-*/
-class SolverCallback : public Object
-{
-public:
-  virtual void solverStarted(ExecutionContext& context, SolverPtr solver) {}
-  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness) = 0;
-  virtual void solverStopped(ExecutionContext& context, SolverPtr solver) {}
-
-  virtual bool shouldStop()
-    {return false;}
-};
-
-extern SolverEvaluatorPtr singleObjectiveSolverEvaluator(FitnessPtr& bestFitness);
-extern SolverEvaluatorPtr hyperVolumeSolverEvaluator(ParetoFrontPtr front);
-
-extern SolverCallbackPtr storeBestFitnessSolverCallback(FitnessPtr& bestFitness);
-extern SolverCallbackPtr storeBestSolutionSolverCallback(ObjectPtr& bestSolution);
-extern SolverCallbackPtr storeBestSolverCallback(ObjectPtr& bestSolution, FitnessPtr& bestFitness);
-
-extern SolverCallbackPtr fillParetoFrontSolverCallback(ParetoFrontPtr front);
-extern SolverCallbackPtr maxEvaluationsSolverCallback(size_t maxEvaluations);
-
-extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, SolverCallbackPtr callback2);
-extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, SolverCallbackPtr callback2, SolverCallbackPtr callback3);
-
-extern SolverCallbackPtr evaluationPeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  size_t evaluationPeriod);
-extern SolverCallbackPtr timePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod);
-extern SolverCallbackPtr logTimePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod, double exponent);
 
 /*
 ** Verbosity
@@ -143,6 +103,7 @@ protected:
 extern IterativeSolverPtr randomSolver(SamplerPtr sampler, size_t numIterations = 0);
 extern IterativeSolverPtr repeatSolver(SolverPtr solver, size_t numIterations = 0);
 extern IterativeSolverPtr lbfgsOptimizer(size_t numIterations = 0);
+extern IterativeSolverPtr cmaessoOptimizer(size_t numIterations);
 extern IterativeSolverPtr surrogateBasedSolver(SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
 
 class PopulationBasedSolver : public IterativeSolver
@@ -160,8 +121,6 @@ protected:
   void computeMissingFitnesses(ExecutionContext& context, const SolutionVectorPtr& population);
   void learnSampler(ExecutionContext& context, SolutionVectorPtr solutions, SamplerPtr sampler);
 };
-
-extern PopulationBasedSolverPtr cmaessoOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0);
 
 extern PopulationBasedSolverPtr crossEntropySolver(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr());
 extern PopulationBasedSolverPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);

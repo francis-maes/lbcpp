@@ -73,6 +73,7 @@ extern SamplerPtr gaussianSampler(double mean = 0.0, double standardDeviation = 
 extern SamplerPtr uniformScalarVectorSampler();
 extern SamplerPtr samplerToVectorSampler(SamplerPtr sampler, size_t numSamples);
 extern SamplerPtr latinHypercubeVectorSampler(size_t numIntervals);
+extern SamplerPtr edgeVectorSampler();
 extern SamplerPtr diagonalGaussianSampler();
 extern SamplerPtr diagonalGaussianDistributionSampler();
 
