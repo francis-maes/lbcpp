@@ -35,10 +35,14 @@
     <variable type="PositiveInteger" name="numEvaluations" shortName="n" description="Number of evaluations [1000]"/>
     <variable type="Boolean" name="runBaseline" description="Run baseline methods [false]"/>
     <variable type="PositiveInteger" name="populationSize" description="Population size for baseline methods and inner optimization of surrogate-based methods [20]"/>
+    <variable type="Boolean" name="runAll" description="Run Baseline, RF, XT and IXT with LHS, ModifiedLHS and EdgeSampling"/>
     <variable type="Boolean" name="runRandomForests" description="Run surrogate-based optimization with random forests [false]"/>
     <variable type="Boolean" name="runXT" description="Run surrogate-based optimization with extremely randomized trees [false]"/>
+    <variable type="Boolean" name="runIncrementalXT" description="Run surrogate-based optimization with incremental extremely randomized trees [false]"/>
     <variable type="Boolean" name="uniformSampling" description="Initialize surrogate-based optimizers with uniform sampling [false]"/>
     <variable type="Boolean" name="latinHypercubeSampling" description="Initialize surrogate-based optimizers with latin hypercube sampling [false]"/>
+    <variable type="Boolean" name="modifiedLatinHypercubeSampling" description="Initialize surrogate-based optimizers with modified latin hypercube sampling [false]"/>
+    <variable type="Boolean" name="edgeSampling" description="Initialize surrogate-based optimizers with edge sampling [false]"/>
     <variable type="PositiveInteger" name="numTrees" shortName="t" description="Number of trees in surrogate models [100]"/>
     <variable type="Double" name="optimism" shortName="o" description="Level of optimism for optimistic selection criterion [2.0]"/>
     <variable type="Double" name="evaluationPeriod" description="Number of seconds between evaluations in function of CPU time [10.0]"/>
