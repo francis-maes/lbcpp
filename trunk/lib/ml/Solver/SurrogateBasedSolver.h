@@ -132,6 +132,8 @@ protected:
     res->setDomain(problem->getDomain());
     selectionCriterion->initialize(problem);
     res->addObjective(new SurrogateBasedSelectionObjective(variableEncoder, surrogateModel, selectionCriterion));
+
+    res->setInitialGuess(initialSamples->get(0)); // FIXME: do something better here
     
     for (size_t i = 0; i < problem->getNumObjectives(); ++i)
       res->addValidationObjective(problem->getObjective(i));

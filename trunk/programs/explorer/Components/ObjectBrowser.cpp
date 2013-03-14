@@ -78,15 +78,14 @@ struct ObjectRelatedCommand
     {
       juce::File outputFile = selectFileToSave(T("*.data"));
       if (outputFile != juce::File::nonexistent)
-        saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Vector>(), outputFile);
+        saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Table>(), outputFile);
     }
   }
 
-  static bool saveContainerAsGnuplotData(ExecutionContext& context, const VectorPtr& container, const juce::File& outputFile)
+  static bool saveContainerAsGnuplotData(ExecutionContext& context, const TablePtr& table, const juce::File& outputFile)
   {
-    size_t numRows = container->getNumElements();
-    ClassPtr rowType = container->getElementsType();
-
+    size_t numRows = table->getNumRows();
+    
     if (outputFile.existsAsFile())
       outputFile.deleteFile();
 
@@ -99,24 +98,26 @@ struct ObjectRelatedCommand
 
     // make columns
     std::vector<size_t> columns;
-    columns.reserve(rowType->getNumMemberVariables());
-    for (size_t i = 0; i < rowType->getNumMemberVariables(); ++i)
-      if (rowType->getMemberVariableType(i)->isConvertibleToDouble())
+    columns.reserve(table->getNumColumns());
+    for (size_t i = 0; i < table->getNumColumns(); ++i)
+      if (table->getType(i)->isConvertibleToDouble())
         columns.push_back(i);
 
     // write header
     *ostr << "# lbcpp-explorer gnu plot file\n";
     *ostr << "#";
     for (size_t i = 0; i < columns.size(); ++i)
-      *ostr << " " << rowType->getMemberVariableName(columns[i]);
+      *ostr << " " << table->getDescription(columns[i]);
     *ostr << "\n\n";
 
     // write data
     for (size_t i = 0; i < numRows; ++i)
     {
-      ObjectPtr object = container->getElement(i);
       for (size_t j = 0; j < columns.size(); ++j)
-        *ostr << string(object->getVariable(columns[j])->toDouble()) << " ";
+      {
+        ObjectPtr data = table->getElement(i, columns[j]);
+        *ostr << (data ? string(data->toDouble()) : "?") << " ";
+      }
       *ostr << "\n";
     }
     ostr->flush();
