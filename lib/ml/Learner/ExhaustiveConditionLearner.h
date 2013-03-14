@@ -50,7 +50,7 @@ public:
     {
       ExpressionPtr expression = expressions->getElement(i).staticCast<Expression>();
       std::pair<double, ExpressionPtr> p = computeCriterionWithEventualStump(context, splittingCriterion, counts, expression);
-      if (p.first >= -DBL_MAX)
+      if (p.first > -DBL_MAX)
         addSolution(context, p.second, p.first);
     }
   }
