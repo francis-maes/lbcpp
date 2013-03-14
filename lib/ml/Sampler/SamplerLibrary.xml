@@ -62,7 +62,7 @@
   </class>
   
   <class name="LatinHypercubeVectorSampler" base="Sampler">
-    <constructor arguments="size_t numIntervals"/>
+    <constructor arguments="size_t numIntervals, bool enforceEdges"/>
     <variable type="PositiveInteger" name="numIntervals"/>
   </class>
   

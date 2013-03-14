@@ -99,12 +99,6 @@ protected:
     SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(testExpressionsSampler)); 
     learner = baggingLearner(learner, numTrees);
     
-    FitnessPtr bestEI;
-    SolverSettings solverSettings = SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, solver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, RF, Expected Improvement, Latin Hypercube, " + solver->toShortString(), &bestEI);
-    
-    solverSettings.runSolver(context, problems[0]);
-    
-#if 0
     {
       // create RF learner
       SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(testExpressionsSampler)); 
@@ -138,7 +132,6 @@ protected:
       SolverInfo::displayResults(context, infos);
       context.leaveScope();
     }
-#endif // 0
   }
 };
 
