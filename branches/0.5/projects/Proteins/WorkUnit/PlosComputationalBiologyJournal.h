@@ -86,9 +86,9 @@ public:
       for (size_t j = i + 1; j < n; ++j)
         if (cbs->getValue(i) >= 0.5f && cbs->getValue(j) >= 0.5f)
           filteredDsb->setElement(i, j, dsb->getElement(i, j));
-    dsbProtein->setDisulfideBonds(filteredDsb);
+//    dsbProtein->setDisulfideBonds(filteredDsb);
 
-    exportResult(context, dsbProtein);
+    exportResult(context, dsbProtein, filteredDsb);
     return true;
   }
 
@@ -100,7 +100,7 @@ protected:
   File outputFile;
 
 private:
-  void exportResult(ExecutionContext& context, const ProteinPtr& protein) const
+  void exportResult(ExecutionContext& context, const ProteinPtr& protein, const SymmetricMatrixPtr& filteredDsb) const
   {
     const SymmetricMatrixPtr& pattern = protein->getDisulfideBonds(context);
     const std::vector<size_t> cysteinIndices = protein->getCysteinIndices();
@@ -185,18 +185,44 @@ private:
     *o << "\n";
 
     *o << "#- Disulfide Connectivity Pattern - (Cys, Cys) ----------------------#\n";
+    *o << "#--- Filter: none ---------------------------------------------------#\n";
 
     SymmetricMatrixPtr kolmogorov = (new KolmogorovPerfectMatchingFunction(0.f))->compute(context, pattern).getObjectAndCast<SymmetricMatrix>(context);
     jassert(kolmogorov && kolmogorov->getDimension() == n);
+    bool hasPattern = false;
     for (size_t i = 0; i < n; ++i)
       for (size_t j = i + 1; j < n; ++j)
       {
         if (kolmogorov->getElement(i,j).getDouble() != 0.f)
         {
+          hasPattern = true;
           *o << toFixedLengthStringLeftJustified(T("Cys") + String((int)cysteinIndices[i] + 1), 6) << " ";
           *o << toFixedLengthStringLeftJustified(T("Cys") + String((int)cysteinIndices[j] + 1), 6) << "\n";
         }
       }
+    if (!hasPattern)
+      *o << "No pattern found !\n";
+    *o << "\n";
+    *o << "\n";
+    
+    *o << "#- Disulfide Connectivity Pattern - (Cys, Cys) ----------------------#\n";
+    *o << "#--- Filter: Cysteine states predicted ------------------------------#\n";
+    
+    SymmetricMatrixPtr filteredKolmogorov = (new KolmogorovPerfectMatchingFunction(0.f))->compute(context, filteredDsb).getObjectAndCast<SymmetricMatrix>(context);
+    jassert(filteredKolmogorov && filteredKolmogorov->getDimension() == n);
+    hasPattern = false;
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = i + 1; j < n; ++j)
+      {
+        if (filteredKolmogorov->getElement(i,j).getDouble() != 0.f)
+        {
+          hasPattern = true;
+          *o << toFixedLengthStringLeftJustified(T("Cys") + String((int)cysteinIndices[i] + 1), 6) << " ";
+          *o << toFixedLengthStringLeftJustified(T("Cys") + String((int)cysteinIndices[j] + 1), 6) << "\n";
+        }
+      }
+    if (!hasPattern)
+      *o << "No pattern found !\n";
 
     delete o;
   }
