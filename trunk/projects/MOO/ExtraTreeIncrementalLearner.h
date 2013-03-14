@@ -25,7 +25,7 @@ public:
   virtual void addSampleToTree(ExecutionContext& context, ScalarVectorTreeNode* root, const InputVector& input, const Prediction& output) const = 0;
 
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
-    {return new ScalarVectorTreeExpression();}
+    {return new ScalarVectorTreeExpression(supervisionType);}
 
   virtual void addTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& sample, ExpressionPtr expr) const
   {

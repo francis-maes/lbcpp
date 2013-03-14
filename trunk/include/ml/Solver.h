@@ -84,6 +84,8 @@ extern SolverPtr baggingLearner(const SolverPtr& baseLearner, size_t ensembleSiz
 
 extern SolverPtr treeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit = 2, size_t maxDepth = 0);
 
+extern IterativeSolverPtr incrementalLearnerBasedLearner(IncrementalLearnerPtr learner);
+
 class IterativeSolver : public Solver
 {
 public:

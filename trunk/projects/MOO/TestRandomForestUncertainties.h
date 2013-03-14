@@ -12,6 +12,7 @@
 # include <oil/Execution/WorkUnit.h>
 # include <ml/Solver.h>
 # include <ml/SelectionCriterion.h>
+# include "ExtraTreeIncrementalLearner.h"
 
 namespace lbcpp
 {
@@ -95,6 +96,7 @@ public:
     //solvers.push_back(dtLearner);
     solvers.push_back(rfLearner);
     solvers.push_back(xtLearner);
+    solvers.push_back(incrementalLearnerBasedLearner(new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees)));
     
     
     ObjectivePtr problemObj = problem->getObjective(0);

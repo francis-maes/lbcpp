@@ -115,7 +115,8 @@ private:
 class ScalarVectorTreeExpression : public Expression
 {
 public:
-  ScalarVectorTreeExpression() : root(NULL) {}
+  ScalarVectorTreeExpression(ClassPtr type = objectClass) 
+    : Expression(type), root(NULL) {}
   virtual ~ScalarVectorTreeExpression()
   {
     if (root)
@@ -149,7 +150,7 @@ public:
       DVectorPtr vector = new DVector(indices->size());
       size_t i = 0;
       for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-        vector->set(i++, root->predict(makeInput(data->getRow(*it)))[0]);
+        vector->set(i++, root->predict(makeInput(data, *it))[0]);
       return new DataVector(indices, vector);
     }
     else
@@ -177,6 +178,14 @@ private:
         res->setValue(i, prediction[i]);
       return res;
     }
+  }
+
+  std::vector<double> makeInput(TablePtr data, size_t row) const
+  {
+    std::vector<double> res(data->getNumColumns());
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = data->getData(i).staticCast<DVector>()->get(row);
+    return res;
   }
 
   std::vector<double> makeInput(const std::vector<ObjectPtr>& sample) const
