@@ -50,6 +50,13 @@
     <variable type="PositiveInteger" name="problemIdx" shortName="p" description="The problem to run (1-6) [1]"/>
   </class>
   
+  <class name="TestSBOInnerOptimizers" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numDims"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+  </class>
+  
   <!-- FQI Based Solver -->
   <class name="FQIBasedSolver" base="PopulationBasedSolver" abstract="yes"/>
   

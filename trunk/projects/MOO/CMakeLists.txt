@@ -16,6 +16,7 @@ SET(MOO_SOURCES
   ScalarVectorTreeExpression.h
   TestRandomForestUncertainties.h
   MOOSandBox.h
+  TestSBOInnerOptimizers.h
   SBOExperiments.h
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
