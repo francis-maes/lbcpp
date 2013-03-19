@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Optimizer" directory="Optimizer">
+
+  <!-- Gradient-based optimizers -->
+  <class name="LBFGSOptimizer" base="IterativeSolver">
+    <constructor arguments="size_t numIterations"/>
+  </class>
+  
+  <!-- Single objective -->
+  <class name="CMAESSOOptimizer" base="IterativeSolver">
+    <constructor arguments="size_t numIterations"/>
+  </class>
+
+  <!-- Multi objective -->
+  <class name="NSGA2MOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t populationSize, size_t numGenerations, double mutationDistributionIndex, double crossOverDistributionIndex, double crossOverProbability"/>
+    <variable type="Double" name="mutationDistributionIndex"/>
+    <variable type="Double" name="crossOverDistributionIndex"/>
+    <variable type="Double" name="crossOverProbability"/>
+  </class>
+
+  <class name="CMAESMOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t populationSize, size_t numOffsprings, size_t numGenerations"/>
+    <variable type="PositiveInteger" name="numOffsprings"/>
+  </class>
+
+</library>

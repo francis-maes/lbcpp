@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Learner" directory="Learner">
+
+  <!-- Condition Learners -->
+  <class name="ExhaustiveConditionLearner" base="Solver">
+    <constructor arguments="SamplerPtr expressionsSampler"/>
+    <variable type="Sampler" name="expressionsSampler"/>
+  </class>
+
+  <class name="RandomSplitConditionLearner" base="Solver">
+    <constructor arguments="SamplerPtr expressionsSampler"/>
+    <variable type="Sampler" name="expressionsSampler"/>
+  </class>
+
+  <!-- Ensemble Learners -->
+  <class name="EnsembleLearner" base="Solver" abstract="yes">
+    <variable type="PositiveInteger" name="ensembleSize"/>
+  </class>
+
+  <class name="SimpleEnsembleLearner" base="EnsembleLearner">
+    <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
+    <variable type="Solver" name="baseLearner"/>
+  </class>
+
+  <class name="BaggingLearner" base="SimpleEnsembleLearner">
+    <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
+  </class>
+  
+  <!-- Tree Learner -->
+  <class name="TreeLearner" base="Solver">
+    <constructor arguments="SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
+    <variable type="SplittingCriterion" name="splittingCriterion"/>
+    <variable type="Solver" name="conditionLearner"/>
+    <variable type="PositiveInteger" name="minExamplesToSplit"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <!-- Incremental to batch -->
+  <class name="IncrementalLearnerBasedLearner" base="IterativeSolver">
+    <constructor arguments="IncrementalLearnerPtr learner"/>
+    <variable type="IncrementalLearner" name="learner"/>
+  </class>
+  
+</library>

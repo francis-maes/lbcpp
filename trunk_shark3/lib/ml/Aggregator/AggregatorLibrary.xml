@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Aggregator" directory="Aggregator">
+
+  <!-- Base class -->
+  <class name="Aggregator" abstract="yes"/>
+
+  <!-- Double -->
+  <class name="MeanDoubleAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+
+  <!-- Double Statistics -->
+  <class name="StatisticsDoubleAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+  
+  <!-- DoubleVector -->
+  <class name="MeanDoubleVectorAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+
+  <!-- DoubleVector Statistics -->
+  <class name="StatisticsDoubleVectorAggregator" base="Aggregator">
+    <constructor/>
+  </class>
+</library>

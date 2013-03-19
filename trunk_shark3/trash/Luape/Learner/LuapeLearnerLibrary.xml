@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LuapeLearner" directory="Luape/Learner">
+  <include file="lbcpp/Luape/LuapeLearner.h"/>
+  
+  <!-- Meta Learners -->
+  <class name="EnsembleLearner" base="LuapeLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; baseLearner, size_t ensembleSize"/>
+    <variable type="LuapeLearner" name="baseLearner"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+  </class>
+
+  <class name="BaggingLearner" base="EnsembleLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; baseLearner, size_t ensembleSize" returnType="LuapeLearner"/>
+  </class>
+    
+  <class name="CompositeLearner" base="LuapeLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; learner1, const LuapeLearnerPtr&amp; learner2"/>
+    <constructor arguments="const std::vector&lt;LuapeLearnerPtr&gt;&amp; learners"/>
+    <variable type="ObjectVector[LuapeLearner]" name="learners"/>
+  </class>
+
+  <!-- Tree Learner -->
+  <class name="TreeLearner" base="LuapeLearner">
+    <constructor arguments="SplitObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
+    <variable type="SplitObjective" name="objective"/>
+    <variable type="LuapeLearner" name="conditionLearner"/>
+    <variable type="PositiveInteger" name="minExamplesToSplit"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <!-- Boosting -->
+  <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
+    <variable type="LuapeLearner" name="weakLearner"/>
+    <variable type="PositiveInteger" name="treeDepth"/>
+  </class>
+  
+  <!-- Boosting with weights -->
+  <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
+  <class name="AdaBoostLearner" base="WeightBoostingLearner">
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
+  </class>
+  <class name="AdaBoostMHSplitObjective" base="ClassificationSplitObjective" abstract="yes"/>
+  <class name="DiscreteAdaBoostMHSplitObjective" base="AdaBoostMHSplitObjective">
+    <constructor returnType="ClassificationSplitObjective"/>
+  </class>
+  <class name="RealAdaBoostMHSplitObjective" base="AdaBoostMHSplitObjective">
+    <constructor returnType="ClassificationSplitObjective"/>
+  </class>
+
+  <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
+  <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
+  </class>
+  <class name="RealAdaBoostMHLearner" base="AdaBoostMHLearner">
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
+  </class>
+
+  <!-- Gradient Boosting -->
+  <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
+  <class name="L2BoostingLearner" base="GradientBoostingLearner">
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth" returnType="IterativeLearner"/>
+  </class>
+  
+  <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth" returnType="IterativeLearner"/>
+    <variable type="RankingLossFunction" name="rankingLoss"/>
+  </class>
+  
+  <!-- Gradient Descent -->
+  <class name="GradientDescentLearner" base="IterativeLearner" abstract="yes">
+    <variable type="IterationFunction" name="learningRate"/>
+  </class>
+  <class name="ClassifierSGDLearner" base="GradientDescentLearner">
+    <constructor arguments="MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations" returnType="IterativeLearner"/>
+    <variable type="MultiClassLossFunction" name="lossFunction"/>
+  </class>
+
+  <!-- Structure Generation -->
+  <class name="GenerateTestNodesLearner" base="LuapeLearner">
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder"/>
+    <variable type="ExpressionBuilder" name="nodeBuilder"/>
+  </class>
+
+  <!-- Weak Learners -->
+  <class name="ExactWeakLearner" base="NodeBuilderBasedLearner">
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder"/>
+  </class>
+  
+  <class name="RandomSplitWeakLearner" base="ExactWeakLearner">
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder" returnType="NodeBuilderBasedLearner"/>
+  </class>
+  
+  <class name="LaminatingWeakLearner" base="NodeBuilderBasedLearner">
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
+  </class>
+
+  <class name="BanditBasedWeakLearner" base="NodeBuilderBasedLearner">
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="Double" name="miniBatchRelativeSize"/>
+  </class>
+<!--
+  <class name="OptimizerBasedSequentialWeakLearner" base="LuapeLearner">
+    <constructor arguments="OptimizerPtr optimizer, size_t complexity, bool useRandomSplit"/>
+    <variable type="Optimizer" name="optimizer"/>
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="Boolean" name="useRandomSplit"/>
+  </class>-->
+
+  <!-- Decorators -->
+  <class name="AddActiveVariablesLearner" base="DecoratorLearner">
+    <constructor arguments="LuapeLearnerPtr decorated, size_t numActiveVariables, bool deterministic"/>
+    <variable type="PositiveInteger" name="numActiveVariables"/>
+    <variable type="Boolean" name="deterministic"/>
+  </class>
+
+</library>

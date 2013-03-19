@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="VariableEncoder" directory="VariableEncoder">
+  
+  <!-- VariableEncoder Base Class -->
+  <class name="VariableEncoder" abstract="yes"/>
+
+  <!-- ScalarVectorVariableEncoder -->
+  <class name="ScalarVectorVariableEncoder" base="VariableEncoder">
+    <constructor/>
+  </class>
+
+</library>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Colo" dynamic="yes">
+  
+  <class name="ColoObject">
+    <variable type="Vector[PositiveInteger]" name="sequence"/>
+  </class>
+  <class name="ColoDomain" base="Domain"/>
+  <class name="ColoProblem" base="Problem">
+    <variable type="File" name="javaDirectory"/>
+    <variable type="File" name="modelDirectory"/>
+  </class>
+  <class name="ColoSampler" base="Sampler">
+    <variable type="Vector[Double]" name="probabilities"/>
+  </class>
+  <class name="ColoSampler2" base="Sampler">
+    <variable type="Vector[Vector[Double]]" name="probabilities"/>
+  </class>
+
+  <class name="SurrogateBasedMOSolver" base="SurrogateBasedSolver" abstract="yes">
+  </class>
+  
+  <class name="ColoVariableEncoder" base="VariableEncoder">
+    <constructor/>
+  </class>
+  
+  <class name="ColoSandBox" base="WorkUnit">
+    <variable type="File" name="javaDirectory"/>
+    <variable type="File" name="modelDirectory"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="File" name="outputDirectory"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
+</library>

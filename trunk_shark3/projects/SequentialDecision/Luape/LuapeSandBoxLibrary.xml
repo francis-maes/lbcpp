@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LuapeSandBox" directory="Luape">
+
+  <!-- MC Objective -->
+  <class name="MCObjective" abstract="yes"/>
+  <class name="LuapeMCObjective" base="MCObjective" abstract="yes">
+    <variable type="LuapeInference" name="problem"/>
+  </class>
+  <class name="SymbolicRegressionMCObjective" base="LuapeMCObjective"/>
+
+  <!-- MC Problem --> 
+  <class name="MCProblem" abstract="yes"/>
+  <class name="DecisionProblemMCProblem" base="MCProblem" shortName="dp2mc">
+    <variable type="DecisionProblem" name="decisionProblem"/>
+  </class>
+  <class name="F8SymbolicRegressionMCProblem" base="MCProblem" shortName="f8symbreg">
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  <class name="PrimeNumberMCProblem" base="MCProblem" shortName="prime">
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <!-- MC Algorithm -->
+  <class name="MCAlgorithm" abstract="yes"/>
+  <class name="RolloutMCAlgorithm" base="MCAlgorithm" shortName="simulate"/>
+  <class name="DecoratorMCAlgorithm" base="MCAlgorithm" abstract="yes">
+    <variable type="MCAlgorithm" name="algorithm"/>
+  </class>
+  <class name="IterateMCAlgorithm" base="DecoratorMCAlgorithm" shortName="repeat">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookahead">
+    <variable type="Double" name="numActions"/>
+  </class>
+  <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="step">
+    <variable type="Boolean" name="useGlobalBest"/>
+  </class>
+  <class name="SelectMCAlgorithm" base="DecoratorMCAlgorithm" shortName="select">
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
+  <class name="OnlineLearningMCAlgorithm" base="MCAlgorithm" shortName="onlinelearner">
+    <variable type="Double" name="learningRate"/>
+  </class>
+  <class name="NRPAMCAlgorithm" base="OnlineLearningMCAlgorithm" shortName="nrpa">
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="iterations"/>
+  </class>
+
+  <!--MC Algorithms Luape Functions -->
+  <class name="MCAlgorithmLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="IterateMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  <class name="StepMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
+  <class name="LookAheadMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
+  <class name="SelectMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction">
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
+
+  <!-- MC Optimizer -->
+  <class name="MCOptimizer" base="Optimizer">
+    <variable type="MCAlgorithm" name="algorithm"/>
+    <variable type="PositiveInteger" name="budget"/>
+  </class>
+
+  <!--
+  <class name="BanditPoolWeakLearner" base="LuapeLearner">
+    <constructor arguments="size_t maxBandits, size_t maxDepth"/>
+    <variable type="PositiveInteger" name="maxBandits"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  -->
+  
+  <!-- META-MC -->
+  <class name="MetaMCSandBox" base="WorkUnit">
+    <variable type="MCProblem" name="problem"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="maxAlgorithmSize"/>
+    <variable type="Double" name="explorationCoefficient"/>
+    <variable type="Boolean" name="useMultiThreading"/>
+  </class>
+  <class name="DecisionProblemRandomTrajectoryWorkUnit" base="WorkUnit">
+    <variable type="DecisionProblem" name="problem"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <class name="RunMCAlgorithmWorkUnit" base="WorkUnit">
+    <variable type="MCProblem" name="problem"/>
+    <variable type="MCAlgorithm" name="algorithm"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="numRuns"/>  
+  </class>
+
+  <class name="LuapeSandBox" base="WorkUnit">
+    <variable type="File" name="trainFile"/>
+    <variable type="File" name="testFile"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="PositiveInteger" name="treeDepth"/>
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
+    <variable type="Boolean" name="useVariableRelevancies"/>
+    <variable type="Boolean" name="useExtendedVariables"/>
+    <variable type="Boolean" name="verbose"/>
+    <variable type="File" name="plotFile"/>
+  </class>
+
+  <class name="RelevanceDrivenFeatureGenerationLearner" base="IterativeLearner">
+    <variable type="LuapeLearner" name="baseLearner"/>
+    <variable type="PositiveInteger" name="numActiveVariables"/>
+  </class>
+
+
+  <class name="LuapeClassificationWorkUnit" base="WorkUnit" abstract="yes">
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="Boolean" name="verbose"/>
+    <variable type="Boolean" name="useExtendedOperators"/>
+    <variable type="Boolean" name="useVectorOperators"/>
+  </class>
+  
+  <class name="ECML12WorkUnit" base="LuapeClassificationWorkUnit">
+    <variable type="File" name="dataFile"/>
+    <variable type="String" name="method"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+    <variable type="PositiveInteger" name="foldNumber"/>
+    <variable type="PositiveInteger" name="featureLength"/>
+    <variable type="Double" name="featureBudget"/>
+    <variable type="MCAlgorithm" name="searchAlgorithm"/>
+  </class>
+  
+  <class name="LuapeClassificationSandBox" base="LuapeClassificationWorkUnit">
+    <variable type="File" name="dataDirectory"/>
+  </class>
+
+  <!-- Soft Stumps -->
+  <class name="SoftStumpLuapeFunction" base="LuapeFunction">
+    <variable type="Double" name="threshold"/>
+    <variable type="Double" name="gamma"/>
+  </class>
+  <class name="SoftStumpWeakLearner" base="DecoratorLearner">
+    <variable type="Double" name="gamma"/>
+  </class>
+
+  <!-- Luape Node Search --> 
+  <class name="ExpressionSearchProblem" base="LuapeInference" abstract="yes"/>
+
+  <class name="ExpressionEquivalenceClass" base="Object">
+    <variable type="ObjectVector[LuapeRPNSequence]" name="elements"/>
+    <variable type="Expression" name="representent"/>
+  </class>
+
+  <class name="LuapeFormulaDiscoverySandBox" base="WorkUnit">
+    <variable type="ExpressionSearchProblem" name="problem"/>
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="Double" name="explorationCoefficient"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="numStepsPerIteration"/>
+    <variable type="Boolean" name="useMultiThreading"/>
+  </class>
+  
+  <!-- Luape Search Problem : Bandit Formula -->
+  <class name="LuapeBanditFormulaSearchProblem" base="ExpressionSearchProblem">
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <!-- Luape Search Problem : Learning Formula 1 (Iterative scheme for linear learning with dense continuous features) -->
+  <class name="LuapeLearningFormulaSearchProblem" base="ExpressionSearchProblem">
+    <variable type="File" name="dataFile"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="PositiveInteger" name="numTrainingExamples"/>
+    <variable type="Boolean" name="isMultiPass"/>
+  </class>
+  <class name="LearningFormulaDiscoverySandBox" base="WorkUnit"/>
+
+  <!-- Luape Search Problem : Learning Formula 2 (Search for the form of a binary classifier with dense continuous features) -->
+  <class name="BinaryClassificationFormulaSearchProblem" base="ExpressionSearchProblem" abstract="yes">
+    <variable type="File" name="dataFile"/>
+    <variable type="PositiveInteger" name="numExamples"/>
+  </class>
+
+  <class name="SimpleContinuousFeatureInformation">
+    <variable type="EmpiricalContinuousDistribution" name="all"/>
+    <variable type="EmpiricalContinuousDistribution" name="pos"/>
+    <variable type="EmpiricalContinuousDistribution" name="neg"/>
+  </class>
+
+  <class name="SimpleContinuousFeatureBCFSP" base="BinaryClassificationFormulaSearchProblem"/>
+
+
+  <!-- EmpiricalContinuousDistribution -->
+  <class name="EmpiricalContinuousDistribution"/>
+  <class name="EmpiricalContinuousDistributionLuapeAccessor" base="LuapeFunction" abstract="yes"/>
+  <class name="EmpiricalContinuousDistributionNumSamplesFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMeanFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionSquaresMeanFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionVarianceFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionStandardDeviationFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMinimumFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMaximumFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMedianFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+
+  <!-- Morpion -->
+  <class name="PlayMorpionTrajectory" base="WorkUnit">
+    <variable type="File" name="file"/>
+  </class>
+
+  <class name="RunNRPAWorkUnit" base="WorkUnit">
+    <variable type="MCProblem" name="problem"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+  </class>
+
+</library>

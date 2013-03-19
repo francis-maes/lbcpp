@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="MOO" directory="MOO">
+
+  <!-- CORE -->
+  <class name="MOODomain" abstract="yes"/>
+  <class name="ContinuousDomain" base="MOODomain">
+    <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
+  </class>
+  <class name="MOOFitnessLimits" base="ContinuousDomain"/>
+
+  <class name="MOOFitness">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
+    <variable type="MOOFitnessLimits" name="limits"/>
+  </class>
+
+  <class name="MOOSolution">
+    <variable type="Object" name="object"/>
+    <variable type="MOOFitness" name="fitness"/>
+  </class>
+
+  <class name="MOOSolutionComparator" abstract="yes"/>
+    <class name="ObjectiveComparator" base="MOOSolutionComparator">
+      <constructor arguments="size_t index"/>
+      <variable type="PositiveInteger" name="index"/>
+    </class>
+    <class name="LexicographicComparator" base="MOOSolutionComparator">
+      <constructor/>
+    </class>
+    <class name="DominanceComparator" base="MOOSolutionComparator">
+      <constructor/>
+    </class>
+    <class name="ParetoRankAndCrowdingDistanceComparator" base="MOOSolutionComparator">
+      <constructor/>
+    </class>
+
+
+  <class name="MOOSolutionSet">
+    <variable type="MOOFitnessLimits" name="limits"/>
+    <variable type="ObjectVector[MOOSolution]" name="solutions"/>
+  </class>
+  <class name="MOOParetoFront" base="MOOSolutionSet"/>
+  
+  <uicomponent name="MOOSolutionSetComponent" type="MOOSolutionSet"/>  
+
+  <class name="MOOProblem" abstract="yes"/>
+  <class name="MOOSampler" abstract="yes"/>
+  
+  <class name="MOOOptimizer" abstract="yes"/>
+  <class name="IterativeOptimizer" base="MOOOptimizer" abstract="yes">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <!-- Optimizers -->
+  <class name="RandomOptimizer" base="IterativeOptimizer">
+    <constructor arguments="MOOSamplerPtr sample, size_t numIterations"/>
+    <variable type="MOOSampler" name="sampler"/>
+  </class>
+
+  <class name="NRPAOptimizer" base="MOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterationsPerLevel"/>
+  </class>
+  
+  <!-- Population Based Optimizers -->
+  <class name="PopulationBasedMOOOptimizer" base="IterativeOptimizer" abstract="yes">
+    <variable type="PositiveInteger" name="populationSize"/>
+  </class>
+
+  <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numTrainingSamples"/>
+    <variable type="Boolean" name="elitist"/>
+    <variable type="MOOSolutionComparator" name="comparator"/>
+  </class>
+
+  <!--
+  <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
+    <variable type="PositiveInteger" name="level"/>
+  </class>
+  -->
+
+  <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="Double" name="mutationDistributionIndex"/>
+    <variable type="Double" name="crossOverDistributionIndex"/>
+    <variable type="Double" name="crossOverProbability"/>
+  </class>
+
+  <class name="CMAESMOOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="PositiveInteger" name="numOffsprings"/>
+  </class>
+
+  <!-- Meta Optimizers -->
+  <class name="MABMetaOptimizer" base="IterativeOptimizer">
+    <variable type="IterativeOptimizer" name="baseOptimizer"/>
+    <variable type="PositiveInteger" name="numInstances"/>
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
+  
+  <!-- Problems -->
+  <class name="DecoratorMOOProblem" base="MOOProblem" abstract="yes">
+    <variable type="MOOProblem" name="problem"/>
+  </class>
+  <class name="MaxIterationsDecoratorProblem" base="DecoratorMOOProblem">
+    <variable type="PositiveInteger" name="maxNumEvaluations"/>
+  </class>
+  <class name="EvaluatorDecoratorProblem" base="MaxIterationsDecoratorProblem" abstract="yes">
+    <variable type="PositiveInteger" name="evaluationPeriod"/>
+  </class>
+  <class name="SingleObjectiveEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
+  <class name="HyperVolumeEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
+
+  <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
+
+    <class name="SingleObjectiveSharkMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+      <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
+
+  <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+      <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT3MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT4MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT6MOProblem" base="ZDTMOProblem"/>
+
+  <!-- Samplers -->
+  <class name="UniformContinuousSampler" base="MOOSampler"/>
+  <class name="DiagonalGaussianSampler" base="MOOSampler">
+    <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
+  </class>
+
+  <!-- Colo -->
+  <class name="ColoObject">
+    <variable type="GenericVector[PositiveInteger]" name="sequence"/>
+  </class>
+  <class name="ColoDomain" base="MOODomain"/>
+  <class name="ColoProblem" base="MOOProblem">
+    <variable type="File" name="modelDirectory"/>
+  </class>
+  <class name="ColoSampler" base="MOOSampler">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
+  </class>
+  <class name="ColoSampler2" base="MOOSampler">
+    <variable type="ObjectVector[DenseDoubleVector[PositiveIntegerEnumeration,Double]]" name="probabilities"/>
+  </class>
+
+  <class name="ColoSandBox" base="WorkUnit">
+    <variable type="File" name="javaDirectory"/>
+    <variable type="File" name="modelDirectory"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+  </class>
+
+  <!-- MO Tree -->
+  <class name="MultiObjectiveRegressionTree" base="Object"/>
+
+  <class name="MOTreeSampler" base="MOOSampler" abstract="yes">
+    <variable type="MultiObjectiveRegressionTree" name="tree"/>
+  </class>
+  <class name="EpsilonGreedyMOTreeSampler" base="MOTreeSampler">
+    <variable type="Double" name="epsilon"/>
+  </class>
+  <class name="AdaptativeMOTreeSampler" base="MOTreeSampler">
+    <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="weights"/>
+  </class>
+
+  <class name="MOTreeSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="minSamplesToSplit"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+  </class>
+
+  <!-- WorkUnits -->
+  <class name="MOOSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+  </class>
+
+  <class name="SymbRegSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+  </class>
+
+</library>

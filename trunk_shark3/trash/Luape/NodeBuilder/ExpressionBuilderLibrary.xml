@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ExpressionBuilder" directory="Luape/NodeBuilder">
+  <include file="lbcpp/Luape/ExpressionBuilder.h"/>
+
+  
+  <!-- Builder Decision Problem 
+  <class name="ExpressionBuilderState" base="DecisionProblemState">
+    <variable type="ExpressionDomain" name="function"/>
+    <variable type="PostfixExpressionTypeSpace" name="typeSearchSpace"/>
+    <variable type="PostfixExpressionTypeState" name="typeState"/>
+    <variable type="ObjectVector[Object]" name="availableActions"/>
+    <variable type="ObjectVector[Expression]" name="stack"/>
+    <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="Boolean" name="isAborted"/>
+    <variable type="Boolean" name="isYielded"/>
+  </class>
+-->
+  <!-- Generic Node Builders -->
+  <class name="CompositeNodeBuilder" base="ExpressionBuilder">
+    <constructor arguments="const std::vector&lt;ExpressionBuilderPtr&gt;&amp; builders"/>
+    <constructor arguments="ExpressionBuilderPtr builder1, ExpressionBuilderPtr builder2"/>
+    <variable type="ObjectVector[ExpressionBuilder]" name="builders"/>
+  </class>
+  
+  <class name="SingletonNodeBuilder" base="ExpressionBuilder">
+    <constructor arguments="const ExpressionPtr&amp; node"/>
+    <variable type="Expression" name="node"/>
+  </class>
+  
+  <!-- Input Variables Node Builder -->
+  <class name="InputsNodeBuilder" base="ExpressionBuilder">
+    <constructor/>
+  </class>
+
+  <!-- Node Builders based on the NodeBuilderDecisionProblem -->
+  <class name="ExhaustiveSequentialNodeBuilder" base="ExpressionBuilder">
+    <constructor arguments="size_t complexity"/>
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+
+  <class name="TreeBasedRandomPolicy" base="Policy">
+    <constructor/>
+  </class>
+  <class name="PolicyBasedNodeBuilder" base="StochasticNodeBuilder">
+    <constructor arguments="const PolicyPtr&amp; policy, size_t numNodes, size_t complexity"/>
+    <variable type="Policy" name="policy"/>
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+
+  <!-- Native sequential Node Builders -->
+  <class name="RandomSequentialNodeBuilder" base="SequentialNodeBuilder">
+    <constructor arguments="size_t numNodes, size_t complexity" returnType="StochasticNodeBuilder"/>
+  </class>
+
+  <class name="BiasedRandomSequentialNodeBuilder" base="SequentialNodeBuilder">
+    <constructor arguments="size_t numNodes, size_t complexity, double initialImportance" returnType="StochasticNodeBuilder"/>
+    <variable type="Double" name="initialImportance"/>
+  </class>
+
+  <class name="AdaptativeSequentialNodeBuilder" base="SequentialNodeBuilder" abstract="yes">
+    <variable type="Boolean" name="useVariableRelevancies"/>
+    <variable type="Boolean" name="useExtendedVariables"/>
+  </class>
+
+  <class name="AdaptativeSamplingNodeBuilder" base="AdaptativeSequentialNodeBuilder">
+    <constructor arguments="size_t numNoeds, size_t complexity, bool useVariableRelevancies, bool useExtendedVariables" returnType="StochasticNodeBuilder"/>
+  </class>
+
+</library>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Comparator" directory="Comparator">
+
+  <class name="SolutionComparator" abstract="yes"/>
+  
+  <class name="ObjectiveComparator" base="SolutionComparator">
+    <constructor arguments="size_t index"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
+  <class name="LexicographicComparator" base="SolutionComparator">
+    <constructor/>
+  </class>
+  <class name="DominanceComparator" base="SolutionComparator">
+    <constructor/>
+  </class>
+  <class name="ParetoRankAndCrowdingDistanceComparator" base="SolutionComparator">
+    <constructor/>
+  </class>
+
+</library>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="UserInterfaceComponent" directory="UserInterface/Component">
+
+  <uicomponent name="TableComponent" type="Table"/>
+  <uicomponent name="PieChartComponent" type="PieChart"/>
+  <uicomponent name="HistogramComponent" type="Histogram"/>
+  
+</library>

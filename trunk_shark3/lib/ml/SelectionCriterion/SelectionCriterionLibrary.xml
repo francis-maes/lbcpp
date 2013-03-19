@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SelectionCriterion" directory="SelectionCriterion">
+  
+  <!-- SelectionCriterion Base Class -->
+  <class name="SelectionCriterion" base="Objective" abstract="yes">
+    <variable type="Problem" name="originalProblem"/>
+  </class>
+  
+  <!-- Greedy Selection Criterion -->
+  <class name="GreedySelectionCriterion" base="SelectionCriterion">
+    <constructor/>
+  </class>
+  
+  <!-- Optimistic Selection Criterion -->
+  <class name="OptimisticSelectionCriterion" base="SelectionCriterion">
+    <constructor arguments="double optimism"/>
+    <variable type="Double" name="optimism"/>
+  </class>
+  
+  <!-- Probability Of Improvement Selection Criterion -->
+  <class name="ProbabilityOfImprovementSelectionCriterion" base="SelectionCriterion">
+    <constructor arguments="FitnessPtr&amp; bestFitness, double improvementFactor"/>
+    <constructor arguments="FitnessPtr&amp; bestFitness"/>
+    <variable type="Double" name="improvementFactor"/>
+  </class>
+  
+  <!-- Expected Improvement Selection Criterion -->
+  <class name="ExpectedImprovementSelectionCriterion" base="SelectionCriterion">
+    <constructor arguments="FitnessPtr&amp; bestFitness"/>
+  </class>  
+</library>

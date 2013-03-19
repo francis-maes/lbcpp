@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="CoreLoader" directory="Core/Loader">
+
+  <class name="LbcppLoader" base="Loader"/>
+  <class name="TraceLoader" base="LbcppLoader"/>
+  <class name="RawTextLoader" base="Loader"/>
+  <class name="XmlLoader" base="Loader"/>
+  <class name="DirectoryLoader" base="Loader"/>
+  
+</library>
