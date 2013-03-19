@@ -35,6 +35,7 @@ namespace shark {
     ANNOUNCE_ORACLE( HitchhikersGuideToTheGalaxy, OracleFactory );
 }
 
+#if 0
 int main( int argc, char ** argv ) {
     
     shark::Oracle * o1 = shark::OracleFactory::instance()[ "Delphi" ];
@@ -47,5 +48,5 @@ int main( int argc, char ** argv ) {
     return( EXIT_SUCCESS );
 
 }
-
+#endif // 0
 

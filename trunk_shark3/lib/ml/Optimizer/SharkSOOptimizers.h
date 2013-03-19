@@ -17,7 +17,7 @@
 namespace lbcpp
 {
 
-class SharkObjectiveFunctionFromProblem : public ObjectiveFunctionVS<double> 
+class SharkObjectiveFunctionFromProblem : public AbstractObjectiveFunction<RealVector, RealVector> 
 {
 public:
   SharkObjectiveFunctionFromProblem(ExecutionContext& context, ProblemPtr problem, SolverPtr solver)
@@ -77,7 +77,7 @@ public:
   {
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
-    cma = new CMASearch();
+    cma = new CMA();
   }
   
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -101,7 +101,7 @@ protected:
   friend class CMAESSOOptimizerClass;
   
   SharkObjectiveFunctionFromProblem* objective;
-  CMASearch* cma;
+  CMA* cma;
 };
 
 }; /* namespace lbcpp */
