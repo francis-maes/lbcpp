@@ -202,7 +202,7 @@ protected:
       }
     } // runXT
     
-    if (runIncrementalXT || runAll)
+    if (runIncrementalXT)
     {
       IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       if (uniformSampling || runAll)

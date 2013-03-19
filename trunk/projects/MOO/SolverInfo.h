@@ -152,8 +152,35 @@ public:
     
     SolverInfo res;
     res.initialize(description);
-    double best = mergeResults(res, runInfos);
-    context.leaveScope(best);
+    double mean = mergeResults(res, runInfos);
+    
+    if (verbosity >= verbosityDetailed)
+    {
+      context.enterScope("curveWithFixedEvaluations");
+      for (size_t i = 0; i < res.inFunctionOfEvaluations.evaluations->getNumElements(); ++i)
+      {
+        context.enterScope(string(res.inFunctionOfEvaluations.evaluations->get(i)));
+        context.resultCallback("numEvaluations", res.inFunctionOfEvaluations.evaluations->get(i));
+        context.resultCallback("score", res.inFunctionOfEvaluations.scores->get(i));
+        if (res.inFunctionOfEvaluations.cpuTimes->get(i) != DVector::missingValue)
+          context.resultCallback("cpuTime", res.inFunctionOfEvaluations.cpuTimes->get(i));
+        context.leaveScope();
+      }
+      context.leaveScope();
+      context.enterScope("curveWithFixedCpuTime");
+      for (size_t i = 0; i < res.inFunctionOfCpuTime.cpuTimes->getNumElements(); ++i)
+      {
+        context.enterScope(string(res.inFunctionOfCpuTime.cpuTimes->get(i)));
+        context.resultCallback("cpuTime", res.inFunctionOfCpuTime.cpuTimes->get(i));
+        if (res.inFunctionOfCpuTime.scores->get(i) != DVector::missingValue)
+          context.resultCallback("score", res.inFunctionOfCpuTime.scores->get(i));
+        context.resultCallback("numEvaluations", res.inFunctionOfCpuTime.evaluations->get(i));
+        context.leaveScope();
+      }
+      context.leaveScope();
+    }
+    
+    context.leaveScope(mean);
     return res;
   }
   
@@ -220,9 +247,15 @@ public:
     return (*bestFitness)->toDouble();
   }
   
+  /**
+   *  Merges multiple results into a curve of the average of the results.
+   *  \return The mean of the best found values for each of the curves
+   */
   double mergeResults(SolverInfo& res, const std::vector<SolverInfo>& infos)
   {
-    double best = DBL_MAX;
+    double best[infos.size()];
+    for (size_t j = 0; j < infos.size(); ++j)
+      best[j] = DBL_MAX;
     size_t maxLengthEvaluations = 0;
     size_t maxLengthCpuTimes = 0;
     for (size_t i = 0; i < infos.size(); ++i)
@@ -245,6 +278,7 @@ public:
           if (evaluations)
             jassert(evaluations == curve.evaluations->get(i)); // if this fails there is smth wrong in EvaluationPeriodEvaluatorSolverCallback, results not aligned on nb of evaluations
           evaluations = curve.evaluations->get(i);
+          best[j] = (best[j] < curve.scores->get(i) ? best[j] : curve.scores->get(i));
         }
         else
         {
@@ -255,7 +289,6 @@ public:
       res.inFunctionOfEvaluations.evaluations->append(evaluations);
       res.inFunctionOfEvaluations.scores->append(meanScore.getCount() ? meanScore.getMean() : DVector::missingValue);
       res.inFunctionOfEvaluations.cpuTimes->append(meanCpuTime.getCount() ? meanCpuTime.getMean() : DVector::missingValue);
-      best = (best < res.inFunctionOfEvaluations.scores->get(i) ? best : res.inFunctionOfEvaluations.scores->get(i));
     }
     for (size_t i = 0; i < maxLengthCpuTimes; ++i)
     {
@@ -284,9 +317,12 @@ public:
       res.inFunctionOfCpuTime.evaluations->append(meanEvaluations.getCount() ? meanEvaluations.getMean() : DVector::missingValue);
       res.inFunctionOfCpuTime.scores->append(meanScore.getCount() ? meanScore.getMean() : DVector::missingValue);
       res.inFunctionOfCpuTime.cpuTimes->append(cpuTime);
-      best = (best < res.inFunctionOfCpuTime.scores->get(i) ? best : res.inFunctionOfCpuTime.scores->get(i));
     }
-    return best;
+    double meanOfBests = 0;
+    for (size_t j = 0; j < infos.size(); ++j)
+      meanOfBests += best[j];
+    meanOfBests /= infos.size();
+    return meanOfBests;
   }
   
 protected:
