@@ -122,7 +122,7 @@ void GenericTreeViewItem::paintItem(juce::Graphics& g, int width, int height)
   
   string str = getUniqueName();
   StringArray lines;
-  lines.addTokens(str, T("\n"), NULL);
+  lines.addTokens(str, JUCE_T("\n"), NULL);
   g.setColour(Colours::black);
   g.setFont(juce::Font(12));
   for (int i = 0; i < lines.size(); ++i)
@@ -164,7 +164,7 @@ void GenericTreeViewItem::createSubItems()
   for (size_t i = 0; i < size; ++i)
     addSubItem(owner->createItem(subObjects[i].second, subObjects[i].first));
   if (size < subObjects.size())
-    addSubItem(new GenericTreeViewItem(owner, ObjectPtr(), string((int)(subObjects.size() - size)) + T(" other elements...")));
+    addSubItem(new GenericTreeViewItem(owner, ObjectPtr(), string((int)(subObjects.size() - size)) + JUCE_T(" other elements...")));
 }
 
 void GenericTreeViewItem::itemOpennessChanged(bool isNowOpen)
@@ -223,7 +223,7 @@ void GenericTreeView::timerCallback()
         ObjectPtr targetObject = item->getTargetObject(defaultExecutionContext());
         selectedObjects.push_back(targetObject);
         if (!selectionName.isEmpty())
-          selectionName += T(", ");
+          selectionName += JUCE_T(", ");
         selectionName += item->getUniqueName();
       }
     }
@@ -289,7 +289,7 @@ if (compositeVector)
   {
     size_t offset = compositeVector->getSubVectorOffset(i);
     DoubleVectorPtr subVector = compositeVector->getSubVector(i);
-    string name = T("[") + string((int)i) + T("]");
+    string name = JUCE_T("[") + string((int)i) + JUCE_T("]");
 
     string parentName = elementsEnumeration->getElementName(offset);
     string childName = subVector->getElementName(0);

@@ -242,7 +242,7 @@ inline double defaultGetExtremumValue(const VectorType& vector, bool lookForMaxi
 */
 EnumerationPtr DoubleVector::getElementsEnumeration(ClassPtr doubleVectorType)
 {
-  ClassPtr dvType = doubleVectorType->findBaseTypeFromTemplateName(T("DoubleVector"));
+  ClassPtr dvType = doubleVectorType->findBaseTypeFromTemplateName(JUCE_T("DoubleVector"));
   if (!dvType)
     return EnumerationPtr();
   jassert(dvType->getNumTemplateArguments() == 2);
@@ -253,17 +253,17 @@ EnumerationPtr DoubleVector::getElementsEnumeration(ClassPtr doubleVectorType)
 
 bool DoubleVector::getTemplateParameters(ExecutionContext& context, ClassPtr type, EnumerationPtr& elementsEnumeration, ClassPtr& elementsType)
 {
-  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("DoubleVector"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(JUCE_T("DoubleVector"));
   if (!dvType)
   {
-    context.errorCallback(type->getName() + T(" is not a DoubleVector"));
+    context.errorCallback(type->getName() + JUCE_T(" is not a DoubleVector"));
     return false;
   }
   jassert(dvType->getNumTemplateArguments() == 2);
   elementsEnumeration = dvType->getTemplateArgument(0);
-  if (elementsEnumeration->getName() == T("EnumValue"))
+  if (elementsEnumeration->getName() == JUCE_T("EnumValue"))
   {
-    context.errorCallback(T("No elements enumeration in DoubleVector"));
+    context.errorCallback(JUCE_T("No elements enumeration in DoubleVector"));
     return false;
   }
   elementsType = dvType->getTemplateArgument(1);
@@ -523,7 +523,7 @@ void SparseDoubleVector::saveToXml(XmlExporter& exporter) const
   string res;
   for (size_t i = 0; i < n; ++i)
     if (values[i].second)
-      res += string((int)values[i].first) + T(":") + string(values[i].second) + T(" ");
+      res += string((int)values[i].first) + JUCE_T(":") + string(values[i].second) + JUCE_T(" ");
   exporter.addTextElement(res.trimEnd());
 }
 
@@ -536,7 +536,7 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
   ClassPtr elementType = getElementsType();
   for (size_t i = 0; i < (size_t)tokens.size(); ++i)
   {
-    int e = tokens[i].indexOfChar(T(':'));
+    int e = tokens[i].indexOfChar(JUCE_T(':'));
     int index = tokens[i].substring(0, e).getIntValue();
     if (index < 0)
       return false;
@@ -790,7 +790,7 @@ string SparseDoubleVector::toShortString() const
   string res;
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i].second)
-      res += getElementName(values[i].first) + T(":") + string(values[i].second) + T(" ");
+      res += getElementName(values[i].first) + JUCE_T(":") + string(values[i].second) + JUCE_T(" ");
   if (res.isNotEmpty())
     res.dropLastCharacters(1);
   return res;
@@ -919,10 +919,10 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
   {
     double value = (*values)[i];
     jassert(value != DVector::missingValue);
-    res += string(value) + T(" ");
+    res += string(value) + JUCE_T(" ");
   }
   exporter.addTextElement(res.trimEnd());
-  exporter.setAttribute(T("size"), n);
+  exporter.setAttribute(JUCE_T("size"), n);
 }
 
 bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
@@ -936,13 +936,13 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   tokens.addTokens(allText, true);
   tokens.removeEmptyStrings();
   size_t n = tokens.size();
-  if (importer.hasAttribute(T("size")))
+  if (importer.hasAttribute(JUCE_T("size")))
   {
-    int expectedSize = importer.getIntAttribute(T("size"), -1);
+    int expectedSize = importer.getIntAttribute(JUCE_T("size"), -1);
     if (expectedSize != (int)n)
     {
-      importer.getContext().errorCallback(T("Invalid number of tokens: expected ") +
-        string(expectedSize) + T(" values, found ") + string((int)n) + T(" values"));
+      importer.getContext().errorCallback(JUCE_T("Invalid number of tokens: expected ") +
+        string(expectedSize) + JUCE_T(" values, found ") + string((int)n) + JUCE_T(" values"));
       ok = false;
     }
   }
@@ -953,7 +953,7 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   {
     string token = tokens[i];
     double& value = getValueReference(i);
-    jassert(token != T("_"));
+    jassert(token != JUCE_T("_"));
     value = tokens[i].getDoubleValue();
   }
   return ok;
@@ -1215,7 +1215,7 @@ void DenseDoubleVector::setElement(size_t index, const ObjectPtr& value)
 // Object
 string DenseDoubleVector::toShortString() const
 {
-  string res = T("[");
+  string res = JUCE_T("[");
   size_t n = getNumElements();
   bool tooLong = (n > 20);
   if (tooLong)
@@ -1227,8 +1227,8 @@ string DenseDoubleVector::toShortString() const
       res += " ";
   }
   if (tooLong)
-    res += T("...");
-  res += T("]");
+    res += JUCE_T("...");
+  res += JUCE_T("]");
   return res;
 }
 
@@ -1438,22 +1438,22 @@ void CompositeDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t)
 
 bool CompositeDoubleVector::loadFromXml(XmlImporter& importer)
 {
-  int size = importer.getIntAttribute(T("numSubVectors"), -1);
+  int size = importer.getIntAttribute(JUCE_T("numSubVectors"), -1);
   if (size < 0)
   {
-    importer.getContext().errorCallback(T("Unknown number of sub vectors"));
+    importer.getContext().errorCallback(JUCE_T("Unknown number of sub vectors"));
     return false;
   }
   vectors.clear();
   vectors.reserve(size);
-  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("vector"))
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, JUCE_T("vector"))
   {
     importer.enter(elt);
-    int offset = importer.getIntAttribute(T("offset"), -1);
+    int offset = importer.getIntAttribute(JUCE_T("offset"), -1);
     ObjectPtr variable = importer.loadObject(doubleVectorClass());
     if (offset < 0 || !variable)
     {
-      importer.getContext().errorCallback(T("Could not read sub vector"));
+      importer.getContext().errorCallback(JUCE_T("Could not read sub vector"));
       return false;
     }
     vectors.push_back(std::make_pair((size_t)offset, variable.staticCast<DoubleVector>()));
@@ -1461,7 +1461,7 @@ bool CompositeDoubleVector::loadFromXml(XmlImporter& importer)
   }
   if (vectors.size() != (size_t)size)
   {
-    importer.getContext().errorCallback(T("Invalid number of sub vectors"));
+    importer.getContext().errorCallback(JUCE_T("Invalid number of sub vectors"));
     return false;
   }
   return true;
@@ -1469,11 +1469,11 @@ bool CompositeDoubleVector::loadFromXml(XmlImporter& importer)
 
 void CompositeDoubleVector::saveToXml(XmlExporter& exporter) const
 {
-  exporter.setAttribute(T("numSubVectors"), vectors.size());
+  exporter.setAttribute(JUCE_T("numSubVectors"), vectors.size());
   for (size_t i = 0; i < vectors.size(); ++i)
   {
-    exporter.enter(T("vector"));
-    exporter.setAttribute(T("offset"), vectors[i].first);
+    exporter.enter(JUCE_T("vector"));
+    exporter.setAttribute(JUCE_T("offset"), vectors[i].first);
     exporter.writeObject(vectors[i].second, doubleVectorClass());
     exporter.leave();
   }

@@ -21,7 +21,7 @@ public:
   RecentFileVector() : recentFiles(vector(fileClass)) {}
 
   virtual string toShortString() const
-    {return T("RecentFileVector");}
+    {return JUCE_T("RecentFileVector");}
 
   juce::File getRecentDirectory() const
     {return recentDirectory;}

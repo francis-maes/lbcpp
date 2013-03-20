@@ -59,9 +59,9 @@ Component* lbcpp::createComponentForObject(ExecutionContext& context, const Obje
   Component* res = createComponentForObjectImpl(context, object, explicitName);
   if (topLevelComponent && dynamic_cast<ObjectSelector* >(res))
     res = new ObjectBrowser(object, res);
-  string title = T("Create Component");
+  string title = JUCE_T("Create Component");
   if (explicitName.isNotEmpty())
-    title += T(" for ") + explicitName;
+    title += JUCE_T(" for ") + explicitName;
   flushErrorAndWarningMessages(title);
   return res;
 }

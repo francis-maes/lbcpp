@@ -49,9 +49,9 @@ public:
   
   virtual string getObjectTooltip(const string& name, const ObjectPtr& object)
   {
-    return T("Name: ") + name +
-      T("\nClass: ") + object->getClassName() +
-      T("\nValue: ") + object->toShortString();
+    return JUCE_T("Name: ") + name +
+      JUCE_T("\nClass: ") + object->getClassName() +
+      JUCE_T("\nValue: ") + object->toShortString();
   }
 
   virtual size_t getNumDataColumns()

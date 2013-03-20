@@ -70,14 +70,14 @@ public:
   {
     PopulationBasedSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
-    mocma = new shark::MOCMA();
+    mocma = new shark::detail::MOCMA<shark::HypervolumeIndicator>();
   }
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     jassert(mocma && objective);
     if (iter == 0)
-      mocma->init(*objective, populationSize, numOffsprings);
+      mocma->init(*objective);
     else
       mocma->step(*objective);
     return true;
@@ -96,7 +96,7 @@ protected:
   size_t numOffsprings;
 
   SharkObjectiveFunctionFromProblem* objective;
-  shark::detail::MOCMA* mocma;
+  shark::detail::MOCMA<shark::HyperVolumeIndicator>* mocma;
 };
 
 }; /* namespace lbcpp */

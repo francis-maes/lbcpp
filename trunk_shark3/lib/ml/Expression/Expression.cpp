@@ -344,7 +344,7 @@ string AggregatorExpression::toShortString() const
 {
   string res = getClass()->getShortName() + "\n";
   for (size_t i = 0; i < nodes.size(); ++i)
-    res += nodes[i]->toShortString() + T("\n");
+    res += nodes[i]->toShortString() + JUCE_T("\n");
   return res;
 }
 
@@ -396,11 +396,11 @@ const ExpressionPtr& TestExpression::getSubNode(size_t index) const
 string TestExpression::toShortString() const
 {
   string res = "(" + conditionNode->toShortString() + " ? " + 
-    (successNode ? successNode->toShortString() : T("NULL")) + T(" : ") + 
-    (failureNode ? failureNode->toShortString() : T("NULL"));
+    (successNode ? successNode->toShortString() : JUCE_T("NULL")) + JUCE_T(" : ") + 
+    (failureNode ? failureNode->toShortString() : JUCE_T("NULL"));
   if (missingNode && missingNode.isInstanceOf<ConstantExpression>() && missingNode.staticCast<ConstantExpression>()->getValue().exists())
-    res += T(" : ") + missingNode->toShortString();
-  return res + T(")");
+    res += JUCE_T(" : ") + missingNode->toShortString();
+  return res + JUCE_T(")");
 }
 
 ObjectPtr TestExpression::compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const

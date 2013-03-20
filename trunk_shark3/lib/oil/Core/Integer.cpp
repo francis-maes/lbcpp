@@ -46,9 +46,9 @@ void Integer::clone(ExecutionContext& context, const ObjectPtr& target) const
 
 bool Integer::loadFromString(ExecutionContext& context, const string& value)
 {
-  if (!value.trim().containsOnly(T("-+e0123456789")))
+  if (!value.trim().containsOnly(JUCE_T("-+e0123456789")))
   {
-    context.errorCallback(T("IntegerType::loadFromString"), value.quoted() + T(" is not a valid integer"));
+    context.errorCallback(JUCE_T("IntegerType::loadFromString"), value.quoted() + JUCE_T(" is not a valid integer"));
     return false;
   }
   this->value = value.getLargeIntValue();
@@ -124,7 +124,7 @@ bool EnumValue::loadFromString(ExecutionContext& context, const string& value)
 
   if (res == n)
   {
-    context.errorCallback(T("EnumValue::createFromString"), T("Could not find enumeration value ") + value.quoted());
+    context.errorCallback(JUCE_T("EnumValue::createFromString"), JUCE_T("Could not find enumeration value ") + value.quoted());
     return false;
   }
   this->value = (size_t)res;

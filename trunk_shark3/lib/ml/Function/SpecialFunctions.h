@@ -141,7 +141,7 @@ public:
     {return booleanClass;}
 
   virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
+    {return inputs[0]->toShortString() + JUCE_T(" > ") + inputs[1]->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {

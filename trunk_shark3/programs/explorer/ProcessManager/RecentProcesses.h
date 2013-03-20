@@ -22,7 +22,7 @@ class RecentProcesses : public Object
 {
 public:
   virtual string toShortString() const
-    {return T("RecentProcesses");}
+    {return JUCE_T("RecentProcesses");}
 
   static RecentProcessesPtr getInstance(ExecutionContext& context = defaultExecutionContext())
     {return RecentProcessesPtr();} // broken

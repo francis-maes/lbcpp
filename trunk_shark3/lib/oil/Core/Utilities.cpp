@@ -25,6 +25,6 @@ string lbcpp::getTypeName(const std::type_info& info)
   char* realname = abi::__cxa_demangle(info.name(), 0, 0, &status);
   string res = realname;
   free(realname);
-  return res.startsWith(T("lbcpp::")) ? res.substring(7) : res;
+  return res.startsWith(JUCE_T("lbcpp::")) ? res.substring(7) : res;
 #endif
 }

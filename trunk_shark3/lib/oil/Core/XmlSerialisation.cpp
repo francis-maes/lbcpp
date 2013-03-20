@@ -142,7 +142,7 @@ string XmlElement::toString() const
 }
 
 string XmlElement::toShortString() const
-  {return T("<") + tagName + T(">");}
+  {return JUCE_T("<") + tagName + JUCE_T(">");}
 
 void XmlElement::saveToXml(XmlExporter& exporter) const
   {exporter.addChildElement(refCountedPointerFromThis(this));}
@@ -156,7 +156,7 @@ XmlExporter::XmlExporter(ExecutionContext& context, const string& rootTag, int v
 {
   root = new XmlElement(rootTag);
   if (version)
-    root->setAttribute(T("version"), version);
+    root->setAttribute(JUCE_T("version"), version);
   currentStack.push_back(root);
 }
 
@@ -174,13 +174,13 @@ bool XmlExporter::saveToFile(const juce::File& file)
     {
       if (!file.deleteFile())
       {
-        context.errorCallback(T("XmlExporter::saveToFile"), T("Could not delete file ") + file.getFullPathName());
+        context.errorCallback(JUCE_T("XmlExporter::saveToFile"), JUCE_T("Could not delete file ") + file.getFullPathName());
         return false;
       }
     }
     else
     {
-      context.errorCallback(T("XmlExporter::saveToFile"), file.getFullPathName() + T(" is a directory"));
+      context.errorCallback(JUCE_T("XmlExporter::saveToFile"), file.getFullPathName() + JUCE_T(" is a directory"));
       return false;
     }
   }
@@ -188,12 +188,12 @@ bool XmlExporter::saveToFile(const juce::File& file)
   juce::XmlElement* xml = root->createJuceXmlElement();
   if (!root)
   {
-    context.errorCallback(T("XmlExporter::saveToFile"), T("No root xml element in file ") + file.getFullPathName());
+    context.errorCallback(JUCE_T("XmlExporter::saveToFile"), JUCE_T("No root xml element in file ") + file.getFullPathName());
     return false;
   }
   bool ok = xml->writeToFile(file, string::empty);
   if (!ok)
-    context.errorCallback(T("XmlExporter::saveToFile"), T("Could not write file ") + file.getFullPathName());
+    context.errorCallback(JUCE_T("XmlExporter::saveToFile"), JUCE_T("Could not write file ") + file.getFullPathName());
   delete xml;
   return ok;
 }
@@ -213,24 +213,24 @@ void XmlExporter::enter(const string& tagName, const string& name)
 
 void XmlExporter::saveObject(const string& name, const ObjectPtr& object, ClassPtr expectedType)
 {
-  enter(T("variable"), name);
+  enter(JUCE_T("variable"), name);
   writeObject(object, expectedType);
   leave();
 }
 
 void XmlExporter::saveGeneratedObject(const string& name, const ObjectPtr& object, ClassPtr expectedType)
 {
-  enter(T("variable"), name);
+  enter(JUCE_T("variable"), name);
   writeType(expectedType);
   linkObjectToCurrentElement(object);
-  setAttribute(T("generated"), T("yes"));
+  setAttribute(JUCE_T("generated"), JUCE_T("yes"));
   leave();
 }
 
 void XmlExporter::saveElement(size_t index, const ObjectPtr& object, ClassPtr expectedType)
 {
-  enter(T("element"));
-  setAttribute(T("index"), string((int)index));
+  enter(JUCE_T("element"));
+  setAttribute(JUCE_T("index"), string((int)index));
   writeObject(object, expectedType);
   leave();
 }
@@ -250,7 +250,7 @@ void XmlExporter::writeName(const string& name)
 {
   XmlElementPtr elt = getCurrentElement();
   if (name.isNotEmpty())
-    elt->setAttribute(T("name"), name);
+    elt->setAttribute(JUCE_T("name"), name);
 }
 
 void XmlExporter::writeType(ClassPtr type)
@@ -259,12 +259,12 @@ void XmlExporter::writeType(ClassPtr type)
   
   if (type->isNamedType())
   {
-    jassert(!getCurrentElement()->hasAttribute(T("type")));
-    setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
+    jassert(!getCurrentElement()->hasAttribute(JUCE_T("type")));
+    setAttribute(JUCE_T("type"), type->getName().replaceCharacters(JUCE_T("<>"), JUCE_T("[]")));
   }
   else
   {
-    enter(T("type"));
+    enter(JUCE_T("type"));
     writeObject(type, ClassPtr());
     leave();
   }
@@ -286,7 +286,7 @@ void XmlExporter::writeObject(const ObjectPtr& object, ClassPtr expectedType)
   {
     // warning: we do not write the type anymore since Variable quake
     //writeType(object->getType());
-    elt->setAttribute(T("missing"), T("true"));
+    elt->setAttribute(JUCE_T("missing"), JUCE_T("true"));
   }
 }
 
@@ -312,18 +312,18 @@ void XmlExporter::writeObjectImpl(const ObjectPtr& object, ClassPtr expectedType
       // first time this is object is referred to, need to create an identifier
       identifier = makeSharedObjectIdentifier(object);
       const XmlElementPtr& sourceElement = it->second.first;
-      sourceElement->setAttribute(T("id"), identifier);
+      sourceElement->setAttribute(JUCE_T("id"), identifier);
 
       // write "id" and add "type" if it is missing
       // (we do not have access to the "expectedType" information anymore since the object shared)
       currentStack.push_back(sourceElement);
-      setAttribute(T("id"), identifier);
-      if (!getCurrentElement()->hasAttribute(T("type")) &&
-        !getCurrentElement()->getChildByName(T("type")))
+      setAttribute(JUCE_T("id"), identifier);
+      if (!getCurrentElement()->hasAttribute(JUCE_T("type")) &&
+        !getCurrentElement()->getChildByName(JUCE_T("type")))
         writeType(object->getClass());
       currentStack.pop_back();
     }
-    getCurrentElement()->setAttribute(T("ref"), identifier);
+    getCurrentElement()->setAttribute(JUCE_T("ref"), identifier);
   }
 }
 
@@ -356,13 +356,13 @@ XmlImporter::XmlImporter(ExecutionContext& context, const juce::File& file)
 {
   if (file.isDirectory())
   {
-    context.errorCallback(T("Object::createFromFile"), file.getFullPathName() + T(" is a directory"));
+    context.errorCallback(JUCE_T("Object::createFromFile"), file.getFullPathName() + JUCE_T(" is a directory"));
     return;
   }
   
   if (!file.existsAsFile())
   {
-    context.errorCallback(T("Object::createFromFile"), file.getFullPathName() + T(" does not exists"));
+    context.errorCallback(JUCE_T("Object::createFromFile"), file.getFullPathName() + JUCE_T(" does not exists"));
     return;
   }
 
@@ -372,15 +372,15 @@ XmlImporter::XmlImporter(ExecutionContext& context, const juce::File& file)
   string lastParseError = document.getLastParseError();
   if (!root)
   {
-    context.errorCallback(T("Object::createFromFile"),
-      lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
+    context.errorCallback(JUCE_T("Object::createFromFile"),
+      lastParseError.isEmpty() ? JUCE_T("Could not parse file ") + file.getFullPathName() : lastParseError);
     return;
   }
   else
     enter(root);
 
   if (lastParseError.isNotEmpty())
-    context.warningCallback(T("Object::createFromFile"), lastParseError);
+    context.warningCallback(JUCE_T("Object::createFromFile"), lastParseError);
 }
 
 XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlDocument& document)
@@ -389,15 +389,15 @@ XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlDocument& document)
   string lastParseError = document.getLastParseError();
   if (!root)
   {
-    context.errorCallback(T("NetworkClient::messageReceived"), 
-                          lastParseError.isEmpty() ? T("Could not parse message") : lastParseError);
+    context.errorCallback(JUCE_T("NetworkClient::messageReceived"), 
+                          lastParseError.isEmpty() ? JUCE_T("Could not parse message") : lastParseError);
     return;
   }
   else
     enter(root);
   
   if (lastParseError.isNotEmpty())
-    context.warningCallback(T("NetworkClient::messageReceived"), lastParseError);
+    context.warningCallback(JUCE_T("NetworkClient::messageReceived"), lastParseError);
 }
 
 XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlElement* newRoot)
@@ -417,15 +417,15 @@ void XmlImporter::unknownVariableWarning(ClassPtr type, const string& variableNa
   std::pair<ClassPtr, string> key = std::make_pair(type, variableName);
   if (unknownVariables.find(key) == unknownVariables.end())
   {
-    warningMessage(T("Load from xml"), T("Unknown variable ") + type->getName() + T("::") + variableName);
+    warningMessage(JUCE_T("Load from xml"), JUCE_T("Unknown variable ") + type->getName() + JUCE_T("::") + variableName);
     const_cast<XmlImporter* >(this)->unknownVariables.insert(key);
   }
 }
 
 ObjectPtr XmlImporter::load()
 {
-  if (root->getTagName() == T("lbcpp"))
-    return loadObject(root->getChildByName(T("variable")), ClassPtr());
+  if (root->getTagName() == JUCE_T("lbcpp"))
+    return loadObject(root->getChildByName(JUCE_T("variable")), ClassPtr());
   else
     return loadObject(root, ClassPtr());
 }
@@ -433,18 +433,18 @@ ObjectPtr XmlImporter::load()
 ClassPtr XmlImporter::loadType(ClassPtr expectedType)
 {
   juce::XmlElement* elt = getCurrentElement();
-  string typeName = elt->getStringAttribute(T("type"), string::empty).replaceCharacters(T("[]"), T("<>"));
+  string typeName = elt->getStringAttribute(JUCE_T("type"), string::empty).replaceCharacters(JUCE_T("[]"), JUCE_T("<>"));
   if (typeName.isNotEmpty())
     return typeManager().getType(context, typeName);
   else
   {
-    juce::XmlElement* child = elt->getChildByName(T("type"));
+    juce::XmlElement* child = elt->getChildByName(JUCE_T("type"));
     if (child)
     {
       ClassPtr res;
       enter(child);
-      if (hasAttribute(T("ref")))
-        res = getSharedObject(getStringAttribute(T("ref"))).staticCast<Class>().get();
+      if (hasAttribute(JUCE_T("ref")))
+        res = getSharedObject(getStringAttribute(JUCE_T("ref"))).staticCast<Class>().get();
       else
         res = loadUnnamedType();
       linkCurrentElementToObject(res);
@@ -454,7 +454,7 @@ ClassPtr XmlImporter::loadType(ClassPtr expectedType)
     else
     {
       if (!expectedType)
-        context.errorCallback(T("XmlImporter::loadType"), T("Could not find type"));
+        context.errorCallback(JUCE_T("XmlImporter::loadType"), JUCE_T("Could not find type"));
       return expectedType;
     }
   }
@@ -463,17 +463,17 @@ ClassPtr XmlImporter::loadType(ClassPtr expectedType)
 ClassPtr XmlImporter::loadUnnamedType()
 {
   // load unnamed type from xml
-  if (hasAttribute(T("templateType")))
+  if (hasAttribute(JUCE_T("templateType")))
   {
-    string templateType = getStringAttribute(T("templateType"));
+    string templateType = getStringAttribute(JUCE_T("templateType"));
     std::vector<ClassPtr> templateArguments;
-    forEachXmlChildElementWithTagName(*getCurrentElement(), elt, T("templateArgument"))
+    forEachXmlChildElementWithTagName(*getCurrentElement(), elt, JUCE_T("templateArgument"))
     {
       enter(elt);
-      int index = getIntAttribute(T("index"));
+      int index = getIntAttribute(JUCE_T("index"));
       if (index < 0)
       {
-        errorMessage(T("Type::loadTypeFromXml"), T("Invalid template argument index"));
+        errorMessage(JUCE_T("Type::loadTypeFromXml"), JUCE_T("Invalid template argument index"));
         return ClassPtr();
       }
       templateArguments.resize(index + 1);
@@ -485,20 +485,20 @@ ClassPtr XmlImporter::loadUnnamedType()
     return typeManager().getType(getContext(), templateType, templateArguments);
   }
   else
-    return typeManager().getType(getContext(), getStringAttribute(T("typeName")));
+    return typeManager().getType(getContext(), getStringAttribute(JUCE_T("typeName")));
 }
 
 ObjectPtr XmlImporter::loadObject(ClassPtr expectedType)
 {
-  if (hasAttribute(T("ref")))
-    return getSharedObject(getStringAttribute(T("ref")));
+  if (hasAttribute(JUCE_T("ref")))
+    return getSharedObject(getStringAttribute(JUCE_T("ref")));
   else
   {
     ClassPtr type = loadType(expectedType);
     if (!type || !type->getBaseType())
       return ObjectPtr();
     
-    if (getStringAttribute(T("missing")) == T("true"))
+    if (getStringAttribute(JUCE_T("missing")) == JUCE_T("true"))
       return ObjectPtr();
 
     ObjectPtr res = Object::createFromXml(*this, type);
@@ -510,8 +510,8 @@ ObjectPtr XmlImporter::loadObject(ClassPtr expectedType)
 
 void XmlImporter::linkCurrentElementToObject(ObjectPtr object)
 {
-  if (hasAttribute(T("id")))
-    addSharedObject(getStringAttribute(T("id")), object);
+  if (hasAttribute(JUCE_T("id")))
+    addSharedObject(getStringAttribute(JUCE_T("id")), object);
 }
 
 ObjectPtr XmlImporter::loadObject(juce::XmlElement* elt, ClassPtr expectedType)
@@ -533,7 +533,7 @@ bool XmlImporter::enter(const string& childTagName)
   juce::XmlElement* child = getCurrentElement()->getChildByName(childTagName);
   if (!child)
   {
-    context.errorCallback(T("XmlImporter::enter"), T("Could not find child ") + childTagName.quoted());
+    context.errorCallback(JUCE_T("XmlImporter::enter"), JUCE_T("Could not find child ") + childTagName.quoted());
     return false;
   }
   enter(child);
@@ -550,12 +550,12 @@ bool XmlImporter::addSharedObject(const string& name, ObjectPtr object)
 {
   if (sharedObjects.find(name) != sharedObjects.end())
   {
-    context.errorCallback(T("Could not add shared object ") + name.quoted() + T(": this identifier is already used by another object"));
+    context.errorCallback(JUCE_T("Could not add shared object ") + name.quoted() + JUCE_T(": this identifier is already used by another object"));
     return false;
   }
   if (!object->getClass() || !object->getClass()->getBaseType())
   {
-    context.errorCallback(T("Could not add shared object ") + name.quoted() + T(": invalid class"));
+    context.errorCallback(JUCE_T("Could not add shared object ") + name.quoted() + JUCE_T(": invalid class"));
     return false;
   }
   sharedObjects[name] = object;
@@ -567,7 +567,7 @@ ObjectPtr XmlImporter::getSharedObject(const string& name) const
   SharedObjectsMap::const_iterator it = sharedObjects.find(name);
   if (it == sharedObjects.end())
   {
-    errorMessage(T("XmlImporter::getSharedObject"), T("Could not find shared object reference ") + name.quoted());
+    errorMessage(JUCE_T("XmlImporter::getSharedObject"), JUCE_T("Could not find shared object reference ") + name.quoted());
     return ObjectPtr();
   }
   jassert(it->second);

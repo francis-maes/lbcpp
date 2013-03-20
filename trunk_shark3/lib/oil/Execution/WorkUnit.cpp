@@ -21,7 +21,7 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   {
     string arg = argv[i];
     arguments[i - 1] = arg;
-    if (arg == T("--help") || arg == T("-h"))
+    if (arg == JUCE_T("--help") || arg == JUCE_T("-h"))
     {
       context.informationCallback(workUnit->getUsageString());
       return 0;
@@ -56,7 +56,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const string& arguments
 }
 
 inline bool isNegativeNumber(const string& str)
-  {return str.containsOnly(T("-+e0123456789"));}
+  {return str.containsOnly(JUCE_T("-+e0123456789"));}
 
 bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<string>& arguments, std::vector< std::pair<size_t, ObjectPtr> >& res)
 {
@@ -77,9 +77,9 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<strin
     string argumentName;
     string argumentValue;
     std::map<string, size_t>* namesMap = NULL;
-    if (arguments[i].startsWith(T("--")))
+    if (arguments[i].startsWith(JUCE_T("--")))
     {
-      int end = arguments[i].indexOfChar(T('='));
+      int end = arguments[i].indexOfChar(JUCE_T('='));
       if (end == -1)
         end = arguments[i].length();
       else
@@ -88,7 +88,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<strin
       argumentName = arguments[i].substring(2, end);
       namesMap = &variableNames;
     }
-    else if (arguments[i].startsWith(T("-")))
+    else if (arguments[i].startsWith(JUCE_T("-")))
     {
       argumentName = arguments[i].substring(1);
       namesMap = &variableShortNames;
@@ -96,20 +96,20 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<strin
 
     if (!namesMap)
     {
-      context.errorCallback(T("WorkUnit::parseArguments"), T("Unexpected expression : ") + arguments[i]);
+      context.errorCallback(JUCE_T("WorkUnit::parseArguments"), JUCE_T("Unexpected expression : ") + arguments[i]);
       return false;
     }
 
     std::map<string, size_t>::const_iterator it = namesMap->find(argumentName);
     if (it == namesMap->end())
     {
-      context.errorCallback(T("WorkUnit::parseArguments"), T("Unknown argument: ") + argumentName);
+      context.errorCallback(JUCE_T("WorkUnit::parseArguments"), JUCE_T("Unknown argument: ") + argumentName);
       return false;
     }
 
     size_t variableIndex = it->second;
-    for (++i ; i < arguments.size() && (!arguments[i].startsWith(T("-")) || isNegativeNumber(arguments[i])); ++i)
-      argumentValue += T(" ") + arguments[i];
+    for (++i ; i < arguments.size() && (!arguments[i].startsWith(JUCE_T("-")) || isNegativeNumber(arguments[i])); ++i)
+      argumentValue += JUCE_T(" ") + arguments[i];
     argumentValue = argumentValue.trim();
 
     ClassPtr argumentType = getVariableType(variableIndex);
@@ -121,7 +121,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<strin
       value = Object::createFromString(context, argumentType, argumentValue);
       if (!value)
       {
-        context.errorCallback(T("WorkUnit::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
+        context.errorCallback(JUCE_T("WorkUnit::parseArguments"), JUCE_T("Incomprehensible value of") + argumentName.quoted() + JUCE_T(" : ") + argumentValue);
         return false;
       }
     }
@@ -168,23 +168,23 @@ string WorkUnit::getUsageString() const
       longestShortName = shortNameLength;
   }
   /* Generate usage */
-  string argumentDescriptions = T("-h") + string::repeatedString(T(" "), longestShortName - 1)
-                              + T(" --help") + string::repeatedString(T(" "), longestName - 4)
-                              + T(" Display this help message.\n");
+  string argumentDescriptions = JUCE_T("-h") + string::repeatedString(JUCE_T(" "), longestShortName - 1)
+                              + JUCE_T(" --help") + string::repeatedString(JUCE_T(" "), longestName - 4)
+                              + JUCE_T(" Display this help message.\n");
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     
-    argumentDescriptions += (thisClass->getMemberVariableShortName(i).isNotEmpty() ? T("-") + thisClass->getMemberVariableShortName(i) : T(" "))
-                        + string::repeatedString(T(" "), longestShortName - thisClass->getMemberVariableShortName(i).length())
-                        + T(" --") + thisClass->getMemberVariableName(i)
-                        + string::repeatedString(T(" "), longestName - thisClass->getMemberVariableName(i).length())
-                        + T(" ") + thisClass->getMemberVariableDescription(i) + T("\n");
+    argumentDescriptions += (thisClass->getMemberVariableShortName(i).isNotEmpty() ? JUCE_T("-") + thisClass->getMemberVariableShortName(i) : JUCE_T(" "))
+                        + string::repeatedString(JUCE_T(" "), longestShortName - thisClass->getMemberVariableShortName(i).length())
+                        + JUCE_T(" --") + thisClass->getMemberVariableName(i)
+                        + string::repeatedString(JUCE_T(" "), longestName - thisClass->getMemberVariableName(i).length())
+                        + JUCE_T(" ") + thisClass->getMemberVariableDescription(i) + JUCE_T("\n");
   }
   
-  return toString() + T("\n\n")
-    + T("Usage : ") + getClassName() + T(" file.xml\n")
-    + T("   or : ") + getClassName() + T(" [argument ...]\n\n")
-    + T("The arguments are as follows :\n\n")
+  return toString() + JUCE_T("\n\n")
+    + JUCE_T("Usage : ") + getClassName() + JUCE_T(" file.xml\n")
+    + JUCE_T("   or : ") + getClassName() + JUCE_T(" [argument ...]\n\n")
+    + JUCE_T("The arguments are as follows :\n\n")
     + argumentDescriptions;
 }
 

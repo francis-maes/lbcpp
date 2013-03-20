@@ -23,7 +23,7 @@ public:
   SingleThreadedExecutionContext() {}
 
   virtual string toString() const
-    {return T("SingleThreaded");}
+    {return JUCE_T("SingleThreaded");}
 
   virtual bool isMultiThread() const
     {return false;}

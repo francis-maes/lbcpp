@@ -37,20 +37,20 @@ ClassPtr Class::getClass() const
 string Class::toString() const
 {
   string res = getName();
-  res += T(" = {");
+  res += JUCE_T(" = {");
   if (baseType)
   {
     size_t n = getNumMemberVariables();
     for (size_t i = 0; i < n; ++i)
     {
-      res += getMemberVariableType(i)->getName() + T(" ") + getMemberVariableName(i);
+      res += getMemberVariableType(i)->getName() + JUCE_T(" ") + getMemberVariableName(i);
       if (i < n - 1)
-        res += T(", ");
+        res += JUCE_T(", ");
     }
   }
   else
-    res += T("!!missing base type!!");
-  res += T("}");
+    res += JUCE_T("!!missing base type!!");
+  res += JUCE_T("}");
   return res;
 }
 
@@ -59,17 +59,17 @@ void Class::saveToXml(XmlExporter& exporter) const
   jassert(!namedType);
   if (templateType)
   {
-    exporter.setAttribute(T("templateType"), templateType->getName());
+    exporter.setAttribute(JUCE_T("templateType"), templateType->getName());
     for (size_t i = 0; i < templateArguments.size(); ++i)
     {
-      exporter.enter(T("templateArgument"));
-      exporter.setAttribute(T("index"), (int)i);
+      exporter.enter(JUCE_T("templateArgument"));
+      exporter.setAttribute(JUCE_T("index"), (int)i);
       exporter.writeType(templateArguments[i]);
       exporter.leave();
     }
   }
   else
-    exporter.setAttribute(T("typeName"), name);
+    exporter.setAttribute(JUCE_T("typeName"), name);
 }
 
 ClassPtr Class::findCommonBaseClass(ClassPtr type1, ClassPtr type2)

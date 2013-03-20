@@ -85,7 +85,7 @@ public:
   EnumValueEditorComponent(ExecutionContext& context, const EnumerationPtr& enumeration, const EnumValuePtr& value)
     : ObjectEditorComponent(context, enumeration)
   {
-    addAndMakeVisible(comboBox = new ComboBox(T("enum")));
+    addAndMakeVisible(comboBox = new ComboBox(JUCE_T("enum")));
     comboBox->addListener(this);
 
     jassert(enumeration);
@@ -132,11 +132,11 @@ class WorkUnitSelectorComboxBox : public ComboBox, public juce::ComboBoxListener
 {
 public:
   WorkUnitSelectorComboxBox(RecentWorkUnitsConfigurationPtr recent, string& workUnitName)
-    : juce::ComboBox(T("Toto")), recent(recent), workUnitName(workUnitName)
+    : juce::ComboBox(JUCE_T("Toto")), recent(recent), workUnitName(workUnitName)
   {
     //setEditableText(true);
     setSize(600, 22);
-    setName(T("WorkUnit"));
+    setName(JUCE_T("WorkUnit"));
     addListener(this);
 
     int id = 1;
@@ -144,7 +144,7 @@ public:
     size_t numRecents = recent->getNumRecentWorkUnits();
     if (numRecents)
     {
-      addSectionHeading(T("Recent"));
+      addSectionHeading(JUCE_T("Recent"));
       if (numRecents > 8) numRecents = 8;
       for (size_t i = 0; i < numRecents; ++i)
       {
@@ -157,7 +157,7 @@ public:
     for (size_t i = 0; i < numLibraries; ++i)
     {
       LibraryPtr library = lbcpp::getLibrary(i);
-      if (library->getName() == T("LBCpp"))
+      if (library->getName() == JUCE_T("LBCpp"))
         continue;
       std::vector<ClassPtr> workUnits = library->getTypesInheritingFrom(workUnitClass);
       if (workUnits.size())
@@ -197,18 +197,18 @@ public:
     string descriptionValue = workUnitClass->getMemberVariableDescription(variableIndex);
 
     int desiredHeight = namesHeight;
-    addAndMakeVisible(name = new Label(T("name"), nameValue));
+    addAndMakeVisible(name = new Label(JUCE_T("name"), nameValue));
     name->setFont(Font(16, Font::bold));
     if (shortNameValue.isNotEmpty() && shortNameValue != nameValue)
     {
-      addAndMakeVisible(shortName = new Label(T("shortName"), T("-") + shortNameValue));
+      addAndMakeVisible(shortName = new Label(JUCE_T("shortName"), JUCE_T("-") + shortNameValue));
       shortName->setJustificationType(Justification::centredRight);
       shortName->setFont(Font(14, Font::bold));
     }
     
     if (descriptionValue.isNotEmpty())
     {
-      addAndMakeVisible(description = new Label(T("desc"), descriptionValue));
+      addAndMakeVisible(description = new Label(JUCE_T("desc"), descriptionValue));
       description->setFont(Font(12, Font::italic));
       description->setSize(600, descriptionHeightPerLine);
       desiredHeight += descriptionHeightPerLine; // todo: * numLines
@@ -294,7 +294,7 @@ public:
     WorkUnitPtr workUnit = WorkUnit::create(getType(this->workUnit->getWorkUnitName()));
     if (!workUnit)
     {
-      context.errorCallback(T("Could not create work unit of class ") + this->workUnit->getWorkUnitName());
+      context.errorCallback(JUCE_T("Could not create work unit of class ") + this->workUnit->getWorkUnitName());
       return;
     }
     workUnit->parseArguments(context, commandLine);
@@ -302,7 +302,7 @@ public:
     for (size_t i = 0; i < arguments.size(); ++i)
       arguments[i]->setValue(workUnit->getVariable(i));
 
-    flushErrorAndWarningMessages(T("Parse Arguments"));
+    flushErrorAndWarningMessages(JUCE_T("Parse Arguments"));
   }
 
 protected:
@@ -339,10 +339,10 @@ public:
     argumentList->setSize(viewport->getMaximumVisibleWidth(), argumentList->getHeight());
     
     // command line label
-    addAndMakeVisible(commandLineLabel = new Label(T("cmd"), T("Command Line:")));
+    addAndMakeVisible(commandLineLabel = new Label(JUCE_T("cmd"), JUCE_T("Command Line:")));
 
     // command line
-    addAndMakeVisible(commandLine = new ComboBox(T("recentArgs")));
+    addAndMakeVisible(commandLine = new ComboBox(JUCE_T("recentArgs")));
     commandLine->setEditableText(true);
     std::vector<string> recents = workUnit->getArguments();
     commandLine->clear();
@@ -419,20 +419,20 @@ public:
       string shortName = workUnitClass->getMemberVariableShortName(variableIndex);
       
       if (shortName.isNotEmpty() && shortName.length() < name.length())
-        res += T(" -") + shortName;
+        res += JUCE_T(" -") + shortName;
       else
-        res += T(" --") + name;
+        res += JUCE_T(" --") + name;
 
       if (typeValue == booleanClass)
         continue;
       else if (typeValue == fileClass)
-        res += T(" ") + context.getFilePath(File::get(value));
+        res += JUCE_T(" ") + context.getFilePath(File::get(value));
       else
       {
         string stringValue = value->toString();
-        if (stringValue.indexOfAnyOf(T(" \t\n\r")) >= 0)
+        if (stringValue.indexOfAnyOf(JUCE_T(" \t\n\r")) >= 0)
           stringValue = stringValue.quoted();
-        res += T(" ") + stringValue;
+        res += JUCE_T(" ") + stringValue;
       }
     }
     return res;
@@ -465,15 +465,15 @@ public:
   NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& workUnitParameters)
     : context(context), argumentsSelector(NULL), recent(recent), workUnitName(workUnitName), workUnitParameters(workUnitParameters)
   {
-    addAndMakeVisible(workUnitSelectorLabel = new Label(T("selector"), T("Work Unit")));
+    addAndMakeVisible(workUnitSelectorLabel = new Label(JUCE_T("selector"), JUCE_T("Work Unit")));
     workUnitSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
     addAndMakeVisible(workUnitSelector = new WorkUnitSelectorComboxBox(recent, workUnitName));
-    addAndMakeVisible(argumentsSelectorLabel = new Label(T("selector"), T("Arguments")));
+    addAndMakeVisible(argumentsSelectorLabel = new Label(JUCE_T("selector"), JUCE_T("Arguments")));
     argumentsSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
 
-    addAndMakeVisible(okButton = new TextButton(T("OK")));
+    addAndMakeVisible(okButton = new TextButton(JUCE_T("OK")));
     okButton->addButtonListener(this);
-    addAndMakeVisible(cancelButton = new TextButton(T("Cancel")));
+    addAndMakeVisible(cancelButton = new TextButton(JUCE_T("Cancel")));
     cancelButton->addButtonListener(this);
 
     workUnitSelector->addListener(this);
@@ -488,7 +488,7 @@ public:
 
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
   {
-    if (comboBoxThatHasChanged->getName() == T("WorkUnit"))
+    if (comboBoxThatHasChanged->getName() == JUCE_T("WorkUnit"))
     {
       RecentWorkUnitConfigurationPtr workUnit = recent->getWorkUnit(comboBoxThatHasChanged->getText());
       if (argumentsSelector)
@@ -502,12 +502,12 @@ public:
         const std::vector<string>& recentArguments = workUnit->getArguments();
         workUnitParameters = (recentArguments.size() ? recentArguments[0] : string::empty);
         addAndMakeVisible(argumentsSelector = new WorkUnitArgumentsComponent(context, workUnit, workUnitParameters));
-        argumentsSelectorLabel->setText(T("Arguments"), false);
+        argumentsSelectorLabel->setText(JUCE_T("Arguments"), false);
       }
       else
       {
         workUnitParameters = string::empty;
-        argumentsSelectorLabel->setText(T("No arguments"), false);
+        argumentsSelectorLabel->setText(JUCE_T("No arguments"), false);
       }
 
       resized();
@@ -562,7 +562,7 @@ private:
 ** NewWorkUnitDialogWindow
 */
 NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, string& workUnitName, string& arguments)
-  : juce::DocumentWindow(T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true), context(context)
+  : juce::DocumentWindow(JUCE_T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true), context(context)
 {
   setResizable(true, true);
   centreWithSize(800, 600);

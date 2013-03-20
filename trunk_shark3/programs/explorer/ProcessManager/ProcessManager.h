@@ -19,11 +19,11 @@ class Process : public NameableObject
 {
 public:
   Process(const juce::File& executableFile, const string& arguments, const juce::File& workingDirectory, const string& name = string::empty)
-    : NameableObject(name.isEmpty() ? executableFile.getFileNameWithoutExtension() + T(" ") + arguments : name),
+    : NameableObject(name.isEmpty() ? executableFile.getFileNameWithoutExtension() + JUCE_T(" ") + arguments : name),
       executableFile(executableFile), arguments(arguments), workingDirectory(workingDirectory) {}
 
   virtual string toString() const
-    {return executableFile.getFullPathName() + T(" ") + arguments;}
+    {return executableFile.getFullPathName() + JUCE_T(" ") + arguments;}
 
   virtual bool start() = 0;
   virtual bool killProcess() = 0;
@@ -164,7 +164,7 @@ public:
     {killAllRunningProcesses();}
 
   virtual string toShortString() const
-    {return T("Process Manager");}
+    {return JUCE_T("Process Manager");}
 
   virtual juce::Component* createComponent() const;
 

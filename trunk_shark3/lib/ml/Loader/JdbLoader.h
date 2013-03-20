@@ -86,7 +86,7 @@ protected:
         attributeClass = stringClass;
       else
       {
-        context.errorCallback(T("Could not recognize attribute type ") + string(kind).quoted());
+        context.errorCallback(JUCE_T("Could not recognize attribute type ") + string(kind).quoted());
         return TablePtr();
       }
       res->addColumn(new VariableExpression(attributeClass, name, res->getNumColumns()), attributeClass);

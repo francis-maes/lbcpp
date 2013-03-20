@@ -48,10 +48,10 @@ public:
   Pair() {}
   
   virtual string toString() const
-    {return T("(") + first->toString() + T(", ") + second->toString() + T(")");}
+    {return JUCE_T("(") + first->toString() + JUCE_T(", ") + second->toString() + JUCE_T(")");}
 
   virtual string toShortString() const
-    {return T("(") + first->toShortString() + T(", ") + second->toShortString() + T(")");}
+    {return JUCE_T("(") + first->toShortString() + JUCE_T(", ") + second->toShortString() + JUCE_T(")");}
  
   virtual int compare(const ObjectPtr& otherObject) const
     {return compareVariables(otherObject);}

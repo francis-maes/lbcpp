@@ -82,7 +82,7 @@ bool File::loadFromString(ExecutionContext& context, const string& str)
   juce::File file = context.getFile(str);
   if (file == juce::File::nonexistent)
   {
-    context.errorCallback(T("Could not find file ") + str);
+    context.errorCallback(JUCE_T("Could not find file ") + str);
     return false;
   }
   set(file);

@@ -101,7 +101,7 @@ DefaultEnumeration::DefaultEnumeration(const string& name, const string& baseTyp
 }
 
 DefaultEnumeration::DefaultEnumeration()
- : Enumeration(T("UnnamedEnumeration"), T("EnumValue"))
+ : Enumeration(JUCE_T("UnnamedEnumeration"), JUCE_T("EnumValue"))
 {
 }
 
@@ -109,7 +109,7 @@ void DefaultEnumeration::addElement(ExecutionContext& context, const string& nam
 {
   if (findElementByName(name) >= 0)
   {
-    context.errorCallback(T("Enumeration::addElement"), T("Element '") + name + T("' already exists"));
+    context.errorCallback(JUCE_T("Enumeration::addElement"), JUCE_T("Element '") + name + JUCE_T("' already exists"));
     return;
   }
   elementsMap[name] = elements.size();
@@ -168,7 +168,7 @@ EnumerationElementPtr ConcatenateEnumeration::getElement(size_t index) const
   jassert(subEnumIndex < subEnumerations.size() && index < subEnumerations[subEnumIndex].second->getNumElements());
   const string& prefix = subEnumerations[subEnumIndex].first;
   EnumerationElementPtr element = subEnumerations[subEnumIndex].second->getElement(index);
-  return new EnumerationElement(prefix + T(".") + element->getName(), string::empty, prefix + T(".") + element->getShortName());
+  return new EnumerationElement(prefix + JUCE_T(".") + element->getName(), string::empty, prefix + JUCE_T(".") + element->getShortName());
 }
 
 void ConcatenateEnumeration::addSubEnumeration(const string& prefix, const EnumerationPtr& enumeration)

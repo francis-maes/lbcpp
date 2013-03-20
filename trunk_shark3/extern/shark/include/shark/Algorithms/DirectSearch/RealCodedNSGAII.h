@@ -53,6 +53,8 @@
 
 #include <shark/ObjectiveFunctions/BoxConstraintHandler.h>
 
+#include <shark/Algorithms/DirectSearch/Indicators/AdditiveEpsilonIndicator.h>
+
 
 namespace shark { namespace detail { 
 	

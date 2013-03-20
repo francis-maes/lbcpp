@@ -18,7 +18,7 @@ class SimpleClass : public Object
 {
 public:
   SimpleClass(bool b)
-    : myBool(true), myInt(1664), myDouble(8.6), myString(T("yo")) {}
+    : myBool(true), myInt(1664), myDouble(8.6), myString(JUCE_T("yo")) {}
   SimpleClass() {}
 
 private:
@@ -40,15 +40,15 @@ public:
   {
     SimpleClassPtr defaultObject = new SimpleClass();
     SimpleClassPtr someObject = new SimpleClass(true);
-    context.resultCallback(T("Default Object"), defaultObject);
-    context.resultCallback(T("Default Object as string"), defaultObject->toString());
-    context.resultCallback(T("Some Object"), someObject);
+    context.resultCallback(JUCE_T("Default Object"), defaultObject);
+    context.resultCallback(JUCE_T("Default Object as string"), defaultObject->toString());
+    context.resultCallback(JUCE_T("Some Object"), someObject);
     
-    juce::File file = juce::File::createTempFile(T("object"));
+    juce::File file = juce::File::createTempFile(JUCE_T("object"));
     someObject->saveToFile(context, file); 
 
     SimpleClassPtr loadedObject = Object::createFromFile(context, file).staticCast<SimpleClass>();
-    context.resultCallback(T("Loaded Object"), loadedObject);
+    context.resultCallback(JUCE_T("Loaded Object"), loadedObject);
     file.deleteFile();
 
     return ObjectPtr();

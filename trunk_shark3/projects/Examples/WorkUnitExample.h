@@ -19,13 +19,13 @@ class SubWorkUnitExample : public WorkUnit
 public:
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    context.informationCallback(T("Before"));
+    context.informationCallback(JUCE_T("Before"));
     for (size_t i = 0; i < 100; ++i)
     {
       Thread::sleep(5);
-      context.progressCallback(new ProgressionState(i + 1.0, 100.0, T("%")));
+      context.progressCallback(new ProgressionState(i + 1.0, 100.0, JUCE_T("%")));
     }
-    context.informationCallback(T("After"));
+    context.informationCallback(JUCE_T("After"));
     return new String("Hello");
   }
 };
@@ -34,30 +34,30 @@ class WorkUnitExample : public WorkUnit
 {
 public:
   virtual string toString() const
-    {return T("My Work Unit !");}
+    {return JUCE_T("My Work Unit !");}
  
   virtual ObjectPtr run(ExecutionContext& context)
   {
-//    context.errorCallback(T("My Error"));
+//    context.errorCallback(JUCE_T("My Error"));
     Thread::sleep(100);
-    context.warningCallback(T("My Warning"));
+    context.warningCallback(JUCE_T("My Warning"));
     Thread::sleep(500);
-    context.informationCallback(T("My Information"));
+    context.informationCallback(JUCE_T("My Information"));
 
     for (size_t i = 0; i < 10; ++i)
     {
       Thread::sleep(200);
-      context.progressCallback(new ProgressionState(i + 1.0, 10.0, T("epochs")));
+      context.progressCallback(new ProgressionState(i + 1.0, 10.0, JUCE_T("epochs")));
     }
 
-    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 8 Sub Work Units"), 8));
+    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(JUCE_T("My 8 Sub Work Units"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
       subWorkUnits->setWorkUnit(i, new SubWorkUnitExample());
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 
-    context.resultCallback(T("toto"), T("tata"));//TMP
-    context.informationCallback(T("Finished."));
+    context.resultCallback(JUCE_T("toto"), JUCE_T("tata"));//TMP
+    context.informationCallback(JUCE_T("Finished."));
     return new Double(0.85);  // return fictive score
   }
 };

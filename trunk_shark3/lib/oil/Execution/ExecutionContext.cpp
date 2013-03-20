@@ -67,7 +67,7 @@ bool ExecutionContext::checkInheritance(ClassPtr type, ClassPtr baseType)
   jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))
   {
-    errorCallback(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
+    errorCallback(JUCE_T("checkInheritance"), JUCE_T("Invalid type, Expected ") + baseType->getName().quoted() + JUCE_T(" found ") + (type ? type->getName().quoted() : JUCE_T("Nil")));
     return false;
   }
   return true;
@@ -86,9 +86,9 @@ static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const
     {
       string cycle;
       for (size_t j = i; j < currentStack.size(); ++j)
-        cycle += currentStack[j]->getClassName() + T(" -> ");
+        cycle += currentStack[j]->getClassName() + JUCE_T(" -> ");
       cycle += object->getClassName();
-      context.errorCallback(T("Found a shared pointer cycle: ") + cycle);
+      context.errorCallback(JUCE_T("Found a shared pointer cycle: ") + cycle);
       return false;
     }
 
@@ -122,7 +122,7 @@ juce::File ExecutionContext::getFile(const string& path)
   juce::File dir = getProjectDirectory();
   if (!dir.exists())
   {
-    errorCallback(T("Project directory is not specified. Could not find path ") + path);
+    errorCallback(JUCE_T("Project directory is not specified. Could not find path ") + path);
     return juce::File::nonexistent;
   }
   return dir.getChildFile(path);
@@ -286,7 +286,7 @@ TimedScope::TimedScope(ExecutionContext& context, const string& name, bool enabl
 TimedScope::~TimedScope()
 {
   if (name.isNotEmpty())
-    context.resultCallback(name + T(" time"), Time::getHighResolutionCounter() - startTime);
+    context.resultCallback(name + JUCE_T(" time"), Time::getHighResolutionCounter() - startTime);
 }
 
 /*

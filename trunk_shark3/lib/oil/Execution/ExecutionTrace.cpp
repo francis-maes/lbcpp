@@ -20,15 +20,15 @@ using namespace lbcpp;
 */
 void ExecutionTraceItem::saveToXml(XmlExporter& exporter) const
 {
-  exporter.setAttribute(T("time"), time);
+  exporter.setAttribute(JUCE_T("time"), time);
 }
 
 bool ExecutionTraceItem::loadFromXml(XmlImporter& importer)
 {
-  time = importer.getDoubleAttribute(T("time"), -1);
+  time = importer.getDoubleAttribute(JUCE_T("time"), -1);
   if (time < 0)
   {
-    importer.getContext().errorCallback(T("Missing time attribute"));
+    importer.getContext().errorCallback(JUCE_T("Missing time attribute"));
     return false;
   }
   return true;
@@ -41,7 +41,7 @@ MessageExecutionTraceItem::MessageExecutionTraceItem(double time, ExecutionMessa
   : ExecutionTraceItem(time), messageType(messageType), what(what), where(where) {}
 
 string MessageExecutionTraceItem::toString() const
-  {return what + (where.isEmpty() ? string::empty : (T(" (in ") + where + T(")")));}
+  {return what + (where.isEmpty() ? string::empty : (JUCE_T(" (in ") + where + JUCE_T(")")));}
 
 string MessageExecutionTraceItem::toShortString() const
   {return toString();}
@@ -50,9 +50,9 @@ string MessageExecutionTraceItem::getPreferedXmlTag() const
 {
   switch (messageType)
   {
-  case informationMessageType: return T("info");
-  case warningMessageType:     return T("warning");
-  case errorMessageType:       return T("error");
+  case informationMessageType: return JUCE_T("info");
+  case warningMessageType:     return JUCE_T("warning");
+  case errorMessageType:       return JUCE_T("error");
   }
   jassert(false);
   return string::empty;
@@ -62,9 +62,9 @@ string MessageExecutionTraceItem::getPreferedIcon() const
 {
   switch (messageType)
   {
-  case informationMessageType: return T("Information-32.png");
-  case warningMessageType:     return T("Warning-32.png");
-  case errorMessageType:       return T("Error-32.png");
+  case informationMessageType: return JUCE_T("Information-32.png");
+  case warningMessageType:     return JUCE_T("Warning-32.png");
+  case errorMessageType:       return JUCE_T("Error-32.png");
   }
   jassert(false);
   return string::empty;
@@ -73,9 +73,9 @@ string MessageExecutionTraceItem::getPreferedIcon() const
 void MessageExecutionTraceItem::saveToXml(XmlExporter& exporter) const
 {
   ExecutionTraceItem::saveToXml(exporter);
-  exporter.setAttribute(T("what"), what);
+  exporter.setAttribute(JUCE_T("what"), what);
   if (where.isNotEmpty())
-    exporter.setAttribute(T("where"), where);
+    exporter.setAttribute(JUCE_T("where"), where);
 }
 
 bool MessageExecutionTraceItem::loadFromXml(XmlImporter& importer)
@@ -84,20 +84,20 @@ bool MessageExecutionTraceItem::loadFromXml(XmlImporter& importer)
     return false;
 
   string tag = importer.getTagName().toLowerCase();
-  if (tag == T("info"))
+  if (tag == JUCE_T("info"))
     messageType = informationMessageType;
-  else if (tag == T("warning"))
+  else if (tag == JUCE_T("warning"))
     messageType = warningMessageType;
-  else if (tag == T("error"))
+  else if (tag == JUCE_T("error"))
     messageType = errorMessageType;
   else
   {
-    importer.getContext().errorCallback(T("Unrecognized message type: ") + tag);
+    importer.getContext().errorCallback(JUCE_T("Unrecognized message type: ") + tag);
     return false;
   }
 
-  what = importer.getStringAttribute(T("what"));
-  where = importer.getStringAttribute(T("where"));
+  what = importer.getStringAttribute(JUCE_T("what"));
+  where = importer.getStringAttribute(JUCE_T("where"));
   return true;
 }
 
@@ -111,7 +111,7 @@ ExecutionTraceNode::ExecutionTraceNode(const string& description, const WorkUnit
 }
 
 string ExecutionTraceNode::getPreferedIcon() const
-  {return T("WorkUnit-32.png");}
+  {return JUCE_T("WorkUnit-32.png");}
 
 size_t ExecutionTraceNode::getNumSubItems() const
 {
@@ -173,7 +173,7 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
   // progression
   if (progression)
   {
-    exporter.enter(T("progression"));
+    exporter.enter(JUCE_T("progression"));
     progression->saveToXml(exporter);
     exporter.leave();
   }
@@ -181,7 +181,7 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
   // return value
   if (returnValue)
   {
-    exporter.enter(T("return"));
+    exporter.enter(JUCE_T("return"));
     exporter.writeObject(returnValue, objectClass);
     exporter.leave();
   }
@@ -192,8 +192,8 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
     for (size_t i = 0; i < results.size(); ++i)
       if (results[i].second)
       {
-        exporter.enter(T("result"));
-        exporter.setAttribute(T("resultName"), results[i].first);
+        exporter.enter(JUCE_T("result"));
+        exporter.setAttribute(JUCE_T("resultName"), results[i].first);
         exporter.writeObject(results[i].second, objectClass);
         exporter.leave();
       }
@@ -218,8 +218,8 @@ void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
   ScopedLock _2(subItemsLock);
 
   ExecutionTraceItem::saveToXml(exporter);
-  exporter.setAttribute(T("description"), description);
-  exporter.setAttribute(T("timeLength"), timeLength);
+  exporter.setAttribute(JUCE_T("description"), description);
+  exporter.setAttribute(JUCE_T("timeLength"), timeLength);
   saveSubItemsToXml(exporter);
 }
 
@@ -234,10 +234,10 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
     string tagName = xml->getTagName();
     importer.enter(xml);
     
-    if (tagName == T("info") || tagName == T("warning") || tagName == T("error") || tagName == T("node"))
+    if (tagName == JUCE_T("info") || tagName == JUCE_T("warning") || tagName == JUCE_T("error") || tagName == JUCE_T("node"))
     {
       ExecutionTraceItemPtr item;
-      if (tagName == T("node"))
+      if (tagName == JUCE_T("node"))
         item = new ExecutionTraceNode();
       else
         item = new MessageExecutionTraceItem();
@@ -246,17 +246,17 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       else
         subItems.push_back(item);
     }
-    else if (tagName == T("progression"))
+    else if (tagName == JUCE_T("progression"))
     {
       jassert(!progression);
       progression = new ProgressionState();
       res &= progression->loadFromXml(importer);
     }
-    else if (tagName == T("return"))
+    else if (tagName == JUCE_T("return"))
       returnValue = importer.loadObject(objectClass);
-    else if (tagName == T("result"))
+    else if (tagName == JUCE_T("result"))
     {
-      string name = importer.getStringAttribute(T("resultName"));
+      string name = importer.getStringAttribute(JUCE_T("resultName"));
       ObjectPtr value = importer.loadObject(objectClass);
       if (value.exists())
         results.push_back(std::make_pair(name, value));
@@ -271,8 +271,8 @@ bool ExecutionTraceNode::loadFromXml(XmlImporter& importer)
 {
   if (!ExecutionTraceItem::loadFromXml(importer))
     return false;
-  description = importer.getStringAttribute(T("description"));
-  timeLength = importer.getDoubleAttribute(T("timeLength"));
+  description = importer.getStringAttribute(JUCE_T("description"));
+  timeLength = importer.getDoubleAttribute(JUCE_T("timeLength"));
   return loadSubItemsFromXml(importer);
 }
 
@@ -296,7 +296,7 @@ std::vector< std::pair<string, ObjectPtr> > ExecutionTraceNode::getResults() con
     res = results;
   }
   if (returnValue.exists())
-    res.push_back(std::make_pair(T("returnValue"), returnValue));
+    res.push_back(std::make_pair(JUCE_T("returnValue"), returnValue));
   return res;
 }
 
@@ -384,7 +384,7 @@ TablePtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) 
 ** ExecutionTrace
 */
 ExecutionTrace::ExecutionTrace(const string& contextDescription)
-  : root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(juce::Time::getCurrentTime())
+  : root(new ExecutionTraceNode(JUCE_T("root"), WorkUnitPtr(), 0.0)), startTime(juce::Time::getCurrentTime())
 {
   ScopedLock _(lock);
   using juce::SystemStats;
@@ -419,14 +419,14 @@ void ExecutionTrace::saveToXml(XmlExporter& exporter) const
   ScopedLock _(lock);
 
   const_cast<ExecutionTrace* >(this)->saveTime = juce::Time::getCurrentTime();
-  exporter.setAttribute(T("os"), operatingSystem);
-  exporter.setAttribute(T("is64bit"), is64BitOs ? T("yes") : T("no"));
-  exporter.setAttribute(T("numcpus"), (int)numCpus);
-  exporter.setAttribute(T("cpuspeed"), cpuSpeedInMegaherz);
-  exporter.setAttribute(T("memory"), memoryInMegabytes);
-  exporter.setAttribute(T("context"), context);
-  exporter.setAttribute(T("startTime"), startTime.toString(true, true, true, true));
-  exporter.setAttribute(T("saveTime"), saveTime.toString(true, true, true, true));
+  exporter.setAttribute(JUCE_T("os"), operatingSystem);
+  exporter.setAttribute(JUCE_T("is64bit"), is64BitOs ? JUCE_T("yes") : JUCE_T("no"));
+  exporter.setAttribute(JUCE_T("numcpus"), (int)numCpus);
+  exporter.setAttribute(JUCE_T("cpuspeed"), cpuSpeedInMegaherz);
+  exporter.setAttribute(JUCE_T("memory"), memoryInMegabytes);
+  exporter.setAttribute(JUCE_T("context"), context);
+  exporter.setAttribute(JUCE_T("startTime"), startTime.toString(true, true, true, true));
+  exporter.setAttribute(JUCE_T("saveTime"), saveTime.toString(true, true, true, true));
 
   root->saveSubItemsToXml(exporter);
 }
@@ -435,14 +435,14 @@ bool ExecutionTrace::loadFromXml(XmlImporter& importer)
 {
   ScopedLock _(lock);
 
-  operatingSystem = importer.getStringAttribute(T("os"));
-  is64BitOs = importer.getBoolAttribute(T("is64bit"));
-  numCpus = (size_t)importer.getIntAttribute(T("numcpus"));
-  cpuSpeedInMegaherz = importer.getIntAttribute(T("cpuspeed"));
-  memoryInMegabytes = importer.getIntAttribute(T("memory"));
-  context = importer.getStringAttribute(T("context"));
+  operatingSystem = importer.getStringAttribute(JUCE_T("os"));
+  is64BitOs = importer.getBoolAttribute(JUCE_T("is64bit"));
+  numCpus = (size_t)importer.getIntAttribute(JUCE_T("numcpus"));
+  cpuSpeedInMegaherz = importer.getIntAttribute(JUCE_T("cpuspeed"));
+  memoryInMegabytes = importer.getIntAttribute(JUCE_T("memory"));
+  context = importer.getStringAttribute(JUCE_T("context"));
   // FIXME: startTime and saveTime
   
-  root = new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0);
+  root = new ExecutionTraceNode(JUCE_T("root"), WorkUnitPtr(), 0.0);
   return root->loadSubItemsFromXml(importer);
 }

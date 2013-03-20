@@ -25,13 +25,13 @@ public:
   virtual void errorCallback(const string& where, const string& what)
   {
     ++numErrors;
-    lastError = T("Error in ") + where + T(": ") + what;
+    lastError = JUCE_T("Error in ") + where + JUCE_T(": ") + what;
   }
   
   virtual void warningCallback(const string& where, const string& what)
   {
     ++numWarnings;
-    lastWarning = T("Warning in ") + where + T(": ") + what;
+    lastWarning = JUCE_T("Warning in ") + where + JUCE_T(": ") + what;
   }
 
   virtual void informationCallback(const string& where, const string& what)
@@ -41,11 +41,11 @@ public:
   {
     if (numErrors || numWarnings)
     {
-      string text = string(numErrors) + T(" error(s), ") + string(numWarnings) + T(" warning(s)\n");
+      string text = string(numErrors) + JUCE_T(" error(s), ") + string(numWarnings) + JUCE_T(" warning(s)\n");
       if (lastError.isNotEmpty())
-        text += T("Last Error: ") + lastError + T("\n");
+        text += JUCE_T("Last Error: ") + lastError + JUCE_T("\n");
       if (lastWarning.isNotEmpty())
-        text += T("Last Warning: ") + lastWarning + T("\n");
+        text += JUCE_T("Last Warning: ") + lastWarning + JUCE_T("\n");
 
       numErrors = numWarnings = 0;
       lastError = lastWarning = string::empty;
@@ -63,7 +63,7 @@ private:
   void addMessage(const string& str)
   {
     if (text.isNotEmpty())
-      text += T("\n");
+      text += JUCE_T("\n");
     text += str;
   }
 };
@@ -100,9 +100,9 @@ public:
 
   virtual void currentTabChanged(const int newCurrentTabIndex, const string& newCurrentTabName)
   {
-    string windowName = T("LBC++ Explorer");
+    string windowName = JUCE_T("LBC++ Explorer");
     if (newCurrentTabIndex >= 0)
-      windowName += T(" - ") + getCurrentTabName();
+      windowName += JUCE_T(" - ") + getCurrentTabName();
     mainWindow->setName(windowName);
     dynamic_cast<MenuBarModel* >(mainWindow)->menuItemsChanged();
   }
@@ -158,7 +158,7 @@ public:
   virtual const StringArray getMenuBarNames()
   {
     StringArray res;
-    res.add(T("File"));
+    res.add(JUCE_T("File"));
     MenuBarModel* additionalMenus = getAdditionalMenus();
     if (additionalMenus)
       res.addArray(additionalMenus->getMenuBarNames());
@@ -189,8 +189,8 @@ public:
     if (topLevelMenuIndex == 0)
     {
       PopupMenu menu;
-      menu.addItem(newProjectMenu, T("New Project"));
-      menu.addItem(openProjectMenu, T("Open Project"));
+      menu.addItem(newProjectMenu, JUCE_T("New Project"));
+      menu.addItem(openProjectMenu, JUCE_T("Open Project"));
       
       RecentFileVectorPtr recentProjects = configuration->getRecentProjects();
       if (recentProjects->getNumRecentFiles())
@@ -199,21 +199,21 @@ public:
         for (size_t i = 0; i < recentProjects->getNumRecentFiles(); ++i)
           subMenu.addItem(openRecentProjectMenu + (int)i, recentProjects->getRecentFile(i).getFileName());
         subMenu.addSeparator();
-        subMenu.addItem(openClearRecentProjectMenu, T("Clear Menu"));
-        menu.addSubMenu(T("Open Recent Project"), subMenu);
+        subMenu.addItem(openClearRecentProjectMenu, JUCE_T("Clear Menu"));
+        menu.addSubMenu(JUCE_T("Open Recent Project"), subMenu);
       }
-      menu.addItem(closeProjectMenu, T("Close Project"));
+      menu.addItem(closeProjectMenu, JUCE_T("Close Project"));
       menu.addSeparator();
 
       bool hasCurrentProject = ExplorerProject::hasCurrentProject();
 
-      menu.addItem(openFileMenu, T("Open File"), hasCurrentProject);
-      menu.addItem(openDirectoryMenu, T("Open Directory"), hasCurrentProject);
-      menu.addItem(startWorkUnitMenu, T("Start Work Unit"), hasCurrentProject);
-      menu.addItem(closeMenu, T("Close"), hasCurrentProject && contentTabs->getCurrentTabIndex() >= 0);
+      menu.addItem(openFileMenu, JUCE_T("Open File"), hasCurrentProject);
+      menu.addItem(openDirectoryMenu, JUCE_T("Open Directory"), hasCurrentProject);
+      menu.addItem(startWorkUnitMenu, JUCE_T("Start Work Unit"), hasCurrentProject);
+      menu.addItem(closeMenu, JUCE_T("Close"), hasCurrentProject && contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
     
-      menu.addItem(quitMenu, T("Quit"));
+      menu.addItem(quitMenu, JUCE_T("Quit"));
       return menu;
     }
     else
@@ -233,7 +233,7 @@ public:
       ExplorerProject::currentProject = ExplorerProjectPtr();
     }
     contentTabs->clearTabs();
-    setName(T("LBC++ Explorer"));
+    setName(JUCE_T("LBC++ Explorer"));
   }
 
   void setCurrentProject(ExplorerProjectPtr project)
@@ -251,7 +251,7 @@ public:
     recentProjects->addRecentFile(directory);
     recentProjects->setRecentDirectory(directory.getParentDirectory());
     configuration->save(context);
-    setName(T("LBC++ Explorer - ") + directory.getFileName());
+    setName(JUCE_T("LBC++ Explorer - ") + directory.getFileName());
     ExplorerProject::currentProject = project;
     loadObjectFromFile(directory);
   }
@@ -334,7 +334,7 @@ public:
             contentTabs->addObject(context, trace, workUnit->getClassName(), new ObjectBrowser(trace, component));
             currentProject->workUnitContext->pushWorkUnit(workUnit);
           }
-          flushErrorAndWarningMessages(T("Start Work Unit"));
+          flushErrorAndWarningMessages(JUCE_T("Start Work Unit"));
         }
         break;
 
@@ -380,7 +380,7 @@ public:
     else
     {
       object = Object::createFromFile(context, file);
-      flushErrorAndWarningMessages(T("Load ") + file.getFileName());
+      flushErrorAndWarningMessages(JUCE_T("Load ") + file.getFileName());
     }
 
     if (object)
@@ -427,7 +427,7 @@ public:
     mainWindow = new ExplorerMainWindow(defaultExecutionContext());
     mainWindow->setVisible(true);
 
-    flushErrorAndWarningMessages(T("Explorer Start-up"));
+    flushErrorAndWarningMessages(JUCE_T("Explorer Start-up"));
   }
   
   virtual void shutdown()
@@ -452,10 +452,10 @@ public:
   }
 
   virtual const string getApplicationName()
-    {return T("LBC++ Explorer");}
+    {return JUCE_T("LBC++ Explorer");}
 
   const string getApplicationVersion()
-    {return T("1.0");}
+    {return JUCE_T("1.0");}
 
   virtual bool moreThanOneInstanceAllowed()
     {return true;}

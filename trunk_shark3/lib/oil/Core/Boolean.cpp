@@ -36,19 +36,19 @@ void Boolean::clone(ExecutionContext& context, const ObjectPtr& target) const
 bool Boolean::loadFromString(ExecutionContext& context, const string& str)
 {
   string v = str.trim().toLowerCase();
-  if (v == T("true"))
+  if (v == JUCE_T("true"))
   {
     value = true;
     return true;
   }
-  else if (v == T("false"))
+  else if (v == JUCE_T("false"))
   {
     value = false;
     return true;
   }
   else
   {
-    context.errorCallback(T("BooleanClass::loadFromString"), T("Could not read boolean value ") + str.quoted());
+    context.errorCallback(JUCE_T("BooleanClass::loadFromString"), JUCE_T("Could not read boolean value ") + str.quoted());
     return false;
   }
 }

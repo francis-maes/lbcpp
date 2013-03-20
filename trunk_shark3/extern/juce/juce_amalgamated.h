@@ -1279,7 +1279,7 @@ inline int roundFloatToInt (const float value) throw()
    To use unicode, define the JUCE_STRINGS_ARE_UNICODE macro in juce_Config.h
 
    Be sure to use "tchar" for characters rather than "char", and always wrap string
-   literals in the T("abcd") macro, so that it all works nicely either way round.
+   literals in the JUCE_T("abcd") macro, so that it all works nicely either way round.
 */
 #if JUCE_STRINGS_ARE_UNICODE
 
@@ -1300,7 +1300,7 @@ inline int roundFloatToInt (const float value) throw()
 /** The 'T' macro allows a literal string to be compiled using either 8-bit characters
     or unicode.
 
-    If you write your string literals in the form T("xyz"), this will either be compiled
+    If you write your string literals in the form JUCE_T("xyz"), this will either be compiled
     as "xyz" for non-unicode builds, or L"xyz" for unicode builds, depending on whether the
     JUCE_STRINGS_ARE_UNICODE macro has been set in juce_Config.h
 
@@ -8662,7 +8662,7 @@ protected:
     E.g. @code
     XmlElement* myParentXml = createSomeKindOfXmlDocument();
 
-    forEachXmlChildElementWithTagName (*myParentXml, child, T("MYTAG"))
+    forEachXmlChildElementWithTagName (*myParentXml, child, JUCE_T("MYTAG"))
     {
         // the child object is now guaranteed to be a <MYTAG> element..
         doSomethingWithMYTAGElement (child);
@@ -23188,11 +23188,11 @@ struct JUCE_API  ApplicationCommandInfo
 
         This is just so you can write things like:
         @code
-        myinfo.addDefaultKeypress (T('s'), ModifierKeys::commandModifier);
+        myinfo.addDefaultKeypress (JUCE_T('s'), ModifierKeys::commandModifier);
         @endcode
         instead of
         @code
-        myinfo.defaultKeypresses.add (KeyPress (T('s'), ModifierKeys::commandModifier));
+        myinfo.defaultKeypresses.add (KeyPress (JUCE_T('s'), ModifierKeys::commandModifier));
         @endcode
     */
     void addDefaultKeypress (const int keyCode,
@@ -23602,12 +23602,12 @@ public:
 
             const String getApplicationName()
             {
-                return T("Super JUCE-o-matic");
+                return JUCE_T("Super JUCE-o-matic");
             }
 
             const String getApplicationVersion()
             {
-                return T("1.0");
+                return JUCE_T("1.0");
             }
         };
 
@@ -50265,15 +50265,15 @@ private:
 
     @code
     {
-        WildcardFileFilter wildcardFilter (T("*.foo"), T("Foo files"));
+        WildcardFileFilter wildcardFilter (JUCE_T("*.foo"), JUCE_T("Foo files"));
 
         FileBrowserComponent browser (FileBrowserComponent::loadFileMode,
                                       File::nonexistent,
                                       &wildcardFilter,
                                       0);
 
-        FileChooserDialogBox dialogBox (T("Open some kind of file"),
-                                        T("Please choose some kind of file that you want to open..."),
+        FileChooserDialogBox dialogBox (JUCE_T("Open some kind of file"),
+                                        JUCE_T("Please choose some kind of file that you want to open..."),
                                         browser,
                                         getLookAndFeel().alertWindowBackground);
 
@@ -51378,7 +51378,7 @@ private:
     {
         SplashScreen* splash = new SplashScreen();
 
-        splash->show (T("welcome to my app"),
+        splash->show (JUCE_T("welcome to my app"),
                       ImageCache::getFromFile (File ("/foobar/splash.jpg")),
                       4000, false);
 
@@ -51499,7 +51499,7 @@ private:
     class MyTask  : public ThreadWithProgressWindow
     {
     public:
-        MyTask()    : ThreadWithProgressWindow (T("busy..."), true, true)
+        MyTask()    : ThreadWithProgressWindow (JUCE_T("busy..."), true, true)
         {
         }
 

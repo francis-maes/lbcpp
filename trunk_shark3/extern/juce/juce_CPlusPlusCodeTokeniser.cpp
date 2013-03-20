@@ -46,41 +46,41 @@ namespace CppTokeniser
 static bool isIdentifierStart (const tchar c) throw()
 {
     return CharacterFunctions::isLetter (c)
-            || c == T('_');
+            || c == JUCE_T('_');
 }
 
 static bool isIdentifierBody (const tchar c) throw()
 {
     return CharacterFunctions::isLetter (c)
             || CharacterFunctions::isDigit (c)
-            || c == T('_');
+            || c == JUCE_T('_');
 }
 
 static int parseIdentifier (CodeDocument::Iterator& source) throw()
 {
     static const tchar* keywords2Char[] =
-        { T("if"), T("do"), T("or"), 0 };
+        { JUCE_T("if"), JUCE_T("do"), JUCE_T("or"), 0 };
 
     static const tchar* keywords3Char[] =
-        { T("for"), T("int"), T("new"), T("try"), T("xor"), T("and"), T("asm"), T("not"), 0 };
+        { JUCE_T("for"), JUCE_T("int"), JUCE_T("new"), JUCE_T("try"), JUCE_T("xor"), JUCE_T("and"), JUCE_T("asm"), JUCE_T("not"), 0 };
 
     static const tchar* keywords4Char[] =
-        { T("bool"), T("void"), T("this"), T("true"), T("long"), T("else"), T("char"),
-          T("enum"), T("case"), T("goto"), T("auto"), 0 };
+        { JUCE_T("bool"), JUCE_T("void"), JUCE_T("this"), JUCE_T("true"), JUCE_T("long"), JUCE_T("else"), JUCE_T("char"),
+          JUCE_T("enum"), JUCE_T("case"), JUCE_T("goto"), JUCE_T("auto"), 0 };
 
     static const tchar* keywords5Char[] =
-        {  T("while"), T("bitor"), T("break"), T("catch"), T("class"), T("compl"), T("const"), T("false"),
-            T("float"), T("short"), T("throw"), T("union"), T("using"), T("or_eq"), 0 };
+        {  JUCE_T("while"), JUCE_T("bitor"), JUCE_T("break"), JUCE_T("catch"), JUCE_T("class"), JUCE_T("compl"), JUCE_T("const"), JUCE_T("false"),
+            JUCE_T("float"), JUCE_T("short"), JUCE_T("throw"), JUCE_T("union"), JUCE_T("using"), JUCE_T("or_eq"), 0 };
 
     static const tchar* keywords6Char[] =
-        { T("return"), T("struct"), T("and_eq"), T("bitand"), T("delete"), T("double"), T("extern"),
-          T("friend"), T("inline"), T("not_eq"), T("public"), T("sizeof"), T("static"), T("signed"),
-          T("switch"), T("typeid"), T("wchar_t"), T("xor_eq"), 0};
+        { JUCE_T("return"), JUCE_T("struct"), JUCE_T("and_eq"), JUCE_T("bitand"), JUCE_T("delete"), JUCE_T("double"), JUCE_T("extern"),
+          JUCE_T("friend"), JUCE_T("inline"), JUCE_T("not_eq"), JUCE_T("public"), JUCE_T("sizeof"), JUCE_T("static"), JUCE_T("signed"),
+          JUCE_T("switch"), JUCE_T("typeid"), JUCE_T("wchar_t"), JUCE_T("xor_eq"), 0};
 
     static const tchar* keywordsOther[] =
-        { T("const_cast"), T("continue"), T("default"), T("explicit"), T("mutable"), T("namespace"),
-          T("operator"), T("private"), T("protected"), T("register"), T("reinterpret_cast"), T("static_cast"),
-          T("template"), T("typedef"), T("typename"), T("unsigned"), T("virtual"), T("volatile"), 0 };
+        { JUCE_T("const_cast"), JUCE_T("continue"), JUCE_T("default"), JUCE_T("explicit"), JUCE_T("mutable"), JUCE_T("namespace"),
+          JUCE_T("operator"), JUCE_T("private"), JUCE_T("protected"), JUCE_T("register"), JUCE_T("reinterpret_cast"), JUCE_T("static_cast"),
+          JUCE_T("template"), JUCE_T("typedef"), JUCE_T("typename"), JUCE_T("unsigned"), JUCE_T("virtual"), JUCE_T("volatile"), 0 };
 
     int tokenLength = 0;
     tchar possibleIdentifier [19];
@@ -312,7 +312,7 @@ static void skipComment (CodeDocument::Iterator& source) throw()
     {
         const juce_wchar c = source.nextChar();
 
-        if (c == 0 || (c == T('/') && lastWasStar))
+        if (c == 0 || (c == JUCE_T('/') && lastWasStar))
             break;
 
         lastWasStar = (c == '*');
@@ -335,20 +335,20 @@ int CPlusPlusCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
         source.skip();
         break;
 
-    case T('0'):
-    case T('1'):
-    case T('2'):
-    case T('3'):
-    case T('4'):
-    case T('5'):
-    case T('6'):
-    case T('7'):
-    case T('8'):
-    case T('9'):
+    case JUCE_T('0'):
+    case JUCE_T('1'):
+    case JUCE_T('2'):
+    case JUCE_T('3'):
+    case JUCE_T('4'):
+    case JUCE_T('5'):
+    case JUCE_T('6'):
+    case JUCE_T('7'):
+    case JUCE_T('8'):
+    case JUCE_T('9'):
         result = CppTokeniser::parseNumber (source);
         break;
 
-    case T('.'):
+    case JUCE_T('.'):
         result = CppTokeniser::parseNumber (source);
 
         if (result == tokenType_error)
@@ -356,41 +356,41 @@ int CPlusPlusCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
 
         break;
 
-    case T(','):
-    case T(';'):
-    case T(':'):
+    case JUCE_T(','):
+    case JUCE_T(';'):
+    case JUCE_T(':'):
         source.skip();
         result = tokenType_punctuation;
         break;
 
-    case T('('):
-    case T(')'):
-    case T('{'):
-    case T('}'):
-    case T('['):
-    case T(']'):
+    case JUCE_T('('):
+    case JUCE_T(')'):
+    case JUCE_T('{'):
+    case JUCE_T('}'):
+    case JUCE_T('['):
+    case JUCE_T(']'):
         source.skip();
         result = tokenType_bracket;
         break;
 
-    case T('"'):
-    case T('\''):
+    case JUCE_T('"'):
+    case JUCE_T('\''):
         CppTokeniser::skipQuotedString (source);
         result = tokenType_stringLiteral;
         break;
 
-    case T('+'):
+    case JUCE_T('+'):
         result = tokenType_operator;
         source.skip();
 
-        if (source.peekNextChar() == T('+'))
+        if (source.peekNextChar() == JUCE_T('+'))
             source.skip();
-        else if (source.peekNextChar() == T('='))
+        else if (source.peekNextChar() == JUCE_T('='))
             source.skip();
 
         break;
 
-    case T('-'):
+    case JUCE_T('-'):
         source.skip();
         result = CppTokeniser::parseNumber (source);
 
@@ -398,39 +398,39 @@ int CPlusPlusCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
         {
             result = tokenType_operator;
 
-            if (source.peekNextChar() == T('-'))
+            if (source.peekNextChar() == JUCE_T('-'))
                 source.skip();
-            else if (source.peekNextChar() == T('='))
+            else if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
         break;
 
-    case T('*'):
-    case T('%'):
-    case T('='):
-    case T('!'):
+    case JUCE_T('*'):
+    case JUCE_T('%'):
+    case JUCE_T('='):
+    case JUCE_T('!'):
         result = tokenType_operator;
         source.skip();
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
             source.skip();
 
         break;
 
-    case T('/'):
+    case JUCE_T('/'):
         result = tokenType_operator;
         source.skip();
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('/'))
+        else if (source.peekNextChar() == JUCE_T('/'))
         {
             result = tokenType_comment;
             source.skipToEndOfLine();
         }
-        else if (source.peekNextChar() == T('*'))
+        else if (source.peekNextChar() == JUCE_T('*'))
         {
             source.skip();
             result = tokenType_comment;
@@ -439,103 +439,103 @@ int CPlusPlusCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
 
         break;
 
-    case T('?'):
-    case T('~'):
+    case JUCE_T('?'):
+    case JUCE_T('~'):
         source.skip();
         result = tokenType_operator;
         break;
 
-    case T('<'):
+    case JUCE_T('<'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('<'))
+        else if (source.peekNextChar() == JUCE_T('<'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('>'):
+    case JUCE_T('>'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('<'))
+        else if (source.peekNextChar() == JUCE_T('<'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('|'):
+    case JUCE_T('|'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('|'))
+        else if (source.peekNextChar() == JUCE_T('|'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('&'):
+    case JUCE_T('&'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('&'))
+        else if (source.peekNextChar() == JUCE_T('&'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('^'):
+    case JUCE_T('^'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('^'))
+        else if (source.peekNextChar() == JUCE_T('^'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('#'):
+    case JUCE_T('#'):
         result = tokenType_preprocessor;
         source.skipToEndOfLine();
         break;

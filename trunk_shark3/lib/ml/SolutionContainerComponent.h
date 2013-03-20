@@ -247,7 +247,7 @@ protected:
   void select(int index)
   {
     if (index >= 0)
-      sendSelectionChanged(solutions->getSolution(index), T("solution"));
+      sendSelectionChanged(solutions->getSolution(index), JUCE_T("solution"));
     else
       sendSelectionChanged(std::vector<ObjectPtr>(), string::empty);
 

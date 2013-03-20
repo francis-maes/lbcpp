@@ -76,7 +76,7 @@ public:
     {return description;}
 
   virtual string getPreferedXmlTag() const
-    {return T("node");}
+    {return JUCE_T("node");}
 
   virtual string getPreferedIcon() const;
 
@@ -170,7 +170,7 @@ public:
   ExecutionTrace() {}
 
   virtual string toString() const
-    {ScopedLock _(lock); return context + T(" Execution Trace");}
+    {ScopedLock _(lock); return context + JUCE_T(" Execution Trace");}
 
   ExecutionTraceNodePtr getRootNode() const
     {ScopedLock _(lock); return root;}

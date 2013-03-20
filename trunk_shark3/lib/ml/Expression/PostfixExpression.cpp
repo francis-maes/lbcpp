@@ -120,27 +120,27 @@ PostfixExpressionTypeState::PostfixExpressionTypeState() : depth(0), stateIndex(
 
 string PostfixExpressionTypeState::toShortString() const
 {
-  string res = T("[") + string((int)depth) + T("] {");
+  string res = JUCE_T("[") + string((int)depth) + JUCE_T("] {");
   for (size_t i = 0; i < stack.size(); ++i)
   {
     string name = stack[i]->getName();
     jassert(name.isNotEmpty());
     res += name;
     if (i < stack.size() - 1)
-      res += T(", ");
+      res += JUCE_T(", ");
   }
-  res += T("} -> ");
+  res += JUCE_T("} -> ");
   if (push.size())
-    res += string((int)push.size()) + T(" push actions");
+    res += string((int)push.size()) + JUCE_T(" push actions");
   if (apply.size())
   {
-    if (push.size()) res += T(", ");
-    res += string((int)apply.size()) + T(" apply actions");
+    if (push.size()) res += JUCE_T(", ");
+    res += string((int)apply.size()) + JUCE_T(" apply actions");
   }
   if (hasYieldAction())
   {
-    if (push.size() || apply.size()) res += T(", ");
-    res += T("yield action");
+    if (push.size() || apply.size()) res += JUCE_T(", ");
+    res += JUCE_T("yield action");
   }
   return res;
 }
@@ -221,7 +221,7 @@ PostfixExpressionTypeSpace::PostfixExpressionTypeSpace(const ExpressionDomainPtr
 
 void PostfixExpressionTypeSpace::pruneStates(ExecutionContext& context, bool verbose)
 {
-//    context.informationCallback(T("Num states before pruning: ") + string((int)states.size()));
+//    context.informationCallback(JUCE_T("Num states before pruning: ") + string((int)states.size()));
   prune(initialState);
   //jassert(!isRootPrunable);
 
@@ -235,7 +235,7 @@ void PostfixExpressionTypeSpace::pruneStates(ExecutionContext& context, bool ver
   }
   if (verbose)
   {
-    context.enterScope(T("Type states"));
+    context.enterScope(JUCE_T("Type states"));
     for (it = states.begin(); it != states.end(); ++it)
       context.informationCallback(it->second->toShortString());
     context.leaveScope(states.size());

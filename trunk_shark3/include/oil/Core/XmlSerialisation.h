@@ -149,7 +149,7 @@ extern ClassPtr xmlElementClass;
 class XmlExporter
 {
 public:
-  XmlExporter(ExecutionContext& context, const string& rootTag = T("lbcpp"), int version = 200);
+  XmlExporter(ExecutionContext& context, const string& rootTag = JUCE_T("lbcpp"), int version = 200);
   XmlExporter(ExecutionContext& context, XmlElementPtr target);
 
   bool saveToFile(const juce::File& file);

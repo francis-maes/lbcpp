@@ -62,32 +62,32 @@ public:
   PlotConfigurationComponent(PlotPtr plot)
     : plot(plot)
   {
-    addAndMakeVisible(xAxisLabel = new juce::Label(T("xaxis"), T("X-Axis")));
+    addAndMakeVisible(xAxisLabel = new juce::Label(JUCE_T("xaxis"), JUCE_T("X-Axis")));
     addAndMakeVisible(keyComboBox = createVariableIndexComboBox(plot->getKeyVariableIndex()));
-    addAndMakeVisible(yAxisLabel = new juce::Label(T("yaxis"), T("Y-Axis")));
+    addAndMakeVisible(yAxisLabel = new juce::Label(JUCE_T("yaxis"), JUCE_T("Y-Axis")));
     // FIXME: Who will destroy curveListBox ?
     PlotVariableListBoxModel* curveListBox = new PlotVariableListBoxModel(plot, this);
-    addAndMakeVisible(yListBox = new juce::ListBox(T("yListBox"), curveListBox));
+    addAndMakeVisible(yListBox = new juce::ListBox(JUCE_T("yListBox"), curveListBox));
     curveListBox->setListBox(yListBox);
     yListBox->setOutlineThickness(1);
     yListBox->setRowHeight(15);
     yListBox->setMultipleSelectionEnabled(false);
 
-    addAndMakeVisible(selectAllButton = new juce::TextButton(T("Select All")));
+    addAndMakeVisible(selectAllButton = new juce::TextButton(JUCE_T("Select All")));
     selectAllButton->addButtonListener(this);
-    addAndMakeVisible(noneButton = new juce::TextButton(T("None")));
+    addAndMakeVisible(noneButton = new juce::TextButton(JUCE_T("None")));
     noneButton->addButtonListener(this);
 
-    addAndMakeVisible(scalesLabel = new juce::Label(T("scales"), T("Scales")));
-    addAndMakeVisible(xMinScaleLabel = new juce::Label(T("xMinScaleLabel"), T("x-Min")));
-    addAndMakeVisible(xMaxScaleLabel = new juce::Label(T("xMaxScaleLabel"), T("x-Max")));
-    addAndMakeVisible(yMinScaleLabel = new juce::Label(T("yMinScaleLabel"), T("y-Min")));
-    addAndMakeVisible(yMaxScaleLabel = new juce::Label(T("yMaxScaleLabel"), T("y-Max")));
+    addAndMakeVisible(scalesLabel = new juce::Label(JUCE_T("scales"), JUCE_T("Scales")));
+    addAndMakeVisible(xMinScaleLabel = new juce::Label(JUCE_T("xMinScaleLabel"), JUCE_T("x-Min")));
+    addAndMakeVisible(xMaxScaleLabel = new juce::Label(JUCE_T("xMaxScaleLabel"), JUCE_T("x-Max")));
+    addAndMakeVisible(yMinScaleLabel = new juce::Label(JUCE_T("yMinScaleLabel"), JUCE_T("y-Min")));
+    addAndMakeVisible(yMaxScaleLabel = new juce::Label(JUCE_T("yMaxScaleLabel"), JUCE_T("y-Max")));
 
-    addAndMakeVisible(xMinScaleTextEditor = new juce::TextEditor(T("xMinScaleTextEditor")));
-    addAndMakeVisible(xMaxScaleTextEditor = new juce::TextEditor(T("xMaxScaleTextEditor")));
-    addAndMakeVisible(yMinScaleTextEditor = new juce::TextEditor(T("yMinScaleTextEditor")));
-    addAndMakeVisible(yMaxScaleTextEditor = new juce::TextEditor(T("yMaxScaleTextEditor")));
+    addAndMakeVisible(xMinScaleTextEditor = new juce::TextEditor(JUCE_T("xMinScaleTextEditor")));
+    addAndMakeVisible(xMaxScaleTextEditor = new juce::TextEditor(JUCE_T("xMaxScaleTextEditor")));
+    addAndMakeVisible(yMinScaleTextEditor = new juce::TextEditor(JUCE_T("yMinScaleTextEditor")));
+    addAndMakeVisible(yMaxScaleTextEditor = new juce::TextEditor(JUCE_T("yMaxScaleTextEditor")));
 
     xMinScaleTextEditor->addListener(this);
     xMaxScaleTextEditor->addListener(this);
@@ -225,7 +225,7 @@ protected:
 
   juce::ComboBox* createVariableIndexComboBox(size_t selectedIndex)
   {
-    juce::ComboBox* res = new juce::ComboBox(T("combo"));
+    juce::ComboBox* res = new juce::ComboBox(JUCE_T("combo"));
     for (size_t i = 0; i < plot->getNumPlotVariables(); ++i)
     {
       res->addItem(plot->getPlotVariable(i)->getName(), i + 1);

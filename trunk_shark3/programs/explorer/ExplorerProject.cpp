@@ -19,7 +19,7 @@ ExplorerProjectPtr ExplorerProject::currentProject;
 RecentWorkUnitConfiguration::RecentWorkUnitConfiguration(const string& workUnitName)
   : workUnitName(workUnitName)
 {
-  arguments.push_back(T(" "));
+  arguments.push_back(JUCE_T(" "));
 }
 
 void RecentWorkUnitConfiguration::addRecentArguments(const string& args)
@@ -97,7 +97,7 @@ ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, con
     rootDirectory.deleteRecursively();
   if (!rootDirectory.createDirectory())
   {
-    context.errorCallback(T("Could not create directory ") + rootDirectory.getFullPathName());
+    context.errorCallback(JUCE_T("Could not create directory ") + rootDirectory.getFullPathName());
     return ExplorerProjectPtr();
   }
   res->setRootDirectory(res->recentDirectory = rootDirectory);
@@ -109,22 +109,22 @@ ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const
 {
   if (rootDirectory.existsAsFile())
   {
-    context.errorCallback(rootDirectory.getFullPathName() + T(" is a file, not a directory"));
+    context.errorCallback(rootDirectory.getFullPathName() + JUCE_T(" is a file, not a directory"));
     return ExplorerProjectPtr();
   }
   if (!rootDirectory.exists())
   {
-    context.errorCallback(rootDirectory.getFullPathName() + T(" does not exists"));
+    context.errorCallback(rootDirectory.getFullPathName() + JUCE_T(" does not exists"));
     return ExplorerProjectPtr();
   }
 
   ExplorerProjectPtr res;
 
-  juce::File xmlFile = rootDirectory.getChildFile(T("project.xml"));
+  juce::File xmlFile = rootDirectory.getChildFile(JUCE_T("project.xml"));
   if (xmlFile.existsAsFile())
     res = ExplorerProject::createFromFile(context, xmlFile);
   else
-    context.warningCallback(xmlFile.getFullPathName() + T(" does not exists"));
+    context.warningCallback(xmlFile.getFullPathName() + JUCE_T(" does not exists"));
   
   if (!res)
   {
@@ -139,7 +139,7 @@ ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const
 
 void ExplorerProject::save(ExecutionContext& context)
 {
-  saveToFile(context, rootDirectory.getChildFile(T("project.xml")));
+  saveToFile(context, rootDirectory.getChildFile(JUCE_T("project.xml")));
 }
 
 void ExplorerProject::close(ExecutionContext& context)
@@ -164,7 +164,7 @@ bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& work
   workUnit = Object::create(workUnitType);
   if (!workUnit)
   {
-    context.errorCallback(T("Create Work Unit"), T("Could not create ") + workUnitName);
+    context.errorCallback(JUCE_T("Create Work Unit"), JUCE_T("Could not create ") + workUnitName);
     return false;
   }
 

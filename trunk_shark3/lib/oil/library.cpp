@@ -67,7 +67,7 @@ public:
       {
         typedef void (*DeinitializeLibraryFunction)();
 
-        DeinitializeLibraryFunction deinitializeFunction = (DeinitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppDeinitializeLibrary"));
+        DeinitializeLibraryFunction deinitializeFunction = (DeinitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, JUCE_T("lbcppDeinitializeLibrary"));
         if (deinitializeFunction)
           deinitializeFunction();
       }
@@ -86,14 +86,14 @@ public:
   {
     if (library->getName().isEmpty())
     {
-      context.errorCallback(T("Cannot add an unnamed library"));
+      context.errorCallback(JUCE_T("Cannot add an unnamed library"));
       return false;
     }
 
     for (size_t i = 0; i < subLibraries.size(); ++i)
       if (subLibraries[i]->getName() == library->getName())
       {
-        context.errorCallback(T("The library called ") + library->getName() + T(" already exists"));
+        context.errorCallback(JUCE_T("The library called ") + library->getName() + JUCE_T(" already exists"));
         return false;
       }
 
@@ -141,7 +141,7 @@ public:
     ScopedLock _(objectsMapLock);
     jassert(object->classNameUnderWhichThisIsKnown.isEmpty());
     string name = object->getClassName();
-    if (name != T("Object"))
+    if (name != JUCE_T("Object"))
     {
       objectsMap[object->classNameUnderWhichThisIsKnown].erase(object);
       object->classNameUnderWhichThisIsKnown = name;
@@ -187,7 +187,7 @@ public:
   }
 
   string describe(const string& name, size_t kiloBytes) const
-    {return string(kiloBytes / 1024.0, 2) + T(" Kb ") + name + T(" [") + string((int)objectsMap.find(name)->second.size()) + T("]\n");}
+    {return string(kiloBytes / 1024.0, 2) + JUCE_T(" Kb ") + name + JUCE_T(" [") + string((int)objectsMap.find(name)->second.size()) + JUCE_T("]\n");}
 
   string updateMemoryInformation()
   {
@@ -199,8 +199,8 @@ public:
     ObjectCountsMap sortedCounts;
     size_t totalSize = 0;
     getSortedCounts(sortedCounts, totalSize);
-    string res = T("Total size: ") + ObjectPtr(new MemorySize(totalSize))->toShortString() + T("\n");
-    res += T("Most allocated objects:\n");
+    string res = JUCE_T("Total size: ") + ObjectPtr(new MemorySize(totalSize))->toShortString() + JUCE_T("\n");
+    res += JUCE_T("Most allocated objects:\n");
     size_t i = 0;
     
     {
@@ -216,14 +216,14 @@ public:
       getSortedDeltaCounts(sortedDeltaCounts);
       if (sortedDeltaCounts.size() && sortedDeltaCounts.rbegin()->first > 0)
       {
-        res += T("Biggest allocation increases:\n");
+        res += JUCE_T("Biggest allocation increases:\n");
         i = 0;
         ScopedLock _(objectsMapLock);
         for (ObjectCountsMap::reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
           res += describe(it->second, it->first);
       }
       else
-        res += T("No allocation increase\n");
+        res += JUCE_T("No allocation increase\n");
     }
 
     // update previous counts
@@ -365,15 +365,15 @@ LibraryPtr lbcpp::getLibrary(size_t index)
 bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const juce::File& directory)
 {
   juce::OwnedArray<juce::File> files;
-  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, T("*.dll"));
-  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, T("*.so"));
-  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, T("*.dylib"));
-  ProgressionStatePtr progression(new ProgressionState(0.0, (double)files.size(), T("Dynamic Libraries")));
+  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, JUCE_T("*.dll"));
+  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, JUCE_T("*.so"));
+  directory.findChildFiles(files, juce::File::findFiles | juce::File::ignoreHiddenFiles, false, JUCE_T("*.dylib"));
+  ProgressionStatePtr progression(new ProgressionState(0.0, (double)files.size(), JUCE_T("Dynamic Libraries")));
   for (int i = 0; i < files.size(); ++i)
   {
     juce::File file = *files[i];
     progression->setValue((double)i);
-    executionContext.informationCallback(T("Loading dynamic library ") + file.getFullPathName());
+    executionContext.informationCallback(JUCE_T("Loading dynamic library ") + file.getFullPathName());
     executionContext.progressCallback(progression);
     importLibraryFromFile(executionContext, file);
   }
@@ -384,22 +384,22 @@ LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const juce::F
 {
   if (!file.existsAsFile())
   {
-    context.errorCallback(T("File ") + file.getFullPathName() + T(" does not exists"));
+    context.errorCallback(JUCE_T("File ") + file.getFullPathName() + JUCE_T(" does not exists"));
     return LibraryPtr();
   }
   void* handle = juce::PlatformUtilities::loadDynamicLibrary(file.getFullPathName());
   if (!handle)
   {
-    context.errorCallback(T("Could not open dynamic library ") + file.getFullPathName());
+    context.errorCallback(JUCE_T("Could not open dynamic library ") + file.getFullPathName());
     return LibraryPtr();
   }
  
   typedef Library* (*InitializeLibraryFunction)(lbcpp::ApplicationContext& applicationContext);
 
-  InitializeLibraryFunction initializeFunction = (InitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppInitializeLibrary"));
+  InitializeLibraryFunction initializeFunction = (InitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, JUCE_T("lbcppInitializeLibrary"));
   if (!initializeFunction)
   {
-    context.informationCallback(T("Skipping ") + file.getFileName());
+    context.informationCallback(JUCE_T("Skipping ") + file.getFileName());
     juce::PlatformUtilities::freeDynamicLibrary(handle);
     return LibraryPtr();
   }
@@ -409,7 +409,7 @@ LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const juce::F
   jassert(res->getReferenceCount() == 1);
   if (!res)
   {
-    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find create library"));
+    context.errorCallback(JUCE_T("Load ") + file.getFileName(), JUCE_T("Could not find create library"));
     return LibraryPtr();
   }
 

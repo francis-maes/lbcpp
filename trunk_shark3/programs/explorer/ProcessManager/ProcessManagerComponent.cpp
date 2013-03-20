@@ -17,10 +17,10 @@ public:
   ProcessManagerListTabs(ProcessManagerPtr processManager, ObjectSelectorCallback& selectorCallback)
     : TabbedComponent(TabbedButtonBar::TabsAtBottom), selectorCallback(selectorCallback)
   {
-    addProcessList(T("Running"), processManager->getRunningProcesses());
-    addProcessList(T("Waiting"), processManager->getWaitingProcesses());
-    addProcessList(T("Finished"), processManager->getFinishedProcesses());
-    addProcessList(T("Killed"), processManager->getKilledProcesses());
+    addProcessList(JUCE_T("Running"), processManager->getRunningProcesses());
+    addProcessList(JUCE_T("Waiting"), processManager->getWaitingProcesses());
+    addProcessList(JUCE_T("Finished"), processManager->getFinishedProcesses());
+    addProcessList(JUCE_T("Killed"), processManager->getKilledProcesses());
   }
 
   void updateContent()
@@ -90,7 +90,7 @@ void ProcessManagerComponent::updateProcessLists()
 const StringArray ProcessManagerComponent::getMenuBarNames()
 {
   StringArray res;
-  res.add(T("Process"));
+  res.add(JUCE_T("Process"));
   return res;
 }
 
@@ -98,11 +98,11 @@ const PopupMenu ProcessManagerComponent::getMenuForIndex(int topLevelMenuIndex, 
 {
   jassert(topLevelMenuIndex == 0);
   PopupMenu menu;
-  menu.addItem(1, T("New Process"));
-  menu.addItem(2, T("Clear Finished Process Lists"));
-  menu.addItem(3, T("Kill all Processes"));
+  menu.addItem(1, JUCE_T("New Process"));
+  menu.addItem(2, JUCE_T("Clear Finished Process Lists"));
+  menu.addItem(3, JUCE_T("Kill all Processes"));
   menu.addSeparator();
-  menu.addItem(4, T("Clear Recent Processes Information"));
+  menu.addItem(4, JUCE_T("Clear Recent Processes Information"));
   return menu;
 }
 

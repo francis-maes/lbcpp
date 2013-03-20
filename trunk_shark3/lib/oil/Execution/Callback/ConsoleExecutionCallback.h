@@ -20,10 +20,10 @@ class ConsoleOutput
 public:
   void print(size_t threadNumber, size_t depth, const string& type, const string& text, bool isError)
   {
-    string prefix = T("T") + makeFixedSizeNumber(threadNumber, 5) + T(" ");
-    prefix += makeFixedSizeString(type, 8) + T(" ");
+    string prefix = JUCE_T("T") + makeFixedSizeNumber(threadNumber, 5) + JUCE_T(" ");
+    prefix += makeFixedSizeString(type, 8) + JUCE_T(" ");
     for (size_t i = 0; i < depth; ++i)
-      prefix += T("  ");
+      prefix += JUCE_T("  ");
 
     string res = prefix + text;
     if (res.length() % numColumns)
@@ -34,7 +34,7 @@ public:
     if (remainingLength > 0)
     {
       StringArray lines;
-      lines.addTokens(text, T("\n"), NULL);
+      lines.addTokens(text, JUCE_T("\n"), NULL);
 
       ScopedLock _(lock);
       for (int i = 0; i < lines.size(); ++i)
@@ -68,9 +68,9 @@ private:
   {
     string res((int)number);
     while (res.length() < requiredLength)
-      res = T("0") + res;
+      res = JUCE_T("0") + res;
     if (res.length() > requiredLength)
-      res = T("..") + res.substring(res.length() - (requiredLength - 2));
+      res = JUCE_T("..") + res.substring(res.length() - (requiredLength - 2));
     return res;
   }
 
@@ -86,7 +86,7 @@ private:
     else
     {
       if (requiredLength > 3)
-        return res.dropLastCharacters(res.length() - requiredLength + 3) + T("...");
+        return res.dropLastCharacters(res.length() - requiredLength + 3) + JUCE_T("...");
       else
         return res.dropLastCharacters(res.length() - requiredLength);
     }
@@ -104,24 +104,24 @@ public:
   {
     string text = what;
     if (where.isNotEmpty())
-      text += T(" (in ") + where + T(")");
-    print(T("info"), text, false);
+      text += JUCE_T(" (in ") + where + JUCE_T(")");
+    print(JUCE_T("info"), text, false);
   }
 
   virtual void warningCallback(const string& where, const string& what)
   {
     string text = what;
     if (where.isNotEmpty())
-      text += T(" (in ") + where + T(")");
-    print(T("warning"), text, false);
+      text += JUCE_T(" (in ") + where + JUCE_T(")");
+    print(JUCE_T("warning"), text, false);
   }
 
   virtual void errorCallback(const string& where, const string& what)
   {
     string text = what;
     if (where.isNotEmpty())
-      text += T(" (in ") + where + T(")");
-    print(T("error"), text, false);
+      text += JUCE_T(" (in ") + where + JUCE_T(")");
+    print(JUCE_T("error"), text, false);
     jassertfalse;
   }
 
@@ -129,22 +129,22 @@ public:
   {
     juce::uint32 time = juce::Time::getApproximateMillisecondCounter();
     if (!lastMessageTime || time > lastMessageTime + 250)
-      print(T("progress"), progression->toString(), false);
+      print(JUCE_T("progress"), progression->toString(), false);
   }
 
   virtual void resultCallback(const string& name, const ObjectPtr& value)
   {
     if (false) // todo: verboseResults flag
-      print(T("result"), name + T(" = ") + value->toShortString(), false);
+      print(JUCE_T("result"), name + JUCE_T(" = ") + value->toShortString(), false);
   }
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit)
-    {print(T("start"), description, false); ++depth;}
+    {print(JUCE_T("start"), description, false); ++depth;}
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
     if (result)
-      print(T("result"), description + T(" ") + result->toShortString(), false);
+      print(JUCE_T("result"), description + JUCE_T(" ") + result->toShortString(), false);
     jassert(depth);
     --depth;
   }

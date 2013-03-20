@@ -37,7 +37,7 @@ public:
   }
 
   virtual string toShortString() const
-    {return T(".") + enumeration->getElementName(index);}
+    {return JUCE_T(".") + enumeration->getElementName(index);}
 
   virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + "." + enumeration->getElementName(index);}
@@ -173,10 +173,10 @@ public:
   }
 
   virtual string toShortString() const
-    {return T("extremums(.)");}
+    {return JUCE_T("extremums(.)");}
 
   virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return T("extremums(") + inputs[0]->toShortString() + T(")");}
+    {return JUCE_T("extremums(") + inputs[0]->toShortString() + JUCE_T(")");}
 
   ObjectPtr computeObject(const ObjectPtr& input) const
   {

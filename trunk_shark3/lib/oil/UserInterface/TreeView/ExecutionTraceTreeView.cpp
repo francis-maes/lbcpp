@@ -233,9 +233,9 @@ public:
     {
       plot = new Plot(table);
       if (plot->getNumPlotVariables() >= 2)
-        addTab(T("Plot"), Colours::white);
+        addTab(JUCE_T("Plot"), Colours::white);
       if (table->getNumColumns() >= 2 && table->getNumRows() > 1)
-        addTab(T("Table"), Colours::white);
+        addTab(JUCE_T("Table"), Colours::white);
     }
 
     results = pair->getFirst();
@@ -244,17 +244,17 @@ public:
       for (size_t i = 0; i < results->getNumVariables(); ++i)
         if (lbcpp::getTopLevelLibrary()->hasUIComponent(results->getVariableType(i)))
           addTab(results->getVariableName(i), Colours::lightgrey);
-      addTab(T("Results"), Colours::white);
+      addTab(JUCE_T("Results"), Colours::white);
     }
   }
 
   virtual ObjectPtr getTabSubObject(const ObjectPtr& object, const string& tabName) const
   {
-    if (tabName == T("Results"))
+    if (tabName == JUCE_T("Results"))
       return results;
-    else if (tabName == T("Plot"))
+    else if (tabName == JUCE_T("Plot"))
       return plot;
-    else if (tabName == T("Table"))
+    else if (tabName == JUCE_T("Table"))
       return table;
     else
     {

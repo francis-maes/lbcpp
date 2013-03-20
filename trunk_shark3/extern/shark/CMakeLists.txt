@@ -19,6 +19,8 @@ ADD_DEFINITIONS(
  -DSHARK_VERSION_PATCH=${SHARK_VERSION_PATCH}
 )
 
+REMOVE_DEFINITIONS(-DT(stringLiteral))
+
 CONFIGURE_FILE (
   "include/shark/Core/Shark.h.in"
   "include/shark/Core/Shark.h"

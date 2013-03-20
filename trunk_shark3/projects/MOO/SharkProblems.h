@@ -19,7 +19,7 @@ namespace lbcpp
 class ObjectiveFromSharkObjectiveFunction : public Objective
 {
 public:
-  ObjectiveFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, size_t objectiveIndex, double worstScore, double bestScore, DenseDoubleVectorPtr optimum)
+  ObjectiveFromSharkObjectiveFunction(shark::AbstractObjectiveFunction< shark::VectorSpace<double>, shark::VectorSpace<double> >* objective, size_t objectiveIndex, double worstScore, double bestScore, DenseDoubleVectorPtr optimum)
     : objective(objective), objectiveIndex(objectiveIndex), worstScore(worstScore), bestScore(bestScore), optimum(optimum) {}
 
   virtual void getObjectiveRange(double& worst, double& best) const
@@ -91,7 +91,7 @@ public:
   virtual string toShortString() const
   {
     string res = getClassName();
-    int i = res.indexOf(T("Problem"));
+    int i = res.indexOf(JUCE_T("Problem"));
     if (i >= 0)
       res = res.substring(0, i);
     return res;

@@ -56,7 +56,7 @@ protected:
     if (alertWindow.runModalLoop() == 1)
     {
       lineStr = alertWindow.getTextEditorContents("line");
-      if (lineStr.containsOnly(T("0123456789")))
+      if (lineStr.containsOnly(JUCE_T("0123456789")))
       {
         int lineNumber = juce::jlimit(1, document.getNumLines(), lineStr.getIntValue());
         moveCaretTo(juce::CodeDocument::Position(&document, lineNumber - 1, 0), false);
@@ -129,13 +129,13 @@ LuaCodeEditor::LuaCodeEditor(const juce::File& luaFile)
   {
     string luaCode;
     while (!istr->isExhausted())
-      luaCode += istr->readNextLine() + T("\n");
+      luaCode += istr->readNextLine() + JUCE_T("\n");
     delete istr;
 
     document.replaceAllContent(luaCode);
   }
   else
-    context->errorCallback(T("Could not open file ") + luaFile.getFullPathName());
+    context->errorCallback(JUCE_T("Could not open file ") + luaFile.getFullPathName());
 
   addAndMakeVisible(codeEditor = new LuaCodeEditorComponent(this, document, &tokeniser));
   addAndMakeVisible(statusBar = new LuaCodeEditorStatusBar());

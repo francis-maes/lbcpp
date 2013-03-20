@@ -14,14 +14,14 @@ using namespace lbcpp;
 string Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
 {
   ClassPtr thisClass = getClass();
-  string res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");
+  string res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + JUCE_T("(");
   for (size_t i = 0; i < inputs.size(); ++i)
   {
     res += inputs[i]->toShortString();
     if (i < inputs.size() - 1)
-      res += T(", ");
+      res += JUCE_T(", ");
   }
-  return res + T(")");
+  return res + JUCE_T(")");
 }
 
 DataVectorPtr Function::compute(ExecutionContext& context, const std::vector<DataVectorPtr>& inputs, ClassPtr outputType) const

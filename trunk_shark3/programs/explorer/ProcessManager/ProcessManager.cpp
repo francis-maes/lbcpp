@@ -94,7 +94,7 @@ public:
       executableFile.copyFileTo(exe);
     if (!exe.exists())
     {
-      context->errorCallback(T("LocalProcess::start"), T("Could not copy executable"));
+      context->errorCallback(JUCE_T("LocalProcess::start"), JUCE_T("Could not copy executable"));
       return false;
     }
     jassert(false); // FIXME
@@ -154,7 +154,7 @@ private:
     juce::File applicationData = ExplorerConfiguration::getApplicationDataDirectory(context);
     string name = executable.getFileNameWithoutExtension();
     string date = lastModificationTime.toString(true, true, true, true);
-    name += T("_");
+    name += JUCE_T("_");
     name += date.replaceCharacter(' ', '_').replaceCharacter(':', '_');
     name += executable.getFileExtension();
     return applicationData.getChildFile(name);

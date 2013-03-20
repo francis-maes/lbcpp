@@ -92,7 +92,7 @@ class CompositeWorkUnit : public WorkUnit
 {
 public:
   CompositeWorkUnit(const string& description, size_t initialSize = 0)
-    : workUnits(new OVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false), description(description) {}
+    : workUnits(new OVector(workUnitClass, initialSize)), progressionUnit(JUCE_T("Work Units")), pushChildrenIntoStack(false), description(description) {}
   CompositeWorkUnit() {}
 
   virtual string toString() const

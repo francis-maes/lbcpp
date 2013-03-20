@@ -40,13 +40,13 @@ public:
   {
     if (button == configureButton)
     {
-      AlertWindow alertWindow(T("Configure pattern"), T("Choose a new pattern"), AlertWindow::QuestionIcon);
-      alertWindow.addTextEditor(T("pattern"), filter->getPattern(), T("Pattern:"));
-      alertWindow.addButton(T("OK"), 1, juce::KeyPress::returnKey);
-      alertWindow.addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
+      AlertWindow alertWindow(JUCE_T("Configure pattern"), JUCE_T("Choose a new pattern"), AlertWindow::QuestionIcon);
+      alertWindow.addTextEditor(JUCE_T("pattern"), filter->getPattern(), JUCE_T("Pattern:"));
+      alertWindow.addButton(JUCE_T("OK"), 1, juce::KeyPress::returnKey);
+      alertWindow.addButton(JUCE_T("Cancel"), 0, juce::KeyPress::escapeKey);
       if (alertWindow.runModalLoop())
       {
-        filter->setPattern(alertWindow.getTextEditorContents(T("pattern")));
+        filter->setPattern(alertWindow.getTextEditorContents(JUCE_T("pattern")));
         configureButton->setButtonText(filter->getPattern());
         ExplorerConfiguration::save(context);
       }

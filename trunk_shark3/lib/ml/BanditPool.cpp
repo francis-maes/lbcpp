@@ -25,18 +25,18 @@ void BanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showP
   for (size_t i = 0; i < numTimeSteps; ++i)
   {
     if (showProgression)
-      context.progressCallback(new ProgressionState(i + 1, numTimeSteps, T("Steps")));
+      context.progressCallback(new ProgressionState(i + 1, numTimeSteps, JUCE_T("Steps")));
 
     selectAndPlayArm(context);
 
     if (useMultiThreading && context.isMultiThread())
     {
       context.flushCallbacks();
-      //context.informationCallback(T("Num played: ") + string((int)j + 1) + T(" num currently evaluated: " ) + string((int)getNumCurrentlyEvaluatedFormulas()));
+      //context.informationCallback(JUCE_T("Num played: ") + string((int)j + 1) + JUCE_T(" num currently evaluated: " ) + string((int)getNumCurrentlyEvaluatedFormulas()));
       
       while (getNumCurrentlyPlayedArms() >= 25)
       {
-        //context.informationCallback(T("Waiting - Num played: ") + string((int)j + 1) + T(" num currently evaluated: " ) + string((int)getNumCurrentlyEvaluatedFormulas()));
+        //context.informationCallback(JUCE_T("Waiting - Num played: ") + string((int)j + 1) + JUCE_T(" num currently evaluated: " ) + string((int)getNumCurrentlyEvaluatedFormulas()));
         Thread::sleep(1);
         context.flushCallbacks();
       }
@@ -55,8 +55,8 @@ void BanditPool::playIterations(ExecutionContext& context, size_t numIterations,
 {
   for (size_t i = 0; i < numIterations; ++i)
   {
-    context.enterScope(T("Iteration ") + string((int)i+1));
-    context.resultCallback(T("iteration"), i+1);
+    context.enterScope(JUCE_T("Iteration ") + string((int)i+1));
+    context.resultCallback(JUCE_T("iteration"), i+1);
     play(context, stepsPerIteration);
     displayInformation(context, 20, 5);
     context.leaveScope();
@@ -169,9 +169,9 @@ void BanditPool::displayArmInformation(ExecutionContext& context, size_t order, 
 {
   const Arm& arm = arms[armIndex];
   double objectiveValue = optimizeMax ? arm.objectiveValueBest : arm.getMeanObjectiveValue();
-  context.informationCallback(T("[") + string((int)order+1) + T("] ") + 
-    arm.object->toShortString() + T(" -> ") + string(objectiveValue) +
-      T(" (played ") + string((int)arm.playedCount) + T(" times)"));
+  context.informationCallback(JUCE_T("[") + string((int)order+1) + JUCE_T("] ") + 
+    arm.object->toShortString() + JUCE_T(" -> ") + string(objectiveValue) +
+      JUCE_T(" (played ") + string((int)arm.playedCount) + JUCE_T(" times)"));
 }
 
 void BanditPool::displayInformation(ExecutionContext& context, size_t numBestArms, size_t numWorstArms) const
@@ -196,14 +196,14 @@ void BanditPool::displayInformation(ExecutionContext& context, size_t numBestArm
     }
 
     const Arm& bestArm = arms[order[0].first];
-    context.resultCallback(T("bestArmPlayCount"), bestArm.playedCount);
-    context.resultCallback(T("bestArmObjective"), bestArm.getMeanObjectiveValue());
-    context.resultCallback(T("bestArmBestObjective"), bestArm.objectiveValueBest);
-    context.resultCallback(T("bestArmReward"), bestArm.getMeanReward());
-    context.resultCallback(T("bestArmMinReward"), bestArm.rewardMin);
-    context.resultCallback(T("bestArmMaxReward"), bestArm.rewardMax);
+    context.resultCallback(JUCE_T("bestArmPlayCount"), bestArm.playedCount);
+    context.resultCallback(JUCE_T("bestArmObjective"), bestArm.getMeanObjectiveValue());
+    context.resultCallback(JUCE_T("bestArmBestObjective"), bestArm.objectiveValueBest);
+    context.resultCallback(JUCE_T("bestArmReward"), bestArm.getMeanReward());
+    context.resultCallback(JUCE_T("bestArmMinReward"), bestArm.rewardMin);
+    context.resultCallback(JUCE_T("bestArmMaxReward"), bestArm.rewardMax);
   }
-  context.resultCallback(T("numArms"), arms.size());
+  context.resultCallback(JUCE_T("numArms"), arms.size());
 }
 
 size_t BanditPool::sampleArmWithHighestReward(ExecutionContext& context) const

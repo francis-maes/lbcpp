@@ -32,68 +32,68 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
   for (int i = 1; i < argc; ++i)
   {
     string argument = argv[i];
-    if (argument == T("--numThreads"))
+    if (argument == JUCE_T("--numThreads"))
     {
       ++i;
       if (i == argc)
       {
-        context.errorCallback(T("Invalid Syntax"));
+        context.errorCallback(JUCE_T("Invalid Syntax"));
         return false;
       }
       int n = string(argv[i]).getIntValue();
       if (n < 1)
       {
-        context.errorCallback(T("Invalid number of threads"));
+        context.errorCallback(JUCE_T("Invalid number of threads"));
         return false;
       }
       numThreads = (size_t)n;
     }
-    else if (argument == T("--library"))
+    else if (argument == JUCE_T("--library"))
     {
       ++i;
       if (i == argc)
       {
-        context.errorCallback(T("Invalid Syntax"));
+        context.errorCallback(JUCE_T("Invalid Syntax"));
         return false;
       }
       juce::File dynamicLibraryFile = juce::File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (!lbcpp::importLibraryFromFile(defaultExecutionContext(), dynamicLibraryFile))
         return false;
     }
-    else if (argument == T("--trace"))
+    else if (argument == JUCE_T("--trace"))
     {
       ++i;
       if (i == argc)
       {
-        context.errorCallback(T("Invalid Syntax"));
+        context.errorCallback(JUCE_T("Invalid Syntax"));
         return false;
       }
       traceOutputFile = juce::File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (traceOutputFile.exists())
         traceOutputFile.deleteFile();
     }
-    else if (argument == T("--traceAutoSave"))
+    else if (argument == JUCE_T("--traceAutoSave"))
     {
       ++i;
       if (i == argc)
       {
-        context.errorCallback(T("Invalid Syntax"));
+        context.errorCallback(JUCE_T("Invalid Syntax"));
         return false;
       }
       traceAutoSave = string(argv[i]).getIntValue();
     }
-    else if (argument == T("--projectDirectory"))
+    else if (argument == JUCE_T("--projectDirectory"))
     {
       ++i;
       if (i == argc)
       {
-        context.errorCallback(T("Invalid Syntax"));
+        context.errorCallback(JUCE_T("Invalid Syntax"));
         return false;
       }
       projectDirectory = juce::File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (!projectDirectory.isDirectory())
       {
-        context.errorCallback(T("Invalid Project Directory"));
+        context.errorCallback(JUCE_T("Invalid Project Directory"));
         return false;
       }
     }
@@ -103,7 +103,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
 
   if (remainingArguments.empty())
   {
-    context.errorCallback(T("Missing arguments"));
+    context.errorCallback(JUCE_T("Missing arguments"));
     return false;
   }
   return true;
@@ -113,7 +113,7 @@ bool checkIsAWorkUnit(ExecutionContext& context, const ObjectPtr& object)
 {
   if (!object->getClass()->inheritsFrom(workUnitClass))
   {
-    context.errorCallback(object->getClassName() + T(" is not a WorkUnit class"));
+    context.errorCallback(object->getClassName() + JUCE_T(" is not a WorkUnit class"));
     return false;
   }
   return true;
@@ -146,7 +146,7 @@ bool runWorkUnitFromArguments(ExecutionContext& context, const string& workUnitC
   // look if usage is requested
   const WorkUnitPtr& workUnit = object.staticCast<WorkUnit>();
   for (size_t i = 0; i < arguments.size(); ++i)
-    if (arguments[i] == T("--help"))
+    if (arguments[i] == JUCE_T("--help"))
     {
       context.informationCallback(workUnit->getUsageString());
       return false;
@@ -222,7 +222,7 @@ int mainImpl(int argc, char** argv)
   if (makeTraceCallback)
   {
     context->removeCallback(makeTraceCallback);
-    context->informationCallback(T("Saving execution trace into ") + traceOutputFile.getFullPathName());
+    context->informationCallback(JUCE_T("Saving execution trace into ") + traceOutputFile.getFullPathName());
     trace->saveToFile(*context, traceOutputFile);
   }
   return result;

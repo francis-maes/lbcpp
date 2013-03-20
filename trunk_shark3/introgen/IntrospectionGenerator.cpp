@@ -19,8 +19,8 @@ class CppCodeGenerator
 public:
   CppCodeGenerator(XmlElement* xml, OutputStream& ostr) : xml(xml), ostr(ostr)
   {
-    fileName = xml->getStringAttribute(T("name"), T("???"));
-    directoryName = xml->getStringAttribute(T("directory"), String::empty);
+    fileName = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    directoryName = xml->getStringAttribute(JUCE_T("directory"), String::empty);
   }
 
   void generate()
@@ -29,9 +29,9 @@ public:
     generateHeader();
     newLine();
 
-    String namespaceName = xml->getStringAttribute(T("namespace"), T("lbcpp"));
+    String namespaceName = xml->getStringAttribute(JUCE_T("namespace"), JUCE_T("lbcpp"));
     newLine();
-    openScope(T("namespace ") + namespaceName);
+    openScope(JUCE_T("namespace ") + namespaceName);
 
     generateCodeForChildren(xml);
     newLine();
@@ -39,19 +39,19 @@ public:
     //generateFooter();
     newLine();
 
-    if (xml->getBoolAttribute(T("dynamic")))
+    if (xml->getBoolAttribute(JUCE_T("dynamic")))
     {
       generateDynamicLibraryFunctions();
       newLine();
     }
 
     newLine();
-    closeScope(T("; /* namespace ") + namespaceName + T(" */\n"));
+    closeScope(JUCE_T("; /* namespace ") + namespaceName + JUCE_T(" */\n"));
   }
 
 protected:
   static String xmlTypeToCppType(const String& typeName)
-    {return typeName.replaceCharacters(T("[]"), T("<>"));}
+    {return typeName.replaceCharacters(JUCE_T("[]"), JUCE_T("<>"));}
 
   static String typeToRefCountedPointerType(const String& typeName)
   {
@@ -59,7 +59,7 @@ protected:
     int i = str.indexOfChar('<');
     if (i >= 0)
       str = str.substring(0, i);
-    return str + T("Ptr");
+    return str + JUCE_T("Ptr");
   }
 
   static String replaceFirstLettersByLowerCase(const String& str)
@@ -90,43 +90,43 @@ protected:
     for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
     {
       String tag = elt->getTagName();
-      if (tag == T("class"))
+      if (tag == JUCE_T("class"))
         generateClassDeclaration(elt, NULL);
-      else if (tag == T("template"))
+      else if (tag == JUCE_T("template"))
       {
         for (XmlElement* cl = elt->getFirstChildElement(); cl; cl = cl->getNextElement())
-          if (cl->getTagName() == T("class"))
+          if (cl->getTagName() == JUCE_T("class"))
           {
             generateClassDeclaration(cl, elt);
             newLine();
           }
         generateTemplateClassDeclaration(elt);
       }
-      else if (tag == T("enumeration"))
+      else if (tag == JUCE_T("enumeration"))
         generateEnumerationDeclaration(elt);
-      else if (tag == T("uicomponent"))
+      else if (tag == JUCE_T("uicomponent"))
 #ifdef LBCPP_USER_INTERFACE
-        declarations.push_back(Declaration::makeUIComponent(currentNamespace, elt->getStringAttribute(T("name")), xmlTypeToCppType(elt->getStringAttribute(T("type")))));
+        declarations.push_back(Declaration::makeUIComponent(currentNamespace, elt->getStringAttribute(JUCE_T("name")), xmlTypeToCppType(elt->getStringAttribute(JUCE_T("type")))));
 #else
         {} // ignore
 #endif // LBCPP_USER_INTERFACE
-      else if (tag == T("code"))
+      else if (tag == JUCE_T("code"))
         generateCode(elt);
-      else if (tag == T("namespace"))
+      else if (tag == JUCE_T("namespace"))
       {
-        String name = elt->getStringAttribute(T("name"), T("???"));
+        String name = elt->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
         String previousNamespace = currentNamespace;
         if (currentNamespace.isNotEmpty())
-          currentNamespace += T("::");
+          currentNamespace += JUCE_T("::");
         currentNamespace += name;
 
-        writeLine(T("namespace ") + name + T(" {"));
+        writeLine(JUCE_T("namespace ") + name + JUCE_T(" {"));
         generateCodeForChildren(elt);
-        writeLine(T("}; /* namespace ") + name + T(" */"));
+        writeLine(JUCE_T("}; /* namespace ") + name + JUCE_T(" */"));
 
         currentNamespace = previousNamespace;
       }
-      else if (tag == T("import") || tag == T("include"))
+      else if (tag == JUCE_T("import") || tag == JUCE_T("include"))
         continue;
       else
         std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
@@ -141,28 +141,28 @@ protected:
     // header
     ostr << "/* ====== Introspection for file '" << fileName << "', generated on "
       << Time::getCurrentTime().toString(true, true, false) << " ====== */";
-    writeLine(T("#include \"precompiled.h\""));
-    writeLine(T("#include <oil/Core.h>"));
-    writeLine(T("#include <oil/Lua/Lua.h>"));
-    writeLine(T("#include <oil/library.h>"));
+    writeLine(JUCE_T("#include \"precompiled.h\""));
+    writeLine(JUCE_T("#include <oil/Core.h>"));
+    writeLine(JUCE_T("#include <oil/Lua/Lua.h>"));
+    writeLine(JUCE_T("#include <oil/library.h>"));
 
     OwnedArray<File> headerFiles;
     File directory = inputFile.getParentDirectory();
-    directory.findChildFiles(headerFiles, File::findFiles, false, T("*.h"));
-    directory.findChildFiles(headerFiles, File::findFiles, false, T("*.hpp"));
+    directory.findChildFiles(headerFiles, File::findFiles, false, JUCE_T("*.h"));
+    directory.findChildFiles(headerFiles, File::findFiles, false, JUCE_T("*.hpp"));
     std::set<String> sortedFiles;
     for (int i = 0; i < headerFiles.size(); ++i)
     {
       String path = directoryName;
       if (path.isNotEmpty())
-        path += T("/");
+        path += JUCE_T("/");
       path += headerFiles[i]->getRelativePathFrom(directory).replaceCharacter('\\', '/');
       sortedFiles.insert(path);
     }
     for (std::set<String>::const_iterator it = sortedFiles.begin(); it != sortedFiles.end(); ++it)
-      writeLine(T("#include ") + it->quoted());
+      writeLine(JUCE_T("#include ") + it->quoted());
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("include"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("include"))
       generateInclude(elt);
   }
 
@@ -171,7 +171,7 @@ protected:
   */
   void generateInclude(XmlElement* xml)
   {
-    writeLine(T("#include ") + xml->getStringAttribute(T("file"), T("???")).quoted());
+    writeLine(JUCE_T("#include ") + xml->getStringAttribute(JUCE_T("file"), JUCE_T("???")).quoted());
   }
 
   /*
@@ -179,50 +179,50 @@ protected:
   */
   void generateEnumValueInInitialize(XmlElement* xml)
   {
-    String name = xml->getStringAttribute(T("name"), T("???"));
-    String oneLetterCode = xml->getStringAttribute(T("oneLetterCode"), String::empty);
-    String threeLettersCode = xml->getStringAttribute(T("threeLettersCode"), String::empty);
-    writeLine(T("addElement(context, T(") + name.quoted() + T("), T(") + oneLetterCode.quoted() + T("), T(") + threeLettersCode.quoted() + T("));"));
+    String name = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    String oneLetterCode = xml->getStringAttribute(JUCE_T("oneLetterCode"), String::empty);
+    String threeLettersCode = xml->getStringAttribute(JUCE_T("threeLettersCode"), String::empty);
+    writeLine(JUCE_T("addElement(context, JUCE_T(") + name.quoted() + JUCE_T("), JUCE_T(") + oneLetterCode.quoted() + JUCE_T("), JUCE_T(") + threeLettersCode.quoted() + JUCE_T("));"));
   }
 
   void generateEnumerationDeclaration(XmlElement* xml)
   {
-    String enumName = xml->getStringAttribute(T("name"), T("???"));
+    String enumName = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
 
-    Declaration declaration = Declaration::makeType(currentNamespace, enumName, T("Enumeration"));
+    Declaration declaration = Declaration::makeType(currentNamespace, enumName, JUCE_T("Enumeration"));
     declarations.push_back(declaration);
     
-    openClass(declaration.implementationClassName, T("DefaultEnumeration"));
+    openClass(declaration.implementationClassName, JUCE_T("DefaultEnumeration"));
 
     // constructor
-    openScope(declaration.implementationClassName + T("() : DefaultEnumeration(T(") + makeFullName(enumName, true) + T("))"));
+    openScope(declaration.implementationClassName + JUCE_T("() : DefaultEnumeration(JUCE_T(") + makeFullName(enumName, true) + JUCE_T("))"));
     closeScope();
 
     newLine();
 
-    openScope(T("virtual bool initialize(ExecutionContext& context)"));
-      forEachXmlChildElementWithTagName(*xml, elt, T("value"))
+    openScope(JUCE_T("virtual bool initialize(ExecutionContext& context)"));
+      forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("value"))
         generateEnumValueInInitialize(elt);
-      writeLine(T("return DefaultEnumeration::initialize(context);"));
+      writeLine(JUCE_T("return DefaultEnumeration::initialize(context);"));
     closeScope();
     newLine();
 
     
     // custom code
-    forEachXmlChildElementWithTagName(*xml, elt, T("code"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("code"))
       {generateCode(elt); newLine();}
 
     closeClass();
 
     // enum declarator
-    writeLine(T("EnumerationPtr ") + declaration.cacheVariableName + T(";"));
-    //writeShortFunction(T("EnumerationPtr ") + declaratorName + T("()"),
-    //  T("static TypeCache cache(T(") + enumName.quoted() + T(")); return (EnumerationPtr)cache();"));
+    writeLine(JUCE_T("EnumerationPtr ") + declaration.cacheVariableName + JUCE_T(";"));
+    //writeShortFunction(JUCE_T("EnumerationPtr ") + declaratorName + JUCE_T("()"),
+    //  JUCE_T("static TypeCache cache(JUCE_T(") + enumName.quoted() + JUCE_T(")); return (EnumerationPtr)cache();"));
   }
 
   String makeFullName(const String& identifier, bool quote = false) const
   {
-    String res = currentNamespace.isNotEmpty() ? currentNamespace + T("::") + identifier : identifier;
+    String res = currentNamespace.isNotEmpty() ? currentNamespace + JUCE_T("::") + identifier : identifier;
     return quote ? res.quoted() : res;
   }
 
@@ -233,12 +233,12 @@ protected:
   {
     XmlElement* attributesXml = (templateClassXml ? templateClassXml : xml);
 
-    String className = (templateClassXml && !xml->hasAttribute(T("name")) ? templateClassXml : xml)->getStringAttribute(T("name"), String::empty);
-    bool isAbstract = attributesXml->getBoolAttribute(T("abstract"), false);
-    String classShortName = attributesXml->getStringAttribute(T("shortName"), String::empty);
-    String classBaseClass = attributesXml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String className = (templateClassXml && !xml->hasAttribute(JUCE_T("name")) ? templateClassXml : xml)->getStringAttribute(JUCE_T("name"), String::empty);
+    bool isAbstract = attributesXml->getBoolAttribute(JUCE_T("abstract"), false);
+    String classShortName = attributesXml->getStringAttribute(JUCE_T("shortName"), String::empty);
+    String classBaseClass = attributesXml->getStringAttribute(JUCE_T("metaclass"), JUCE_T("DefaultClass"));
     String metaClass = getMetaClass(classBaseClass);
-    String baseClassName = xmlTypeToCppType(attributesXml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
+    String baseClassName = xmlTypeToCppType(attributesXml->getStringAttribute(JUCE_T("base"), getDefaultBaseType(metaClass)));
 
     bool isTemplate = (templateClassXml != NULL);
     Declaration declaration = isTemplate ? Declaration::makeTemplateClass(currentNamespace, className, metaClass) : Declaration::makeType(currentNamespace, className, metaClass);
@@ -251,118 +251,118 @@ protected:
     std::vector<XmlElement* > variables;
     std::vector<XmlElement* > functions;
     if (isTemplate)
-      openScope(declaration.implementationClassName + T("(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)")
-        + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
+      openScope(declaration.implementationClassName + JUCE_T("(TemplateClassPtr templateType, const std::vector<ClassPtr>& templateArguments, ClassPtr baseClass)")
+        + JUCE_T(" : ") + classBaseClass + JUCE_T("(templateType, templateArguments, baseClass)"));
     else
     {
-      String arguments = T("T(") + makeFullName(className, true) + T("), T(") + baseClassName.quoted() + T(")");
-      openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(") + arguments + T(")"));
+      String arguments = JUCE_T("JUCE_T(") + makeFullName(className, true) + JUCE_T("), JUCE_T(") + baseClassName.quoted() + JUCE_T(")");
+      openScope(declaration.implementationClassName + JUCE_T("() : ") + classBaseClass + JUCE_T("(") + arguments + JUCE_T(")"));
     }
     if (classShortName.isNotEmpty())
-      writeLine(T("shortName = T(") + classShortName.quoted() + T(");"));
+      writeLine(JUCE_T("shortName = JUCE_T(") + classShortName.quoted() + JUCE_T(");"));
     if (isAbstract)
-      writeLine(T("abstractClass = true;"));
+      writeLine(JUCE_T("abstractClass = true;"));
     closeScope();
     newLine();
 
-    openScope(T("virtual bool initialize(ExecutionContext& context)"));
+    openScope(JUCE_T("virtual bool initialize(ExecutionContext& context)"));
     
-      forEachXmlChildElementWithTagName(*xml, elt, T("function"))
+      forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("function"))
       {
         generateFunctionRegistrationCode(className, elt);
         functions.push_back(elt);
       }
 
-      forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
+      forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("variable"))
       {
         generateVariableRegistrationCode(className, elt);
         variables.push_back(elt);
       }
-      writeLine(T("return ") + classBaseClass + T("::initialize(context);"));
+      writeLine(JUCE_T("return ") + classBaseClass + JUCE_T("::initialize(context);"));
     closeScope();
     newLine();
 
     // create() function
-    if (classBaseClass == T("DefaultClass"))
+    if (classBaseClass == JUCE_T("DefaultClass"))
     {
-      openScope(T("virtual lbcpp::ObjectPtr createObject(ExecutionContext& context) const"));
+      openScope(JUCE_T("virtual lbcpp::ObjectPtr createObject(ExecutionContext& context) const"));
       if (isAbstract)
       {
-        writeLine(T("context.errorCallback(\"Cannot instantiate abstract class ") + className + T("\");"));
-        writeLine(T("return lbcpp::ObjectPtr();"));
+        writeLine(JUCE_T("context.errorCallback(\"Cannot instantiate abstract class ") + className + JUCE_T("\");"));
+        writeLine(JUCE_T("return lbcpp::ObjectPtr();"));
       }
       else
       {
-        writeLine(className + T("* res = new ") + className + T("();"));
-        writeLine(T("res->setThisClass(refCountedPointerFromThis(this));"));
-        writeLine(T("return lbcpp::ObjectPtr(res);"));
+        writeLine(className + JUCE_T("* res = new ") + className + JUCE_T("();"));
+        writeLine(JUCE_T("res->setThisClass(refCountedPointerFromThis(this));"));
+        writeLine(JUCE_T("return lbcpp::ObjectPtr(res);"));
       }
       closeScope();
       newLine();
     }
 
     // getStaticVariableReference() function
-    if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false) && classBaseClass == T("DefaultClass"))
+    if (variables.size() && !xml->getBoolAttribute(JUCE_T("manualAccessors"), false) && classBaseClass == JUCE_T("DefaultClass"))
     {
       // getMemberVariableValue
-      openScope(T("virtual lbcpp::ObjectPtr getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
-        if (baseClassName != T("Object"))
+      openScope(JUCE_T("virtual lbcpp::ObjectPtr getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
+        if (baseClassName != JUCE_T("Object"))
         {
-          writeLine(T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
-          writeLine(T("if (__index__ < numBaseMemberVariables)"));
-          writeLine(T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
-          writeLine(T("__index__ -= numBaseMemberVariables;"));
+          writeLine(JUCE_T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
+          writeLine(JUCE_T("if (__index__ < numBaseMemberVariables)"));
+          writeLine(JUCE_T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
+          writeLine(JUCE_T("__index__ -= numBaseMemberVariables;"));
         }
-        writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
-        //writeLine(T("const ClassPtr& expectedType = variables[__index__]->getType();"));
+        writeLine(JUCE_T("const ") + className + JUCE_T("* __this__ = static_cast<const ") + className + JUCE_T("* >(__thisbase__);"));
+        //writeLine(JUCE_T("const ClassPtr& expectedType = variables[__index__]->getType();"));
         newLine();
-        openScope(T("switch (__index__)"));
+        openScope(JUCE_T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
           {
-            String name = variables[i]->getStringAttribute(T("var"), String::empty);
+            String name = variables[i]->getStringAttribute(JUCE_T("var"), String::empty);
             if (name.isEmpty())
-              name = variables[i]->getStringAttribute(T("name"), T("???"));
+              name = variables[i]->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
 
-            String code = T("case ") + String((int)i) + T(": return lbcpp::nativeToObject(");
-            bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
+            String code = JUCE_T("case ") + String((int)i) + JUCE_T(": return lbcpp::nativeToObject(");
+            bool isEnumeration = variables[i]->getBoolAttribute(JUCE_T("enumeration"), false);
             if (isEnumeration)
-              code += T("(int)(__this__->") + name + T(")");
+              code += JUCE_T("(int)(__this__->") + name + JUCE_T(")");
             else
-              code += T("__this__->") + name;
+              code += JUCE_T("__this__->") + name;
 
-            code += T(", variables[__index__]->getType());");
+            code += JUCE_T(", variables[__index__]->getType());");
             writeLine(code, -1);
           }
-          writeLine(T("default: jassert(false); return lbcpp::ObjectPtr();"), -1);
+          writeLine(JUCE_T("default: jassert(false); return lbcpp::ObjectPtr();"), -1);
         closeScope();
       closeScope();
       newLine();
 
       // setMemberVariableValue
-      openScope(T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const lbcpp::ObjectPtr& __subValue__) const"));
-        writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
-        writeLine(T("{baseType->setMemberVariableValue(__thisbase__, __index__, __subValue__); return;}"), 1);
-        writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
-        writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__thisbase__);"));
+      openScope(JUCE_T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const lbcpp::ObjectPtr& __subValue__) const"));
+        writeLine(JUCE_T("if (__index__ < baseType->getNumMemberVariables())"));
+        writeLine(JUCE_T("{baseType->setMemberVariableValue(__thisbase__, __index__, __subValue__); return;}"), 1);
+        writeLine(JUCE_T("__index__ -= baseType->getNumMemberVariables();"));
+        writeLine(className + JUCE_T("* __this__ = static_cast<") + className + JUCE_T("* >(__thisbase__);"));
         newLine();
-        openScope(T("switch (__index__)"));
+        openScope(JUCE_T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
           {
-            String name = variables[i]->getStringAttribute(T("var"), String::empty);
+            String name = variables[i]->getStringAttribute(JUCE_T("var"), String::empty);
             if (name.isEmpty())
-              name = variables[i]->getStringAttribute(T("name"), T("???"));
+              name = variables[i]->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
 
-            String code = T("case ") + String((int)i) + T(": lbcpp::objectToNative(defaultExecutionContext(), ");
+            String code = JUCE_T("case ") + String((int)i) + JUCE_T(": lbcpp::objectToNative(defaultExecutionContext(), ");
 
-            bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
+            bool isEnumeration = variables[i]->getBoolAttribute(JUCE_T("enumeration"), false);
             if (isEnumeration)
-              code += T("(int& )(__this__->") + name + T(")");
+              code += JUCE_T("(int& )(__this__->") + name + JUCE_T(")");
             else
-              code += T("__this__->") + name;
-            code += T(", __subValue__); break;");
+              code += JUCE_T("__this__->") + name;
+            code += JUCE_T(", __subValue__); break;");
             writeLine(code, -1);
           }
-          writeLine(T("default: jassert(false);"), -1);
+          writeLine(JUCE_T("default: jassert(false);"), -1);
         closeScope();
       closeScope();
     }
@@ -371,12 +371,12 @@ protected:
     for (size_t i = 0; i < functions.size(); ++i)
     {
       XmlElement* elt = functions[i];
-      String functionName = elt->getStringAttribute(T("name"));
-      writeShortFunction(T("static int ") + functionName + T("Forwarder(lua_State* L)"),
-                         T("LuaState state(L); return ") + className + T("::") + functionName + T("(state);")); 
+      String functionName = elt->getStringAttribute(JUCE_T("name"));
+      writeShortFunction(JUCE_T("static int ") + functionName + JUCE_T("Forwarder(lua_State* L)"),
+                         JUCE_T("LuaState state(L); return ") + className + JUCE_T("::") + functionName + JUCE_T("(state);")); 
     }
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("code"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("code"))
       {generateCode(elt); newLine();}
 
     closeClass();
@@ -384,66 +384,66 @@ protected:
     // class declarator
     if (!isTemplate)
     {
-      writeLine(metaClass + T("Ptr ") + declaration.cacheVariableName + T(";"));
+      writeLine(metaClass + JUCE_T("Ptr ") + declaration.cacheVariableName + JUCE_T(";"));
 
       // class constructors
-      forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
+      forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("constructor"))
         generateClassConstructorMethod(elt, className, baseClassName);
     }
   }
 
   void generateVariableRegistrationCode(const String& className, XmlElement* xml)
   {
-    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
-    String name = xml->getStringAttribute(T("name"), T("???"));
-    String shortName = xml->getStringAttribute(T("shortName"), String::empty);
-    String description = xml->getStringAttribute(T("description"), String::empty);
-    String typeArgument = (type == className ? T("this") : T("T(") + type.quoted() + T(")"));
+    String type = xmlTypeToCppType(xml->getStringAttribute(JUCE_T("type"), JUCE_T("???")));
+    String name = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    String shortName = xml->getStringAttribute(JUCE_T("shortName"), String::empty);
+    String description = xml->getStringAttribute(JUCE_T("description"), String::empty);
+    String typeArgument = (type == className ? JUCE_T("this") : JUCE_T("JUCE_T(") + type.quoted() + JUCE_T(")"));
     
-    String arguments = typeArgument + T(", T(") + name.quoted() + T(")");
-    arguments += T(", ");
-    arguments += shortName.isEmpty() ? T("lbcpp::string::empty") : T("T(") + shortName.quoted() + T(")");
-    arguments += T(", ");
-    arguments += description.isEmpty() ? T("lbcpp::string::empty") : T("T(") + description.quoted() + T(")");
+    String arguments = typeArgument + JUCE_T(", JUCE_T(") + name.quoted() + JUCE_T(")");
+    arguments += JUCE_T(", ");
+    arguments += shortName.isEmpty() ? JUCE_T("lbcpp::string::empty") : JUCE_T("JUCE_T(") + shortName.quoted() + JUCE_T(")");
+    arguments += JUCE_T(", ");
+    arguments += description.isEmpty() ? JUCE_T("lbcpp::string::empty") : JUCE_T("JUCE_T(") + description.quoted() + JUCE_T(")");
     
-    if (xml->getBoolAttribute(T("generated"), false))
-      arguments += T(", true");
+    if (xml->getBoolAttribute(JUCE_T("generated"), false))
+      arguments += JUCE_T(", true");
     
-    writeLine(T("addMemberVariable(context, ") + arguments + T(");"));
+    writeLine(JUCE_T("addMemberVariable(context, ") + arguments + JUCE_T(");"));
   }
 
   void generateFunctionRegistrationCode(const String& className, XmlElement* xml)
   {
-    String lang = xml->getStringAttribute(T("lang"), T("???"));
-    String name = xml->getStringAttribute(T("name"), T("???"));
-    String shortName = xml->getStringAttribute(T("shortName"), String::empty);
-    String description = xml->getStringAttribute(T("description"), String::empty);
+    String lang = xml->getStringAttribute(JUCE_T("lang"), JUCE_T("???"));
+    String name = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    String shortName = xml->getStringAttribute(JUCE_T("shortName"), String::empty);
+    String description = xml->getStringAttribute(JUCE_T("description"), String::empty);
 
-    if (lang != T("lua"))
+    if (lang != JUCE_T("lua"))
       std::cerr << "Unsupported language " << (const char* )lang << " for function " << (const char* )name << std::endl;
 
-    String arguments = name + T("Forwarder, T(") + name.quoted() + T(")");
-    arguments += T(", ");
-    arguments += shortName.isEmpty() ? T("lbcpp::string::empty") : T("T(") + shortName.quoted() + T(")");
-    arguments += T(", ");
-    arguments += description.isEmpty() ? T("lbcpp::string::empty") : T("T(") + description.quoted() + T(")");
-    if (xml->getBoolAttribute(T("static"), false))
-      arguments += T(", true");
+    String arguments = name + JUCE_T("Forwarder, JUCE_T(") + name.quoted() + JUCE_T(")");
+    arguments += JUCE_T(", ");
+    arguments += shortName.isEmpty() ? JUCE_T("lbcpp::string::empty") : JUCE_T("JUCE_T(") + shortName.quoted() + JUCE_T(")");
+    arguments += JUCE_T(", ");
+    arguments += description.isEmpty() ? JUCE_T("lbcpp::string::empty") : JUCE_T("JUCE_T(") + description.quoted() + JUCE_T(")");
+    if (xml->getBoolAttribute(JUCE_T("static"), false))
+      arguments += JUCE_T(", true");
 
-    writeLine(T("addMemberFunction(context, ") + arguments + T(");"));
+    writeLine(JUCE_T("addMemberFunction(context, ") + arguments + JUCE_T(");"));
   }
 
   void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)
   {
-    String arguments = xml->getStringAttribute(T("arguments"), String::empty);
-    String parameters = xml->getStringAttribute(T("parameters"), String::empty);
-    String returnType = xml->getStringAttribute(T("returnType"), String::empty);
+    String arguments = xml->getStringAttribute(JUCE_T("arguments"), String::empty);
+    String parameters = xml->getStringAttribute(JUCE_T("parameters"), String::empty);
+    String returnType = xml->getStringAttribute(JUCE_T("returnType"), String::empty);
     
     if (returnType.isEmpty())
       returnType = baseClassName;
 
     StringArray tokens;
-    tokens.addTokens(arguments, T(","), NULL);
+    tokens.addTokens(arguments, JUCE_T(","), NULL);
     String argNames;
     for (int i = 0; i < tokens.size(); ++i)
     {
@@ -452,34 +452,34 @@ protected:
       if (n >= 0)
         argName = argName.substring(n + 1);
       if (argNames.isNotEmpty())
-        argNames += T(", ");
+        argNames += JUCE_T(", ");
       argNames += argName;
     }
 
     // class declarator
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
     String returnTypePtr = typeToRefCountedPointerType(returnType);
-    openScope(returnTypePtr + T(" ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"));
-      writeLine(returnTypePtr + T(" res = new ") + className + T("(") + argNames + T(");"));
-      String code = T("res->setThisClass(") + classNameWithFirstLowerCase + T("Class");
+    openScope(returnTypePtr + JUCE_T(" ") + classNameWithFirstLowerCase + JUCE_T("(") + arguments + JUCE_T(")"));
+      writeLine(returnTypePtr + JUCE_T(" res = new ") + className + JUCE_T("(") + argNames + JUCE_T(");"));
+      String code = JUCE_T("res->setThisClass(") + classNameWithFirstLowerCase + JUCE_T("Class");
       if (parameters.isNotEmpty())
-        code += T("(") + parameters + T(")");
-      writeLine(code + T(");"));
-      writeLine(T("return res;"));
+        code += JUCE_T("(") + parameters + JUCE_T(")");
+      writeLine(code + JUCE_T(");"));
+      writeLine(JUCE_T("return res;"));
     closeScope();
     newLine();
   }
 
   static String getMetaClass(const String& classBaseClass)
   {
-    if (classBaseClass == T("Enumeration"))
-      return T("Enumeration");
+    if (classBaseClass == JUCE_T("Enumeration"))
+      return JUCE_T("Enumeration");
     else
-      return T("Class");
+      return JUCE_T("Class");
   }
 
   static String getDefaultBaseType(const String& metaClass) 
-    {if (metaClass == T("Enumeration")) return T("EnumValue"); else return T("Object");}
+    {if (metaClass == JUCE_T("Enumeration")) return JUCE_T("EnumValue"); else return JUCE_T("Object");}
 
 
   /*
@@ -487,35 +487,35 @@ protected:
   */
   void generateTemplateClassDeclaration(XmlElement* xml)
   {
-    String className = xml->getStringAttribute(T("name"), T("???"));
-    String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String className = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    String classBaseClass = xml->getStringAttribute(JUCE_T("metaclass"), JUCE_T("DefaultClass"));
     String metaClass = getMetaClass(classBaseClass);
-    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
+    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(JUCE_T("base"), getDefaultBaseType(metaClass)));
 
-    Declaration declaration = Declaration::makeTemplateClass(currentNamespace, className, T("Template") + metaClass);
+    Declaration declaration = Declaration::makeTemplateClass(currentNamespace, className, JUCE_T("Template") + metaClass);
     declarations.push_back(declaration);
 
-    openClass(declaration.implementationClassName, T("DefaultTemplateClass"));
+    openClass(declaration.implementationClassName, JUCE_T("DefaultTemplateClass"));
 
     // constructor
-    openScope(declaration.implementationClassName + T("() : DefaultTemplateClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    openScope(declaration.implementationClassName + JUCE_T("() : DefaultTemplateClass(JUCE_T(") + className.quoted() + JUCE_T("), JUCE_T(") + baseClassName.quoted() + JUCE_T("))"));
     closeScope();
     newLine();
 
     // initialize()
-    openScope(T("virtual bool initialize(ExecutionContext& context)"));
+    openScope(JUCE_T("virtual bool initialize(ExecutionContext& context)"));
       std::vector<XmlElement* > parameters;
-      forEachXmlChildElementWithTagName(*xml, elt, T("parameter"))
+      forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("parameter"))
       {
         generateParameterDeclarationInConstructor(className, elt);
         parameters.push_back(elt);
       }
-      writeLine(T("return DefaultTemplateClass::initialize(context);"));
+      writeLine(JUCE_T("return DefaultTemplateClass::initialize(context);"));
     closeScope();
     newLine();
 
     // instantiate
-    openScope(T("virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments, ClassPtr baseType) const"));
+    openScope(JUCE_T("virtual ClassPtr instantiate(ExecutionContext& context, const std::vector<ClassPtr>& arguments, ClassPtr baseType) const"));
       generateTemplateInstantiationFunction(xml);
     closeScope();
     newLine();
@@ -532,54 +532,54 @@ protected:
       String initialization;
       for (size_t i = 0; i < parameters.size(); ++i)
       {
-        arguments += T("ClassPtr type") + String((int)i + 1);
-        initialization += T("types[") + String((int)i) + T("] = type") + String((int)i + 1) + T("; ");
+        arguments += JUCE_T("ClassPtr type") + String((int)i + 1);
+        initialization += JUCE_T("types[") + String((int)i) + JUCE_T("] = type") + String((int)i + 1) + JUCE_T("; ");
 
         if (i < parameters.size() - 1)
-          arguments += T(", ");
+          arguments += JUCE_T(", ");
       }
-      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
-        T("std::vector<ClassPtr> types(") + String((int)parameters.size()) + T("); ") + initialization + T("return lbcpp::getType(T(") + className.quoted() + T("), types);")); 
+      writeShortFunction(metaClass + JUCE_T("Ptr ") + classNameWithFirstLowerCase + JUCE_T("(") + arguments + JUCE_T(")"),
+        JUCE_T("std::vector<ClassPtr> types(") + String((int)parameters.size()) + JUCE_T("); ") + initialization + JUCE_T("return lbcpp::getType(JUCE_T(") + className.quoted() + JUCE_T("), types);")); 
     }
 
     // class constructors
-    forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("constructor"))
       generateClassConstructorMethod(elt, className, baseClassName);
   }
 
   void generateParameterDeclarationInConstructor(const String& className, XmlElement* xml)
   {
-    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("Object")));
-    String name = xml->getStringAttribute(T("name"), T("???"));
-    writeLine(T("addParameter(context, T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
+    String type = xmlTypeToCppType(xml->getStringAttribute(JUCE_T("type"), JUCE_T("Object")));
+    String name = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    writeLine(JUCE_T("addParameter(context, JUCE_T(") + name.quoted() + JUCE_T("), JUCE_T(") + type.quoted() + JUCE_T("));"));
   }
 
   void generateTemplateInstantiationFunction(XmlElement* xml)
   {
-    String templateClassName = xml->getStringAttribute(T("name"), T("???"));
-    String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String templateClassName = xml->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+    String classBaseClass = xml->getStringAttribute(JUCE_T("metaclass"), JUCE_T("DefaultClass"));
     String metaClass = getMetaClass(classBaseClass);
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("class"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("class"))
     {
-      String className = elt->getStringAttribute(T("name"));
+      String className = elt->getStringAttribute(JUCE_T("name"));
       if (className.isEmpty())
         className = templateClassName;
       String condition = generateSpecializationCondition(elt);
       if (condition.isNotEmpty())
-        writeLine(T("if (") + condition + T(")"));
-      writeLine(T("return new ") + className + metaClass + T("(refCountedPointerFromThis(this), arguments, baseType);"), condition.isEmpty() ? 0 : 1);
+        writeLine(JUCE_T("if (") + condition + JUCE_T(")"));
+      writeLine(JUCE_T("return new ") + className + metaClass + JUCE_T("(refCountedPointerFromThis(this), arguments, baseType);"), condition.isEmpty() ? 0 : 1);
     }
   }
 
   String generateSpecializationCondition(XmlElement* xml)
   {
     String res;
-    forEachXmlChildElementWithTagName(*xml, elt, T("specialization"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("specialization"))
     {
       if (res.isNotEmpty())
         res += " && ";
-      res += "inheritsFrom(context, arguments, " + elt->getStringAttribute(T("name"), T("???")).quoted() + T(", ") + elt->getStringAttribute(T("type"), T("???")).quoted() + T(")");
+      res += "inheritsFrom(context, arguments, " + elt->getStringAttribute(JUCE_T("name"), JUCE_T("???")).quoted() + JUCE_T(", ") + elt->getStringAttribute(JUCE_T("type"), JUCE_T("???")).quoted() + JUCE_T(")");
     }
     return res;
   }
@@ -591,7 +591,7 @@ protected:
   void generateCode(XmlElement* elt)
   {
     StringArray lines;
-    lines.addTokens(elt->getAllSubText(), T("\n"), NULL);
+    lines.addTokens(elt->getAllSubText(), JUCE_T("\n"), NULL);
     int minimumSpaces = 0x7FFFFFFF;
     for (int i = 0; i < lines.size(); ++i)
     {
@@ -615,130 +615,130 @@ protected:
   */
   void generateLibraryClass()
   {
-    String variableName = replaceFirstLettersByLowerCase(fileName) + T("Library");
+    String variableName = replaceFirstLettersByLowerCase(fileName) + JUCE_T("Library");
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("import"))
     {
-      String ifdef = elt->getStringAttribute(T("ifdef"));
+      String ifdef = elt->getStringAttribute(JUCE_T("ifdef"));
       if (ifdef.isNotEmpty())
-        writeLine(T("#ifdef ") + ifdef);
-      String name = elt->getStringAttribute(T("name"), T("???"));
-      name = replaceFirstLettersByLowerCase(name) + T("Library");
-      writeLine(T("extern lbcpp::LibraryPtr ") + name + T("();"));
-      writeLine(T("extern void ") + name + T("CacheTypes(ExecutionContext& context);"));
-      writeLine(T("extern void ") + name + T("UnCacheTypes();"));
+        writeLine(JUCE_T("#ifdef ") + ifdef);
+      String name = elt->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+      name = replaceFirstLettersByLowerCase(name) + JUCE_T("Library");
+      writeLine(JUCE_T("extern lbcpp::LibraryPtr ") + name + JUCE_T("();"));
+      writeLine(JUCE_T("extern void ") + name + JUCE_T("CacheTypes(ExecutionContext& context);"));
+      writeLine(JUCE_T("extern void ") + name + JUCE_T("UnCacheTypes();"));
       if (ifdef.isNotEmpty())
       {
-        writeLine(T("#else // ") + ifdef);
-        writeLine(T("inline lbcpp::LibraryPtr ") + name + T("() {return lbcpp::LibraryPtr();}"));
-        writeLine(T("inline void ") + name + T("CacheTypes(ExecutionContext& context) {}"));
-        writeLine(T("inline void ") + name + T("UnCacheTypes() {}"));
-        writeLine(T("#endif // ") + ifdef);
+        writeLine(JUCE_T("#else // ") + ifdef);
+        writeLine(JUCE_T("inline lbcpp::LibraryPtr ") + name + JUCE_T("() {return lbcpp::LibraryPtr();}"));
+        writeLine(JUCE_T("inline void ") + name + JUCE_T("CacheTypes(ExecutionContext& context) {}"));
+        writeLine(JUCE_T("inline void ") + name + JUCE_T("UnCacheTypes() {}"));
+        writeLine(JUCE_T("#endif // ") + ifdef);
       }
     }
 
     // cacheTypes function
-    openScope(T("void ") + variableName + T("CacheTypes(ExecutionContext& context)"));
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    openScope(JUCE_T("void ") + variableName + JUCE_T("CacheTypes(ExecutionContext& context)"));
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("import"))
     {
-      String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(replaceFirstLettersByLowerCase(name) + T("LibraryCacheTypes(context);"));
+      String name = elt->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+      writeLine(replaceFirstLettersByLowerCase(name) + JUCE_T("LibraryCacheTypes(context);"));
     }
     for (size_t i = 0; i < declarations.size(); ++i)
     {
       const Declaration& declaration = declarations[i];
       if (declaration.cacheVariableName.isNotEmpty())
-        writeLine(declaration.getCacheVariableFullName() + T(" = typeManager().getType(context, T(") + declaration.getFullName().quoted() + T("));"));
+        writeLine(declaration.getCacheVariableFullName() + JUCE_T(" = typeManager().getType(context, JUCE_T(") + declaration.getFullName().quoted() + JUCE_T("));"));
     }
     closeScope();
     
     // unCacheTypes function
-    openScope(T("void ") + variableName + T("UnCacheTypes()"));
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    openScope(JUCE_T("void ") + variableName + JUCE_T("UnCacheTypes()"));
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("import"))
     {
-      String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(replaceFirstLettersByLowerCase(name) + T("LibraryUnCacheTypes();"));
+      String name = elt->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+      writeLine(replaceFirstLettersByLowerCase(name) + JUCE_T("LibraryUnCacheTypes();"));
     }
     for (size_t i = 0; i < declarations.size(); ++i)
     {
       const Declaration& declaration = declarations[i];
       if (declaration.cacheVariableName.isNotEmpty())
-        writeLine(declaration.getCacheVariableFullName() + T(".clear();"));
+        writeLine(declaration.getCacheVariableFullName() + JUCE_T(".clear();"));
     }
     closeScope();
 
     // Library class
-    openClass(fileName + T("Library"), T("Library"));
+    openClass(fileName + JUCE_T("Library"), JUCE_T("Library"));
     
     // constructor
-    openScope(fileName + T("Library() : Library(T(") + fileName.quoted() + T("))"));
+    openScope(fileName + JUCE_T("Library() : Library(JUCE_T(") + fileName.quoted() + JUCE_T("))"));
     closeScope();
     newLine();
 
     // initialize function
-    openScope(T("virtual bool initialize(ExecutionContext& context)"));
-    writeLine(T("bool __ok__ = true;"));
+    openScope(JUCE_T("virtual bool initialize(ExecutionContext& context)"));
+    writeLine(JUCE_T("bool __ok__ = true;"));
 
     for (size_t i = 0; i < declarations.size(); ++i)
     {
       const Declaration& declaration = declarations[i];
       if (declaration.type == Declaration::uiComponentDeclaration)
       {
-        writeLine(T("__ok__ &= declareUIComponent(context, T(") + declaration.name.quoted() +
-          T("), MakeUIComponentConstructor< ") + declaration.implementationClassName + T(">::ctor);"));
+        writeLine(JUCE_T("__ok__ &= declareUIComponent(context, JUCE_T(") + declaration.name.quoted() +
+          JUCE_T("), MakeUIComponentConstructor< ") + declaration.implementationClassName + JUCE_T(">::ctor);"));
       }
       else
       {
-        String code = T("__ok__ &= declare");
+        String code = JUCE_T("__ok__ &= declare");
         if (declaration.type == Declaration::templateTypeDeclaration)
-          code += T("TemplateClass");
+          code += JUCE_T("TemplateClass");
         else if (declaration.type == Declaration::typeDeclaration)
-          code += T("Type");
-        code += T("(context, new ") + declaration.getImplementationClassFullName() + T(");");
+          code += JUCE_T("Type");
+        code += JUCE_T("(context, new ") + declaration.getImplementationClassFullName() + JUCE_T(");");
         writeLine(code);
       }
     }
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    forEachXmlChildElementWithTagName(*xml, elt, JUCE_T("import"))
     {
-      String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library());"));
+      String name = elt->getStringAttribute(JUCE_T("name"), JUCE_T("???"));
+      writeLine(JUCE_T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + JUCE_T("Library());"));
     }
 
-    writeLine(T("return __ok__;"));
+    writeLine(JUCE_T("return __ok__;"));
     closeScope();
     
     newLine();
-    writeShortFunction(T("virtual void cacheTypes(ExecutionContext& context)"), variableName + T("CacheTypes(context);"));
-    writeShortFunction(T("virtual void uncacheTypes()"), variableName + T("UnCacheTypes();"));
+    writeShortFunction(JUCE_T("virtual void cacheTypes(ExecutionContext& context)"), variableName + JUCE_T("CacheTypes(context);"));
+    writeShortFunction(JUCE_T("virtual void uncacheTypes()"), variableName + JUCE_T("UnCacheTypes();"));
 
     closeClass();
     
-    writeShortFunction(T("lbcpp::LibraryPtr ") + variableName + T("()"), T("return new ") + fileName + T("Library();"));
+    writeShortFunction(JUCE_T("lbcpp::LibraryPtr ") + variableName + JUCE_T("()"), JUCE_T("return new ") + fileName + JUCE_T("Library();"));
   }
 
   void generateDynamicLibraryFunctions()
   {
-    openScope(T("extern \"C\""));
+    openScope(JUCE_T("extern \"C\""));
 
     newLine();
-    writeLine(T("# ifdef WIN32"));
-    writeLine(T("#  define OIL_EXPORT  __declspec( dllexport )"));
-    writeLine(T("# else"));
-    writeLine(T("#  define OIL_EXPORT"));
-    writeLine(T("# endif"));
+    writeLine(JUCE_T("# ifdef WIN32"));
+    writeLine(JUCE_T("#  define OIL_EXPORT  __declspec( dllexport )"));
+    writeLine(JUCE_T("# else"));
+    writeLine(JUCE_T("#  define OIL_EXPORT"));
+    writeLine(JUCE_T("# endif"));
     newLine();
 
-    openScope(T("OIL_EXPORT Library* lbcppInitializeLibrary(lbcpp::ApplicationContext& applicationContext)"));
-    writeLine(T("lbcpp::initializeDynamicLibrary(applicationContext);"));
-    writeLine(T("LibraryPtr res = ") + replaceFirstLettersByLowerCase(fileName) + T("Library();"));
-    writeLine(T("res->incrementReferenceCounter();"));
-    writeLine(T("return res.get();"));
+    openScope(JUCE_T("OIL_EXPORT Library* lbcppInitializeLibrary(lbcpp::ApplicationContext& applicationContext)"));
+    writeLine(JUCE_T("lbcpp::initializeDynamicLibrary(applicationContext);"));
+    writeLine(JUCE_T("LibraryPtr res = ") + replaceFirstLettersByLowerCase(fileName) + JUCE_T("Library();"));
+    writeLine(JUCE_T("res->incrementReferenceCounter();"));
+    writeLine(JUCE_T("return res.get();"));
     closeScope();
 
-    openScope(T("OIL_EXPORT void lbcppDeinitializeLibrary()"));
-    writeLine(replaceFirstLettersByLowerCase(fileName) + T("LibraryUnCacheTypes();"));
-    writeLine(T("lbcpp::deinitializeDynamicLibrary();"));
+    openScope(JUCE_T("OIL_EXPORT void lbcppDeinitializeLibrary()"));
+    writeLine(replaceFirstLettersByLowerCase(fileName) + JUCE_T("LibraryUnCacheTypes();"));
+    writeLine(JUCE_T("lbcpp::deinitializeDynamicLibrary();"));
     closeScope();
 
     closeScope(); // extern "C"
@@ -798,13 +798,13 @@ private:
     String cacheVariableName;
 
     String getFullName() const // namespace and name
-      {return namespaceName.isEmpty() ? name : namespaceName + T("::") + name;}
+      {return namespaceName.isEmpty() ? name : namespaceName + JUCE_T("::") + name;}
 
     String getCacheVariableFullName() const
-      {return namespaceName.isEmpty() ? cacheVariableName : namespaceName + T("::") + cacheVariableName;}
+      {return namespaceName.isEmpty() ? cacheVariableName : namespaceName + JUCE_T("::") + cacheVariableName;}
 
     String getImplementationClassFullName() const
-      {return namespaceName.isEmpty() ? implementationClassName : namespaceName + T("::") + implementationClassName;}
+      {return namespaceName.isEmpty() ? implementationClassName : namespaceName + JUCE_T("::") + implementationClassName;}
   };
 
   std::vector<Declaration> declarations;
@@ -838,17 +838,17 @@ private:
 
   void openClass(const String& className, const String& baseClass)
   {
-    openScope(T("class ") + className + T(" : public ") + baseClass);
-    writeLine(T("public:"), -1);
+    openScope(JUCE_T("class ") + className + JUCE_T(" : public ") + baseClass);
+    writeLine(JUCE_T("public:"), -1);
   }
 
   void closeClass()
-    {newLine(); writeLine(T("lbcpp_UseDebuggingNewOperator")); closeScope(T(";")); newLine();}
+    {newLine(); writeLine(JUCE_T("lbcpp_UseDebuggingNewOperator")); closeScope(JUCE_T(";")); newLine();}
 
   void writeShortFunction(const String& declaration, const String& oneLineBody)
   {
     writeLine(declaration);
-    writeLine(T("{") + oneLineBody + T("}"), 1);
+    writeLine(JUCE_T("{") + oneLineBody + JUCE_T("}"), 1);
     newLine();
   }
 };
@@ -858,8 +858,8 @@ class XmlMacros
 public:
   void registerMacrosRecursively(const XmlElement* xml)
   {
-    if (xml->getTagName() == T("defmacro"))
-      m[xml->getStringAttribute(T("name"))] = xml;
+    if (xml->getTagName() == JUCE_T("defmacro"))
+      m[xml->getStringAttribute(JUCE_T("name"))] = xml;
     else
       for (int i = 0; i < xml->getNumChildElements(); ++i)
         registerMacrosRecursively(xml->getChildElement(i));
@@ -871,17 +871,17 @@ public:
   {
     String res = str;
     for (std::map<String, String>::const_iterator it = variables.begin(); it != variables.end(); ++it)
-      res = res.replace(T("%{") +  it->first + T("}"), it->second);
+      res = res.replace(JUCE_T("%{") +  it->first + JUCE_T("}"), it->second);
     return res;
   }
 
   // returns a new XmlElement
   XmlElement* process(const XmlElement* xml, const variables_t& variables = variables_t())
   {
-    if (xml->getTagName() == T("defmacro"))
+    if (xml->getTagName() == JUCE_T("defmacro"))
       return NULL;
 
-    jassert(xml->getTagName() != T("macro"));
+    jassert(xml->getTagName() != JUCE_T("macro"));
 
     if (xml->isTextElement())
       return XmlElement::createTextElement(processText(xml->getText(), variables));
@@ -893,9 +893,9 @@ public:
     for (int i = 0; i < xml->getNumChildElements(); ++i)
     {
       XmlElement* child = xml->getChildElement(i);
-      if (child->getTagName() == T("macro"))
+      if (child->getTagName() == JUCE_T("macro"))
       {
-        String name = processText(child->getStringAttribute(T("name")), variables);
+        String name = processText(child->getStringAttribute(JUCE_T("name")), variables);
         macros_t::iterator it = m.find(name);
         if (it == m.end())
         {
@@ -906,7 +906,7 @@ public:
         {
           variables_t nvariables(variables);
           for (int j = 0; j < child->getNumAttributes(); ++j)
-            if (child->getAttributeName(j) != T("name"))
+            if (child->getAttributeName(j) != JUCE_T("name"))
               nvariables[child->getAttributeName(j)] = child->getAttributeValue(j);
           const XmlElement* macro = it->second;
           for (int j = 0; j < macro->getNumChildElements(); ++j)

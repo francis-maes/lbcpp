@@ -60,12 +60,12 @@ size_t DefaultClass::addMemberVariable(ExecutionContext& context, ClassPtr type,
 {
   if (!type || name.isEmpty())
   {
-    context.errorCallback(T("Class::addMemberVariable"), T("Invalid type or name"));
+    context.errorCallback(JUCE_T("Class::addMemberVariable"), JUCE_T("Invalid type or name"));
     return (size_t)-1;
   }
   if (findMemberVariable(name) >= 0)
   {
-    context.errorCallback(T("Class::addMemberVariable"), T("Another variable with name '") + name + T("' already exists"));
+    context.errorCallback(JUCE_T("Class::addMemberVariable"), JUCE_T("Another variable with name '") + name + JUCE_T("' already exists"));
     return (size_t)-1;
   }
   VariableSignaturePtr signature;
@@ -154,7 +154,7 @@ size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaCFunction f
 {
   if (!function || name.isEmpty())
   {
-    context.errorCallback(T("Class::addMemberFunction"), T("Invalid function or name"));
+    context.errorCallback(JUCE_T("Class::addMemberFunction"), JUCE_T("Invalid function or name"));
     return (size_t)-1;
   }
 

@@ -24,11 +24,11 @@ public:
       : file(file), selectDirectories(selectDirectories)
     {
       startingDirectory = juce::File::getSpecialLocation(juce::File::userHomeDirectory);
-      wildCardPattern = T("*");
-      addAndMakeVisible(comboBox = new juce::ComboBox(T("TOTO")));
+      wildCardPattern = JUCE_T("*");
+      addAndMakeVisible(comboBox = new juce::ComboBox(JUCE_T("TOTO")));
       comboBox->setEditableText(false);
       comboBox->addListener(this);
-      addAndMakeVisible(browseButton = new juce::TextButton(T("Browse")));
+      addAndMakeVisible(browseButton = new juce::TextButton(JUCE_T("Browse")));
       browseButton->addButtonListener(this);
       setSize(600, 22);
     }
@@ -105,9 +105,9 @@ public:
       if (numRecents)
         startingDirectory = recent->getRecentExecutable(0).getParentDirectory();
 #ifdef JUCE_WIN32
-      wildCardPattern = T("*.exe");
+      wildCardPattern = JUCE_T("*.exe");
 #endif //JUCE_WIN32
-      comboBox->setName(T("Executable"));
+      comboBox->setName(JUCE_T("Executable"));
     }
 
     virtual void setFile(const juce::File& file)
@@ -123,7 +123,7 @@ public:
   struct ArgumentsSelector : public juce::ComboBox, public juce::ComboBoxListener
   {
     ArgumentsSelector(string& arguments)
-      : juce::ComboBox(T("Toto")), arguments(arguments)
+      : juce::ComboBox(JUCE_T("Toto")), arguments(arguments)
     {
       setEditableText(true);
       setSize(600, 22);
@@ -134,13 +134,13 @@ public:
     {
       if (comboBoxThatHasChanged == this)
         arguments = getText();
-      if (comboBoxThatHasChanged->getName() == T("Executable"))
+      if (comboBoxThatHasChanged->getName() == JUCE_T("Executable"))
       {
         clear();
         RecentProcessesPtr recent = RecentProcesses::getInstance();
         std::vector<string> arguments = recent->getRecentArguments(comboBoxThatHasChanged->getText());
         for (size_t i = 0; i < arguments.size(); ++i)
-          addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], (int)i + 1);
+          addItem(arguments[i].isEmpty() ? JUCE_T(" ") : arguments[i], (int)i + 1);
         setSelectedItemIndex(0);
       }
     }
@@ -156,7 +156,7 @@ public:
 
     virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)
     {
-      if (comboBoxThatHasChanged->getName() == T("Executable"))
+      if (comboBoxThatHasChanged->getName() == JUCE_T("Executable"))
       {
         comboBox->clear();
         RecentProcessesPtr recent = RecentProcesses::getInstance();
@@ -177,17 +177,17 @@ public:
   WorkingDirectorySelector workingDirectorySelector;
 
   NewProcessDialogWindow(juce::File& executable, string& arguments, juce::File& workingDirectory)
-    : AlertWindow(T("New Process"), T("Select a program and its arguments"), QuestionIcon),
+    : AlertWindow(JUCE_T("New Process"), JUCE_T("Select a program and its arguments"), QuestionIcon),
       executableSelector(executable), argumentsSelector(arguments), workingDirectorySelector(workingDirectory)
   {
-    addTextBlock(T("Executable:"));
+    addTextBlock(JUCE_T("Executable:"));
     addCustomComponent(&executableSelector);
-    addTextBlock(T("Arguments:"));
+    addTextBlock(JUCE_T("Arguments:"));
     addCustomComponent(&argumentsSelector);
-    addTextBlock(T("Working directory:"));
+    addTextBlock(JUCE_T("Working directory:"));
     addCustomComponent(&workingDirectorySelector);
-    addButton(T("OK"), 1, juce::KeyPress::returnKey);
-    addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
+    addButton(JUCE_T("OK"), 1, juce::KeyPress::returnKey);
+    addButton(JUCE_T("Cancel"), 0, juce::KeyPress::escapeKey);
 
     executableSelector.addListener(&argumentsSelector);
     executableSelector.addListener(&workingDirectorySelector);

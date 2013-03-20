@@ -50,13 +50,13 @@ public:
     if (verbosity >= verbosityProgressAndResult)
     {
       size_t treeDepth = 0;
-      ScalarVariableStatisticsPtr nodeSizeStats = new ScalarVariableStatistics(T("nodeSize"));
+      ScalarVariableStatisticsPtr nodeSizeStats = new ScalarVariableStatistics(JUCE_T("nodeSize"));
       size_t numNodes = getNumTestNodes(res, 0, treeDepth, nodeSizeStats);
-      context.resultCallback(T("treeDepth"), treeDepth);
-      context.resultCallback(T("treeSize"), numNodes);
-      context.resultCallback(T("conditionSize"), nodeSizeStats);
-      context.resultCallback(T("meanConditionSize"), nodeSizeStats->getMean());
-      //context.informationCallback(T("Tree depth = ") + string((int)treeDepth) + T(" size = ") + string((int)numNodes));
+      context.resultCallback(JUCE_T("treeDepth"), treeDepth);
+      context.resultCallback(JUCE_T("treeSize"), numNodes);
+      context.resultCallback(JUCE_T("conditionSize"), nodeSizeStats);
+      context.resultCallback(JUCE_T("meanConditionSize"), nodeSizeStats->getMean());
+      //context.informationCallback(JUCE_T("Tree depth = ") + string((int)treeDepth) + JUCE_T(" size = ") + string((int)numNodes));
     }
     evaluate(context, res);
   }
@@ -111,7 +111,7 @@ protected:
   ExpressionPtr makeTreeScope(ExecutionContext& context, const SupervisedLearningObjectivePtr& objective, const IndexSetPtr& indices, size_t depth)
   {
     if (verbosity >= verbosityDetailed)
-      context.enterScope(T("Make tree with ") + string((int)indices->size()) + " examples");
+      context.enterScope(JUCE_T("Make tree with ") + string((int)indices->size()) + " examples");
     ExpressionPtr res = makeTree(context, objective, indices, depth);
     if (verbosity >= verbosityDetailed)
       context.leaveScope();
@@ -141,7 +141,7 @@ protected:
 
     conditionNode->addImportance(conditionFitness->getValue(0) * indices->size() / objective->getData()->getNumRows());
     if (verbosity >= verbosityDetailed)
-      context.informationCallback(conditionNode->toShortString() + T(" [") + string(conditionNode->getSubNode(0)->getImportance()) + T("]"));
+      context.informationCallback(conditionNode->toShortString() + JUCE_T(" [") + string(conditionNode->getSubNode(0)->getImportance()) + JUCE_T("]"));
 
     // otherwise split examples...
     DataVectorPtr conditionValues = conditionNode->compute(context, objective->getData(), indices);

@@ -228,11 +228,11 @@ class NameableObject : public Object
 public:
   NameableObject(ClassPtr thisClass, const string& name)
     : Object(thisClass), name(name) {}
-  NameableObject(const string& name = T("Unnamed"))
+  NameableObject(const string& name = JUCE_T("Unnamed"))
     : name(name) {}
 
   virtual string toString() const
-    {return getClassName() + T(" ") + name;}
+    {return getClassName() + JUCE_T(" ") + name;}
 
   virtual string toShortString() const
     {return name;}

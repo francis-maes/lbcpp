@@ -40,39 +40,39 @@ public:
   virtual bool parseLine(ExecutionContext& context, const string& fullLine)
   {
     string line = fullLine.trim();
-    if (line.startsWith(T("%")))                              // Skip comment line
+    if (line.startsWith(JUCE_T("%")))                              // Skip comment line
       return true;
     if (line == string::empty)
       return true;                // an empty line is considered as a comment line
     if (shouldReadData)                                   // line *must* be a data
     {
-      if (line.startsWithChar(T('{')))
+      if (line.startsWithChar(JUCE_T('{')))
         return parseSparseDataLine(context, line);
       return parseDataLine(context, line);
     }
     string record = line.substring(0, juce::jmin(10, line.length())).toLowerCase();
-    if (record.startsWith(T("@attribute")))
+    if (record.startsWith(JUCE_T("@attribute")))
       return parseAttributeLine(context, line);
-    if (record.startsWith(T("@relation")))  // @relation *must* be declared before
+    if (record.startsWith(JUCE_T("@relation")))  // @relation *must* be declared before
     {                                       // any @attribute declaration
       if (table->getNumColumns() > 0)
       {
-        context.warningCallback(T("ARFFDataParser::parseLine"), T("@relation must be declared before any @attribute declaration"));
+        context.warningCallback(JUCE_T("ARFFDataParser::parseLine"), JUCE_T("@relation must be declared before any @attribute declaration"));
         return false;
       }
       return true;                                     // skip the relation's name
     }
-    if (record.startsWith(T("@data")))
+    if (record.startsWith(JUCE_T("@data")))
     {
       if (!table || table->getNumColumns() < 2)
       {
-        context.warningCallback(T("ARFFDataParser::parseLine"), T("Not enough attribute descriptor"));
+        context.warningCallback(JUCE_T("ARFFDataParser::parseLine"), JUCE_T("Not enough attribute descriptor"));
         return false;
       }
       shouldReadData = true;     // Indicate that the remaining lines will be data
       return true;
     }
-    context.warningCallback(T("ARFFDataParser::parseLine"), T("Unknown expression: ") + line.quoted());
+    context.warningCallback(JUCE_T("ARFFDataParser::parseLine"), JUCE_T("Unknown expression: ") + line.quoted());
     return false;
   }
 
@@ -84,21 +84,21 @@ protected:
 
   bool parseAttributeLine(ExecutionContext& context, const string& line)
   {
-    if (line.getLastCharacter() == T('}'))
+    if (line.getLastCharacter() == JUCE_T('}'))
       return parseEnumerationAttributeLine(context, line);
 
-  /*  int b = line.lastIndexOfAnyOf(T(" \t"));
+  /*  int b = line.lastIndexOfAnyOf(JUCE_T(" \t"));
     if (b < 0)
     {
-      context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Malformatted attribute description: ") + line.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseAttributeLine"), JUCE_T("Malformatted attribute description: ") + line.quoted());
       return false;
     }*/
 
     StringArray tokens;
-    tokens.addTokens(line.trim(), T(" \t"), T("'"));
+    tokens.addTokens(line.trim(), JUCE_T(" \t"), JUCE_T("'"));
     if (tokens.size() < 3)
     {
-      context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Malformatted attribute name: ") + line.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseAttributeLine"), JUCE_T("Malformatted attribute name: ") + line.quoted());
       return false;
     }
     int tokenNumber = 1;
@@ -111,20 +111,20 @@ protected:
 
     string attributeTypeName = tokens[tokenNumber].toLowerCase();
     ClassPtr attributeType;
-    if (attributeTypeName == T("float")
-        || attributeTypeName == T("real")
-        || attributeTypeName == T("numeric"))
+    if (attributeTypeName == JUCE_T("float")
+        || attributeTypeName == JUCE_T("real")
+        || attributeTypeName == JUCE_T("numeric"))
       attributeType = doubleClass;
-    else if (attributeTypeName == T("integer"))
+    else if (attributeTypeName == JUCE_T("integer"))
       attributeType = integerClass;
-    else if (attributeTypeName == T("string"))
+    else if (attributeTypeName == JUCE_T("string"))
     {
       attributeType = stringClass;
-      context.warningCallback(T("ARFFDataParser::parseAttributeLine"), T("string format is not (yet) supported: ") + line.quoted());
+      context.warningCallback(JUCE_T("ARFFDataParser::parseAttributeLine"), JUCE_T("string format is not (yet) supported: ") + line.quoted());
     }
     else
     {
-      context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Unknown attribute type: ") + attributeTypeName.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseAttributeLine"), JUCE_T("Unknown attribute type: ") + attributeTypeName.quoted());
       return false;
     }
     table->addColumn(new VariableExpression(attributeType, attributeName, table->getNumColumns()), attributeType);
@@ -140,13 +140,13 @@ protected:
       return false;
     string first = tokens[0].toLowerCase();
     string second = tokens[1].toLowerCase();
-    if (comparePairOfStrings(first, second, T("yes"), T("no")))
+    if (comparePairOfStrings(first, second, JUCE_T("yes"), JUCE_T("no")))
       return true;
-    if (comparePairOfStrings(first, second, T("true"), T("false")))
+    if (comparePairOfStrings(first, second, JUCE_T("true"), JUCE_T("false")))
       return true;
-    if (comparePairOfStrings(first, second, T("+"), T("-")))
+    if (comparePairOfStrings(first, second, JUCE_T("+"), JUCE_T("-")))
       return true;
-    if (comparePairOfStrings(first, second, T("0"), T("1")))
+    if (comparePairOfStrings(first, second, JUCE_T("0"), JUCE_T("1")))
       return true;
     return false;
   }
@@ -155,28 +155,28 @@ protected:
   {
     // get enumeration name
     string trimmedLine = line.substring(10).trim();
-    int e = trimmedLine.indexOfAnyOf(T(" \t"));
+    int e = trimmedLine.indexOfAnyOf(JUCE_T(" \t"));
     if (e < 0)
     {
-      context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Malformatted enumeration description: ") + trimmedLine.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseEnumerationAttributeLine"), JUCE_T("Malformatted enumeration description: ") + trimmedLine.quoted());
       return false;
     }
     string attributeName = trimmedLine.substring(0, e).unquoted();
     trimmedLine = trimmedLine.substring(e);
     // get enumeration values
-    int b = trimmedLine.lastIndexOfChar(T('{'));
+    int b = trimmedLine.lastIndexOfChar(JUCE_T('{'));
     if (b < 0)
     {
-      context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Malformatted enumeration description: ") + trimmedLine.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseEnumerationAttributeLine"), JUCE_T("Malformatted enumeration description: ") + trimmedLine.quoted());
       return false;
     }
 
     string values = trimmedLine.substring(b + 1, trimmedLine.length() - 1);
     StringArray tokens;
-    tokens.addTokens(values, T(","), T("'\""));
+    tokens.addTokens(values, JUCE_T(","), JUCE_T("'\""));
     if (tokens.size() == 0)
     {
-      context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("No enumeration element found in: ") + trimmedLine.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseEnumerationAttributeLine"), JUCE_T("No enumeration element found in: ") + trimmedLine.quoted());
       return false;
     }
     for (size_t i = 0; i < (size_t)tokens.size(); ++i)
@@ -195,7 +195,7 @@ protected:
       for (size_t i = 0; i < (size_t)tokens.size(); ++i)
         if (enumClass->findOrAddElement(context, tokens[i].unquoted().trim()) != i)
         {
-          context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Duplicate enumeration element found: ") + tokens[i].quoted());
+          context.errorCallback(JUCE_T("ARFFDataParser::parseEnumerationAttributeLine"), JUCE_T("Duplicate enumeration element found: ") + tokens[i].quoted());
           return false;
         }
       attributeType = enumClass;
@@ -220,7 +220,7 @@ protected:
       char* token = strtok(i == 0 ? str : NULL, ",\t");
       if (!token)
       {
-        context.errorCallback(T("ARFFDataParser::parseDataLine"), T("Invalid number of values in: ") + line.quoted());
+        context.errorCallback(JUCE_T("ARFFDataParser::parseDataLine"), JUCE_T("Invalid number of values in: ") + line.quoted());
         ok = false;
         break;
       }
@@ -236,11 +236,11 @@ protected:
   {
     size_t n = table->getNumColumns();
     StringArray tokens;
-    tokens.addTokens(line.substring(1, line.length() - 1), T(", "), T("'\""));
+    tokens.addTokens(line.substring(1, line.length() - 1), JUCE_T(", "), JUCE_T("'\""));
     size_t numTokens = tokens.size();
     if (numTokens > n + 1)
     {
-      context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Too many values in: ") + line.quoted());
+      context.errorCallback(JUCE_T("ARFFDataParser::parseSparseDataLine"), JUCE_T("Too many values in: ") + line.quoted());
       return false;
     }
   
@@ -252,16 +252,16 @@ protected:
     DenseGenericObjectPtr inputs = new DenseGenericObject(features);
     for (size_t i = 0; i < numTokens; ++i)
     {
-      int e = tokens[i].indexOfAnyOf(T(" \t"));
+      int e = tokens[i].indexOfAnyOf(JUCE_T(" \t"));
       if (e < 0)
       {
-        context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
+        context.errorCallback(JUCE_T("ARFFDataParser::parseSparseDataLine"), JUCE_T("Bad index in: ") + tokens[i].quoted());
         return false;
       }
       ObjectPtr v = Object::createFromString(context, positiveIntegerClass, tokens[i].substring(0, e));
       if (!v)
       {
-        context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
+        context.errorCallback(JUCE_T("ARFFDataParser::parseSparseDataLine"), JUCE_T("Bad index in: ") + tokens[i].quoted());
         return false;
       }
       size_t index = v.getInteger();
@@ -271,7 +271,7 @@ protected:
       {
         if (inputs->getVariable(index).exists())
         {
-          context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Duplicate index '" + string((int)index) + "' in: ") + tokens[i].quoted());
+          context.errorCallback(JUCE_T("ARFFDataParser::parseSparseDataLine"), JUCE_T("Duplicate index '" + string((int)index) + "' in: ") + tokens[i].quoted());
           return false;
         }
         inputs->setVariable(index, createFromString(context, attributesType[index], tokens[i].substring(e).trim()));

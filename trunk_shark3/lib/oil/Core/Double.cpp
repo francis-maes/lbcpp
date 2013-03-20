@@ -43,8 +43,8 @@ static string positiveNumberToShortString(double d)
     res = res.dropLastCharacters(numZeros);
   if (l3 != 0)
   {
-    res += T("e");
-    res += (l3 > 0 ? T("+") : T("-"));
+    res += JUCE_T("e");
+    res += (l3 > 0 ? JUCE_T("+") : JUCE_T("-"));
     res += string((int)abs(l3));
   }
   return res;
@@ -53,9 +53,9 @@ static string positiveNumberToShortString(double d)
 string Double::toShortString() const
 {
   if (!value)
-    return T("0");
+    return JUCE_T("0");
   string res = positiveNumberToShortString(fabs(value));
-  return value < 0.0 ? T("-") + res : res;
+  return value < 0.0 ? JUCE_T("-") + res : res;
 }
 
 string Double::toString() const
@@ -77,14 +77,14 @@ void Double::clone(ExecutionContext& context, const ObjectPtr& target) const
 bool Double::loadFromString(ExecutionContext& context, const string& str)
 {
   string v = str.trim().toLowerCase();
-  if (v == T("nan"))
+  if (v == JUCE_T("nan"))
   {
     value = DVector::missingValue;
     return true;
   }
-  if (!v.containsOnly(T("0123456789e.-")))
+  if (!v.containsOnly(JUCE_T("0123456789e.-")))
   {
-    context.errorCallback(T("Double::loadFromString"), T("Could not read double value ") + str.quoted());
+    context.errorCallback(JUCE_T("Double::loadFromString"), JUCE_T("Could not read double value ") + str.quoted());
     return false;
   }
   value = v.getDoubleValue();
@@ -101,7 +101,7 @@ void Double::saveToXml(XmlExporter& exporter) const
 ** Probability
 */
 string Probability::toShortString() const
-  {return string(value * 100, 1) + T("%");}
+  {return string(value * 100, 1) + JUCE_T("%");}
 
 bool Probability::toBoolean() const
   {return value > 0.5;}
@@ -113,7 +113,7 @@ string Time::toShortString() const
 {
   double timeInSeconds = value;
   if (timeInSeconds == 0.0)
-    return T("0 s");
+    return JUCE_T("0 s");
 
   string sign;
   if (timeInSeconds > 0)
@@ -121,17 +121,17 @@ string Time::toShortString() const
   else
   {
     timeInSeconds = -timeInSeconds;
-    sign = T("-");
+    sign = JUCE_T("-");
   }
 
   if (timeInSeconds < 1e-5)
-    return sign + string((int)(timeInSeconds / 1e-9)) + T(" nanos");
+    return sign + string((int)(timeInSeconds / 1e-9)) + JUCE_T(" nanos");
   if (timeInSeconds < 1e-2)
-    return sign + string((int)(timeInSeconds / 1e-6)) + T(" micros");
+    return sign + string((int)(timeInSeconds / 1e-6)) + JUCE_T(" micros");
 
   int numSeconds = (int)timeInSeconds;
   if (timeInSeconds < 10)
-    return sign + (numSeconds ? string(numSeconds) + T(" s ") : string::empty) + string((int)(timeInSeconds * 1000) % 1000) + T(" ms");
+    return sign + (numSeconds ? string(numSeconds) + JUCE_T(" s ") : string::empty) + string((int)(timeInSeconds * 1000) % 1000) + JUCE_T(" ms");
 
   string res = sign;
   if (numSeconds > 3600)
@@ -140,20 +140,20 @@ string Time::toShortString() const
     if (numHours > 24)
     {
       int numDays = numHours / 24;
-      res += numDays == 1 ? T("1 day") : string(numDays) + T(" days");
+      res += numDays == 1 ? JUCE_T("1 day") : string(numDays) + JUCE_T(" days");
     }
     if (res.isNotEmpty())
-      res += T(" ");
-    res += string(numHours % 24) + T(" hours");
+      res += JUCE_T(" ");
+    res += string(numHours % 24) + JUCE_T(" hours");
   }
   if (numSeconds >= 60)
   {
     if (res.isNotEmpty())
-      res += T(" ");
-    res += string((numSeconds / 60) % 60) + T(" min");
+      res += JUCE_T(" ");
+    res += string((numSeconds / 60) % 60) + JUCE_T(" min");
   }
   if (res.isNotEmpty())
-    res += T(" ");
-  res += string(numSeconds % 60) + T(" s");
+    res += JUCE_T(" ");
+  res += string(numSeconds % 60) + JUCE_T(" s");
   return res;
 }

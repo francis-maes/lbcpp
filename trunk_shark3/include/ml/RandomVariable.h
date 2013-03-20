@@ -169,7 +169,7 @@ extern ClassPtr scalarVariableStatisticsClass;
 class ScalarVariableRecentMean : public NameableObject
 {
 public:
-  ScalarVariableRecentMean(const string& name = T("Unnamed"), size_t memorySize = 0);
+  ScalarVariableRecentMean(const string& name = JUCE_T("Unnamed"), size_t memorySize = 0);
 
   void clear()
     {values.clear(); currentSum = 0.0; epoch = 0;}
@@ -202,7 +202,7 @@ protected:
 class ScalarVariableRecentMeanAndVariance : public ScalarVariableRecentMean
 {
 public:
-  ScalarVariableRecentMeanAndVariance(const string& name = T("Unnamed"), size_t memorySize = 0);
+  ScalarVariableRecentMeanAndVariance(const string& name = JUCE_T("Unnamed"), size_t memorySize = 0);
 
   void clear()
     {ScalarVariableRecentMean::clear(); meansqr.clear();}

@@ -60,23 +60,23 @@ struct ObjectRelatedCommand
   static std::vector<ObjectRelatedCommand> getObjectCommands(const ObjectPtr& object)
   {
     std::vector<ObjectRelatedCommand> res;
-    res.push_back(ObjectRelatedCommand(T("Save"), T("Save-32.png")));
+    res.push_back(ObjectRelatedCommand(JUCE_T("Save"), JUCE_T("Save-32.png")));
     if (object.isInstanceOf<Table>())
-      res.push_back(ObjectRelatedCommand(T("Save as gnuplot"), T("Save-32.png")));
+      res.push_back(ObjectRelatedCommand(JUCE_T("Save as gnuplot"), JUCE_T("Save-32.png")));
     return res;
   }
 
   static void execute(const ObjectPtr& object, const ObjectRelatedCommand& command)
   {
-    if (command.name == T("Save"))
+    if (command.name == JUCE_T("Save"))
     {
-      juce::File outputFile = selectFileToSave(T("*.*"));
+      juce::File outputFile = selectFileToSave(JUCE_T("*.*"));
       if (outputFile != juce::File::nonexistent)
         object->saveToFile(defaultExecutionContext(), outputFile);
     }
-    else if (command.name == T("Save as gnuplot"))
+    else if (command.name == JUCE_T("Save as gnuplot"))
     {
-      juce::File outputFile = selectFileToSave(T("*.data"));
+      juce::File outputFile = selectFileToSave(JUCE_T("*.data"));
       if (outputFile != juce::File::nonexistent)
         saveContainerAsGnuplotData(defaultExecutionContext(), object.staticCast<Table>(), outputFile);
     }
@@ -92,7 +92,7 @@ struct ObjectRelatedCommand
     OutputStream* ostr = outputFile.createOutputStream();
     if (!ostr)
     {
-      context.errorCallback(T("Could not create file ") + outputFile.getFullPathName());
+      context.errorCallback(JUCE_T("Could not create file ") + outputFile.getFullPathName());
       return false;
     }
 
@@ -153,13 +153,13 @@ public:
       return;
 
     // properties
-    properties->addProperty(T("Type"), object->getClassName());
+    properties->addProperty(JUCE_T("Type"), object->getClassName());
     string str = object->toShortString();
     if (str.isNotEmpty())
-      properties->addProperty(T("Desc"), str);
+      properties->addProperty(JUCE_T("Desc"), str);
     VectorPtr vector = object.dynamicCast<Vector>();
     if (vector)
-      properties->addProperty(T("Size"), string((int)vector->getNumElements()));
+      properties->addProperty(JUCE_T("Size"), string((int)vector->getNumElements()));
     
     // command buttons
     commands = ObjectRelatedCommand::getObjectCommands(object);
@@ -373,7 +373,7 @@ public:
         viewport->resized();
       }
 
-      flushErrorAndWarningMessages(T("Changed Selection"));
+      flushErrorAndWarningMessages(JUCE_T("Changed Selection"));
     }
   }
 

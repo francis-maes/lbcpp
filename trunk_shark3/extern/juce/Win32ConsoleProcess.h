@@ -7,6 +7,8 @@
 #ifndef SMODE_PROJECT_REPOSITORY_WIN32_CONSOLE_PROCESS_H_
 # define SMODE_PROJECT_REPOSITORY_WIN32_CONSOLE_PROCESS_H_
 
+#define min(a,b)	((a) < (b) ? (a) : (b))
+
 # include "ConsoleProcess.h"
 
 namespace juce
@@ -266,7 +268,7 @@ protected:
       return false;
     }
     // Command line must include executable name and parameters.
-    const String commandLine = (parameters.isEmpty() ? T("EXE") : T("EXE ") + parameters);
+    const String commandLine = (parameters.isEmpty() ? JUCE_T("EXE") : JUCE_T("EXE ") + parameters);
 
     // Command can be modified by CreateProcess so convert String content into POD.
     LPTSTR commandLineBuffer = new TCHAR[commandLine.length() + 1];
@@ -322,5 +324,7 @@ private:
 };
 
 }; /* namespace juce */
+
+#undef min
 
 #endif // !SMODE_PROJECT_REPOSITORY_WIN32_CONSOLE_PROCESS_H_

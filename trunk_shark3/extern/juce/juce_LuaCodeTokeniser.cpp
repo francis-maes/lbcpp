@@ -23,35 +23,35 @@ namespace LuaTokeniser
 static bool isIdentifierStart (const tchar c) throw()
 {
     return CharacterFunctions::isLetter (c)
-            || c == T('_');
+            || c == JUCE_T('_');
 }
 
 static bool isIdentifierBody (const tchar c) throw()
 {
     return CharacterFunctions::isLetter (c)
             || CharacterFunctions::isDigit (c)
-            || c == T('_');
+            || c == JUCE_T('_');
 }
 
 static int parseIdentifier (CodeDocument::Iterator& source) throw()
 {
     static const tchar* keywords2Char[] =
-       { T("do"), T("if"), T("in"), T("or"), 0 };
+       { JUCE_T("do"), JUCE_T("if"), JUCE_T("in"), JUCE_T("or"), 0 };
 
     static const tchar* keywords3Char[] =
-      { T("and"), T("end"), T("for"), T("nil"), T("not"), 0};
+      { JUCE_T("and"), JUCE_T("end"), JUCE_T("for"), JUCE_T("nil"), JUCE_T("not"), 0};
 
     static const tchar* keywords4Char[] =
-      { T("else"), T("then"), T("true"), 0};
+      { JUCE_T("else"), JUCE_T("then"), JUCE_T("true"), 0};
 
     static const tchar* keywords5Char[] =
-      { T("break"), T("false"), T("local"), T("until"), T("while"), 0};
+      { JUCE_T("break"), JUCE_T("false"), JUCE_T("local"), JUCE_T("until"), JUCE_T("while"), 0};
 
     static const tchar* keywords6Char[] =
-      { T("elseif"), T("repeat"), T("return"), 0};
+      { JUCE_T("elseif"), JUCE_T("repeat"), JUCE_T("return"), 0};
         
     static const tchar* keywordsOther[] =
-        { T("function"), T("subspecified"), T("parameter"), T("derivable"), 0 };
+        { JUCE_T("function"), JUCE_T("subspecified"), JUCE_T("parameter"), JUCE_T("derivable"), 0 };
 
     int tokenLength = 0;
     tchar possibleIdentifier [19];
@@ -283,7 +283,7 @@ static void skipComment (CodeDocument::Iterator& source) throw()
     {
         const juce_wchar c = source.nextChar();
 
-        if (c == 0 || (c == T('/') && lastWasStar))
+        if (c == 0 || (c == JUCE_T('/') && lastWasStar))
             break;
 
         lastWasStar = (c == '*');
@@ -306,20 +306,20 @@ int LuaCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
         source.skip();
         break;
 
-    case T('0'):
-    case T('1'):
-    case T('2'):
-    case T('3'):
-    case T('4'):
-    case T('5'):
-    case T('6'):
-    case T('7'):
-    case T('8'):
-    case T('9'):
+    case JUCE_T('0'):
+    case JUCE_T('1'):
+    case JUCE_T('2'):
+    case JUCE_T('3'):
+    case JUCE_T('4'):
+    case JUCE_T('5'):
+    case JUCE_T('6'):
+    case JUCE_T('7'):
+    case JUCE_T('8'):
+    case JUCE_T('9'):
         result = LuaTokeniser::parseNumber (source);
         break;
 
-    case T('.'):
+    case JUCE_T('.'):
         result = LuaTokeniser::parseNumber (source);
 
         if (result == tokenType_error)
@@ -327,44 +327,44 @@ int LuaCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
 
         break;
 
-    case T(','):
-    case T(';'):
-    case T(':'):
+    case JUCE_T(','):
+    case JUCE_T(';'):
+    case JUCE_T(':'):
         source.skip();
         result = tokenType_punctuation;
         break;
 
-    case T('('):
-    case T(')'):
-    case T('{'):
-    case T('}'):
-    case T('['):
-    case T(']'):
+    case JUCE_T('('):
+    case JUCE_T(')'):
+    case JUCE_T('{'):
+    case JUCE_T('}'):
+    case JUCE_T('['):
+    case JUCE_T(']'):
         source.skip();
         result = tokenType_bracket;
         break;
 
-    case T('"'):
-    case T('\''):
+    case JUCE_T('"'):
+    case JUCE_T('\''):
         LuaTokeniser::skipQuotedString (source);
         result = tokenType_stringLiteral;
         break;
 
-    case T('+'):
+    case JUCE_T('+'):
         result = tokenType_operator;
         source.skip();
 
-        if (source.peekNextChar() == T('+'))
+        if (source.peekNextChar() == JUCE_T('+'))
             source.skip();
-        else if (source.peekNextChar() == T('='))
+        else if (source.peekNextChar() == JUCE_T('='))
             source.skip();
 
         break;
 
-    case T('-'):
+    case JUCE_T('-'):
 
         source.skip();
-        if (source.peekNextChar() == T('-'))
+        if (source.peekNextChar() == JUCE_T('-'))
         {
             result = tokenType_comment;
             source.skipToEndOfLine();
@@ -377,40 +377,40 @@ int LuaCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
           {
               result = tokenType_operator;
 
-              if (source.peekNextChar() == T('-'))
+              if (source.peekNextChar() == JUCE_T('-'))
                   source.skip();
-              else if (source.peekNextChar() == T('='))
+              else if (source.peekNextChar() == JUCE_T('='))
                   source.skip();
           }
         }
         break;
 
-    case T('*'):
-    case T('%'):
-    case T('='):
-    case T('!'):
+    case JUCE_T('*'):
+    case JUCE_T('%'):
+    case JUCE_T('='):
+    case JUCE_T('!'):
         result = tokenType_operator;
         source.skip();
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
             source.skip();
 
         break;
 
-    case T('/'):
+    case JUCE_T('/'):
         result = tokenType_operator;
         source.skip();
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('/'))
+        else if (source.peekNextChar() == JUCE_T('/'))
         {
             result = tokenType_comment;
             source.skipToEndOfLine();
         }
-        else if (source.peekNextChar() == T('*'))
+        else if (source.peekNextChar() == JUCE_T('*'))
         {
             source.skip();
             result = tokenType_comment;
@@ -419,103 +419,103 @@ int LuaCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
 
         break;
 
-    case T('?'):
-    case T('~'):
+    case JUCE_T('?'):
+    case JUCE_T('~'):
         source.skip();
         result = tokenType_operator;
         break;
 
-    case T('<'):
+    case JUCE_T('<'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('<'))
+        else if (source.peekNextChar() == JUCE_T('<'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('>'):
+    case JUCE_T('>'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('<'))
+        else if (source.peekNextChar() == JUCE_T('<'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('|'):
+    case JUCE_T('|'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('|'))
+        else if (source.peekNextChar() == JUCE_T('|'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('&'):
+    case JUCE_T('&'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('&'))
+        else if (source.peekNextChar() == JUCE_T('&'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    case T('^'):
+    case JUCE_T('^'):
         source.skip();
         result = tokenType_operator;
 
-        if (source.peekNextChar() == T('='))
+        if (source.peekNextChar() == JUCE_T('='))
         {
             source.skip();
         }
-        else if (source.peekNextChar() == T('^'))
+        else if (source.peekNextChar() == JUCE_T('^'))
         {
             source.skip();
 
-            if (source.peekNextChar() == T('='))
+            if (source.peekNextChar() == JUCE_T('='))
                 source.skip();
         }
 
         break;
 
-    /*case T('#'):
+    /*case JUCE_T('#'):
         result = tokenType_preprocessor;
         source.skipToEndOfLine();
         break;*/

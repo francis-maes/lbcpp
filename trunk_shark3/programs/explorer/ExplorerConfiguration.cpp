@@ -30,18 +30,18 @@ void RecentFileVector::addRecentFile(const juce::File& file)
 */
 juce::File ExplorerConfiguration::getApplicationDataDirectory(ExecutionContext& context)
 {
-  //return File(T("C:\\temp"));
-  juce::File directory = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory).getChildFile(T("LBC++"));
+  //return File(JUCE_T("C:\\temp"));
+  juce::File directory = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory).getChildFile(JUCE_T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
-    context.errorCallback(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
+    context.errorCallback(JUCE_T("ExplorerConfiguration::getApplicationDataDirectory"), JUCE_T("Could not create application data directory"));
     return juce::File::nonexistent;
   }
   return directory;
 }
 
 juce::File ExplorerConfiguration::getConfigurationFile(ExecutionContext& context)
-  {return getApplicationDataDirectory(context).getChildFile(T("config.xml"));}
+  {return getApplicationDataDirectory(context).getChildFile(JUCE_T("config.xml"));}
 
 ExplorerConfigurationPtr& ExplorerConfiguration::getInstancePtr()
 {

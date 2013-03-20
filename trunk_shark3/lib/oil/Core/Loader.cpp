@@ -134,7 +134,7 @@ ObjectPtr TextLoader::loadFromFile(ExecutionContext& context, const juce::File& 
     string lineString(line);
     if (!pthis->parseLine(context, lineString))
     {
-      context.errorCallback(T("-> Could not parse line ") + string((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
+      context.errorCallback(JUCE_T("-> Could not parse line ") + string((int)lineNumber) + JUCE_T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + JUCE_T("...") : lineString));
       failed = true;
       break;
     }
@@ -145,7 +145,7 @@ ObjectPtr TextLoader::loadFromFile(ExecutionContext& context, const juce::File& 
     return ObjectPtr();
   ObjectPtr res = pthis->parseEnd(context);
   if (!res)
-    context.errorCallback(T("TextParser::next"), T("Error in parse end"));
+    context.errorCallback(JUCE_T("TextParser::next"), JUCE_T("Error in parse end"));
   return res;
 }
 

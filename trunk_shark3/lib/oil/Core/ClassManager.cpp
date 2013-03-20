@@ -86,7 +86,7 @@ bool ClassManager::declare(ExecutionContext& context, ClassPtr type)
 {
   if (!type || type->getName().isEmpty())
   {
-    context.errorCallback(T("ClassManager::declare"), T("Empty class name"));
+    context.errorCallback(JUCE_T("ClassManager::declare"), JUCE_T("Empty class name"));
     return false;
   }
 
@@ -94,7 +94,7 @@ bool ClassManager::declare(ExecutionContext& context, ClassPtr type)
   string typeName = type->getName();
   if (doTypeExists(typeName))
   {
-    context.errorCallback(T("ClassManager::declare"), T("Class '") + typeName + T("' has already been declared"));
+    context.errorCallback(JUCE_T("ClassManager::declare"), JUCE_T("Class '") + typeName + JUCE_T("' has already been declared"));
     return false;
   }
   type->setStaticAllocationFlag();
@@ -108,14 +108,14 @@ bool ClassManager::declare(ExecutionContext& context, ClassPtr type)
 bool ClassManager::declare(ExecutionContext& context, TemplateClassPtr templateType)
 {
   if (!templateType || templateType->getName().isEmpty())
-    context.errorCallback(T("ClassManager::declare"), T("Empty template class name"));
+    context.errorCallback(JUCE_T("ClassManager::declare"), JUCE_T("Empty template class name"));
 
   ScopedLock _(typesLock);
   string typeName = templateType->getName();
   TemplateClassMap::const_iterator it = templateTypes.find(typeName);
   if (it != templateTypes.end())
   {
-    context.errorCallback(T("ClassManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
+    context.errorCallback(JUCE_T("ClassManager::declare"), JUCE_T("Template type '") + typeName + JUCE_T("' has already been declared"));
     return false;
   }
   templateTypes[typeName].definition = templateType;
@@ -130,7 +130,7 @@ void ClassManager::finishDeclarations(ExecutionContext& context)
     string name = it->first;
     ClassPtr type = it->second;
     if (!type->isInitialized() && !type->initialize(context))
-      context.errorCallback(T("ClassManager::finishDeclarations()"), T("Could not initialize type ") + type->getName());
+      context.errorCallback(JUCE_T("ClassManager::finishDeclarations()"), JUCE_T("Could not initialize type ") + type->getName());
   }
 
   for (TemplateClassMap::const_iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
@@ -138,7 +138,7 @@ void ClassManager::finishDeclarations(ExecutionContext& context)
     string name = it->first;
     TemplateClassPtr templateType = it->second.definition;
     if (!templateType->isInitialized() && !templateType->initialize(context))
-      context.errorCallback(T("ClassManager::finishDeclarations()"), T("Could not initialize template type ") + templateType->getName());
+      context.errorCallback(JUCE_T("ClassManager::finishDeclarations()"), JUCE_T("Could not initialize template type ") + templateType->getName());
   }
 }
 
@@ -150,10 +150,10 @@ ClassPtr ClassManager::getType(ExecutionContext& context, const string& typeName
     jassert(arguments[i]);
 #endif // JUCE_DEBUG
 
-  jassert(!typeName.containsAnyOf(T(" \t\r\n")));
+  jassert(!typeName.containsAnyOf(JUCE_T(" \t\r\n")));
   if (typeName.isEmpty())
   {
-    context.errorCallback(T("ClassManager::getType"), T("Empty type name"));
+    context.errorCallback(JUCE_T("ClassManager::getType"), JUCE_T("Empty type name"));
     return ClassPtr();
   }
   jassert(!TemplateClass::isInstanciatedTypeName(typeName));
@@ -177,7 +177,7 @@ ClassPtr ClassManager::getType(ExecutionContext& context, const string& name) co
   string typeName = removeAllSpaces(name);
   if (typeName.isEmpty())
   {
-    context.errorCallback(T("ClassManager::getType"), T("Empty type name"));
+    context.errorCallback(JUCE_T("ClassManager::getType"), JUCE_T("Empty type name"));
     return ClassPtr();
   }
 
@@ -203,27 +203,27 @@ ClassPtr ClassManager::getType(ExecutionContext& context, const string& name) co
     {
       TemplateClassCache* cache = getTemplateClass(context, typeName);
       size_t n = cache->definition->getNumParameters();
-      message = typeName.quoted() + T(" is a template type with ") + string((int)n) + T(" parameters. Replace ") + typeName + T(" by ");
-      message += typeName + T("[");
+      message = typeName.quoted() + JUCE_T(" is a template type with ") + string((int)n) + JUCE_T(" parameters. Replace ") + typeName + JUCE_T(" by ");
+      message += typeName + JUCE_T("[");
       for (size_t i = 0; i < n; ++i)
       {
-        message += cache->definition->getParameterName(i) + T(" (") + cache->definition->getParameterBaseType(i)->getName() + T(")");
+        message += cache->definition->getParameterName(i) + JUCE_T(" (") + cache->definition->getParameterBaseType(i)->getName() + JUCE_T(")");
         if (i < n - 1)
-          message += T(", ");
+          message += JUCE_T(", ");
       }
-      message += T("]");
+      message += JUCE_T("]");
     }
     else
-      message = T("Class ") + typeName.quoted() + T(" does not exists");
+      message = JUCE_T("Class ") + typeName.quoted() + JUCE_T(" does not exists");
 
-    context.errorCallback(T("ClassManager::getType"), message);
+    context.errorCallback(JUCE_T("ClassManager::getType"), message);
     return ClassPtr();
   }
 }
 
 string ClassManager::removeAllSpaces(const string& str)
 {
-  if (str.indexOfAnyOf(T(" \t\n\r")) < 0)
+  if (str.indexOfAnyOf(JUCE_T(" \t\n\r")) < 0)
     return str;
   string res;
   for (int i = 0; i < str.length(); ++i)
@@ -277,7 +277,7 @@ TemplateClassCache* ClassManager::getTemplateClass(ExecutionContext& context, co
   TemplateClassMap::iterator it = const_cast<ClassManager* >(this)->templateTypes.find(templateTypeName);
   if (it == templateTypes.end())
   {
-    context.errorCallback(T("ClassManager::getTemplateClass()"), T("Could not find template type ") + templateTypeName);
+    context.errorCallback(JUCE_T("ClassManager::getTemplateClass()"), JUCE_T("Could not find template type ") + templateTypeName);
     return NULL;
   }
   return &it->second;

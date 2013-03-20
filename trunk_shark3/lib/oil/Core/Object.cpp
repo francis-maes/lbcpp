@@ -130,7 +130,7 @@ ObjectPtr Object::create(ClassPtr type)
 */
 static ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const string& nameOrShortName)
 {
-  if (nameOrShortName == T("Missing"))
+  if (nameOrShortName == JUCE_T("Missing"))
     return ObjectPtr();
   ClassPtr type = typeManager().getTypeByShortName(context, nameOrShortName);
   if (!type)
@@ -154,7 +154,7 @@ static ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& conte
     int e = value.lastIndexOfChar(')');
     if (e <= n)
     {
-      context.errorCallback(T("Unmatched parenthesis in ") + value.quoted());
+      context.errorCallback(JUCE_T("Unmatched parenthesis in ") + value.quoted());
       return ObjectPtr();
     }
     string arguments = value.substring(n + 1, e).trim();
@@ -177,7 +177,7 @@ ObjectPtr Object::createFromString(ExecutionContext& context, ClassPtr type, con
   {
     ObjectPtr res = type->createObject(context);
     if (!res)
-      context.errorCallback(T("Object::createFromString"), T("Could not create instance of ") + type->getName().quoted());
+      context.errorCallback(JUCE_T("Object::createFromString"), JUCE_T("Could not create instance of ") + type->getName().quoted());
     else if (!res->loadFromString(context, value))
       res = ObjectPtr();
     return res;
@@ -201,7 +201,7 @@ ObjectPtr Object::createFromXml(XmlImporter& importer, ClassPtr type)
   {
     ObjectPtr res = type->createObject(importer.getContext());
     if (!res)
-      importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + type->getName().quoted());
+      importer.errorMessage(JUCE_T("Class::createFromXml"), JUCE_T("Could not create instance of ") + type->getName().quoted());
     else if (!res->loadFromXml(importer))
       res = ObjectPtr();
     return res;
@@ -276,7 +276,7 @@ string Object::toString() const
   ClassPtr thisClass = getClass();
   string res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
   if (getNumVariables())
-    res += T("(") + defaultToStringImplementation(false) + T(")");
+    res += JUCE_T("(") + defaultToStringImplementation(false) + JUCE_T(")");
   return res;
 }
 
@@ -285,7 +285,7 @@ string Object::toShortString() const
   ClassPtr thisClass = getClass();
   string res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
   if (getNumVariables())
-    res += T("(") + defaultToStringImplementation(true) + T(")");
+    res += JUCE_T("(") + defaultToStringImplementation(true) + JUCE_T(")");
   return res;
 }
 
@@ -302,7 +302,7 @@ string Object::defaultToStringImplementation(bool useShortString) const
     else
       res += "<missing>";
     if (i < n - 1)
-      res += T(", ");
+      res += JUCE_T(", ");
   }
   return res;
 }
@@ -315,7 +315,7 @@ string Object::variablesToString(const string& separator, bool includeTypes) con
   {
     ObjectPtr v = getVariable(i);
     if (includeTypes)
-      res += v->getClassName() + T(" ");
+      res += v->getClassName() + JUCE_T(" ");
     res += v->toString();
     if (i < n - 1)
       res += separator;
@@ -456,12 +456,12 @@ bool Object::loadFromXml(XmlImporter& importer)
   DefaultClassPtr defaultClass = thisClass.dynamicCast<DefaultClass>();
   bool ok = true;
   
-  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("variable"))
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, JUCE_T("variable"))
   {
-    string name = child->getStringAttribute(T("name"));
+    string name = child->getStringAttribute(JUCE_T("name"));
     if (name.isEmpty())
     {
-      importer.errorMessage(T("Object::loadFromXml"), T("Missing name attribute in variable"));
+      importer.errorMessage(JUCE_T("Object::loadFromXml"), JUCE_T("Missing name attribute in variable"));
       ok = false;
       continue;
     }
@@ -475,7 +475,7 @@ bool Object::loadFromXml(XmlImporter& importer)
     jassert(expectedType);
     
     ObjectPtr value;
-    if (child->getBoolAttribute(T("generated"), false))
+    if (child->getBoolAttribute(JUCE_T("generated"), false))
     {
       value = computeGeneratedObject(importer.getContext(), name);
       if (!value)
@@ -523,8 +523,8 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
       if (var)
         setVariable(i, var);
     }
-    else if (name != T("thisClass"))
-      importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
+    else if (name != JUCE_T("thisClass"))
+      importer.warningMessage(JUCE_T("Object::loadVariablesFromXmlAttributes"), JUCE_T("No value for variable ") + name.quoted());
   }
   return true;
 }
@@ -546,8 +546,8 @@ bool Object::loadArgumentsFromString(ExecutionContext& context, const string& st
   size_t n = getNumVariables();
   if (tokens.size() > n)
   {
-    context.errorCallback(T("Could not parse ") + str.quoted() + T(": too much tokens (") +
-      string((int)tokens.size()) + T(" tokens, ") + string((int)n) + T(" expected variables)"));
+    context.errorCallback(JUCE_T("Could not parse ") + str.quoted() + JUCE_T(": too much tokens (") +
+      string((int)tokens.size()) + JUCE_T(" tokens, ") + string((int)n) + JUCE_T(" expected variables)"));
     return false;
   }
   bool ok = true;
@@ -647,7 +647,7 @@ int Object::__index(LuaState& state) const
   {
     string str = state.checkString(1);
 
-    if (str == T("className"))
+    if (str == JUCE_T("className"))
     {
       state.pushString(getClassName());
       return 1;

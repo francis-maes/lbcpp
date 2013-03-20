@@ -33,7 +33,7 @@ public:
     {
       res += stack[i]->toShortString();
       if (i < stack.size() - 1)
-        res += T(", ");
+        res += JUCE_T(", ");
     }
     if (!isFinalState())
       res += "}";

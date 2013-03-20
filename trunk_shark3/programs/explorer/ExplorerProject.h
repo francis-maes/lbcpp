@@ -33,7 +33,7 @@ public:
   {
     WorkUnitPtr res = WorkUnit::create(getType(workUnitName));
     if (!res)
-      defaultExecutionContext().errorCallback(T("Could not create work unit of class ") + workUnitName);
+      defaultExecutionContext().errorCallback(JUCE_T("Could not create work unit of class ") + workUnitName);
     return res;
   }
 
@@ -50,7 +50,7 @@ class RecentWorkUnitsConfiguration : public Object
 {
 public:
   string toShortString() const
-    {return T("RecentWorkUnitsConfiguration");}
+    {return JUCE_T("RecentWorkUnitsConfiguration");}
 
   size_t getNumRecentWorkUnits() const
     {return recents.size();}

@@ -67,7 +67,7 @@ bool TemplateClass::parseInstanciatedTypeName(ExecutionContext& context, const s
   int e = typeName.lastIndexOfChar('>');
   if (b < 0 || e < 0)
   {
-    context.errorCallback(T("TemplateClass::parseInstanciatedTypeName"), T("Invalid type syntax: ") + typeName.quoted());
+    context.errorCallback(JUCE_T("TemplateClass::parseInstanciatedTypeName"), JUCE_T("Invalid type syntax: ") + typeName.quoted());
     return false;
   }
   templateName = typeName.substring(0, b).trim();
@@ -101,12 +101,12 @@ string TemplateClass::makeInstanciatedTypeName(const string& typeName, const std
     ClassPtr arg = arguments[i];
     jassert(arg);
     if (i == 0)
-      res = typeName + T("<");
+      res = typeName + JUCE_T("<");
     else
-      res += T(", ");
+      res += JUCE_T(", ");
     res += arg->getName();
   }
-  res += T(">");
+  res += JUCE_T(">");
   return res;
 }
 

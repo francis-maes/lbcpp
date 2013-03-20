@@ -56,7 +56,7 @@ int ExecutionCallback::information(LuaState& state)
   {
     info += state.toString(i);
     if (i < state.getTop())
-      info += T("    ");
+      info += JUCE_T("    ");
   }
   pthis->informationCallback(info);
   return 0;
@@ -65,7 +65,7 @@ int ExecutionCallback::information(LuaState& state)
 int ExecutionCallback::progress(LuaState& state)
 {
   ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
-  ProgressionStatePtr progression(new ProgressionState(0.0, 100.0, T("%")));
+  ProgressionStatePtr progression(new ProgressionState(0.0, 100.0, JUCE_T("%")));
   int numArguments = state.getTop();
   if (numArguments >= 2)
     progression->setValue(state.checkNumber(2));
@@ -228,25 +228,25 @@ string ProgressionState::toString() const
 {
   string res(value);
   if (total)
-    res += T(" / ") + string(total);
+    res += JUCE_T(" / ") + string(total);
   if (unit.isNotEmpty())
-    res += T(" ") + unit;
+    res += JUCE_T(" ") + unit;
   return res;
 }
 
 void ProgressionState::saveToXml(XmlExporter& exporter) const
 {
-  exporter.setAttribute(T("value"), value);
+  exporter.setAttribute(JUCE_T("value"), value);
   if (total)
-    exporter.setAttribute(T("total"), total);
+    exporter.setAttribute(JUCE_T("total"), total);
   if (unit.isNotEmpty())
-    exporter.setAttribute(T("unit"), unit);
+    exporter.setAttribute(JUCE_T("unit"), unit);
 }
 
 bool ProgressionState::loadFromXml(XmlImporter& importer)
 {
-  value = importer.getDoubleAttribute(T("value"));
-  total = importer.getDoubleAttribute(T("total"));
-  unit = importer.getStringAttribute(T("unit"));
+  value = importer.getDoubleAttribute(JUCE_T("value"));
+  total = importer.getDoubleAttribute(JUCE_T("total"));
+  unit = importer.getStringAttribute(JUCE_T("unit"));
   return true;
 }

@@ -24,7 +24,7 @@ string ScalarVariableMean::toString() const
   string res;
   string name = getName();
   if (name.isNotEmpty())
-    res = name + T(" = ");
+    res = name + JUCE_T(" = ");
   res += string(getMean());
   return res;
 }
@@ -89,7 +89,7 @@ string ScalarVariableMeanAndVariance::toShortString() const
   string res = ScalarVariableMean::toShortString();
   double stddev = getStandardDeviation();
   if (stddev)
-    res += T(" +/- ") + ObjectPtr(new Double(stddev))->toShortString();
+    res += JUCE_T(" +/- ") + ObjectPtr(new Double(stddev))->toShortString();
   return res;
 }
 
@@ -203,6 +203,6 @@ void ScalarVariableRecentMean::recomputeCurrentSum()
 ** ScalarVariableRecentMeanAndVariance
 */
 ScalarVariableRecentMeanAndVariance::ScalarVariableRecentMeanAndVariance(const string& name, size_t memorySize)
-  : ScalarVariableRecentMean(name, memorySize), meansqr(name + T(" sqr"), memorySize)
+  : ScalarVariableRecentMean(name, memorySize), meansqr(name + JUCE_T(" sqr"), memorySize)
 {
 }

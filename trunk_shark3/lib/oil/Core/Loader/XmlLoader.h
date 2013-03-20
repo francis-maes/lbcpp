@@ -37,12 +37,12 @@ public:
     string lastParseError = document.getLastParseError();
     if (!root)
     {
-      context.errorCallback(T("XmlLoader::loadFromFile"),
-        lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
+      context.errorCallback(JUCE_T("XmlLoader::loadFromFile"),
+        lastParseError.isEmpty() ? JUCE_T("Could not parse file ") + file.getFullPathName() : lastParseError);
       return ObjectPtr();
     }
     if (lastParseError.isNotEmpty())
-      context.warningCallback(T("XmlLoader::loadFromFile"), lastParseError);
+      context.warningCallback(JUCE_T("XmlLoader::loadFromFile"), lastParseError);
     return XmlElement::createFromJuceXml(root, true);
   }
 };

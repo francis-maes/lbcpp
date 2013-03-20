@@ -42,7 +42,7 @@ public:
       {
         selectedObjects.push_back(element);
         if (selectionName.isNotEmpty())
-          selectionName += T(", ");
+          selectionName += JUCE_T(", ");
         selectionName += string(i);
       }
     }
@@ -68,7 +68,7 @@ public:
       g.setFont(f);
 
       ObjectPtr element = container->getElement(rowNumber);
-      g.drawText(string(rowNumber) + T(" = ") + element->toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
+      g.drawText(string(rowNumber) + JUCE_T(" = ") + element->toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
     }
 
     virtual void selectedRowsChanged(int lastRowSelected)

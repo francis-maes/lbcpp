@@ -115,8 +115,8 @@ int main (int argc, char* argv[])
     String className (argv[3]);
     className = className.trim();
 
-    const File headerFile (destDirectory.getChildFile (className).withFileExtension (T(".h")));
-    const File cppFile    (destDirectory.getChildFile (className).withFileExtension (T(".cpp")));
+    const File headerFile (destDirectory.getChildFile (className).withFileExtension (JUCE_T(".h")));
+    const File cppFile    (destDirectory.getChildFile (className).withFileExtension (JUCE_T(".cpp")));
 
     String message;
     message << "Creating " << headerFile.getFullPathName() 
@@ -209,10 +209,10 @@ int main (int argc, char* argv[])
 
 
     header->printf("    extern const char* get(const juce::String& fileName, int& size);\r\n");
-    *cpp << T("const char* ") + className + T("::get(const juce::String& fileName, int& size)\r\n{\r\n");
+    *cpp << JUCE_T("const char* ") + className + JUCE_T("::get(const juce::String& fileName, int& size)\r\n{\r\n");
     for (std::map<String, String>::const_iterator it = dataFiles.begin(); it != dataFiles.end(); ++it)
-      *cpp << T("  if (fileName == T(") << it->first.quoted() << T(")) {size = ") << it->second << T("Size; return ") << it->second << ";}\r\n";
-    *cpp << T("  size = 0; return NULL;\r\n");
+      *cpp << JUCE_T("  if (fileName == JUCE_T(") << it->first.quoted() << JUCE_T(")) {size = ") << it->second << JUCE_T("Size; return ") << it->second << ";}\r\n";
+    *cpp << JUCE_T("  size = 0; return NULL;\r\n");
     cpp->printf("}\r\n");
 
     header->printf ("};\r\n\r\n"

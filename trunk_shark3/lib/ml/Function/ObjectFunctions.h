@@ -68,7 +68,7 @@ public:
   }
 
   virtual string toShortString() const
-    {return inputClass ? "." + inputClass->getMemberVariableName(variableIndex) : ".[" + string((int)variableIndex) + T("]");}
+    {return inputClass ? "." + inputClass->getMemberVariableName(variableIndex) : ".[" + string((int)variableIndex) + JUCE_T("]");}
 
   virtual ClassPtr initialize(const ClassPtr* inputTypes)
   {

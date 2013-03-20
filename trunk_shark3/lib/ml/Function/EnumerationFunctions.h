@@ -34,7 +34,7 @@ public:
     {return booleanClass;}
 
   virtual string makeNodeName(const std::vector<ExpressionPtr>& inputs) const
-    {return inputs[0]->toShortString() + T(" == ") + ObjectPtr(new Integer(enumeration, value))->toShortString();}
+    {return inputs[0]->toShortString() + JUCE_T(" == ") + ObjectPtr(new Integer(enumeration, value))->toShortString();}
   
   virtual ObjectPtr compute(ExecutionContext& context, const ObjectPtr* inputs) const
   {

@@ -77,7 +77,7 @@ public:
       for (size_t i = 0; i < selectedCurves.size(); ++i)
       {
         if (i > 0)
-          res += T(", ");
+          res += JUCE_T(", ");
         res += plot->getPlotVariable(selectedCurves[i])->getName();
       }
     }

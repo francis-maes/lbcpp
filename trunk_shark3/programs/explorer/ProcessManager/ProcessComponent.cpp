@@ -70,9 +70,9 @@ ProcessComponent::ProcessComponent(ProcessPtr process, ProcessConsoleSettingsPtr
 {
   jassert(settings);
   addAndMakeVisible(properties = new PropertyListDisplayComponent());
-  properties->addProperty(T("Executable"), process->getExecutableFile().getFullPathName());
-  properties->addProperty(T("Arguments"), process->getArguments());
-  properties->addProperty(T("Working Directory"), process->getWorkingDirectory().getFullPathName());
+  properties->addProperty(JUCE_T("Executable"), process->getExecutableFile().getFullPathName());
+  properties->addProperty(JUCE_T("Arguments"), process->getArguments());
+  properties->addProperty(JUCE_T("Working Directory"), process->getWorkingDirectory().getFullPathName());
 
   console = new ProcessConsoleComponent(process, settings);
   addAndMakeVisible(viewport = new ViewportComponent(console, true, false));

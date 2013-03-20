@@ -38,7 +38,7 @@ int Vector::findElement(const ObjectPtr& value) const
 
 ClassPtr Vector::getTemplateParameter(ClassPtr type)
 {
-  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Vector"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(JUCE_T("Vector"));
   jassert(dvType && dvType->getNumTemplateArguments() == 1);
   ClassPtr res = dvType->getTemplateArgument(0);
   jassert(res);
@@ -47,10 +47,10 @@ ClassPtr Vector::getTemplateParameter(ClassPtr type)
 
 bool Vector::getTemplateParameter(ExecutionContext& context, ClassPtr type, ClassPtr& res)
 {
-  ClassPtr dvType = type->findBaseTypeFromTemplateName(T("Vector"));
+  ClassPtr dvType = type->findBaseTypeFromTemplateName(JUCE_T("Vector"));
   if (!dvType)
   {
-    context.errorCallback(type->getName() + T(" is not a Vector"));
+    context.errorCallback(type->getName() + JUCE_T(" is not a Vector"));
     return false;
   }
   jassert(dvType->getNumTemplateArguments() == 1);
@@ -62,7 +62,7 @@ string Vector::toShortString() const
 {
   size_t n = getNumElements(); 
   if (n == 0)
-    return T("<empty>");
+    return JUCE_T("<empty>");
   if (n < 10)
   {
     string res;
@@ -70,12 +70,12 @@ string Vector::toShortString() const
     {
       res += getElement(i)->toShortString();
       if (i < n - 1)
-        res += T(", ");
+        res += JUCE_T(", ");
     }
     return res;
   }
   else
-    return string((int)n) + T(" elements...");
+    return string((int)n) + JUCE_T(" elements...");
 }
 
 string Vector::toString() const
@@ -118,17 +118,17 @@ string Vector::toString() const
   {
     res += getElement(i)->toString();
     if (i < n - 1)
-      res += T(", ");
+      res += JUCE_T(", ");
   }
   return res;
 }
 
 bool Vector::loadFromXml(XmlImporter& importer)
 {
-  int size = importer.getIntAttribute(T("size"), -1);
+  int size = importer.getIntAttribute(JUCE_T("size"), -1);
   if (size < 0)
   {
-    importer.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + string(size));
+    importer.errorMessage(JUCE_T("Vector::loadFromXml"), JUCE_T("Invalid size: ") + string(size));
     return false;
   }
   resize(size);
@@ -136,7 +136,7 @@ bool Vector::loadFromXml(XmlImporter& importer)
     return false;
 
   ClassPtr elementsType = getElementsType();
-  juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(T("elementsActualType"));
+  juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(JUCE_T("elementsActualType"));
   if (elementsActualType)
   {
     importer.enter(elementsActualType);
@@ -146,12 +146,12 @@ bool Vector::loadFromXml(XmlImporter& importer)
       return false;
   }
 
-  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("element"))
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, JUCE_T("element"))
   {
-    int index = child->getIntAttribute(T("index"), -1);
+    int index = child->getIntAttribute(JUCE_T("index"), -1);
     if (index < 0)
     {
-      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + string(index));
+      importer.errorMessage(JUCE_T("Container::loadFromXml"), JUCE_T("Invalid index for element: ") + string(index));
       return false;
     }
     
@@ -165,14 +165,14 @@ void Vector::saveToXml(XmlExporter& exporter) const
 {
   Object::saveToXml(exporter);
   size_t n = getNumElements();
-  exporter.setAttribute(T("size"), (int)n);
+  exporter.setAttribute(JUCE_T("size"), (int)n);
   ClassPtr elementsType = getElementsType();
   if (n > 1)
   {
     ClassPtr actualType = computeElementsCommonBaseType();
     if (elementsType != actualType)
     {
-      exporter.enter(T("elementsActualType"));
+      exporter.enter(JUCE_T("elementsActualType"));
       exporter.writeType(actualType);
       exporter.leave();
       elementsType = actualType;
@@ -191,7 +191,7 @@ bool Vector::loadFromString(ExecutionContext& context, const string& stringValue
 {
   ClassPtr elementsType = getElementsType();
   StringArray tokens;
-  tokens.addTokens(stringValue, T(","), T("\""));
+  tokens.addTokens(stringValue, JUCE_T(","), JUCE_T("\""));
   resize(tokens.size());
   for (int i = 0; i < tokens.size(); ++i)
   {
@@ -293,7 +293,7 @@ int Vector::append(LuaState& state)
 */
 string BVector::toString() const
 {
-  string res = T("[");
+  string res = JUCE_T("[");
   for (size_t i = 0; i < v.size(); ++i)
   {
     switch (v[i])
@@ -304,7 +304,7 @@ string BVector::toString() const
     default: res += ' '; break;
     };
   }
-  res += T("]");
+  res += JUCE_T("]");
   return res;
 }  
 
@@ -316,7 +316,7 @@ size_t BVector::getSizeInBytes(bool recursively) const
 */
 juce::int64 IVector::missingValue = 0x0FEEFEEEFEEEFEEELL;
 double DVector::missingValue = *(const double* )&IVector::missingValue;
-string SVector::missingValue = T("<missing string>");
+string SVector::missingValue = JUCE_T("<missing string>");
 
 /*
 ** OVector

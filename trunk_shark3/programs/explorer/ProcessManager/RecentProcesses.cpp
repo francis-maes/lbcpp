@@ -60,7 +60,7 @@ void RecentProcesses::addRecent(const juce::File& executable, const string& argu
 RecentProcesses::RecentExecutable::RecentExecutable(const juce::File& executable)
   : executable(executable), consoleSettings(new ProcessConsoleSettings)
 {
-  arguments.push_back(T(" "));
+  arguments.push_back(JUCE_T(" "));
   consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::red));
   consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::orange));
   consoleSettings->addFilter(new ProcessConsoleFilter(string::empty, juce::Colours::yellow));

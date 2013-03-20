@@ -51,8 +51,8 @@ public:
     {
       if (verbosity >= verbosityDetailed)
       {
-        context.enterScope(T("Iteration ") + string((int)i));
-        context.resultCallback(T("iteration"), i);
+        context.enterScope(JUCE_T("Iteration ") + string((int)i));
+        context.resultCallback(JUCE_T("iteration"), i);
       }
       
       ExpressionPtr expression = makeExpression(context, i);
@@ -78,7 +78,7 @@ public:
         context.leaveScope();
       }
       if (verbosity >= verbosityProgressAndResult)
-        context.progressCallback(new ProgressionState(i + 1, ensembleSize, T(" base models")));
+        context.progressCallback(new ProgressionState(i + 1, ensembleSize, JUCE_T(" base models")));
     }
 
     // set the solution
