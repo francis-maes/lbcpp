@@ -386,6 +386,8 @@ double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
     std::vector<double> ref = referenceFitness->getValuesToBeMinimized();
 
     // shark implementation
-    return hypervolume(&points[0], &ref[0], (unsigned int)numObjectives, (unsigned int)numPoints);
+    //FIXME
+    return 0.0;
+    //return hypervolume(&points[0], &ref[0], (unsigned int)numObjectives, (unsigned int)numPoints);
   }
 }

@@ -76,7 +76,9 @@ struct Ackley : public AbstractObjectiveFunction< VectorSpace<double>,double > {
 			b += cos(C * p(i));
 		}
 
-		return -A * std::exp(-B * std::sqrt(a / n)) - std::exp(b / n) + A + M_E;
+    //return -A * std::exp(-B * std::sqrt(a / n)) - std::exp(b / n) + A + M_E;
+    // quick and dirty fix, for some reason M_E is undeclared identifier, but M_PI isn't...
+		return -A * std::exp(-B * std::sqrt(a / n)) - std::exp(b / n) + A + 2.71828182845904523536;
 	}
 private:
 	std::size_t m_numberOfVariables;
