@@ -48,6 +48,9 @@ public:
     FitnessPtr fitness = problem->evaluate(context, solution);
     jassert(fitness);
     value = fitness->getValues();
+    for (size_t i = 0; i < value.size(); ++i) // turn everything into minimization
+      if (problem->getObjective(i)->isMaximization())
+        value[i] = -value[i];
     solver->addSolution(context, solution, fitness);
     m_timesCalled++;
   }

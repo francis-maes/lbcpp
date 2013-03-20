@@ -67,8 +67,8 @@ protected:
     size_t populationSize = 10 * numDims;
     double evaluationPeriod = 5.0;
     double evaluationPeriodFactor = 1.0;
-    size_t verbosity = 2;
-    size_t optimizerVerbosity = 2;
+    size_t verbosity = 1;
+    size_t optimizerVerbosity = 1;
     
     std::vector<SolverSettings> solvers;
         
