@@ -106,7 +106,7 @@ public:
 protected:
   friend class CMAESSOOptimizerClass;
   
-  SharkObjectiveFunctionFromProblem* objective;
+  shark::AbstractObjectiveFunction< shark::VectorSpace<double>,shark::VectorSpace<double> >* objective;
   shark::CMA* cma;
 };
 

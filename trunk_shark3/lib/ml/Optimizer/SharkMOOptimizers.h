@@ -29,16 +29,16 @@ public:
   {
     PopulationBasedSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
-    nsga2 = new shark::RealCodedNSGAII();
+    nsga2 = new shark::detail::RealCodedNSGAII<shark::HypervolumeIndicator>();
   }
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     jassert(nsga2);
     if (iter == 0)
-      nsga2->init(*objective, populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
+      nsga2->init(populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
     else
-      nsga2->step();
+      nsga2->step(*objective);
     return true;
   }
 
@@ -57,7 +57,7 @@ protected:
   double crossOverProbability;
 
   SharkObjectiveFunctionFromProblem* objective;
-  shark::detail::RealCodedNSGAII* nsga2;
+  shark::detail::RealCodedNSGAII<shark::HypervolumeIndicator>* nsga2;
 };
 
 class CMAESMOOptimizer : public PopulationBasedSolver
