@@ -253,9 +253,7 @@ public:
    */
   double mergeResults(SolverInfo& res, const std::vector<SolverInfo>& infos)
   {
-    double best[infos.size()];
-    for (size_t j = 0; j < infos.size(); ++j)
-      best[j] = DBL_MAX;
+    std::vector<double> best(infos.size(), DBL_MAX);
     size_t maxLengthEvaluations = 0;
     size_t maxLengthCpuTimes = 0;
     for (size_t i = 0; i < infos.size(); ++i)
