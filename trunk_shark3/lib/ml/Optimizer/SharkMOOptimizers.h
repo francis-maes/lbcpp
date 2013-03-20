@@ -12,8 +12,8 @@
 # include <ml/Solver.h>
 # include "SharkSOOptimizers.h"
 # undef T
-# include <MOO-EALib/NSGA2.h>
-# include <MOO-EALib/MO-CMA.h>
+# include <shark/Algorithms/DirectSearch/RealCodedNSGAII.h>
+# include <shark/Algorithms/DirectSearch/MOCMA.h>
 # define T JUCE_T
 
 namespace lbcpp
@@ -29,7 +29,7 @@ public:
   {
     PopulationBasedSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
-    nsga2 = new NSGA2Search();
+    nsga2 = new shark::RealCodedNSGAII();
   }
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -38,7 +38,7 @@ public:
     if (iter == 0)
       nsga2->init(*objective, populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
     else
-      nsga2->run();
+      nsga2->step();
     return true;
   }
 
@@ -57,7 +57,7 @@ protected:
   double crossOverProbability;
 
   SharkObjectiveFunctionFromProblem* objective;
-  NSGA2Search* nsga2;
+  shark::detail::RealCodedNSGAII* nsga2;
 };
 
 class CMAESMOOptimizer : public PopulationBasedSolver
@@ -70,7 +70,7 @@ public:
   {
     PopulationBasedSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
-    mocma = new MOCMASearch();
+    mocma = new shark::MOCMA();
   }
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -79,7 +79,7 @@ public:
     if (iter == 0)
       mocma->init(*objective, populationSize, numOffsprings);
     else
-      mocma->run();
+      mocma->step(*objective);
     return true;
   }
 
@@ -96,7 +96,7 @@ protected:
   size_t numOffsprings;
 
   SharkObjectiveFunctionFromProblem* objective;
-  MOCMASearch* mocma;
+  shark::detail::MOCMA* mocma;
 };
 
 }; /* namespace lbcpp */

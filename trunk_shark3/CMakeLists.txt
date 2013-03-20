@@ -6,6 +6,12 @@ cmake_minimum_required(VERSION 2.8)
 #####################################################################
 SET(Boost_USE_MULTITHREADED ON)
 ADD_DEFINITIONS( -DBOOST_PARAMETER_MAX_ARITY=15 -DBOOST_FILESYSTEM_VERSION=3 )
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOMINMAX)   # prevent windows.h from polluting the namespace with global min and max macros
+ENDIF(WIN32)
+
+ADD_DEFINITIONS(-DJUCE_DONT_DEFINE_MACROS) # the T macro interferes with boost
+
 FIND_PACKAGE( Boost 1.51.0 COMPONENTS system date_time filesystem program_options regex signals serialization thread unit_test_framework REQUIRED )
 
 include_directories ( ${Boost_INCLUDE_DIRS} )

@@ -24,7 +24,7 @@ CONFIGURE_FILE (
   "include/shark/Core/Shark.h"
   )
 
-SET( OPT_DYNAMIC_LIBRARY ON ) # Compile shark into a dynamic library instead of a static one.
+SET( OPT_DYNAMIC_LIBRARY OFF )
 
 IF( OPT_DYNAMIC_LIBRARY )
     set(Boost_USE_STATIC_LIBS OFF)

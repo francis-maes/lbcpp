@@ -12,20 +12,22 @@
 # include <ml/Solver.h>
 # undef T
 # include <shark/Algorithms/DirectSearch/CMA.h>
+# include <shark/ObjectiveFunctions/AbstractObjectiveFunction.h>
+# include <shark/Core/SearchSpaces/VectorSpace.h>
 # define T JUCE_T
 
 namespace lbcpp
 {
 
-class SharkObjectiveFunctionFromProblem : public AbstractObjectiveFunction<RealVector, RealVector> 
+class SharkObjectiveFunctionFromProblem : public shark::AbstractObjectiveFunction< shark::VectorSpace<double>,shark::VectorSpace<double> >
 {
 public:
   SharkObjectiveFunctionFromProblem(ExecutionContext& context, ProblemPtr problem, SolverPtr solver)
   : context(context), problem(problem), solver(solver)
   {
-    m_name = (const char* )problem->toShortString();
+    m_name = problem->toShortString();
     ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
-    m_dimension = domain->getNumDimensions();
+    m_numberOfVariables = domain->getNumDimensions();
     std::vector<double> lower(domain->getNumDimensions());
     std::vector<double> upper(domain->getNumDimensions());
     for (size_t i = 0; i < lower.size(); ++i)
@@ -33,23 +35,23 @@ public:
       lower[i] = domain->getLowerLimit(i);
       upper[i] = domain->getUpperLimit(i);
     }
-    constrainthandler = new BoxConstraintHandler(lower, upper); 
+    //constrainthandler = new BoxConstraintHandler(lower, upper); 
   }
   virtual ~SharkObjectiveFunctionFromProblem()
-    {delete constrainthandler;}
+    {/*delete constrainthandler;*/}
   
   virtual unsigned int objectives() const
     {return (int)problem->getNumObjectives();}
   
   virtual void result(double* const& point, std::vector<double>& value)
   {
-    DenseDoubleVectorPtr solution = new DenseDoubleVector((size_t)m_dimension, 0.0);
-    memcpy(solution->getValuePointer(0), point, sizeof (double) * m_dimension);
+    DenseDoubleVectorPtr solution = new DenseDoubleVector((size_t)m_numberOfVariables, 0.0);
+    memcpy(solution->getValuePointer(0), point, sizeof (double) * m_numberOfVariables);
     FitnessPtr fitness = problem->evaluate(context, solution);
     jassert(fitness);
     value = fitness->getValues();
     solver->addSolution(context, solution, fitness);
-    m_timesCalled++;
+    m_evaluationCounter++;
   }
   
   virtual bool ProposeStartingPoint(double*& point) const
@@ -57,14 +59,18 @@ public:
     DenseDoubleVectorPtr solution = problem->getInitialGuess().staticCast<DenseDoubleVector>();
     if (!solution)
       return false;
-    memcpy(point, solution->getValuePointer(0), sizeof (double) * m_dimension);
+    memcpy(point, solution->getValuePointer(0), sizeof (double) * m_numberOfVariables);
     return true;
   }
+
+  virtual size_t numberOfVariables() const
+    {return m_numberOfVariables;}
   
 protected:
   ExecutionContext& context;
   ProblemPtr problem;
   SolverPtr solver;
+  size_t m_numberOfVariables;
 };
 
 class CMAESSOOptimizer : public IterativeSolver
@@ -77,7 +83,7 @@ public:
   {
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
-    cma = new CMA();
+    cma = new shark::CMA();
   }
   
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -86,7 +92,7 @@ public:
     if (iter == 0)
       cma->init(*objective);
     else
-      cma->run();
+      cma->step(*objective);
     return true;
   }
   
@@ -101,7 +107,7 @@ protected:
   friend class CMAESSOOptimizerClass;
   
   SharkObjectiveFunctionFromProblem* objective;
-  CMA* cma;
+  shark::CMA* cma;
 };
 
 }; /* namespace lbcpp */
