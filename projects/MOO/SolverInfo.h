@@ -138,14 +138,26 @@ public:
   
   SolverInfo runSolver(ExecutionContext& context, ProblemPtr problem)
   {
+    std::vector<ProblemPtr> problemVariants(numRuns);
+    for (size_t i = 0; i < problemVariants.size(); ++i)
+    {
+      problemVariants[i] = problem->cloneAndCast<Problem>();
+      problemVariants[i]->reinitialize(context);
+    }
+    return runSolver(context, problemVariants);
+  }
+
+  SolverInfo runSolver(ExecutionContext& context, const std::vector<ProblemPtr>& problemVariants)
+  {
     context.enterScope(description);
     context.resultCallback("solver", solver);
     std::vector<SolverInfo> runInfos(numRuns);
+    jassert(numRuns == problemVariants.size());
     for (size_t i = 0; i < numRuns; ++i)
     {
       SolverInfo& info = runInfos[i];
       context.enterScope("Run " + string((int)i));
-      double res = runSolverOnce(context, problem, info);
+      double res = runSolverOnce(context, problemVariants[i], info);
       context.leaveScope(res);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
@@ -186,8 +198,6 @@ public:
   
   double runSolverOnce(ExecutionContext& context, ProblemPtr problem, SolverInfo& info)
   {
-    problem->reinitialize(context);
-    
     FitnessPtr defaultBestFitness;
     if (bestFitness)
       *bestFitness = FitnessPtr();
@@ -308,8 +318,10 @@ public:
         }
         else
         {
-          meanScore.push(curve.scores->get(curve.scores->getNumElements() - 1));
-          meanEvaluations.push(curve.evaluations->get(curve.evaluations->getNumElements() - 1));
+          if (curve.scores->getNumElements())
+            meanScore.push(curve.scores->get(curve.scores->getNumElements() - 1));
+          if (curve.evaluations->getNumElements())
+            meanEvaluations.push(curve.evaluations->get(curve.evaluations->getNumElements() - 1));
         }
       }
       res.inFunctionOfCpuTime.evaluations->append(meanEvaluations.getCount() ? meanEvaluations.getMean() : DVector::missingValue);

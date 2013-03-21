@@ -98,14 +98,6 @@ protected:
    */
   void testSingleObjectiveOptimizers(ExecutionContext& context)
   {
-    std::vector<ProblemPtr> problems;
-    problems.push_back(new SphereProblem(numDims));
-    problems.push_back(new AckleyProblem(numDims));
-    problems.push_back(new GriewangkProblem(numDims));
-    problems.push_back(new RastriginProblem(numDims));
-    problems.push_back(new RosenbrockProblem(numDims));
-    problems.push_back(new RosenbrockRotatedProblem(numDims));
-    
     size_t numInitialSamples = 10 * numDims;
     
     std::vector<SolverSettings> solvers;
@@ -231,14 +223,30 @@ protected:
       
     } // runIncrementalXT
     
-    ProblemPtr problem = problems[problemIdx - 1];
-    context.enterScope(problem->toShortString());
-    context.resultCallback("problem", problem);
+    std::vector<ProblemPtr> problemVariants(numRuns);
+    for (size_t i = 0; i < problemVariants.size(); ++i)
+      problemVariants[i] = createProblem(problemIdx - 1);
+
+    context.enterScope(problemVariants[0]->toShortString());
     std::vector<SolverInfo> infos;
     for (size_t j = 0; j < solvers.size(); ++j)
-      infos.push_back(solvers[j].runSolver(context, problem));
+      infos.push_back(solvers[j].runSolver(context, problemVariants));
     SolverInfo::displayResults(context, infos);
     context.leaveScope(); 
+  }
+
+  ProblemPtr createProblem(size_t index) const
+  {
+    switch (index)
+    {
+    case 0: return new SphereProblem(numDims);
+    case 1: return new AckleyProblem(numDims);
+    case 2: return new GriewangkProblem(numDims);
+    case 3: return new RastriginProblem(numDims);
+    case 4: return new RosenbrockProblem(numDims);
+    case 5: return new RosenbrockRotatedProblem(numDims);
+    default: jassertfalse; return ProblemPtr();
+    };
   }
 };
 
