@@ -124,11 +124,12 @@ protected:
     
     for (size_t i = 0; i < problems.size(); ++i)
     {
-      context.enterScope(problems[i]->toShortString());
-      context.resultCallback("problem", problems[i]);
+      ProblemPtr problem = problems[i];
+      context.enterScope(problem->toShortString());
+      context.resultCallback("problem", problem);
       std::vector<SolverInfo> infos;
       for (size_t j = 0; j < solvers.size(); ++j)
-        infos.push_back(solvers[j].runSolver(context, problems[i]));
+        infos.push_back(solvers[j].runSolver(context, problem));
       SolverInfo::displayResults(context, infos);
       context.leaveScope();
     }
