@@ -108,6 +108,15 @@
   </class>
   
   <!-- Surrogate based solvers -->
+
+  <class name="SurrogateBasedSolverInformation">
+    <variable type="Problem" name="problem"/>
+    <variable type="SolutionVector" name="solutions"/>
+    <variable type="Expression" name="surrogateModel"/>
+    <variable type="PositiveInteger" name="stepNumber"/>
+  </class>
+  <uicomponent name="SurrogateBasedSolverInformationComponent" type="SurrogateBasedSolverInformation"/>
+
   <class name="SurrogateBasedSolver" base="IterativeSolver" abstract="yes">
     <variable type="Sampler" name="initialVectorSampler"/>
     <variable type="Solver" name="surrogateSolver"/>
