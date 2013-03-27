@@ -169,7 +169,7 @@ void GenericTreeViewItem::createSubItems()
 
 void GenericTreeViewItem::itemOpennessChanged(bool isNowOpen)
 {
-  if (isNowOpen && !hasBeenOpened)
+  if (isNowOpen)
   {
     hasBeenOpened = true;
     if (owner->getSubObjects(object).size() != (size_t)getNumSubItems())

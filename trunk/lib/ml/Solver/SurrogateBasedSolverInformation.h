@@ -24,7 +24,7 @@ class SurrogateBasedSolverInformation : public Object
 {
 public:
   SurrogateBasedSolverInformation(size_t stepNumber = 0)
-    : stepNumber(stepNumber), drawSolutions(true), drawObjective(true), drawModel(false), drawSelectionCriterion(false), drawStddev(false) {}
+    : stepNumber(stepNumber), drawSolutions(true), drawObjective(true), drawModel(false), drawSelectionCriterion(false), drawStddev(false), precision(0.2) {}
 
   ProblemPtr getProblem() const
     {return problem;}
@@ -83,6 +83,12 @@ public:
   void setDrawStddev(bool draw)
     {drawStddev = draw;}
 
+  double getPrecision() const
+    {return precision;}
+
+  void setPrecision(double precision)
+    {this->precision = precision;}
+
 private:
   friend class SurrogateBasedSolverInformationClass;
 
@@ -91,6 +97,7 @@ private:
   bool drawModel;
   bool drawSelectionCriterion;
   bool drawStddev;
+  double precision;
 
   ProblemPtr problem;
   SolutionVectorPtr solutions;
@@ -156,20 +163,19 @@ protected:
     double lowestValue = DBL_MAX;
     double highestValue = -DBL_MAX;
 
-    int numSteps = 50;
+    int w = (int)(rect.getWidth() * information->getPrecision());
+    int h = (int)(rect.getHeight() * information->getPrecision());
+    if (w <= 1 || h <= 1)
+      return;
 
-    std::vector< std::vector< double > > values(numSteps + 1);
-
-    juce::Image* imgLayer = new juce::Image(juce::Image::RGB, numSteps + 1, numSteps + 1, true);
-    juce::Graphics gLayer(*imgLayer);
-    //TODO check if selection of bg layer has changed, if not, we don't need to recompute the image, just resize it
-    for (int y = 0; y <= numSteps; ++y)
+    std::vector< std::vector< double > > values(h);
+    for (int y = 0; y < h; ++y)
     {
-      values[y].resize(numSteps + 1);
-      for (int x = 0; x <= numSteps; ++x)
+      values[y].resize(w);
+      for (int x = 0; x < w; ++x)
       {
-        double vx = rect.getX() + (double)x * rect.getWidth() / numSteps;
-        double vy = rect.getY() + (double)y * rect.getHeight() / numSteps;
+        double vx = rect.getX() + (double)x * rect.getWidth() / (w - 1);
+        double vy = rect.getY() + (double)y * rect.getHeight() / (h - 1);
         inverseTransform.transformPoint(vx, vy);
 
         DenseDoubleVectorPtr vector(new DenseDoubleVector(2, 0.0));
@@ -209,21 +215,23 @@ protected:
     }
 
     double invDelta = highestValue > lowestValue ? 1.0 / (highestValue - lowestValue) : 1.0;
-    for (int y = 0; y <= numSteps; ++y)
-      for (int x = 0; x <= numSteps; ++x)
+
+    juce::Image* imgLayer = new juce::Image(juce::Image::RGB, w, h, true);
+    juce::Graphics gLayer(*imgLayer);
+    for (int y = 0; y < h; ++y)
+      for (int x = 0; x < w; ++x)
       {
         double normalizedValue = values[y][x] * invDelta;
         if (normalizedValue > 1.0)
           normalizedValue = 1.0;
         if (normalizedValue < 0.0)
           normalizedValue = 0.0;
-        jassert(normalizedValue >= 0.0 && normalizedValue <= 1.0);
         juce::uint8 level = (juce::uint8)(255 * normalizedValue);
         gLayer.setColour(juce::Colour(level, level, level));
         gLayer.setPixel(x, y);
       }
 
-    g.drawImage(imgLayer, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), 0, 0, numSteps, numSteps);
+    g.drawImage(imgLayer, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), 0, 0, w, h);
   }
   
   void getPixelPosition(DenseDoubleVectorPtr vector, int& x, int& y, const juce::AffineTransform& transform) const
@@ -283,7 +291,8 @@ public:
   SurrogateBasedSolverInformationConfigurationComponent(SurrogateBasedSolverInformationPtr information) 
     : information(information)
   {
-    addAndMakeVisible(layerComboBox = createComboBox());
+    addAndMakeVisible(layerComboBox = createLayerSelectionComboBox());
+    addAndMakeVisible(precisionComboBox = createPrecisionComboBox());
   }
 
   virtual ~SurrogateBasedSolverInformationConfigurationComponent()
@@ -291,17 +300,26 @@ public:
 
   virtual void comboBoxChanged(juce::ComboBox* box)
   {
-    information->setDrawObjective(false);
-    information->setDrawModel(false);
-    information->setDrawSelectionCriterion(false);
-    information->setDrawStddev(false);
-    switch(box->getSelectedId()) 
+    if (box == layerComboBox)
     {
-      case 1: information->setDrawObjective(true); break;
-      case 2: information->setDrawModel(true); break;
-      case 3: information->setDrawSelectionCriterion(true); break;
-      case 4: information->setDrawStddev(true); break;
-      default: jassertfalse;
+      information->setDrawObjective(false);
+      information->setDrawModel(false);
+      information->setDrawSelectionCriterion(false);
+      information->setDrawStddev(false);
+
+      switch (box->getSelectedId()) 
+      {
+        case 1: information->setDrawObjective(true); break;
+        case 2: information->setDrawModel(true); break;
+        case 3: information->setDrawSelectionCriterion(true); break;
+        case 4: information->setDrawStddev(true); break;
+        default: jassertfalse;
+      }
+    }
+    else if (box == precisionComboBox)
+    {
+      const double precisions[] = {1.0, 0.5, 0.2, 0.1, 0.05};
+      information->setPrecision(precisions[box->getSelectedItemIndex()]);
     }
     sendSynchronousChangeMessage(this);
   }
@@ -309,14 +327,16 @@ public:
   virtual void resized()
   {
     layerComboBox->setBounds(10, 10, 250, 30);
+    precisionComboBox->setBounds(270, 10, 100, 30);
   }
 
 private:
   SurrogateBasedSolverInformationPtr information;
 
   juce::ComboBox* layerComboBox;
+  juce::ComboBox* precisionComboBox;
 
-  juce::ComboBox* createComboBox()
+  juce::ComboBox* createLayerSelectionComboBox()
   {
     juce::ComboBox* res = new juce::ComboBox(T("layerSelectionCombo"));
     res->addItem(T("Objective"), 1);
@@ -325,6 +345,19 @@ private:
     res->addItem(T("Stddev"), 4);
     res->addListener(this);
     res->setSelectedId(1);
+    return res;
+  }
+
+  juce::ComboBox* createPrecisionComboBox()
+  {
+    juce::ComboBox* res = new juce::ComboBox(T("precisionCombo"));
+    res->addItem(T("1"), 1);
+    res->addItem(T("1 / 2"), 2);
+    res->addItem(T("1 / 5"), 3);
+    res->addItem(T("1 / 10"), 4);
+    res->addItem(T("1 / 20"), 5);
+    res->addListener(this);
+    res->setSelectedId(3);
     return res;
   }
 };
