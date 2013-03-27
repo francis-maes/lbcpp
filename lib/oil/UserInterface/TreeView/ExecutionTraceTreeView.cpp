@@ -296,23 +296,21 @@ class MakeTraceAndFillTreeThreadExecutionCallback : public MakeTraceThreadExecut
 {
 public:
   MakeTraceAndFillTreeThreadExecutionCallback(ExecutionTraceTreeView* tree, ExecutionTracePtr trace, ExecutionTraceNodePtr traceNode, ExecutionTraceTreeViewItem* node)
-    : MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime()), tree(tree), stack(1, node) {thisClass = executionCallbackClass;}
+    : MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime()), tree(tree), itemsStack(1, node) {thisClass = executionCallbackClass;}
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit)
   {
     MakeTraceThreadExecutionCallback::preExecutionCallback(stack, description, workUnit);
-    jassert(this->stack.size());
-    ExecutionTraceTreeViewItem* node = this->stack.back();
-    ExecutionTraceTreeViewItem* newNode = NULL;
-    if (node && node->hasBeenOpenedOnce())
-      newNode = dynamic_cast<ExecutionTraceTreeViewItem* >(node->getSubItem(node->getNumSubItems() - 1));
-    this->stack.push_back(newNode);
+    jassert(itemsStack.size());
+    ExecutionTraceTreeViewItem* node = itemsStack.back();
+    ExecutionTraceTreeViewItem* newNode = dynamic_cast<ExecutionTraceTreeViewItem* >(node->getSubItem(node->getNumSubItems() - 1));
+    itemsStack.push_back(newNode);
   }
   
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const string& description, const WorkUnitPtr& workUnit, const ObjectPtr& result)
   {
-    jassert(this->stack.size());
-    this->stack.pop_back();
+    jassert(itemsStack.size());
+    itemsStack.pop_back();
     MakeTraceThreadExecutionCallback::postExecutionCallback(stack, description, workUnit, result);
     tree->invalidateTree();
   }
@@ -325,20 +323,17 @@ public:
 
 protected:
   ExecutionTraceTreeView* tree;
-  std::vector<ExecutionTraceTreeViewItem* > stack;
+  std::vector<ExecutionTraceTreeViewItem* > itemsStack;
 
   virtual void appendTraceItem(ExecutionTraceItemPtr item)
   {
-    jassert(stack.size());
+    jassert(itemsStack.size());
     MakeTraceThreadExecutionCallback::appendTraceItem(item);
-    ExecutionTraceTreeViewItem* parent = stack.back();
-    if (parent && parent->hasBeenOpenedOnce())
-    {
-      ExecutionTraceTreeViewItem* newItem = new ExecutionTraceTreeViewItem(tree, item);
-      stack.back()->addSubItem(newItem);
-      if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
-        tree->scrollToKeepItemVisible(newItem);
-    }
+    ExecutionTraceTreeViewItem* parent = itemsStack.back();
+    ExecutionTraceTreeViewItem* newItem = new ExecutionTraceTreeViewItem(tree, item);
+    itemsStack.back()->addSubItem(newItem);
+    if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
+      tree->scrollToKeepItemVisible(newItem);
   }
 };
 
