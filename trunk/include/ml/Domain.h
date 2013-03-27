@@ -19,6 +19,9 @@ namespace lbcpp
 class Domain : public Object
 {
 public:
+  virtual ObjectPtr sampleUniformly(RandomGeneratorPtr random) const // TODO: = 0
+    {jassertfalse; return ObjectPtr();}
+
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
     {return object;}
 };
@@ -90,7 +93,7 @@ public:
   void setLimits(size_t dimension, double lowest, double highest)
     {jassert(dimension < limits.size()); limits[dimension] = std::make_pair(lowest, highest);}
 
-  DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random) const;
+  virtual ObjectPtr sampleUniformly(RandomGeneratorPtr random) const;
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const;
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;

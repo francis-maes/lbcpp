@@ -75,7 +75,7 @@ public:
     }
 
     ScalarVectorDomainPtr scalarVectorDomain = getDomain().staticCast<ScalarVectorDomain>();
-    DenseDoubleVectorPtr optimum = scalarVectorDomain->sampleUniformly(context.getRandomGenerator());
+    DenseDoubleVectorPtr optimum = scalarVectorDomain->sampleUniformly(context.getRandomGenerator()).staticCast<DenseDoubleVector>();
 
     for (size_t i = 0; i < objective->objectives(); ++i)
     {

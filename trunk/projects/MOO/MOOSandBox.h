@@ -90,7 +90,7 @@ protected:
       /*
       ** Baselines
       */
-      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations), bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations), bestFitness);
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize), bestFitness);
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize, true), bestFitness);
       solveWithSingleObjectiveOptimizer(context, problem, cmaessoOptimizer(numEvaluations), bestFitness);
@@ -199,7 +199,7 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformScalarVectorSampler(), numEvaluations));
+      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
       solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
       solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
 
@@ -266,7 +266,7 @@ protected:
   void testSolutionVectorComponent(ExecutionContext& context)
   {
     ProblemPtr problem = new ZDT1MOProblem();
-    SamplerPtr sampler = uniformScalarVectorSampler();
+    SamplerPtr sampler = uniformSampler();
     sampler->initialize(context, problem->getDomain());
 
     SolutionVectorPtr solutions = new SolutionVector(problem->getFitnessLimits());

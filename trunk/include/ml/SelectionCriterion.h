@@ -40,8 +40,8 @@ protected:
 
 extern SelectionCriterionPtr greedySelectionCriterion();
 extern SelectionCriterionPtr optimisticSelectionCriterion(double optimism);
-extern SelectionCriterionPtr probabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness);
 extern SelectionCriterionPtr expectedImprovementSelectionCriterion(FitnessPtr& bestFitness);
+extern SelectionCriterionPtr probabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness, double improvementFactor = 0.1);
 
 }; /* namespace lbcpp */
 

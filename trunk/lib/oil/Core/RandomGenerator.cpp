@@ -69,7 +69,7 @@ using namespace lbcpp;
 void RandomGenerator::setSeed(juce::uint32 seed)
 {
   /* initializes mt[N] with a seed */
-  mt[0]= seed & 0xffffffffUL;
+  mt[0] = seed & 0xffffffffUL;
   for (mti=1; mti<N; mti++)
   {
     mt[mti] = (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 

@@ -30,7 +30,7 @@ void DiscreteDomain::clone(ExecutionContext& context, const ObjectPtr& target) c
 /*
 ** ScalarVectorDomain
 */
-DenseDoubleVectorPtr ScalarVectorDomain::sampleUniformly(RandomGeneratorPtr random) const
+ObjectPtr ScalarVectorDomain::sampleUniformly(RandomGeneratorPtr random) const
 {
   size_t n = limits.size();
   DenseDoubleVectorPtr res(new DenseDoubleVector(n, 0.0));
