@@ -69,6 +69,7 @@ SET(ML_SOLVER_SOURCES
   Solver/RepeatSolver.h
   Solver/MABMetaSolver.h
   Solver/SurrogateBasedSolver.h
+  Solver/SurrogateBasedSolverInformation.h
   Solver/SolverCallbacks.h
   Solver/SolverEvaluators.h
   Solver/SolverLibrary.xml

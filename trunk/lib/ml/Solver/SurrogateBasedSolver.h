@@ -17,6 +17,7 @@
 # include <ml/SelectionCriterion.h>
 # include <ml/IncrementalLearner.h>
 # include "SurrogateBasedSolverInformation.h"
+# include "../SelectionCriterion/ExpectedImprovementSelectionCriterion.h"
 
 namespace lbcpp
 {
@@ -100,6 +101,16 @@ public:
         information->setSolutions(new SolutionVector(problem->getFitnessLimits()));
       information->getSolutions()->insertSolution(object, fitness);
       information->setSurrogateModel(surrogateModel ? surrogateModel->cloneAndCast<Expression>() : ExpressionPtr());
+      ExpectedImprovementSelectionCriterionPtr eiSelection = selectionCriterion.dynamicCast<ExpectedImprovementSelectionCriterion>();
+      if (eiSelection)
+      {
+        FitnessPtr& f = eiSelection->getBestFitness();
+        FitnessPtr fclone = new Fitness(f->getValue(0), f->getLimits());
+        SelectionCriterionPtr clone = expectedImprovementSelectionCriterion(fclone);
+        information->setSelectionCriterion(clone);
+      }
+      else
+        information->setSelectionCriterion(selectionCriterion);
       context.resultCallback("information", information);
       lastInformation = information;
     }

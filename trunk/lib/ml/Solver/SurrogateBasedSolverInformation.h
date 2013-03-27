@@ -44,35 +44,41 @@ public:
   void setSurrogateModel(ExpressionPtr surrogateModel)
     {this->surrogateModel = surrogateModel;}
 
+  SelectionCriterionPtr getSelectionCriterion() const
+    {return selectionCriterion;}
+
+  void setSelectionCriterion(SelectionCriterionPtr selectionCriterion)
+    {this->selectionCriterion = selectionCriterion;}
+
   size_t getStepNumber() const
     {return stepNumber;}
 
   bool getDrawSolutions() const
     {return drawSolutions;}
 
-  bool getDrawObjective() const
-    {return drawObjective;}
-
-  bool getDrawModel() const
-    {return drawModel;}
-
-  bool getDrawSelectionCriterion() const
-    {return drawSelectionCriterion;}
-
-  bool getDrawStddev() const
-    {return drawStddev;}
-
   void setDrawSolutions(bool draw)
     {drawSolutions = draw;}
+
+  bool getDrawObjective() const
+    {return drawObjective;}
 
   void setDrawObjective(bool draw)
     {drawObjective = draw;}
 
+  bool getDrawModel() const
+    {return drawModel;}
+  
   void setDrawModel(bool draw)
     {drawModel = draw;}
 
+  bool getDrawSelectionCriterion() const
+    {return drawSelectionCriterion;}
+
   void setDrawSelectionCriterion(bool draw)
     {drawSelectionCriterion = draw;}
+
+  bool getDrawStddev() const
+    {return drawStddev;}
 
   void setDrawStddev(bool draw)
     {drawStddev = draw;}
@@ -89,6 +95,7 @@ private:
   ProblemPtr problem;
   SolutionVectorPtr solutions;
   ExpressionPtr surrogateModel;
+  SelectionCriterionPtr selectionCriterion;
   size_t stepNumber;
 };
 
@@ -118,10 +125,7 @@ public:
     if (!areBoundsValid())
       return;
 
-    if(information->getDrawObjective())
-      drawObjective(g, information->getProblem()->getObjective(0), transform);
-
-    // TODO: add draw selectioncriterion, stddev, surrogatemodel
+    drawBackgroundLayer(g, transform);
 
     TwoDimensionalPlotDrawable::draw(g, transform);
 
@@ -143,30 +147,60 @@ protected:
   PlotAxisPtr xAxis, yAxis;
   FitnessPtr currentFitness;
 
-  void drawObjective(juce::Graphics& g, ObjectivePtr objective, const juce::AffineTransform& transform) const
+  void drawBackgroundLayer(juce::Graphics& g, const juce::AffineTransform& transform) const
   {
     juce::Rectangle rect = getFrameRectangle(transform);
     
     juce::AffineTransform inverseTransform = transform.inverted();
 
-    std::vector< std::vector< double > > values(rect.getHeight() + 1);
     double lowestValue = DBL_MAX;
     double highestValue = -DBL_MAX;
 
-    for (int y = rect.getY(); y <= rect.getBottom(); ++y)
+    int numSteps = 50;
+
+    std::vector< std::vector< double > > values(numSteps + 1);
+
+    juce::Image* imgLayer = new juce::Image(juce::Image::RGB, numSteps + 1, numSteps + 1, true);
+    juce::Graphics gLayer(*imgLayer);
+    //TODO check if selection of bg layer has changed, if not, we don't need to recompute the image, just resize it
+    for (int y = 0; y <= numSteps; ++y)
     {
-      values[y - rect.getY()].resize(rect.getWidth() + 1);
-      for (int x = rect.getX(); x <= rect.getRight(); ++x)
+      values[y].resize(numSteps + 1);
+      for (int x = 0; x <= numSteps; ++x)
       {
-        double vx = (double)x;
-        double vy = (double)y;
+        double vx = rect.getX() + (double)x * rect.getWidth() / numSteps;
+        double vy = rect.getY() + (double)y * rect.getHeight() / numSteps;
         inverseTransform.transformPoint(vx, vy);
 
         DenseDoubleVectorPtr vector(new DenseDoubleVector(2, 0.0));
         vector->setValue(0, vx);
         vector->setValue(1, vy);
-        double value = objective->evaluate(defaultExecutionContext(), vector);
-        values[y - rect.getY()][x - rect.getX()] = value;
+        double value = 0.0;
+        if (information->getDrawObjective())
+          value = information->getProblem()->getObjective(0)->evaluate(defaultExecutionContext(), vector);
+        if (information->getDrawModel())
+        {
+          std::vector<ObjectPtr> ovector(vector->getNumElements());
+          for (size_t i = 0; i < vector->getNumElements(); ++i)
+            ovector[i] = vector->getElement(i);
+          value = information->getSurrogateModel()->compute(defaultExecutionContext(), ovector)->toDouble();
+        }
+        if (information->getDrawStddev())
+        {
+          std::vector<ObjectPtr> ovector(vector->getNumElements());
+          for (size_t i = 0; i < vector->getNumElements(); ++i)
+            ovector[i] = vector->getElement(i);
+          value = information->getSurrogateModel()->compute(defaultExecutionContext(), ovector).staticCast<ScalarVariableMeanAndVariance>()->getStandardDeviation();
+        }
+        if (information->getDrawSelectionCriterion())
+        {
+          std::vector<ObjectPtr> ovector(vector->getNumElements());
+          for (size_t i = 0; i < vector->getNumElements(); ++i)
+            ovector[i] = vector->getElement(i);
+          value = information->getSelectionCriterion()->evaluate(defaultExecutionContext(), information->getSurrogateModel()->compute(defaultExecutionContext(), ovector));
+        }
+        values[y][x] = value;
+
         if (value < lowestValue)
           lowestValue = value;
         if (value > highestValue)
@@ -174,16 +208,22 @@ protected:
       }
     }
 
-    double invDelta = highestValue > lowestValue ? 1.0 / (highestValue - lowestValue + 1e-6) : 1.0;
-    for (int y = rect.getY(); y <= rect.getBottom(); ++y)
-      for (int x = rect.getX(); x <= rect.getRight(); ++x)
+    double invDelta = highestValue > lowestValue ? 1.0 / (highestValue - lowestValue) : 1.0;
+    for (int y = 0; y <= numSteps; ++y)
+      for (int x = 0; x <= numSteps; ++x)
       {
-        double normalizedValue = values[y - rect.getY()][x - rect.getX()] * invDelta;
+        double normalizedValue = values[y][x] * invDelta;
+        if (normalizedValue > 1.0)
+          normalizedValue = 1.0;
+        if (normalizedValue < 0.0)
+          normalizedValue = 0.0;
         jassert(normalizedValue >= 0.0 && normalizedValue <= 1.0);
         juce::uint8 level = (juce::uint8)(255 * normalizedValue);
-        g.setColour(juce::Colour(level, level, level));
-        g.setPixel(x, y);
+        gLayer.setColour(juce::Colour(level, level, level));
+        gLayer.setPixel(x, y);
       }
+
+    g.drawImage(imgLayer, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), 0, 0, numSteps, numSteps);
   }
   
   void getPixelPosition(DenseDoubleVectorPtr vector, int& x, int& y, const juce::AffineTransform& transform) const
