@@ -9,6 +9,10 @@
   </class>
 
   <!-- Generic Samplers -->
+  <class name="UniformSampler" base="Sampler">
+    <constructor/>
+  </class>
+
   <class name="BinaryMixtureSampler" base="Sampler">
     <constructor arguments="SamplerPtr sampler1, SamplerPtr sampler2, double probability"/>
     <variable type="Sampler" name="sampler1"/>
@@ -25,10 +29,6 @@
   </class>
   
   <!-- ScalarVector Samplers -->
-  <class name="UniformScalarVectorSampler" base="Sampler">
-    <constructor/>
-  </class>
-  
   <class name="DiagonalGaussianSampler" base="Sampler">
     <constructor/>
     <variable type="Double" name="learningRate"/>

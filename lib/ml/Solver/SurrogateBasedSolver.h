@@ -93,7 +93,7 @@ public:
     
     if (verbosity == verbosityAll)
     {
-      SurrogateBasedSolverInformationPtr information(new SurrogateBasedSolverInformation(iter));
+      SurrogateBasedSolverInformationPtr information(new SurrogateBasedSolverInformation(iter + 1));
       information->setProblem(problem);
       if (lastInformation)
         information->setSolutions(lastInformation->getSolutions());
@@ -101,16 +101,6 @@ public:
         information->setSolutions(new SolutionVector(problem->getFitnessLimits()));
       information->getSolutions()->insertSolution(object, fitness);
       information->setSurrogateModel(surrogateModel ? surrogateModel->cloneAndCast<Expression>() : ExpressionPtr());
-      ExpectedImprovementSelectionCriterionPtr eiSelection = selectionCriterion.dynamicCast<ExpectedImprovementSelectionCriterion>();
-      if (eiSelection)
-      {
-        FitnessPtr& f = eiSelection->getBestFitness();
-        FitnessPtr fclone = new Fitness(f->getValue(0), f->getLimits());
-        SelectionCriterionPtr clone = expectedImprovementSelectionCriterion(fclone);
-        information->setSelectionCriterion(clone);
-      }
-      else
-        information->setSelectionCriterion(selectionCriterion);
       context.resultCallback("information", information);
       lastInformation = information;
     }
@@ -158,24 +148,20 @@ protected:
     SelectionCriterionPtr selectionCriterion;
   };
    
-  ProblemPtr createSurrogateOptimizationProblem(ExpressionPtr surrogateModel)
+  ProblemPtr createSurrogateOptimizationProblem(ExecutionContext& context, ExpressionPtr surrogateModel)
   {
     ProblemPtr res = new Problem();
     res->setDomain(problem->getDomain());
     selectionCriterion->initialize(problem);
     res->addObjective(new SurrogateBasedSelectionObjective(variableEncoder, surrogateModel, selectionCriterion));
-
-    res->setInitialGuess(initialSamples->get(0)); // FIXME: do something better here
-    
     for (size_t i = 0; i < problem->getNumObjectives(); ++i)
       res->addValidationObjective(problem->getObjective(i));
-    
     return res;
   }
 
   ObjectPtr optimizeSurrogate(ExecutionContext& context, ExpressionPtr surrogateModel)
   {
-    ProblemPtr surrogateProblem = createSurrogateOptimizationProblem(surrogateModel);
+    ProblemPtr surrogateProblem = createSurrogateOptimizationProblem(context, surrogateModel);
     ObjectPtr res;
     FitnessPtr bestFitness;
     surrogateSolver->solve(context, surrogateProblem, storeBestSolverCallback(res, bestFitness));

@@ -54,6 +54,9 @@ public:
   {
     lbCppMLLibraryCacheTypes(context);
     jassert(problemIdx >= 1 && problemIdx <= 6);
+
+    context.getRandomGenerator()->setSeed(1664);
+
     testSingleObjectiveOptimizers(context);
     //testBiObjectiveOptimizers(context);
     return ObjectPtr();
@@ -107,7 +110,7 @@ protected:
     // baseline solvers
     if (runBaseline || runAll)
     {
-      solvers.push_back(SolverSettings(randomSolver(uniformScalarVectorSampler(), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Random search"));
+      solvers.push_back(SolverSettings(randomSolver(uniformSampler(), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Random search"));
       solvers.push_back(SolverSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Cross-entropy"));
       solvers.push_back(SolverSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Cross-entropy with elitism"));
       solvers.push_back(SolverSettings(cmaessoOptimizer(numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "CMA-ES"));
@@ -122,10 +125,11 @@ protected:
 
     // create inner optimization loop solver
     SolverPtr innerSolver = cmaessoOptimizer(100 * numDims);
-    innerSolver->setVerbosity(verbosityQuiet);
+    //SolverPtr innerSolver = crossEntropySolver(diagonalGaussianSampler(), numDims * 10, numDims * 3, 20);
+    innerSolver->setVerbosity(verbosityDetailed);
     
     // Samplers
-    SamplerPtr uniform = samplerToVectorSampler(uniformScalarVectorSampler(), numInitialSamples);
+    SamplerPtr uniform = samplerToVectorSampler(uniformSampler(), numInitialSamples);
     SamplerPtr latinHypercube = latinHypercubeVectorSampler(numInitialSamples);
     SamplerPtr latinHypercubeModified = latinHypercubeVectorSampler(numInitialSamples, true);
     SamplerPtr edgeSampler = edgeVectorSampler();

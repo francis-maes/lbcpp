@@ -90,7 +90,7 @@ protected:
     innerSolvers.push_back(solver);
     
     // Samplers
-    SamplerPtr uniform = samplerToVectorSampler(uniformScalarVectorSampler(), numInitialSamples);
+    SamplerPtr uniform = samplerToVectorSampler(uniformSampler(), numInitialSamples);
     SamplerPtr latinHypercube = latinHypercubeVectorSampler(numInitialSamples);
     
     // Variable Encoder

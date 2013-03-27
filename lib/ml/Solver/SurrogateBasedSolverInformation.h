@@ -24,7 +24,7 @@ class SurrogateBasedSolverInformation : public Object
 {
 public:
   SurrogateBasedSolverInformation(size_t stepNumber = 0)
-    : stepNumber(stepNumber), drawSolutions(true), drawObjective(true), drawModel(false), drawSelectionCriterion(false), drawStddev(false), precision(0.2) {}
+    : stepNumber(stepNumber), drawSolutions(true), layerToDraw(objectiveLayer), precision(0.2) {}
 
   ProblemPtr getProblem() const
     {return problem;}
@@ -44,12 +44,6 @@ public:
   void setSurrogateModel(ExpressionPtr surrogateModel)
     {this->surrogateModel = surrogateModel;}
 
-  SelectionCriterionPtr getSelectionCriterion() const
-    {return selectionCriterion;}
-
-  void setSelectionCriterion(SelectionCriterionPtr selectionCriterion)
-    {this->selectionCriterion = selectionCriterion;}
-
   size_t getStepNumber() const
     {return stepNumber;}
 
@@ -59,54 +53,137 @@ public:
   void setDrawSolutions(bool draw)
     {drawSolutions = draw;}
 
-  bool getDrawObjective() const
-    {return drawObjective;}
-
-  void setDrawObjective(bool draw)
-    {drawObjective = draw;}
-
-  bool getDrawModel() const
-    {return drawModel;}
-  
-  void setDrawModel(bool draw)
-    {drawModel = draw;}
-
-  bool getDrawSelectionCriterion() const
-    {return drawSelectionCriterion;}
-
-  void setDrawSelectionCriterion(bool draw)
-    {drawSelectionCriterion = draw;}
-
-  bool getDrawStddev() const
-    {return drawStddev;}
-
-  void setDrawStddev(bool draw)
-    {drawStddev = draw;}
-
   double getPrecision() const
     {return precision;}
 
   void setPrecision(double precision)
     {this->precision = precision;}
 
+  enum Layer
+  {
+    objectiveLayer = 0,
+    modelLayer,
+    stddevLayer,
+    expectedImprovementLayer,
+    probabilityOfImprovementLayer,
+    optimistic1Layer,
+    optimistic2Layer,
+    optimistic5Layer,
+
+    numLayers
+  };
+
+  Layer getLayerToDraw() const
+    {return layerToDraw;}
+
+  void setLayerToDraw(Layer layerToDraw)
+    {this->layerToDraw = layerToDraw;}
+  
+  static string getLayerName(Layer layer)
+  {
+    static const char* names[] = {"Objective", "Model", "Uncertainty", "Expected Improvement", "Probability of Improvement of 10%", "Optimistic C=1", "Optimistic C=2", "Optimistic C=5"};
+    jassert(layer < numLayers);
+    return names[layer];
+  }
+
 private:
   friend class SurrogateBasedSolverInformationClass;
 
   bool drawSolutions;
-  bool drawObjective;
-  bool drawModel;
-  bool drawSelectionCriterion;
-  bool drawStddev;
+  Layer layerToDraw;
   double precision;
 
   ProblemPtr problem;
   SolutionVectorPtr solutions;
   ExpressionPtr surrogateModel;
-  SelectionCriterionPtr selectionCriterion;
   size_t stepNumber;
 };
 
 typedef ReferenceCountedObjectPtr<SurrogateBasedSolverInformation> SurrogateBasedSolverInformationPtr;
+
+class PercentileBasedColourScale
+{
+public:
+  void pushValue(double value)
+    {values.insert(value);}
+
+  void computePercentiles()
+  {
+    size_t numValues = values.size();
+    jassert(values.size() > 0);
+    p0 = *values.begin();
+    p100 = *values.rbegin();
+
+    size_t i25 = numValues / 4;
+    size_t i50 = numValues / 2;
+    size_t i75 = 3 * numValues / 4;
+
+    size_t i = 0;
+    for (std::multiset<double>::const_iterator it = values.begin(); it != values.end(); ++it, ++i)
+      if (i == i25)
+        p25 = *it;
+      else if (i == i50)
+        p50 = *it;
+      else if (i == i75)
+        p75 = *it;
+  }
+
+  double normalizeValue(double value) const
+  {
+    if (value < p0)
+      return 0.0;
+    else if (value < p25)
+      return normalize(value, p0, p25, 0.0, 0.25);
+    else if (value < p50)
+      return normalize(value, p25, p50, 0.25, 0.5);
+    else if (value < p75)
+      return normalize(value, p50, p75, 0.5, 0.75);
+    else if (value < p100)
+      return normalize(value, p75, p100, 0.75, 1.0);
+    else
+      return 1.0;
+  }
+
+  juce::Colour getColour(double value) const
+  {
+    return getColourFromScale(normalizeValue(value));
+  }
+
+  static juce::Colour getColourFromScale(double normalizedValue)
+  {
+    if (normalizedValue < 0.01f)
+      return juce::Colour((float)normalizedValue, 1.f, 1.f - (float)normalizedValue, 1.f);
+    else
+      return juce::Colour((float)normalizedValue, 1.f, (1.f - (float)normalizedValue) * 0.66f, 1.f);
+/*    jassert(normalizedValue >= 0.0 && normalizedValue <= 1.0);
+    if (normalizedValue < 0.25)
+    {
+      juce::uint8 level = (juce::uint8)(normalizedValue * 4 * 255);
+      return juce::Colour(255 - level, 255 - level, 0);
+    }
+    else if (normalizedValue < 0.75)
+    {
+      juce::uint8 level = (juce::uint8)(((normalizedValue - 0.25) * 2) * 255);
+      return juce::Colour(level, level, level);
+    }
+    else
+    {
+      juce::uint8 level = (juce::uint8)((normalizedValue - 0.75) * 4 * 255);
+      return juce::Colour(255 - level, 255, 255 - level);
+    }*/
+  }
+
+private:
+  std::multiset<double> values;
+  double p0, p25, p50, p75, p100;
+
+  double normalize(double value, double lower, double upper, double l, double u) const
+  {
+    if (upper == lower)
+      return l;
+    return l + (value - lower) * (u - l) / (upper - lower);
+  }
+};
 
 class SurrogateBasedSolverInformation2DDrawable : public TwoDimensionalPlotDrawable
 {
@@ -136,16 +213,19 @@ public:
 
     TwoDimensionalPlotDrawable::draw(g, transform);
 
-    SolutionVectorPtr solutions = information->getSolutions();
-    for (size_t i = 0; i < information->getStepNumber(); ++i)
+    if (information->getDrawSolutions())
     {
-      DenseDoubleVectorPtr vector = solutions->getSolution(i).staticCast<DenseDoubleVector>();
-      int x, y;
-      getPixelPosition(vector, x, y, transform);
+      SolutionVectorPtr solutions = information->getSolutions();
+      for (size_t i = 0; i < information->getStepNumber(); ++i)
+      {
+        DenseDoubleVectorPtr vector = solutions->getSolution(i).staticCast<DenseDoubleVector>();
+        int x, y;
+        getPixelPosition(vector, x, y, transform);
 
-      juce::uint8 k = (juce::uint8)((255 * i) / information->getStepNumber());
-      g.setColour(juce::Colour(k, 0, 255 - k));
-      paintPoint(g, x, y);
+        juce::uint8 k = (juce::uint8)((255 * i) / information->getStepNumber());
+        g.setColour(juce::Colour(k, 0, 255 - k));
+        paintPoint(g, x, y);
+      }
     }
   }
 
@@ -154,20 +234,76 @@ protected:
   PlotAxisPtr xAxis, yAxis;
   FitnessPtr currentFitness;
 
+  double computeLayer(ExecutionContext& context, DenseDoubleVectorPtr vector, SelectionCriterionPtr criterion) const
+  {
+    SurrogateBasedSolverInformation::Layer layer = information->getLayerToDraw();
+
+    if (layer == SurrogateBasedSolverInformation::objectiveLayer)
+      return information->getProblem()->getObjective(0)->evaluate(context, vector);
+
+    std::vector<ObjectPtr> objectVector(vector->getNumElements());
+    for (size_t i = 0; i < vector->getNumElements(); ++i)
+      objectVector[i] = vector->getElement(i);
+    ScalarVariableMeanAndVariancePtr prediction = information->getSurrogateModel()->compute(context, objectVector).staticCast<ScalarVariableMeanAndVariance>();
+
+    if (layer == SurrogateBasedSolverInformation::modelLayer)
+      return prediction->getMean();
+    else if (layer == SurrogateBasedSolverInformation::stddevLayer)
+      return prediction->getStandardDeviation();
+    else
+    {
+      jassert(criterion);
+      return criterion->evaluate(context, prediction);
+    }
+  }
+
   void drawBackgroundLayer(juce::Graphics& g, const juce::AffineTransform& transform) const
   {
     juce::Rectangle rect = getFrameRectangle(transform);
     
     juce::AffineTransform inverseTransform = transform.inverted();
 
-    double lowestValue = DBL_MAX;
-    double highestValue = -DBL_MAX;
-
     int w = (int)(rect.getWidth() * information->getPrecision());
     int h = (int)(rect.getHeight() * information->getPrecision());
     if (w <= 1 || h <= 1)
       return;
 
+    SurrogateBasedSolverInformation::Layer layer = information->getLayerToDraw();
+    bool layerShouldBeMinimised = true;
+
+    FitnessPtr bestFitness;
+    if (layer == SurrogateBasedSolverInformation::expectedImprovementLayer ||
+        layer == SurrogateBasedSolverInformation::probabilityOfImprovementLayer)
+    {
+      bestFitness = information->getSolutions()->getFitness(0);
+      for (size_t i = 1; i < information->getStepNumber(); ++i)
+      {
+        FitnessPtr fitness = information->getSolutions()->getFitness(i);
+        if (fitness->strictlyDominates(bestFitness))
+          bestFitness = fitness;
+      }
+      layerShouldBeMinimised = false;
+    }
+
+    if (layer == SurrogateBasedSolverInformation::stddevLayer)
+      layerShouldBeMinimised = false;
+
+    SelectionCriterionPtr criterion;
+    if (layer == SurrogateBasedSolverInformation::expectedImprovementLayer)
+      criterion = expectedImprovementSelectionCriterion(bestFitness);
+    else if (layer == SurrogateBasedSolverInformation::probabilityOfImprovementLayer)
+      criterion = probabilityOfImprovementSelectionCriterion(bestFitness);
+    else if (layer == SurrogateBasedSolverInformation::optimistic1Layer)
+      criterion = optimisticSelectionCriterion(1.0);
+    else if (layer == SurrogateBasedSolverInformation::optimistic2Layer)
+      criterion = optimisticSelectionCriterion(2.0);
+    else if (layer == SurrogateBasedSolverInformation::optimistic5Layer)
+      criterion = optimisticSelectionCriterion(5.0);
+
+    if (criterion)
+      criterion->initialize(information->getProblem());
+
+    PercentileBasedColourScale scale;
     std::vector< std::vector< double > > values(h);
     for (int y = 0; y < h; ++y)
     {
@@ -181,59 +317,29 @@ protected:
         DenseDoubleVectorPtr vector(new DenseDoubleVector(2, 0.0));
         vector->setValue(0, vx);
         vector->setValue(1, vy);
-        double value = 0.0;
-        if (information->getDrawObjective())
-          value = information->getProblem()->getObjective(0)->evaluate(defaultExecutionContext(), vector);
-        if (information->getDrawModel())
-        {
-          std::vector<ObjectPtr> ovector(vector->getNumElements());
-          for (size_t i = 0; i < vector->getNumElements(); ++i)
-            ovector[i] = vector->getElement(i);
-          value = information->getSurrogateModel()->compute(defaultExecutionContext(), ovector)->toDouble();
-        }
-        if (information->getDrawStddev())
-        {
-          std::vector<ObjectPtr> ovector(vector->getNumElements());
-          for (size_t i = 0; i < vector->getNumElements(); ++i)
-            ovector[i] = vector->getElement(i);
-          value = information->getSurrogateModel()->compute(defaultExecutionContext(), ovector).staticCast<ScalarVariableMeanAndVariance>()->getStandardDeviation();
-        }
-        if (information->getDrawSelectionCriterion())
-        {
-          std::vector<ObjectPtr> ovector(vector->getNumElements());
-          for (size_t i = 0; i < vector->getNumElements(); ++i)
-            ovector[i] = vector->getElement(i);
-          value = information->getSelectionCriterion()->evaluate(defaultExecutionContext(), information->getSurrogateModel()->compute(defaultExecutionContext(), ovector));
-        }
-        values[y][x] = value;
+        double value = computeLayer(defaultExecutionContext(), vector, criterion);
+        if (!layerShouldBeMinimised)
+          value = -value;
 
-        if (value < lowestValue)
-          lowestValue = value;
-        if (value > highestValue)
-          highestValue = value;
+        values[y][x] = value;
+        scale.pushValue(value);
       }
     }
 
-    double invDelta = highestValue > lowestValue ? 1.0 / (highestValue - lowestValue) : 1.0;
+    scale.computePercentiles();
 
     juce::Image* imgLayer = new juce::Image(juce::Image::RGB, w, h, true);
     juce::Graphics gLayer(*imgLayer);
     for (int y = 0; y < h; ++y)
       for (int x = 0; x < w; ++x)
       {
-        double normalizedValue = values[y][x] * invDelta;
-        if (normalizedValue > 1.0)
-          normalizedValue = 1.0;
-        if (normalizedValue < 0.0)
-          normalizedValue = 0.0;
-        juce::uint8 level = (juce::uint8)(255 * normalizedValue);
-        gLayer.setColour(juce::Colour(level, level, level));
+        gLayer.setColour(scale.getColour(values[y][x]));
         gLayer.setPixel(x, y);
       }
 
     g.drawImage(imgLayer, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), 0, 0, w, h);
   }
-  
+
   void getPixelPosition(DenseDoubleVectorPtr vector, int& x, int& y, const juce::AffineTransform& transform) const
   {
     double dx = vector->getValue(0);
@@ -285,7 +391,8 @@ protected:
 
 // TODO: add the possibility to draw the selection criterion (prediction, stddev, selection criterions that is used)
 class SurrogateBasedSolverInformationConfigurationComponent : public Component, public juce::ChangeBroadcaster,
-                                                              public juce::ComboBoxListener
+                                                              public juce::ComboBoxListener,
+                                                              public juce::ButtonListener
 {
 public:
   SurrogateBasedSolverInformationConfigurationComponent(SurrogateBasedSolverInformationPtr information) 
@@ -293,28 +400,25 @@ public:
   {
     addAndMakeVisible(layerComboBox = createLayerSelectionComboBox());
     addAndMakeVisible(precisionComboBox = createPrecisionComboBox());
+    addAndMakeVisible(drawSolutions = new juce::ToggleButton("Draw solutions"));
+    drawSolutions->addButtonListener(this);
+    drawSolutions->setToggleState(information->getDrawSolutions(), false);
   }
 
   virtual ~SurrogateBasedSolverInformationConfigurationComponent()
     {deleteAllChildren();}
 
+  virtual void buttonClicked(juce::Button* button)
+  {
+    information->setDrawSolutions(drawSolutions->getToggleState());
+    sendSynchronousChangeMessage(this);
+  }
+
   virtual void comboBoxChanged(juce::ComboBox* box)
   {
     if (box == layerComboBox)
     {
-      information->setDrawObjective(false);
-      information->setDrawModel(false);
-      information->setDrawSelectionCriterion(false);
-      information->setDrawStddev(false);
-
-      switch (box->getSelectedId()) 
-      {
-        case 1: information->setDrawObjective(true); break;
-        case 2: information->setDrawModel(true); break;
-        case 3: information->setDrawSelectionCriterion(true); break;
-        case 4: information->setDrawStddev(true); break;
-        default: jassertfalse;
-      }
+      information->setLayerToDraw((SurrogateBasedSolverInformation::Layer)box->getSelectedItemIndex());
     }
     else if (box == precisionComboBox)
     {
@@ -328,6 +432,7 @@ public:
   {
     layerComboBox->setBounds(10, 10, 250, 30);
     precisionComboBox->setBounds(270, 10, 100, 30);
+    drawSolutions->setBounds(380, 10, 100, 30);
   }
 
 private:
@@ -335,14 +440,13 @@ private:
 
   juce::ComboBox* layerComboBox;
   juce::ComboBox* precisionComboBox;
+  juce::ToggleButton* drawSolutions;
 
   juce::ComboBox* createLayerSelectionComboBox()
   {
     juce::ComboBox* res = new juce::ComboBox(T("layerSelectionCombo"));
-    res->addItem(T("Objective"), 1);
-    res->addItem(T("Surrogate model"), 2);
-    res->addItem(T("Selection criterion"), 3);
-    res->addItem(T("Stddev"), 4);
+    for (size_t layer = 0; layer < SurrogateBasedSolverInformation::numLayers; ++layer)
+      res->addItem(SurrogateBasedSolverInformation::getLayerName((SurrogateBasedSolverInformation::Layer)layer), (int)layer + 1);
     res->addListener(this);
     res->setSelectedId(1);
     return res;

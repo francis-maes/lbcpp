@@ -472,9 +472,9 @@ class MultiThreadedExecutionContext : public ExecutionContext
 public:
   MultiThreadedExecutionContext(size_t numThreads, const juce::File& projectDirectory)
     : ExecutionContext(projectDirectory)
-    {
-      threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));
-    }
+  {
+    threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));
+  }
   MultiThreadedExecutionContext() {}
 
   virtual ~MultiThreadedExecutionContext()

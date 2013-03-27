@@ -25,9 +25,8 @@ namespace lbcpp
 class ProbabilityOfImprovementSelectionCriterion : public SelectionCriterion
 {
 public:
-  ProbabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness, double improvementFactor) 
+  ProbabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness, double improvementFactor = 0.1) 
     : bestFitness(bestFitness), improvementFactor(improvementFactor) {}
-  ProbabilityOfImprovementSelectionCriterion(FitnessPtr& bestFitness) : bestFitness(bestFitness), improvementFactor(0.1) {}
   ProbabilityOfImprovementSelectionCriterion() : bestFitness(*(FitnessPtr* )0), improvementFactor(0.1) {}
   
   virtual void getObjectiveRange(double& worst, double& best) const

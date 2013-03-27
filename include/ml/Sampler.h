@@ -68,17 +68,24 @@ protected:
   double standardDeviation;
 };
 
+// generic samplers
+extern SamplerPtr uniformSampler();
+extern SamplerPtr binaryMixtureSampler(SamplerPtr sampler1, SamplerPtr sampler2, double probability = 0.5);
+
+// scalar samples
 extern SamplerPtr gaussianSampler(double mean = 0.0, double standardDeviation = 1.0);
   
-extern SamplerPtr uniformScalarVectorSampler();
+// vector samplers
 extern SamplerPtr samplerToVectorSampler(SamplerPtr sampler, size_t numSamples);
 extern SamplerPtr latinHypercubeVectorSampler(size_t numIntervals, bool enforceEdges=false);
 extern SamplerPtr edgeVectorSampler();
-extern SamplerPtr diagonalGaussianSampler();
-extern SamplerPtr diagonalGaussianDistributionSampler();
-
-extern SamplerPtr binaryMixtureSampler(SamplerPtr sampler1, SamplerPtr sampler2, double probability = 0.5);
 extern SamplerPtr subsetVectorSampler(SamplerPtr vectorSampler, size_t subsetSize);
+
+// doublevector samplers
+extern SamplerPtr diagonalGaussianSampler();
+
+// sampler samplers
+extern SamplerPtr diagonalGaussianDistributionSampler();
 
 class DecoratorSampler : public Sampler
 {

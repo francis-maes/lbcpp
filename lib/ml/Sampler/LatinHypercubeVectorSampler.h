@@ -69,8 +69,8 @@ public:
     {
       for (size_t d = 0; d < domain->getNumDimensions(); ++d) // for each dimension we need to create two samples
       {
-        DenseDoubleVectorPtr sampleLowerbound = domain->sampleUniformly(random);
-        DenseDoubleVectorPtr sampleUpperbound = domain->sampleUniformly(random);
+        DenseDoubleVectorPtr sampleLowerbound = domain->sampleUniformly(random).staticCast<DenseDoubleVector>();
+        DenseDoubleVectorPtr sampleUpperbound = domain->sampleUniformly(random).staticCast<DenseDoubleVector>();
         sampleLowerbound->setValue(d, domain->getLowerLimit(d));
         sampleUpperbound->setValue(d, domain->getUpperLimit(d));
         res->set(numEdges++, sampleLowerbound);

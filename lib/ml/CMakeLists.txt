@@ -86,7 +86,7 @@ SET(ML_OPTIMIZER_SOURCES
 )
 
 SET(ML_SAMPLER_SOURCES
-  Sampler/UniformScalarVectorSampler.h
+  Sampler/UniformSampler.h
   Sampler/LatinHypercubeVectorSampler.h
   Sampler/EdgeVectorSampler.h
   Sampler/DiagonalGaussianSampler.h
