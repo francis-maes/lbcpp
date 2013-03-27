@@ -34,6 +34,7 @@ public:
   
   virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
   {
+    jassert(bestFitness);
     ScalarVariableMeanAndVariancePtr pred = object.staticCast<ScalarVariableMeanAndVariance>();
     double mean = pred->getMean();
     double stddev = pred->getStandardDeviation();
@@ -49,11 +50,16 @@ public:
     return ei;
   }
 
+  FitnessPtr& getBestFitness() const
+    {return bestFitness;}
+
 protected:
   friend class ExpectedImprovementSelectionCriterionClass;
   
   FitnessPtr& bestFitness;
 };
+
+typedef ReferenceCountedObjectPtr<ExpectedImprovementSelectionCriterion> ExpectedImprovementSelectionCriterionPtr;
 
 }; /* namespace lbcpp */
 

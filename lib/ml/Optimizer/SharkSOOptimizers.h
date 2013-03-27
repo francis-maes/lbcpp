@@ -90,6 +90,13 @@ public:
       cma->init(*objective);
     else
       cma->run();
+    DenseDoubleVectorPtr bestSolutionObject = new DenseDoubleVector(objective->dimension(), 0.0);
+    double* bestSolutionVector = cma->bestSolution();
+    for (size_t i = 0; i < objective->dimension(); ++i)
+      bestSolutionObject->setElement(i, new Double(bestSolutionVector[i]));
+    FitnessPtr solution = evaluate(context, bestSolutionObject);
+    if (verbosity >= verbosityDetailed)
+      context.resultCallback("fitness", cma->bestSolutionFitness());
     return true;
   }
   
