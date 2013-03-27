@@ -122,7 +122,7 @@ protected:
 
     // create inner optimization loop solver
     SolverPtr innerSolver = cmaessoOptimizer(100 * numDims);
-    innerSolver->setVerbosity(verbosityDetailed);
+    innerSolver->setVerbosity(verbosityQuiet);
     
     // Samplers
     SamplerPtr uniform = samplerToVectorSampler(uniformScalarVectorSampler(), numInitialSamples);
