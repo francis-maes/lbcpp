@@ -49,7 +49,7 @@ public:
   virtual void push(double val, double weight)
     {samplesSum += weight * val; samplesCount += weight;}
 
-  double getMean() const
+  virtual double getMean() const
     {return samplesCount ? samplesSum / samplesCount : 0.0;}
 
   double getCount() const
@@ -98,16 +98,16 @@ public:
   virtual void push(double val, double weight)
     {ScalarVariableMean::push(val, weight); samplesSumOfSquares += sqr(val) * weight;}
 
-  double getSquaresMean() const
+  virtual double getSquaresMean() const
     {return samplesSumOfSquares / samplesCount;}
 
-  double getSumOfSquares() const
+  virtual double getSumOfSquares() const
     {return samplesSumOfSquares;}
   
-  double getVariance() const // mean(sqr(x)) - sqr(mean(x))
+  virtual double getVariance() const // mean(sqr(x)) - sqr(mean(x))
     {return samplesCount ? getSquaresMean() - sqr(getMean()) : 0.0;}
 
-  double getStandardDeviation() const
+  virtual double getStandardDeviation() const
     {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}
 
   virtual string toString() const;
@@ -125,9 +125,57 @@ private:
   static inline double sqr(double x)
     {return x * x;}
 };
-
+  
 typedef ReferenceCountedObjectPtr<ScalarVariableMeanAndVariance> ScalarVariableMeanAndVariancePtr;
 extern ClassPtr scalarVariableMeanAndVarianceClass;
+
+/**
+ *  Use this class to store a mean and variance that was not calculated from a population (e.g. multiple push() operations)
+ */
+class ScalarVariableConstMeanAndVariance : public ScalarVariableMeanAndVariance
+{
+public:
+  ScalarVariableConstMeanAndVariance(const string& name = string::empty) 
+    : ScalarVariableMeanAndVariance(name), mean(0.0), variance(1.0) {}
+  ScalarVariableConstMeanAndVariance(double mean, double variance, const string& name = string::empty) 
+    : ScalarVariableMeanAndVariance(name), mean(mean), variance(variance) {}
+  
+  virtual void clear() 
+    {jassertfalse;}
+  
+  virtual void push(double val)
+    {jassertfalse;}
+  
+  virtual void push(double val, double weight)
+    {jassertfalse;}
+  
+  virtual double getSquaresMean() const
+    {jassertfalse; return 0.0;}
+  
+  virtual double getSumOfSquares() const
+    {jassertfalse; return 0.0;}
+  
+  virtual double getMean() const
+    {return mean;}
+  
+  virtual double getVariance() const
+    {return variance;}
+  
+  virtual double getStandardDeviation() const
+    {return variance > DBL_EPSILON ? sqrt(variance) : 0.0;}
+  
+  virtual string toString() const;
+  virtual string toShortString() const;
+  
+protected:
+  friend class ScalarVariableConstMeanAndVarianceClass;
+  
+  double mean;
+  double variance;
+};
+
+typedef ReferenceCountedObjectPtr<ScalarVariableConstMeanAndVariance> ScalarVariableConstMeanAndVariancePtr;
+extern ClassPtr scalarVariableConstMeanAndVarianceClass;
 
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {

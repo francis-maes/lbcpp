@@ -35,6 +35,11 @@
     <variable type="PositiveInteger" name="minExamplesToSplit"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
+  
+  <!-- Gaussian Process Learner -->
+  <class name="GaussianProcessLearner" base="Solver">
+    <constructor arguments=""/>
+  </class>
 
   <!-- Incremental to batch -->
   <class name="IncrementalLearnerBasedLearner" base="IterativeSolver">
