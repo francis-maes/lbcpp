@@ -94,6 +94,7 @@ public:
     std::vector<SolverPtr> solvers;
     
     //solvers.push_back(dtLearner);
+    solvers.push_back(gaussianProcessLearner());
     solvers.push_back(rfLearner);
     solvers.push_back(xtLearner);
     solvers.push_back(incrementalLearnerBasedLearner(new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees)));
@@ -174,16 +175,16 @@ public:
             }
           }
           
-          AggregatorExpressionPtr ensemble = model.dynamicCast<AggregatorExpression>();
-          if (ensemble)  // it's an ensemble
+          ScalarVariableMeanAndVariancePtr test = predictions->getElement(0).dynamicCast<ScalarVariableMeanAndVariance>();
+          if (test)  // it's an ensemble
           {
-            ScalarVariableStatisticsPtr prediction;
+            ScalarVariableMeanAndVariancePtr prediction;
             if (numObjectives == 1)
-              prediction = predictions->getElement(i).staticCast<ScalarVariableStatistics>();
+              prediction = predictions->getElement(i).staticCast<ScalarVariableMeanAndVariance>();
             else
             {
               OVectorPtr multiPrediction = predictions->getElement(i).staticCast<OVector>();
-              prediction = multiPrediction->getAndCast<ScalarVariableStatistics>(j);
+              prediction = multiPrediction->getAndCast<ScalarVariableMeanAndVariance>(j);
             }
             double pred = prediction->getMean();
             double stddev = prediction->getStandardDeviation();

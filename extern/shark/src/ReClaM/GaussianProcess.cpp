@@ -73,7 +73,7 @@ void GaussianProcess::train(const Array<double>& input, const Array<double>& tar
 	this->target = target;
 
 	// store codebook ("support") vectors
-	getSVM()->SetTrainingData(input);
+	getSVM()->SetTrainingData(input, true);
 
 	// compute Covariance matrix (6.63) in C. M.  Bishop "Pattern Recognition and Machine Learning", 2007
 	unsigned int i, j;

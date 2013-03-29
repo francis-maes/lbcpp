@@ -98,7 +98,7 @@ public:
 protected:
   ParetoFrontPtr optimizeSurrogate(ExecutionContext& context, ExpressionPtr surrogateModel)
   {
-    ProblemPtr surrogateProblem = createSurrogateOptimizationProblem(surrogateModel);
+    ProblemPtr surrogateProblem = createSurrogateOptimizationProblem(context, surrogateModel);
     ParetoFrontPtr front = new ParetoFront(surrogateProblem->getFitnessLimits());
     surrogateSolver->solve(context, surrogateProblem, fillParetoFrontSolverCallback(front));
     return front;

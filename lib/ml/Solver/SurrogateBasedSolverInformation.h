@@ -13,7 +13,7 @@
 # include <ml/Problem.h>
 
 # include <oil/UserInterface/ObjectComponent.h>
-# include "../oil/UserInterface/Plot/TwoDimensionalPlotDrawable.h"
+# include "../../oil/UserInterface/Plot/TwoDimensionalPlotDrawable.h"
 
 namespace lbcpp
 {
@@ -24,7 +24,7 @@ class SurrogateBasedSolverInformation : public Object
 {
 public:
   SurrogateBasedSolverInformation(size_t stepNumber = 0)
-    : stepNumber(stepNumber), drawSolutions(true), layerToDraw(objectiveLayer), precision(0.2) {}
+    : drawSolutions(true), layerToDraw(objectiveLayer), precision(0.2), stepNumber(stepNumber) {}
 
   ProblemPtr getProblem() const
     {return problem;}
