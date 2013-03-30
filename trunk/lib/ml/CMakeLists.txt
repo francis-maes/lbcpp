@@ -204,10 +204,10 @@ SET(ML_SELECTION_CRITERION_SOURCES
 )
 
 SET(ML_LEARNER_SOURCES
+  Learner/GaussianProcessLearner.h
   Learner/ExhaustiveConditionLearner.h
   Learner/RandomSplitConditionLearner.h
   Learner/TreeLearner.h
-  Learner/GaussianProcessLearner.h
   Learner/EnsembleLearner.h
   Learner/IncrementalLearnerBasedLearner.h
   Learner/LearnerLibrary.xml
