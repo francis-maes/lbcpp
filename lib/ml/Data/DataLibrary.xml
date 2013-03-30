@@ -31,12 +31,12 @@
     <function lang="lua" name="getStandardDeviation"/>
     <function lang="lua" name="getVariance"/>
   </class>
-  
+
   <class name="ScalarVariableConstMeanAndVariance" base="ScalarVariableMeanAndVariance">
     <variable type="Double" name="mean"/>
     <variable type="Double" name="variance"/>
   </class>
-  
+
   <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance">
     <variable type="Double" name="minimumValue"/>
     <variable type="Double" name="maximumValue"/>

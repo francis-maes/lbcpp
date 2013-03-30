@@ -38,7 +38,7 @@
   
   <!-- Gaussian Process Learner -->
   <class name="GaussianProcessLearner" base="Solver">
-    <constructor arguments=""/>
+    <constructor/>
   </class>
 
   <!-- Incremental to batch -->

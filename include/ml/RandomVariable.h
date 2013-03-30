@@ -164,9 +164,6 @@ public:
   virtual double getStandardDeviation() const
     {return variance > DBL_EPSILON ? sqrt(variance) : 0.0;}
   
-  virtual string toString() const;
-  virtual string toShortString() const;
-  
 protected:
   friend class ScalarVariableConstMeanAndVarianceClass;
   

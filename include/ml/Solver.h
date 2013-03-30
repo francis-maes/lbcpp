@@ -83,7 +83,6 @@ extern SolverPtr simpleEnsembleLearner(const SolverPtr& baseLearner, size_t ense
 extern SolverPtr baggingLearner(const SolverPtr& baseLearner, size_t ensembleSize);
 
 extern SolverPtr treeLearner(SplittingCriterionPtr splittingCriterion, SolverPtr conditionLearner, size_t minExamplesToSplit = 2, size_t maxDepth = 0);
-  
 extern SolverPtr gaussianProcessLearner();
 
 extern IterativeSolverPtr incrementalLearnerBasedLearner(IncrementalLearnerPtr learner);
