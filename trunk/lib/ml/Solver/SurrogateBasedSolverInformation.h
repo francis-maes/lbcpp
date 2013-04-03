@@ -104,6 +104,9 @@ typedef ReferenceCountedObjectPtr<SurrogateBasedSolverInformation> SurrogateBase
 class PercentileBasedColourScale
 {
 public:
+  void clearValues()
+    {values.clear();}
+  
   void pushValue(double value)
     {values.insert(value);}
 
@@ -148,6 +151,42 @@ public:
   {
     return getColourFromScale(normalizeValue(value));
   }
+  
+  juce::Image* getColourBar(size_t width, size_t height) const
+  {
+    double rangeMin = DBL_MAX;
+    double rangeMax = -DBL_MAX;
+    for (std::multiset<double>::const_iterator it = values.begin(); it != values.end(); ++it)
+    {
+      if (rangeMin > *it)
+        rangeMin = *it;
+      if (rangeMax < *it)
+        rangeMax = *it;
+    }
+    double step = (rangeMax - rangeMin) / width;
+    juce::Image* res = new juce::Image(juce::Image::RGB, width, height, false);
+    juce::Graphics g(*res);
+    g.fillAll(juce::Colour(255, 255, 255));
+    for (size_t i = 0; i < width; ++i)
+    {
+      g.setColour(getColour(rangeMin + i * step));
+      g.drawVerticalLine(i, 15, height - 15);
+    }
+    char* number = new char[8];
+    sprintf(number, "%8.3e", p0);
+    g.setFont(juce::Font(12.0f));
+    g.setColour(juce::Colour(0, 0, 0));
+    g.drawText(string(number), 0, height - 12, 100, 12, juce::Justification::left, false);
+    sprintf(number, "%8.3e", p25);
+    g.drawText(string(number), p25 * width / p100, 0, 100, 12, juce::Justification::left, false);
+    sprintf(number, "%8.3e", p50);
+    g.drawText(string(number), p50 * width / p100, height - 12, 100, 12, juce::Justification::left, false);
+    sprintf(number, "%8.3e", p75);
+    g.drawText(string(number), p75 * width / p100, 0, 100, 12, juce::Justification::left, false);
+    sprintf(number, "%8.3e", p100);
+    g.drawText(string(number), width - 75, height - 12, 75, 12, juce::Justification::right, false);
+    return res;
+  }
 
   static juce::Colour getColourFromScale(double normalizedValue)
   {
@@ -185,21 +224,17 @@ private:
   }
 };
 
-class ColorBar : public juce::Drawable
-{
-public:
-
-};
-
 class SurrogateBasedSolverInformation2DDrawable : public TwoDimensionalPlotDrawable
 {
 public:
-  SurrogateBasedSolverInformation2DDrawable(SurrogateBasedSolverInformationPtr information) : information(information)
+  SurrogateBasedSolverInformation2DDrawable(SurrogateBasedSolverInformationPtr information) : information(information), scale(new PercentileBasedColourScale())
   {
     xAxis = makeAxis(information->getSolutions(), 0);
     yAxis = makeAxis(information->getSolutions(), 1);
     computeBounds();
   }
+  ~SurrogateBasedSolverInformation2DDrawable()
+    {delete scale;}
 
   virtual Drawable* createCopy() const
     {return new SurrogateBasedSolverInformation2DDrawable(information);}
@@ -234,11 +269,15 @@ public:
       }
     }
   }
+  
+  PercentileBasedColourScale* getScale() const
+    {return scale;}
 
 protected:
   SurrogateBasedSolverInformationPtr information;
   PlotAxisPtr xAxis, yAxis;
   FitnessPtr currentFitness;
+  PercentileBasedColourScale* scale;
 
   double computeLayer(ExecutionContext& context, DenseDoubleVectorPtr vector, SelectionCriterionPtr criterion) const
   {
@@ -308,8 +347,8 @@ protected:
 
     if (criterion)
       criterion->initialize(information->getProblem());
-
-    PercentileBasedColourScale scale;
+    
+    scale->clearValues();
     std::vector< std::vector< double > > values(h);
     for (int y = 0; y < h; ++y)
     {
@@ -328,18 +367,18 @@ protected:
           value = -value;
 
         values[y][x] = value;
-        scale.pushValue(value);
+        scale->pushValue(value);
       }
     }
 
-    scale.computePercentiles();
+    scale->computePercentiles();
 
     juce::Image* imgLayer = new juce::Image(juce::Image::RGB, w, h, true);
     juce::Graphics gLayer(*imgLayer);
     for (int y = 0; y < h; ++y)
       for (int x = 0; x < w; ++x)
       {
-        gLayer.setColour(scale.getColour(values[y][x]));
+        gLayer.setColour(scale->getColour(values[y][x]));
         gLayer.setPixel(x, y);
       }
 
@@ -395,7 +434,6 @@ protected:
   }
 };
 
-// TODO: add the possibility to draw the selection criterion (prediction, stddev, selection criterions that is used)
 class SurrogateBasedSolverInformationConfigurationComponent : public Component, public juce::ChangeBroadcaster,
                                                               public juce::ComboBoxListener,
                                                               public juce::ButtonListener
@@ -497,7 +535,11 @@ public:
     }
 
     if (getWidth() > leftMargin + rightMargin && getHeight() > topMargin + bottomMargin)
+    {
       drawable->draw(g, getTransform());
+      size_t w = getWidth() - leftMargin - rightMargin;
+      g.drawImage(drawable->getScale()->getColourBar(w, 45), leftMargin, 5, w, 45, 0, 0, w, 45);
+    }
   }
 
 private:
@@ -527,7 +569,7 @@ private:
   {
     leftMargin = 60,
     rightMargin = 20,
-    topMargin = 20,
+    topMargin = 60,
     bottomMargin = 40
   };
 };
