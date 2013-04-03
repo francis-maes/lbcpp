@@ -179,10 +179,13 @@ public:
     g.drawText(string(number), 0, height - 12, 100, 12, juce::Justification::left, false);
     sprintf(number, "%8.3e", p25);
     g.drawText(string(number), p25 * width / p100, 0, 100, 12, juce::Justification::left, false);
+    g.drawVerticalLine(p25 * width / p100, 15, height - 15);
     sprintf(number, "%8.3e", p50);
     g.drawText(string(number), p50 * width / p100, height - 12, 100, 12, juce::Justification::left, false);
+    g.drawVerticalLine(p50 * width / p100, 15, height - 15);
     sprintf(number, "%8.3e", p75);
     g.drawText(string(number), p75 * width / p100, 0, 100, 12, juce::Justification::left, false);
+    g.drawVerticalLine(p75 * width / p100, 15, height - 15);
     sprintf(number, "%8.3e", p100);
     g.drawText(string(number), width - 75, height - 12, 75, 12, juce::Justification::right, false);
     return res;
