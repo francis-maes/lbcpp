@@ -185,6 +185,12 @@ private:
   }
 };
 
+class ColorBar : public juce::Drawable
+{
+public:
+
+};
+
 class SurrogateBasedSolverInformation2DDrawable : public TwoDimensionalPlotDrawable
 {
 public:

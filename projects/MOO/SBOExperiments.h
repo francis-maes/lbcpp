@@ -36,6 +36,7 @@ public:
                       runRandomForests(false),
                       runXT(false),
                       runIncrementalXT(false),
+                      runGP(false),
                       uniformSampling(false),
                       latinHypercubeSampling(false),
                       modifiedLatinHypercubeSampling(false),
@@ -75,6 +76,7 @@ protected:
   bool runRandomForests;         /**< Run with random forest surrogate                                 */
   bool runXT;                    /**< Run with extremely randomized trees                              */
   bool runIncrementalXT;         /**< Run with incremental extremely randomized trees                  */
+  bool runGP;                    /**< Run with gaussian processes                                      */
 
   bool uniformSampling;          /**< Run with uniform sampling                                        */
   bool latinHypercubeSampling;   /**< Run with latin hypercube sampling                                */
@@ -106,16 +108,7 @@ protected:
     size_t numInitialSamples = 10 * numDims;
     
     std::vector<SolverSettings> solvers;
-    
-    // baseline solvers
-    if (runBaseline || runAll)
-    {
-      solvers.push_back(SolverSettings(randomSolver(uniformSampler(), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Random search"));
-      solvers.push_back(SolverSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Cross-entropy"));
-      solvers.push_back(SolverSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Cross-entropy with elitism"));
-      solvers.push_back(SolverSettings(cmaessoOptimizer(numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "CMA-ES"));
-    }
-    
+
     // SBO solvers
     // create the splitting criterion    
     SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
@@ -128,14 +121,52 @@ protected:
     //SolverPtr innerSolver = crossEntropySolver(diagonalGaussianSampler(), numDims * 10, numDims * 3, 20);
     innerSolver->setVerbosity(verbosityDetailed);
     
+    // Variable Encoder
+    VariableEncoderPtr encoder = scalarVectorVariableEncoder();
+    
     // Samplers
     SamplerPtr uniform = samplerToVectorSampler(uniformSampler(), numInitialSamples);
     SamplerPtr latinHypercube = latinHypercubeVectorSampler(numInitialSamples);
     SamplerPtr latinHypercubeModified = latinHypercubeVectorSampler(numInitialSamples, true);
     SamplerPtr edgeSampler = edgeVectorSampler();
-    
-    // Variable Encoder
-    VariableEncoderPtr encoder = scalarVectorVariableEncoder();
+
+    // baseline solvers
+    if (runBaseline || runAll)
+    {
+      solvers.push_back(SolverSettings(randomSolver(uniformSampler(), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Random search"));
+      solvers.push_back(SolverSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Cross-entropy"));
+      solvers.push_back(SolverSettings(crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, numEvaluations / populationSize, true), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Cross-entropy with elitism"));
+      solvers.push_back(SolverSettings(cmaessoOptimizer(numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "CMA-ES"));
+    }
+
+     if (runGP)
+    {
+      SolverPtr gpLearner = gaussianProcessLearner();
+      if (uniformSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(uniform, gpLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, GP, Expected Improvement, Uniform", &bestEI)); 
+      }
+      
+      if (latinHypercubeSampling || runAll)
+      {
+        FitnessPtr bestEI1, bestEI2;
+        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, gpLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI2), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, GP, Expected Improvement, Latin Hypercube", &bestEI2)); 
+      }
+      
+      if (modifiedLatinHypercubeSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercubeModified, gpLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, GP, Expected Improvement, Modified Latin Hypercube", &bestEI)); 
+      }
+      
+      if (edgeSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(edgeSampler, gpLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, GP, Expected Improvement, Edge Sampling", &bestEI)); 
+      }
+      
+    } // runGP
     
     if (runIncrementalXT)
     {
@@ -148,9 +179,8 @@ protected:
       
       if (latinHypercubeSampling || runAll)
       {
-        FitnessPtr bestEI1, bestEI2;
-        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercube, xtIncrementalLearner, innerSolver, encoder, optimisticSelectionCriterion(2.0), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, IXT, Optimistic(2.0), Latin Hypercube", &bestEI1)); 
-        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercube, xtIncrementalLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI2), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, IXT, Expected Improvement, Latin Hypercube", &bestEI2)); 
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercube, xtIncrementalLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, IXT, Expected Improvement, Latin Hypercube", &bestEI)); 
       }
       
       if (modifiedLatinHypercubeSampling || runAll)
@@ -182,9 +212,8 @@ protected:
       
       if (latinHypercubeSampling || runAll)
       {
-        FitnessPtr bestEI1, bestEI2;
-        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, optimisticSelectionCriterion(2.0), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, XT, Optimistic(2.0), Latin Hypercube", &bestEI1));
-        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI2), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, XT, Expected Improvement, Latin Hypercube", &bestEI2));
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, XT, Expected Improvement, Latin Hypercube", &bestEI));
       }
       
       if (modifiedLatinHypercubeSampling || runAll)
@@ -214,9 +243,8 @@ protected:
       
       if (latinHypercubeSampling || runAll)
       {
-        FitnessPtr bestEI1, bestEI2;
-        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, optimisticSelectionCriterion(2.0), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, RF, Optimistic(2.0), Latin Hypercube", &bestEI1));
-        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI2), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, RF, Expected Improvement, Latin Hypercube", &bestEI2));
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, RF, Expected Improvement, Latin Hypercube", &bestEI));
       }
       
       if (modifiedLatinHypercubeSampling || runAll)

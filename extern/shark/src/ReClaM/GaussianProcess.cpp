@@ -86,8 +86,8 @@ void GaussianProcess::train(const Array<double>& input, const Array<double>& tar
 	}
 
 	// regularize and invert Gram Matrix
-	//invertSymm(CInv, C);
-	invertSymmPositiveDefinite( CInv, C );
+	invertSymm(CInv, C);
+	//invertSymmPositiveDefinite( CInv, C );
 
 	// compute weights
 	for (i = 0; i < N; i++)

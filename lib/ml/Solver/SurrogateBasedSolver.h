@@ -62,10 +62,14 @@ public:
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     ObjectPtr object;
-    
+    FitnessPtr fitness;
     ExpressionPtr surrogateModel;
+    size_t retryCounter = 0;
     if (iter < initialSamples->getNumElements())
+    {
       object = initialSamples->getAndCast<Object>(iter);
+      fitness = evaluate(context, object);
+    }
     else
     {
       // learn surrogate
@@ -81,15 +85,22 @@ public:
       // optimize surrogate
       if (verbosity >= verbosityAll)
         context.enterScope("Optimize surrogate");
-      object = optimizeSurrogate(context, surrogateModel);
+      // make sure to choose a new sample
+      do
+      {
+        if (retryCounter < 10)
+          object = optimizeSurrogate(context, surrogateModel);
+        else
+          object = initialVectorSampler->sample(context).staticCast<OVector>()->get(context.getRandomGenerator()->sampleSize(initialSamples->getNumElements()));
+        fitness = evaluate(context, object);
+        ++retryCounter;
+      } while (objectExists(makeTrainingSample(context, object, fitness)));
       if (verbosity >= verbosityAll)
       {
         context.resultCallback("object", object);
         context.leaveScope();
       }
     }
-    // evaluate point and add to training data
-    FitnessPtr fitness = evaluate(context, object);
     
     if (verbosity == verbosityAll)
     {
@@ -106,7 +117,10 @@ public:
     }
 
     if (verbosity >= verbosityDetailed)
+    {
+      context.resultCallback("inner optimizer runs", retryCounter);
       context.resultCallback("fitness", fitness);
+    }
     addFitnessSample(context, object, fitness);
     return true;
   }
@@ -115,7 +129,6 @@ protected:
   virtual ExpressionPtr getSurrogateModel(ExecutionContext& context) = 0;
   virtual void addFitnessSample(ExecutionContext& context, ObjectPtr object, FitnessPtr fitness) = 0;
 
-protected:
   friend class SurrogateBasedSolverClass;
 
   SamplerPtr initialVectorSampler;
@@ -127,6 +140,7 @@ protected:
   ClassPtr fitnessClass;
 
   SurrogateBasedSolverInformationPtr lastInformation;
+  TablePtr surrogateData;
   
   struct SurrogateBasedSelectionObjective : public Objective
   {
@@ -186,6 +200,20 @@ protected:
     }
     return res;
   }
+
+  bool objectExists(std::vector<ObjectPtr> object)
+  {
+    for (size_t i = 0; i < surrogateData->getNumRows(); ++i)
+    {
+      std::vector<ObjectPtr> row = surrogateData->getRow(i);
+      bool result = true;
+      for (size_t j = 0; j < row.size(); ++j)
+        result &= (object[j]->toDouble() == row[j]->toDouble());
+      if (result)
+        return true;
+    }
+    return false;
+  }
 };
   
 typedef ReferenceCountedObjectPtr<SurrogateBasedSolver> SurrogateBasedSolverPtr;
@@ -211,7 +239,11 @@ public:
     {return surrogateModel;}
   
   virtual void addFitnessSample(ExecutionContext& context, ObjectPtr object, FitnessPtr fitness)
-    {surrogateLearner->addTrainingSample(context, makeTrainingSample(context, object, fitness), surrogateModel);}
+  {
+    std::vector<ObjectPtr> row = makeTrainingSample(context, object, fitness);
+    surrogateLearner->addTrainingSample(context, row, surrogateModel);
+    surrogateData->addRow(row);
+  }
 
 protected:
   friend class IncrementalSurrogateBasedSolverClass;
@@ -257,9 +289,7 @@ protected:
   friend class BatchSurrogateBasedSolverClass;
 
   SolverPtr surrogateLearner;
-
   ProblemPtr surrogateLearningProblem;
-  TablePtr surrogateData;
 
   ExpressionDomainPtr createSurrogateDomain(ExecutionContext& context, ProblemPtr problem)
   {
