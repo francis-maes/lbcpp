@@ -194,6 +194,8 @@ IF(LBCPP_USER_INTERFACE)
 	UserInterface/Plot/Plot.cpp
     UserInterface/Plot/TwoDimensionalPlotDrawable.h
     UserInterface/Plot/TwoDimensionalPlotDrawable.cpp
+	UserInterface/Plot/ContourPlotDrawable.h
+	UserInterface/Plot/ContourPlotDrawable.cpp
 	UserInterface/Plot/PlotConfigurationComponent.h
 	UserInterface/Plot/PlotContentComponent.h
     UserInterface/Plot/PlotComponent.h

@@ -70,6 +70,7 @@ SET(ML_SOLVER_SOURCES
   Solver/MABMetaSolver.h
   Solver/SurrogateBasedSolver.h
   Solver/SurrogateBasedSolverInformation.h
+  Solver/SurrogateBasedSolverInformationComponent.h
   Solver/SolverCallbacks.h
   Solver/SolverEvaluators.h
   Solver/SolverLibrary.xml
