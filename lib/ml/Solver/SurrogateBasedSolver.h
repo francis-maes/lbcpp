@@ -92,9 +92,9 @@ public:
           object = optimizeSurrogate(context, surrogateModel);
         else
           object = initialVectorSampler->sample(context).staticCast<OVector>()->get(context.getRandomGenerator()->sampleSize(initialSamples->getNumElements()));
-        fitness = evaluate(context, object);
         ++retryCounter;
-      } while (objectExists(makeTrainingSample(context, object, fitness)));
+      } while (objectExists(object.staticCast<DenseDoubleVector>()));
+      fitness = evaluate(context, object);
       if (verbosity >= verbosityAll)
       {
         context.resultCallback("object", object);
@@ -119,6 +119,7 @@ public:
     if (verbosity >= verbosityDetailed)
     {
       context.resultCallback("inner optimizer runs", retryCounter);
+      context.resultCallback("object", object);
       context.resultCallback("fitness", fitness);
     }
     addFitnessSample(context, object, fitness);
@@ -201,14 +202,16 @@ protected:
     return res;
   }
 
-  bool objectExists(std::vector<ObjectPtr> object)
+  bool objectExists(DenseDoubleVectorPtr object)
   {
+    if (!surrogateData)
+      return false;
     for (size_t i = 0; i < surrogateData->getNumRows(); ++i)
     {
       std::vector<ObjectPtr> row = surrogateData->getRow(i);
       bool result = true;
-      for (size_t j = 0; j < row.size(); ++j)
-        result &= (object[j]->toDouble() == row[j]->toDouble());
+      for (size_t j = 0; j < object->getNumElements(); ++j)
+        result &= (object->getValue(j) == row[j]->toDouble());
       if (result)
         return true;
     }
@@ -239,11 +242,7 @@ public:
     {return surrogateModel;}
   
   virtual void addFitnessSample(ExecutionContext& context, ObjectPtr object, FitnessPtr fitness)
-  {
-    std::vector<ObjectPtr> row = makeTrainingSample(context, object, fitness);
-    surrogateLearner->addTrainingSample(context, row, surrogateModel);
-    surrogateData->addRow(row);
-  }
+    {surrogateLearner->addTrainingSample(context, makeTrainingSample(context, object, fitness), surrogateModel);}
 
 protected:
   friend class IncrementalSurrogateBasedSolverClass;

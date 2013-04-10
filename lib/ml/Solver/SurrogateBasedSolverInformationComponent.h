@@ -72,8 +72,8 @@ public:
     default:
       jassertfalse;
     }
+
     juce::Rectangle rect = getFrameRectangle(transform);
-    
     juce::AffineTransform inverseTransform = transform.inverted();
 
     int w = (int)(rect.getWidth() * information->getPrecision());
@@ -293,7 +293,7 @@ private:
     res->addItem(T("Linear"),1);
     res->addItem(T("Percentile"),2);
     res->addListener(this);
-    res->setSelectedId(1);
+    res->setSelectedId(2);
     return res;
   }
 };

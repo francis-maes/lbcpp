@@ -15,6 +15,7 @@
 
 # undef T
 # include <ReClaM/GaussianProcess.h>
+# include <ReClaM/StochasticGradientDescent.h>
 # define T JUCE_T
 
 namespace lbcpp
@@ -32,23 +33,42 @@ public:
   ~SharkGaussianProcess()
     {delete gaussianProcess;}
 
-  double predict(Array<double> input)
+  double predict(Array<double> input) const
     {return (*gaussianProcess)(input);}
 
-  SVM* getSVM()
+  SVM* getSVM() const
     {return gaussianProcess->getSVM();}
 
-  Array<double> getCInv()
+  Array<double> getCInv() const
     {return gaussianProcess->getCInv();}
 
+  double getBetaInv() const
+    {return gaussianProcess->getParameter(0);}
+
+  double getSigma() const
+    {return gaussianProcess->getParameter(1);}
+
+  double getEvidence() const
+    {return evidence;}
+
   void train(Array<double> train, Array<double> supervisions)
-    {gaussianProcess->train(train, supervisions);}
+  {
+    //StochasticGradientDescent optimizer;
+    gaussianProcess->setBetaInv(1.0);
+    gaussianProcess->setSigma(0.25);
+    gaussianProcess->train(train, supervisions);
+    //optimizer.init(*gaussianProcess, 1e-3, 0.3, false);
+    //GaussianProcessEvidence errorFunction;
+    //optimizer.optimize(*gaussianProcess, errorFunction, train, supervisions);
+    //evidence = -errorFunction.error(*gaussianProcess, train, supervisions);
+  }
 
   virtual ObjectPtr clone(ExecutionContext& context)
     {return ReferenceCountedObjectPtr<SharkGaussianProcess>(new SharkGaussianProcess(gaussianProcess));}
 
 protected:
   GaussianProcess* gaussianProcess;
+  double evidence;
 };
 
 typedef ReferenceCountedObjectPtr<SharkGaussianProcess> SharkGaussianProcessPtr;
@@ -190,6 +210,9 @@ public:
     gp->setLimits(limits);
     gp->setTrainingInputs(trainingInputs);
     evaluate(context, gp);
+    context.resultCallback("GP Evidence likelihood", gp->getGaussianProcess()->getEvidence());
+    //context.resultCallback("Regularization parameter", gp->getGaussianProcess()->getBetaInv());
+    //context.resultCallback("Sigma", gp->getGaussianProcess()->getSigma());
   }
 };
   
