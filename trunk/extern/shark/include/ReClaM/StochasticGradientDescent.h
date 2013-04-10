@@ -86,13 +86,14 @@
 class StochasticGradientDescent : public Optimizer
 {
 public:
-	void init()
-	{
-		initStochasticGradientDescent();
-	}
+  void init(Model& model)
+  {
+    init(model, 0.1, 0.3, false);
+  }
 
-	void initStochasticGradientDescent(double lr = 0.1, double mu = 0.3, bool fast = false)
+	void init(Model& model, double lr, double mu, bool fast)
 	{
+    m.resize(model.getParameterDimension());
 		this->lr = lr;
 		this->mu = mu;
 		this->fast = fast;
@@ -142,6 +143,7 @@ public:
 	{
 		double ret = 0.0;
 		Array<double> dedw;
+    dedw.resize(model.getParameterDimension());
 
 		if (fast)
 		{
@@ -150,21 +152,21 @@ public:
 				m.resize(dedw);
 				m = 0;
 			}
-			if (in.ndim() == 1)
+			if (input.ndim() == 1)
 			{
 				ret = error.errorDerivative(model, input, target, dedw);
 				m = -lr * dedw + mu * m;
-				w += m;
+				dedw += m;
 			}
 			else
 			{
 				unsigned pattern;
-				for (unsigned number = 0; number < in.dim(0); ++number)
+				for (unsigned number = 0; number < input.dim(0); ++number)
 				{
-					pattern = Rng::discrete(0, in.dim(0) - 1);
+					pattern = Rng::discrete(0, input.dim(0) - 1);
 					ret += error.errorDerivative(model, input[pattern], target[pattern], dedw);
 					m = -lr * dedw + mu * m;
-					w += m;
+					dedw += m;
 				}
 			}
 		}
@@ -177,20 +179,22 @@ public:
 				m.resize(dedw);
 				m = 0;
 			}
-			if (in.ndim() == 1)
+			if (input.ndim() == 1)
 			{
 				ret = error.errorDerivative(model, input, target, dedw);
 				m = -lr * dedw + mu * m;
-				w += m;
+				dedw += m;
 			}
 			else
 			{
+        m = 0;
+        dedw = 0;
 				unsigned index, pattern;
-				vector< int > vec(in.dim(0));
-				vector< int >::iterator it;
+				std::vector< int > vec(input.dim(0));
+				std::vector< int >::iterator it;
 				for (unsigned i = 0; i < vec.size(); ++i)
 					vec[ i ] = i;
-				for (unsigned number = 0; number < in.dim(0); ++number)
+				for (unsigned number = 0; number < input.dim(0); ++number)
 				{
 					index   = Rng::discrete(0, vec.size() - 1);
 					pattern = vec[ index ];
@@ -198,11 +202,11 @@ public:
 					vec.erase(it);
 					ret += error.errorDerivative(model, input[pattern], target[pattern], dedw);
 					m = -lr * dedw + mu * m;
-					w += m;
+					dedw += m;
 				}
 			}
 		}
-
+    for (size_t p=0; p<model.getParameterDimension(); ++p) model.setParameter(p, model.getParameter(p) + m(p));
 		return ret;
 	}
 
