@@ -77,7 +77,7 @@ void Double::clone(ExecutionContext& context, const ObjectPtr& target) const
 bool Double::loadFromString(ExecutionContext& context, const string& str)
 {
   string v = str.trim().toLowerCase();
-  if (v == T("nan"))
+  if (v == T("nan") || v == T("-1.#ind"))
   {
     value = DVector::missingValue;
     return true;

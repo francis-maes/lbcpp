@@ -166,7 +166,7 @@ public:
     res.initialize(description);
     double mean = mergeResults(res, runInfos);
     
-    if (verbosity >= verbosityDetailed)
+    if (verbosity >= verbosityProgressAndResult)
     {
       context.enterScope("curveWithFixedEvaluations");
       for (size_t i = 0; i < res.inFunctionOfEvaluations.evaluations->getNumElements(); ++i)
