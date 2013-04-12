@@ -111,7 +111,7 @@ protected:
       FitnessPtr bestEI;
       size_t numTrees = numDims * factors[i];
       IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
-      solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeModified, xtIncrementalLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, IXT(" + string(numTrees) + "), Expected Improvement, Modified Latin Hypercube", &bestEI)); 
+      solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeModified, xtIncrementalLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "IXT(" + string(numTrees) + ")", &bestEI)); 
     }
     
     std::vector<ProblemPtr> problemVariants(numRuns);
