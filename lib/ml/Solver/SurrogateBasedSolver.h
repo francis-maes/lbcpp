@@ -65,6 +65,7 @@ public:
     FitnessPtr fitness;
     ExpressionPtr surrogateModel;
     size_t retryCounter = 0;
+    double trainTime, optimizerTime;
     if (iter < initialSamples->getNumElements())
     {
       object = initialSamples->getAndCast<Object>(iter);
@@ -75,7 +76,9 @@ public:
       // learn surrogate
       if (verbosity >= verbosityDetailed)
         context.enterScope("Learn surrogate");
+      trainTime = Time::getHighResolutionCounter();
       surrogateModel = getSurrogateModel(context);
+      trainTime = Time::getHighResolutionCounter() - trainTime;
       if (verbosity >= verbosityDetailed)
       {
         context.resultCallback("surrogateModel", surrogateModel);
@@ -83,9 +86,10 @@ public:
       }
       
       // optimize surrogate
-      if (verbosity >= verbosityAll)
+      if (verbosity >= verbosityDetailed)
         context.enterScope("Optimize surrogate");
       // make sure to choose a new sample
+      optimizerTime = Time::getHighResolutionCounter();
       do
       {
         if (retryCounter < 10)
@@ -94,8 +98,9 @@ public:
           object = initialVectorSampler->sample(context).staticCast<OVector>()->get(context.getRandomGenerator()->sampleSize(initialSamples->getNumElements()));
         ++retryCounter;
       } while (objectExists(object.staticCast<DenseDoubleVector>()));
+      optimizerTime = Time::getHighResolutionCounter() - optimizerTime;
       fitness = evaluate(context, object);
-      if (verbosity >= verbosityAll)
+      if (verbosity >= verbosityDetailed)
       {
         context.resultCallback("object", object);
         context.leaveScope();
@@ -121,6 +126,8 @@ public:
       context.resultCallback("inner optimizer runs", retryCounter);
       context.resultCallback("object", object);
       context.resultCallback("fitness", fitness);
+      context.resultCallback("trainTime", trainTime);
+      context.resultCallback("optimizerTime", optimizerTime);
     }
     addFitnessSample(context, object, fitness);
     return true;

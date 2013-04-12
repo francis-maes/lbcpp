@@ -54,6 +54,17 @@
     <variable type="PositiveInteger" name="optimizerVerbosity" description="Verbosity of optimizers [1]"/>
     <variable type="PositiveInteger" name="problemIdx" shortName="p" description="The problem to run (1-6) [1]"/>
   </class>
+
+  <class name="SBOEnsembleSizeExperiments" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations" shortName="n" description="Number of evaluations [1000]"/>
+    <variable type="Double" name="evaluationPeriod" description="Number of seconds between evaluations in function of CPU time [10.0]"/>
+    <variable type="Double" name="evaluationPeriodFactor" description="After each evaluation for CPU time, evaluationPeriod is multiplied by this factor [1.0]"/>
+    <variable type="PositiveInteger" name="numDims" shortName="d" description="Dimensionality of test problems [6]"/>
+    <variable type="PositiveInteger" name="numRuns" shortName="r" description="Number of times to run each method on each problem [10]"/>
+    <variable type="PositiveInteger" name="verbosity" description="Verbosity of output, verbosity >= 2 gives curves for each run [1]"/>
+    <variable type="PositiveInteger" name="optimizerVerbosity" description="Verbosity of optimizers [1]"/>
+    <variable type="PositiveInteger" name="problemIdx" shortName="p" description="The problem to run (1-6) [1]"/>
+  </class>
   
   <class name="TestSBOInnerOptimizers" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations"/>
