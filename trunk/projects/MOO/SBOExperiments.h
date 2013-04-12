@@ -117,9 +117,9 @@ protected:
     SamplerPtr testExpressionsSampler = subsetVectorSampler(scalarExpressionVectorSampler(), (size_t)(sqrt((double)numDims) + 0.5));
 
     // create inner optimization loop solver
-    SolverPtr innerSolver = cmaessoOptimizer(100 * numDims);
+    SolverPtr innerSolver = cmaessoOptimizer(100);
     //SolverPtr innerSolver = crossEntropySolver(diagonalGaussianSampler(), numDims * 10, numDims * 3, 20);
-    innerSolver->setVerbosity(verbosityDetailed);
+    innerSolver->setVerbosity((SolverVerbosity)optimizerVerbosity);
     
     // Variable Encoder
     VariableEncoderPtr encoder = scalarVectorVariableEncoder();
