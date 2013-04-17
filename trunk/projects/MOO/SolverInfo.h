@@ -29,12 +29,15 @@ struct ResultCurve
   }
 };
 
-struct SolverInfo
+class SolverInfo : public Object
 {
+public:
   string name;
   ResultCurve inFunctionOfEvaluations;
   ResultCurve inFunctionOfCpuTime;
   
+  SolverInfo() {}
+
   void initialize(string name)
   {
     this->name = name;
@@ -124,6 +127,8 @@ struct SolverInfo
   }
 };
 
+typedef ReferenceCountedObjectPtr<SolverInfo> SolverInfoPtr;
+
 class SolverSettings
 { 
 public:
@@ -141,7 +146,7 @@ public:
     std::vector<ProblemPtr> problemVariants(numRuns);
     for (size_t i = 0; i < problemVariants.size(); ++i)
     {
-      problemVariants[i] = problem->cloneAndCast<Problem>();
+      problemVariants[i] = problem->cloneAndCast<Problem>(context);
       problemVariants[i]->reinitialize(context);
     }
     return runSolver(context, problemVariants);
@@ -334,6 +339,9 @@ public:
     meanOfBests /= infos.size();
     return meanOfBests;
   }
+
+  string getDescription() const
+    {return description;}
   
 protected:
   SolverPtr solver;

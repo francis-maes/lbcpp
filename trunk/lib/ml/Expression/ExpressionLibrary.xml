@@ -4,7 +4,7 @@
 
   <include file="ml/Expression.h"/>
   <include file="ml/ExpressionDomain.h"/>
-  <include file="Learner/GaussianProcessLearner.h"/>
+  <include file="Learner/SharkGaussianProcessLearner.h"/>
     
   <!-- Expressions-->
   <class name="Expression" base="Object" abstract="yes">
@@ -35,6 +35,7 @@
   
   <!-- Gaussian Process Expression -->
   <class name="GaussianProcessExpression" base="Expression">
+    <variable type="SharkGaussianProcess" name="gaussianProcess"/>
   </class>
 
   <!-- Domain -->

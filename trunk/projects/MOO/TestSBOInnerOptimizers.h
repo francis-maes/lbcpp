@@ -26,6 +26,26 @@ namespace lbcpp
   
 extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 
+class TestOneOptimizer : public WorkUnit
+{
+public:
+  TestOneOptimizer(SolverSettings* settings = NULL, ProblemPtr problem = ProblemPtr()) : settings(settings), problem(problem) {}
+  virtual ObjectPtr run(ExecutionContext& context)
+  {
+    std::vector<ProblemPtr> problems(1);
+    problems[0] = problem;
+    SolverInfoPtr res = new SolverInfo(settings->runSolver(context, problem));
+    return res;
+  }
+
+  virtual string toShortString() const
+    {return problem->toShortString() + ", " + settings->getDescription();}
+
+private:
+  SolverSettings* settings;
+  ProblemPtr problem;
+};
+
 class TestSBOInnerOptimizers : public WorkUnit
 {
 public:
@@ -65,74 +85,78 @@ protected:
     
     size_t numInitialSamples = 10 * numDims;
     size_t populationSize = 10 * numDims;
-    double evaluationPeriod = 5.0;
+    double evaluationPeriod = 10.0;
     double evaluationPeriodFactor = 1.0;
     size_t verbosity = 1;
     size_t optimizerVerbosity = 1;
     
-    std::vector<SolverSettings> solvers;
-        
-    // SBO solvers
-    // create the splitting criterion    
-    SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
-    
-    // create the sampler
-    SamplerPtr testExpressionsSampler = subsetVectorSampler(scalarExpressionVectorSampler(), (size_t)(sqrt((double)numDims) + 0.5));
-    
-    // create inner optimization loop solvers
-    std::vector<SolverPtr> innerSolvers;
-    SolverPtr solver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
-    solver->setVerbosity(verbosityQuiet);
-    innerSolvers.push_back(solver);
-    
-    solver = cmaessoOptimizer(25);
-    solver->setVerbosity(verbosityQuiet);
-    innerSolvers.push_back(solver);
-    
-    // Samplers
-    SamplerPtr uniform = samplerToVectorSampler(uniformSampler(), numInitialSamples);
-    SamplerPtr latinHypercube = latinHypercubeVectorSampler(numInitialSamples);
-    
-    // Variable Encoder
-    VariableEncoderPtr encoder = scalarVectorVariableEncoder();
-    
-    SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(testExpressionsSampler)); 
-    learner = baggingLearner(learner, numTrees);
-    
-    {
-      // create RF learner
-      SolverPtr learner = treeLearner(splittingCriterion, exhaustiveConditionLearner(testExpressionsSampler)); 
-      learner = baggingLearner(learner, numTrees);
-      for (size_t i = 0; i < innerSolvers.size(); ++i)
-      {
-        FitnessPtr bestEI;
-        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolvers[i], encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, RF, Expected Improvement, Latin Hypercube, " + innerSolvers[i]->toShortString(), &bestEI));
-      }
-    }
-    
-    {
-      // create XT learner
-      // these trees should choose random splits 
-      SolverPtr learner = treeLearner(splittingCriterion, randomSplitConditionLearner(testExpressionsSampler)); 
-      learner = simpleEnsembleLearner(learner, numTrees);
-      for (size_t i = 0; i < innerSolvers.size(); ++i)
-      {
-        FitnessPtr bestEI;
-        solvers.push_back(SolverSettings(batchSurrogateBasedSolver(latinHypercube, learner, innerSolvers[i], encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, XT, Expected Improvement, Latin Hypercube, " + innerSolvers[i]->toShortString(), &bestEI));
-      }
-    }
-    
+    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Test Inner Optimizers")));
+
+    const size_t numSolvers = 4;
+    std::vector<FitnessPtr> fitnessptrs(numSolvers * problems.size());
+    for (size_t i = 0; i < numSolvers * problems.size(); ++i)
+      fitnessptrs[i] = FitnessPtr();
+
     for (size_t i = 0; i < problems.size(); ++i)
     {
-      ProblemPtr problem = problems[i];
-      context.enterScope(problem->toShortString());
-      context.resultCallback("problem", problem);
-      std::vector<SolverInfo> infos;
-      for (size_t j = 0; j < solvers.size(); ++j)
-        infos.push_back(solvers[j].runSolver(context, problem));
-      SolverInfo::displayResults(context, infos);
-      context.leaveScope();
+      // cross-entropy, 25 generations
+      FitnessPtr& bestEI1 = fitnessptrs[numSolvers * i];
+      SolverPtr solver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
+      solver->setVerbosity(verbosityQuiet);
+      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
+                                                                        xtIncrementalLearner, 
+                                                                        solver, 
+                                                                        scalarVectorVariableEncoder(), 
+                                                                        expectedImprovementSelectionCriterion(bestEI1), 
+                                                                        numEvaluations), 
+                                        numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "IXT(" + string((int)numTrees) + "), CE(25)", &bestEI1),
+                                problems[i]));
+
+      // cross-entropy, 100 generations
+      FitnessPtr& bestEI4 = fitnessptrs[numSolvers * i + 3];
+      solver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 100, true);
+      solver->setVerbosity(verbosityQuiet);
+      xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
+                                                                        xtIncrementalLearner, 
+                                                                        solver, 
+                                                                        scalarVectorVariableEncoder(), 
+                                                                        expectedImprovementSelectionCriterion(bestEI4), 
+                                                                        numEvaluations), 
+                                        numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "IXT(" + string((int)numTrees) + "), CE(100)", &bestEI4),
+                                problems[i]));
+
+      // cma-es, 100 evaluations
+      FitnessPtr& bestEI2 = fitnessptrs[numSolvers * i + 1];
+      solver = cmaessoOptimizer(100);
+      solver->setVerbosity(verbosityQuiet);
+      xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
+                                                                        xtIncrementalLearner, 
+                                                                        solver, 
+                                                                        scalarVectorVariableEncoder(), 
+                                                                        expectedImprovementSelectionCriterion(bestEI2), 
+                                                                        numEvaluations), 
+                                        numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "IXT(" + string((int)numTrees) + "), CMA-ES(100)", &bestEI2),
+                                problems[i]));
+
+      // cma-es, 500 evaluations
+      FitnessPtr& bestEI3 = fitnessptrs[numSolvers * i + 2];
+      solver = cmaessoOptimizer(500);
+      solver->setVerbosity(verbosityQuiet);
+      xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
+                                                                        xtIncrementalLearner, 
+                                                                        solver, 
+                                                                        scalarVectorVariableEncoder(), 
+                                                                        expectedImprovementSelectionCriterion(bestEI3), 
+                                                                        numEvaluations), 
+                                        numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "IXT(" + string((int)numTrees) + "), CMA-ES(500)", &bestEI3),
+                                problems[i]));
     }
+    subWorkUnits->setPushChildrenIntoStackFlag(true);
+    OVectorPtr res = context.run(subWorkUnits).staticCast<OVector>();
   }
 };
 

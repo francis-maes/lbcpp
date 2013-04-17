@@ -94,7 +94,7 @@ public:
     std::vector<SolverPtr> solvers;
     
     //solvers.push_back(dtLearner);
-    solvers.push_back(gaussianProcessLearner());
+    solvers.push_back(sharkGaussianProcessLearner());
     solvers.push_back(rfLearner);
     solvers.push_back(xtLearner);
     solvers.push_back(incrementalLearnerBasedLearner(new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees)));

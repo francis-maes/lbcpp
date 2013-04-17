@@ -51,8 +51,10 @@ protected:
 class ProblemFromSharkObjectiveFunction : public Problem
 {
 public:
-  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective)
-    : objective(objective) {}
+  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective) 
+    : numDimensions(objective->dimension()), objective(objective) {}
+  ProblemFromSharkObjectiveFunction(size_t numDimensions, ObjectiveFunctionVS<double>* objective)
+    : numDimensions(numDimensions), objective(objective) {}
 
   virtual ~ProblemFromSharkObjectiveFunction()
     {delete objective;}
@@ -99,8 +101,9 @@ public:
   }
 
 protected:
+  friend class ProblemFromSharkObjectiveFunctionClass;
+  size_t numDimensions;
   ObjectiveFunctionVS<double>* objective;
-  
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const = 0;
 };
 
@@ -109,7 +112,7 @@ protected:
 */
 struct SphereProblem : public ProblemFromSharkObjectiveFunction
 {
-  SphereProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Sphere((unsigned)numDimensions)), numDimensions(numDimensions)
+  SphereProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(numDimensions, new Sphere((unsigned)numDimensions))
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
@@ -118,74 +121,98 @@ struct SphereProblem : public ProblemFromSharkObjectiveFunction
   virtual void initialize(ExecutionContext& context)
   {
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    if (objective)
+      delete objective;
+    objective = new Sphere((unsigned)numDimensions);
     ProblemFromSharkObjectiveFunction::initialize(context);
   }
-  
-protected:
-  size_t numDimensions;
 };
 
 struct AckleyProblem : public ProblemFromSharkObjectiveFunction
 {
-  AckleyProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Ackley((unsigned)numDimensions))
+  AckleyProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(numDimensions, new Ackley((unsigned)numDimensions))
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
     {worst = 20.0; best = 0.0;}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    if (objective)
+      delete objective;
+    objective = new Ackley((unsigned)numDimensions);
+    ProblemFromSharkObjectiveFunction::initialize(context);
+  }
 };
 
 struct GriewangkProblem : public ProblemFromSharkObjectiveFunction
 {
-  GriewangkProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Griewangk((unsigned)numDimensions))
+  GriewangkProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(numDimensions, new Griewangk((unsigned)numDimensions))
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
     {worst = 400.0; best = 0.0;}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    if (objective)
+      delete objective;
+    objective = new Griewangk((unsigned)numDimensions);
+    ProblemFromSharkObjectiveFunction::initialize(context);
+  }
 };
 
 struct RastriginProblem : public ProblemFromSharkObjectiveFunction
 {
-  RastriginProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Rastrigin((unsigned)numDimensions))
+  RastriginProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(numDimensions, new Rastrigin((unsigned)numDimensions))
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
     {worst = 400.0; best = 0.0;}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    if (objective)
+      delete objective;
+    objective = new Rastrigin((unsigned)numDimensions);
+    ProblemFromSharkObjectiveFunction::initialize(context);
+  }
 };
 
 struct RosenbrockProblem : public ProblemFromSharkObjectiveFunction
 {
-  RosenbrockProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new Rosenbrock((unsigned)numDimensions)), numDimensions(numDimensions)
+  RosenbrockProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(numDimensions, new Rosenbrock((unsigned)numDimensions))
     {initialize(defaultExecutionContext());}
 
   virtual void initialize(ExecutionContext& context)
   {
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    if (objective)
+      delete objective;
+    objective = new Rosenbrock((unsigned)numDimensions);
     ProblemFromSharkObjectiveFunction::initialize(context);
   }
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
     {worst = 4000.0; best = 0.0;}
-
-protected:
-  size_t numDimensions;
 };
 
 struct RosenbrockRotatedProblem : public ProblemFromSharkObjectiveFunction
 {
-  RosenbrockRotatedProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(new RosenbrockRotated((unsigned)numDimensions)), numDimensions(numDimensions)
+  RosenbrockRotatedProblem(size_t numDimensions = 30) : ProblemFromSharkObjectiveFunction(numDimensions, new RosenbrockRotated((unsigned)numDimensions))
     {initialize(defaultExecutionContext());}
 
   virtual void initialize(ExecutionContext& context)
   {
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0))));
+    if (objective)
+      delete objective;
+    objective = new RosenbrockRotated((unsigned)numDimensions);
     ProblemFromSharkObjectiveFunction::initialize(context);
   }
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
     {worst = 10.0; best = 0.0;}
-
-protected:
-  size_t numDimensions;
 };
 
 

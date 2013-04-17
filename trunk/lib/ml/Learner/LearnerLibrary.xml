@@ -39,7 +39,7 @@
   <!-- Gaussian Process Learner -->
   <class name="SharkGaussianProcess" base="Object">
   </class>
-  <class name="GaussianProcessLearner" base="Solver">
+  <class name="SharkGaussianProcessLearner" base="Solver">
     <constructor/>
   </class>
 

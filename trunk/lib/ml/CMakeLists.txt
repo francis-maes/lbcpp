@@ -205,6 +205,7 @@ SET(ML_SELECTION_CRITERION_SOURCES
 )
 
 SET(ML_LEARNER_SOURCES
+  Learner/SharkGaussianProcessLearner.h
   Learner/GaussianProcessLearner.h
   Learner/ExhaustiveConditionLearner.h
   Learner/RandomSplitConditionLearner.h

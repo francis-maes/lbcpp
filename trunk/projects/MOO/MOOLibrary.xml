@@ -2,9 +2,11 @@
 
 <library name="MOO" dynamic="yes">
 
-  <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes"/>
+  <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes">
+    <variable type="PositiveInteger" name="numDimensions"/>
+  </class>
 
-  <class name="SphereProblem" base="ProblemFromSharkObjectiveFunction"/>  
+  <class name="SphereProblem" base="ProblemFromSharkObjectiveFunction"/>
   <class name="AckleyProblem" base="ProblemFromSharkObjectiveFunction"/>
   <class name="GriewangkProblem" base="ProblemFromSharkObjectiveFunction"/>
   <class name="RastriginProblem" base="ProblemFromSharkObjectiveFunction"/>
@@ -17,6 +19,9 @@
   <class name="ZDT3MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT4MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT6MOProblem" base="ZDTMOProblem"/>
+
+  <class name="SolverInfo"/>
+  <class name="TestOneOptimizer" base="WorkUnit"/>
 
   <class name="MOOSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numDimensions"/>
