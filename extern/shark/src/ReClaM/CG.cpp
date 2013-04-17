@@ -106,7 +106,7 @@ void CG::init(Model& model,
 	CG_verbose     = verbose;
 	CG_n = model.getParameterDimension();
 
-	if (reset >= 0)
+	if (reset > 0)
 		CG_reset       = reset;
 	else
 		CG_reset       = CG_n + 1;

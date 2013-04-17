@@ -94,10 +94,7 @@ protected:
     VariableEncoderPtr encoder = scalarVectorVariableEncoder();
     
     // Samplers
-    SamplerPtr uniform = samplerToVectorSampler(uniformSampler(), numInitialSamples);
-    SamplerPtr latinHypercube = latinHypercubeVectorSampler(numInitialSamples);
     SamplerPtr latinHypercubeModified = latinHypercubeVectorSampler(numInitialSamples, true);
-    SamplerPtr edgeSampler = edgeVectorSampler();
 
     // baseline solvers
     solvers.push_back(SolverSettings(randomSolver(uniformSampler(), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "Random search"));

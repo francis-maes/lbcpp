@@ -65,7 +65,7 @@ public:
     FitnessPtr fitness;
     ExpressionPtr surrogateModel;
     size_t retryCounter = 0;
-    double trainTime, optimizerTime;
+    double trainTime = 0.0, optimizerTime = 0.0;
     if (iter < initialSamples->getNumElements())
     {
       object = initialSamples->getAndCast<Object>(iter);

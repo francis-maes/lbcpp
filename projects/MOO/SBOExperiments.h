@@ -141,7 +141,7 @@ protected:
 
      if (runGP)
     {
-      SolverPtr gpLearner = gaussianProcessLearner();
+      SolverPtr gpLearner = sharkGaussianProcessLearner();
       if (uniformSampling || runAll)
       {
         FitnessPtr bestEI;
