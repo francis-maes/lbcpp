@@ -37,6 +37,7 @@
     <value name="f1Score" oneLetterCode="f"/>
     <value name="mccScore" oneLetterCode="m"/>
     <value name="sensitivityAndSpecificityScore" oneLetterCode="s"/>
+    <value name="areaUnderCurve" oneLetterCode="u"/>
   </enumeration>
 
   <!-- Utility Classes -->

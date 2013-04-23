@@ -382,6 +382,7 @@
     <variable type="File" name="inputDirectory" shortName="in"/>
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
     <variable type="File" name="outputDirectory" shortName="out"/>
+    <variable type="File" name="proteinModelFile" shortName="m"/>
     <variable type="PositiveInteger" name="numFolds" shortName="n"/>
     <variable type="PositiveInteger" name="fold" shortName="f"/>
   </class>
