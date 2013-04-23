@@ -29,17 +29,26 @@ public:
     if (!loadProteins(context, trainingProteins, testingProteins))
       return false;
 
-    ProteinTarget target = drTarget;
-    SimpleProteinModelPtr m = new SimpleProteinModel(target);
+    SimpleProteinModelPtr m;
+    if (proteinModelFile != File::nonexistent)
+    {
+      m = SimpleProteinModel::createFromFile(context, proteinModelFile);
+      context.informationCallback(T("Loaded model: ") + proteinModelFile.getFullPathName());
+    }
+    else
+    {
+      ProteinTarget target = drTarget;
 
-    m->pssmWindowSize = 15;
+      m = new SimpleProteinModel(target);
+      m->pssmWindowSize = 15;      
+    }
 
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
 
     if (outputDirectory != File::nonexistent)
       m->evaluate(context, testingProteins, saveToDirectoryEvaluator(outputDirectory, T(".xml")), T("Saving test predictions to directory"));
 
-    ProteinEvaluatorPtr evaluator = createEvaluator(target);
+    ProteinEvaluatorPtr evaluator = createEvaluator(m->getProteinTarget());
     CompositeScoreObjectPtr scores = m->evaluate(context, testingProteins, evaluator, T("EvaluateTest"));
 
     return evaluator->getScoreToMinimize(scores);
@@ -51,6 +60,7 @@ protected:
   File inputDirectory;
   File supervisionDirectory;
   File outputDirectory;
+  File proteinModelFile;
 
   size_t numFolds;
   size_t fold;
@@ -97,8 +107,8 @@ protected:
     }
     else if (target == drTarget)
     {
-      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, false)), T("DR-AUC"), true);
-      //evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
+      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, true)), T("DR-AUC"), true);
+      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
     }
     else
       jassertfalse;
