@@ -49,6 +49,77 @@ protected:
   static size_t getNumBridges(ExecutionContext& context, ProteinPtr protein);
   static bool checkConsistencyOfBridges(SymmetricMatrixPtr bridges);
 };
+  
+class SS3CompositionWithRespectToDRWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory);
+
+    size_t numDisordered = 0;
+    size_t numOrdered = 0;
+
+    size_t numDisorderedSheets = 0;
+    size_t numDisorderedHelices = 0;
+    size_t numDisorderedCoils = 0;
+
+    size_t numOrderedSheets = 0;
+    size_t numOrderedHelices = 0;
+    size_t numOrderedCoils = 0;
+
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      jassert(protein);
+      DenseDoubleVectorPtr dr = protein->getDisorderRegions();
+      jassert(dr);
+      ContainerPtr ss3 = protein->getSecondaryStructure();
+      jassert(ss3);
+      for (size_t j = 0; j < protein->getLength(); ++j)
+      {
+        jassert(dr->getElement(j).exists());
+        jassert(ss3->getElement(j).exists());
+        DoubleVectorPtr ss3Element = ss3->getElement(j).getObjectAndCast<DoubleVector>();
+        if (dr->getValue(j) > 0.5)
+        {
+          ++numDisordered;
+          switch (ss3Element->getIndexOfMaximumValue())
+          {
+            case helix: ++numDisorderedHelices; break;
+            case sheet: ++numDisorderedSheets; break;
+            case coil: ++numDisorderedCoils; break;
+            default: jassertfalse;
+          }
+        }
+        else
+        {
+          ++numOrdered;
+          switch (ss3Element->getIndexOfMaximumValue())
+          {
+            case helix: ++numOrderedHelices; break;
+            case sheet: ++numOrderedSheets; break;
+            case other: ++numOrderedCoils; break;
+            default: jassertfalse;
+          }
+        }
+      }
+    }
+
+    std::cout << "      Ordered   Disordered   Total" << std::endl;
+    std::cout << "Helix " << numOrderedHelices << "   " << numDisorderedHelices << "   " << (numOrderedHelices + numDisorderedHelices) << std::endl;
+    std::cout << "Sheet " << numOrderedSheets << "   " << numDisorderedSheets << "   " << (numOrderedSheets + numDisorderedSheets) << std::endl;
+    std::cout << "Coil  " << numOrderedCoils << "   " << numDisorderedCoils << "   " << (numOrderedCoils + numDisorderedCoils) << std::endl;
+    std::cout << "      " << numOrdered << "   " << numDisordered << std::endl;
+
+    return Variable();
+  }
+  
+protected:
+  friend class SS3CompositionWithRespectToDRWorkUnitClass;
+
+  File proteinDirectory;
+};
 
 class CheckARFFDataFileParserWorkUnit : public WorkUnit
 {

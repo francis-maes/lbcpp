@@ -29,12 +29,8 @@ local function getScoreToMaximize(scoreObject)
   return 1 - scoreObject:getScore()
 end
 
-local function getSensitivity(scoreObject)
-  return 1 - (scoreObject.truePositive / (scoreObject.truePositive + scoreObject.falseNegative))
-end
-
-local function getSpecificity(scoreObject)
-  return 1 - (scoreObject.trueNegative / (scoreObject.trueNegative + scoreObject.falsePositive))
+local function getRecall(scoreObject)
+  return scoreObject:recall()
 end
 
 local function getBestSensitivity(scoreObject)
@@ -43,6 +39,18 @@ end
 
 local function getBestSpecificity(scoreObject)
   return getSpecificity(scoreObject.bestConfusionMatrix)
+end
+
+local function getAreaUnderCurve(scoreObject)
+  return scoreObject.areaUnderCurve
+end
+
+local function getAccuracyAt5FPR(scoreObject)
+  return scoreObject.accuracyAt5Fpr
+end
+
+local function getPrecision(scoreObject)
+  return scoreObject:precision
 end
 
 local function getScores(traces, nodeName, scoresOfInterest)
@@ -84,53 +92,16 @@ local function getComplexity(traces)
 end
 
 
-local function getOne(scoreObject)
-  return scoreObject.accuracyOne
-end
-local function getTwo(scoreObject)
-  return scoreObject.accuracyTwo
-end
-local function getThree(scoreObject)
-  return scoreObject.accuracyThree
-end
-local function getFour(scoreObject)
-  return scoreObject.accuracyFour
-end
-local function getFive(scoreObject)
-  return scoreObject.accuracyFive
-end
-local function getMore(scoreObject)
-  return scoreObject.accuracyMore
-end
-
 -- file name: filePrefix .. varValues[.] .. filePostfix .. "_Foldx.trace"
 local function main(varName, varValues, filePrefix, filePostfix, numFolds)
   local scoresOfInterest = {}
---  scoresOfInterest["1 - Qp (Greedy 6)"] = {index = 5, getScore = getScoreToMinimize}
---  scoresOfInterest["1 - Qp"] = {index = 6, getScore = getScoreToMinimize}
---  scoresOfInterest["1 - Qp (Greedy 20)"] = {index = 26, getScore = getScoreToMinimize}
---  for L = 1, 24 do
---    scoresOfInterest["Greedy " .. L] = {index = 6 + L, getScore = getScoreToMinimize}
---  end
---  scoresOfInterest["1 - Q2"] = {index = 1, getScore = getScoreToMinimize}
---  scoresOfInterest["1 - Q2 (Bias form test)"] = {index = 2, getScore = getScoreToMinimize}
---  scoresOfInterest["1 - Sensitivity"] = {index = 1, getScore = getSensitivity}
---  scoresOfInterest["1 - Specificity"] = {index = 1, getScore = getSpecificity}
---  scoresOfInterest["1 - Sensitivity (Bias form test)"] = {index = 3, getScore = getBestSensitivity}
---  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
-  scoresOfInterest["ODSB"] = {index = 1, getScore = getScoreToMaximize}
---  scoresOfInterest["DSB"] = {index = 8, getScore = getScoreToMaximize}
+  scoresOfInterest["AUC"] =       {index = 1, getScore = getAreaUnderCurve}
+  scoresOfInterest["Acc 5FPR"] =  {index = 1, getScore = getAccuracyAt5FPR}
+  scoresOfInterest["MCC"] =       {index = 2, getScore = getScoreToMaximize}
+  scoresOfInterest["Precision"] = {index = 2, getScore = getPrecision}
+  scoresOfInterest["Recall"] =    {index = 2, getScore = getRecall}
 
-  scoresOfInterest["One"] = {index = 1, getScore = getOne}
-  scoresOfInterest["Two"] = {index = 1, getScore = getTwo}
-  scoresOfInterest["Three"] = {index = 1, getScore = getThree}
-  scoresOfInterest["Four"] = {index = 1, getScore = getFour}
-  scoresOfInterest["Five"] = {index = 1, getScore = getFive}
-  scoresOfInterest["More"] = {index = 1, getScore = getMore}
-
---  scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
---  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
     -- Load traces
@@ -166,65 +137,8 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
   end
 end
 
-local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120626-CBS-ODSB/"
 local numFolds = 9
 
-local th = {"0.05", "0.10", "0.15", "0.20", "0.25", "0.30", "0.35", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90", "0.95"}
---main("Th0", {""}, dir .. "x3_K0_1000T_NMIN1_Baseline_Fold", "", numFolds)
---main("Th", th, dir .. "x3_K0_1000T_NMIN1_CBS-ODSB_TH", "_Fold", numFolds)
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
---main("CBS", {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}, dir .. "x3_", "_K0_1000T_NMIN1_CBS_Fold", numFolds)
-
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/130104-PlosOne-MinorRevision/"
-
---main("CBP", {"hgpssm", "hgpssm_hgaa"}, dir .. "FeatureEvaluation-Kmax/", ".param.x3.Kmax.fold", numFolds)
---main("CBS", {"wpssm11", "wpssm11_hgpssm", "wpssm11_hgpssm_nc", "wpssm11_hgpssm_nc_hgaa"}, dir, ".param.x3.fold", numFolds)
-
---main("SPX - CBS", {""}, dir .. "MultiTask/SPX/CBS/SPX-CBS.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
---main("SPXC - CBS", {""}, dir .. "MultiTask/SPXC/CBS/SPXC-CBS.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
-
---main("SPX - ODSB", {""}, dir .. "MultiTask/SPX/ODSB/SPX-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
---main("SPXC - ODSB", {""}, dir .. "MultiTask/SPXC/ODSB/SPXC-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
-
---main("SPX - DSB", {""}, dir .. "MultiTask/SPX/DSB/SPX-DSB.wpssm15_csp17.x3.fold", "", numFolds)
---main("SPXC - DSB", {""}, dir .. "MultiTask/SPXC/DSB/SPXC-DSB.wpssm15_csp17.x3.fold", "", numFolds)
-
---main("SPX - aCSB-DSB", {""}, dir .. "MultiTask/SPX/ActualCBS-ODSB/SPX-aCBS-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
---main("SPXC - aCSB-DSB", {""}, dir .. "MultiTask/SPXC/ActualCBS-ODSB/SPXC-aCBS-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
-
---main("SPXC - CSBToCBP", {""}, dir .. "MultiTask/SPXC/CBSToCBP/SPXC-CBSToCBP.wpssm11_hgpssm_nc.x3.Kmax.fold", "", numFolds)
-
-main("SPXC - CBS-CBP-ODSB", {""}, dir .. "SPXC/CBS-CBP-ODSB/SPXC-CBS-CBP-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
---main("SPXC - aCBS-CBP-ODSB", {""}, dir .. "MultiTask/SPXC/ActualCBS-CBP-ODSB/SPXC-ActualCBS-CBP-ODSB.wpssm15_csp17.x3.fold", "", numFolds)
-
-
---main("CBP > K", {1,2,5,10,20,25}, dir .. "K/hgpssm_nc.K", ".x3.fold", numFolds)
---main("CBP > Nmin", {1,3,5,7,11,15,21,51,101,155,201}, dir .. "Nmin/hgpssm_nc.Nmin", ".x3.fold", numFolds)
---main("CBP > Trees", {1,2,5,10,20,50,100,200,500,1000,2000,5000,10000}, dir .. "Trees/hgpssm_nc.T", ".x3.fold", numFolds)
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBS/"
---main("CBS > K", {1,2,5,10,20,50,100,200,256}, dir .. "K/wpssm11_hgpssm_nc.K", ".x3.fold", numFolds)
---main("CBP > Nmin", {1,3,5,7,11,15,21,51,101,155,201}, dir .. "Nmin/wpssm11_hgpssm_nc.Nmin", ".x3.fold", numFolds)
---main("CBP > Trees", {1,2,5,10,20,50,100,200,500,1000,2000,5000,10000}, dir .. "Trees/wpssm11_hgpssm_nc.T", ".x3.fold", numFolds)
-
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBP/"
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/121018-PlosOne-MajorRevision/CBS/"
-
-local C = {0, 5, 10, 15}
-local G = {-14, -7, 0, 7, 14}
-
---for i = 1, #C do
---  context:enter("C" .. C[i])
---  main("CBP > C" .. C[i] .. " G", G, dir .. "SVM/hgpssm_nc.C" .. C[i] .. ".G", ".SVM.fold", numFolds)
---  main("CBS > C" .. C[i] .. " G", G, dir .. "SVM/wpssm11_hgpssm_nc.C" .. C[i] .. ".G", ".SVM.fold", numFolds)
-
---  context:leave()
---end
-
--- ----- SP39 ----- --
-
-numFolds = 3
---main("SP39", {"500T"}, dir .. "Test/x3_Win19_K2000_", "_NMIN1", numFolds)
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130423-FeatureEvaluation-DR/"
+features = {"pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
+main("DR", features, dir, ".fold", numFolds)

@@ -11,7 +11,8 @@
 
 # include <lbcpp/Core/Object.h>
 # include <lbcpp/Function/Evaluator.h>
-# include <algorithm>
+#include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Lua/Lua.h>
 
 namespace lbcpp
 {
@@ -66,6 +67,16 @@ public:
   /* Object */
   void saveToXml(XmlExporter& exporter) const;
   bool loadFromXml(XmlImporter& importer);
+  
+  /*
+   ** Lua
+   */
+  static int accuracy(LuaState& state);
+  static int f1(LuaState& state);
+  static int precision(LuaState& state);
+  static int recall(LuaState& state);
+  static int specificity(LuaState& state);
+  static int mcc(LuaState& state);
 
 protected:
   friend class BinaryClassificationConfusionMatrixClass;
@@ -82,6 +93,7 @@ protected:
   
 
 typedef ReferenceCountedObjectPtr<BinaryClassificationConfusionMatrix> BinaryClassificationConfusionMatrixPtr;
+extern ClassPtr binaryClassificationConfusionMatrixClass;
 
 /* User interface element */
 class BinaryClassificationCurveElement : public Object
@@ -131,7 +143,7 @@ public:
 
   BinaryClassificationConfusionMatrixPtr getBestConfusionMatrix() const
     {return bestConfusionMatrix;}
-  
+
   ContainerPtr createBinaryClassificationCurveElements() const;
   void getAllThresholds(std::vector<double>& result) const;
 
