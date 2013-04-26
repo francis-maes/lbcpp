@@ -55,7 +55,7 @@ class SS3CompositionWithRespectToDRWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory);
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, ss3ProteinDirectory, drProteinDirectory, 2);
 
     size_t numDisordered = 0;
     size_t numOrdered = 0;
@@ -70,13 +70,16 @@ public:
 
     for (size_t i = 0; i < proteins->getNumElements(); ++i)
     {
-      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
-      jassert(protein);
-      DenseDoubleVectorPtr dr = protein->getDisorderRegions();
+      ProteinPtr ss3Protein = proteins->getElement(i).getObjectAndCast<Pair>()->getFirst().getObjectAndCast<Protein>();
+      ProteinPtr drProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>();
+      jassert(ss3Protein);
+      jassert(drProtein);
+      jassert(ss3Protein->getLength() == drProtein->getLength());
+      DenseDoubleVectorPtr dr = drProtein->getDisorderRegions();
       jassert(dr);
-      ContainerPtr ss3 = protein->getSecondaryStructure();
+      ContainerPtr ss3 = ss3Protein->getSecondaryStructure();
       jassert(ss3);
-      for (size_t j = 0; j < protein->getLength(); ++j)
+      for (size_t j = 0; j < drProtein->getLength(); ++j)
       {
         jassert(dr->getElement(j).exists());
         jassert(ss3->getElement(j).exists());
@@ -118,7 +121,8 @@ public:
 protected:
   friend class SS3CompositionWithRespectToDRWorkUnitClass;
 
-  File proteinDirectory;
+  File ss3ProteinDirectory;
+  File drProteinDirectory;
 };
 
 class CheckARFFDataFileParserWorkUnit : public WorkUnit

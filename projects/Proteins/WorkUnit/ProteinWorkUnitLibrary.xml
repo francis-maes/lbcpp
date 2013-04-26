@@ -41,7 +41,8 @@
   </class>
   
   <class name="SS3CompositionWithRespectToDRWorkUnit" base="WorkUnit">
-    <variable type="File" name="proteinDirectory" shortName="in"/>
+    <variable type="File" name="ss3ProteinDirectory" shortName="ss3"/>
+    <variable type="File" name="drProteinDirectory" shortName="dr"/>
   </class>
   
   <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
