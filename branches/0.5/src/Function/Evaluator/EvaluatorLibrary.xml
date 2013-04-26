@@ -44,6 +44,12 @@
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToMinimize" enumeration="yes"/>
     <variable type="Double" name="threshold"/>
+    <function lang="lua" name="accuracy"/>
+    <function lang="lua" name="f1"/>
+    <function lang="lua" name="precision"/>
+    <function lang="lua" name="recall"/>
+    <function lang="lua" name="specificity"/>
+    <function lang="lua" name="mcc"/>
   </class>
 
   <class name="BinaryClassificationCurveElement" base="Object">

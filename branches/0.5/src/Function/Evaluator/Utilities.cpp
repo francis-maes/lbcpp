@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "Utilities.h"
-#include <lbcpp/Core/XmlSerialisation.h>
 
 using namespace lbcpp;
 
@@ -185,6 +184,49 @@ bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
   return true;
 }
 
+int BinaryClassificationConfusionMatrix::accuracy(LuaState& state)
+{
+  BinaryClassificationConfusionMatrixPtr matrix = state.checkObject(1, binaryClassificationConfusionMatrixClass).staticCast<BinaryClassificationConfusionMatrix>();
+  state.pushNumber(matrix->computeAccuracy());
+  return 1;
+}
+
+int BinaryClassificationConfusionMatrix::f1(LuaState& state)
+{
+  BinaryClassificationConfusionMatrixPtr matrix = state.checkObject(1, binaryClassificationConfusionMatrixClass).staticCast<BinaryClassificationConfusionMatrix>();
+  state.pushNumber(matrix->computeF1Score());
+  return 1;
+}
+
+int BinaryClassificationConfusionMatrix::precision(LuaState& state)
+{
+  BinaryClassificationConfusionMatrixPtr matrix = state.checkObject(1, binaryClassificationConfusionMatrixClass).staticCast<BinaryClassificationConfusionMatrix>();
+  state.pushNumber(matrix->computePrecision());
+  return 1;
+}
+
+int BinaryClassificationConfusionMatrix::recall(LuaState& state)
+{
+  BinaryClassificationConfusionMatrixPtr matrix = state.checkObject(1, binaryClassificationConfusionMatrixClass).staticCast<BinaryClassificationConfusionMatrix>();
+  state.pushNumber(matrix->computeRecall());
+  return 1;
+}
+
+int BinaryClassificationConfusionMatrix::specificity(LuaState& state)
+{
+  BinaryClassificationConfusionMatrixPtr matrix = state.checkObject(1, binaryClassificationConfusionMatrixClass).staticCast<BinaryClassificationConfusionMatrix>();
+  state.pushNumber(matrix->computeSpecificity());
+  return 1;
+}
+
+int BinaryClassificationConfusionMatrix::mcc(LuaState& state)
+{
+  BinaryClassificationConfusionMatrixPtr matrix = state.checkObject(1, binaryClassificationConfusionMatrixClass).staticCast<BinaryClassificationConfusionMatrix>();
+  state.pushNumber(matrix->computeMatthewsCorrelation());
+  return 1;
+}
+
+
 /*
 ** BinaryClassificationCurveScoreObject
 */
@@ -312,4 +354,3 @@ void BinaryClassificationCurveScoreObject::computeAccuracyAt5Fpr()
     prevAccuracy = it->second;
   }
 }
-
