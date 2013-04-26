@@ -29,6 +29,10 @@ public:
     if (!loadProteins(context, trainingProteins, testingProteins))
       return false;
 
+    // removeShortDisorderedRegions
+    removeShortDisorderedRegions(trainingProteins);
+    removeShortDisorderedRegions(testingProteins);
+
     SimpleProteinModelPtr m;
     if (proteinModelFile != File::nonexistent)
     {
@@ -69,7 +73,7 @@ protected:
   {
     size_t numProteinsToLoad = 0;
 #if JUCE_MAC && JUCE_DEBUG
-    numProteinsToLoad = 100;
+    numProteinsToLoad = 10;
 #endif
 
     if (supervisionDirectory.getChildFile(T("train/")).exists()
@@ -114,6 +118,48 @@ protected:
       jassertfalse;
     
     return evaluator;
+  }
+
+  void removeShortDisorderedRegions(ContainerPtr proteins) const
+  {
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>();
+      removeShortDisorderedRegions(protein);
+    }
+  }
+
+  void removeShortDisorderedRegions(ProteinPtr protein) const
+  {
+    DenseDoubleVectorPtr dr = protein->getDisorderRegions();
+    if (!dr)
+      return;
+
+    const size_t n = protein->getLength();
+    size_t startIndex = (size_t)-1;
+    for (size_t i = 0; i <= n; ++i)
+    {
+      const bool isDr = i == n ? false : dr->getValue(i) > 0.5f;
+      if (isDr)
+      {
+        if (startIndex == (size_t)-1)
+          startIndex = i;
+      }
+      else
+      {
+        if (startIndex != (size_t)-1)
+        {
+          const size_t drLength = i - startIndex;
+          if (drLength < 30)
+          {
+            for (size_t j = 0; j < drLength; ++j)
+              dr->setValue(startIndex + j, 0.f);
+          }
+          startIndex = (size_t)-1;
+        }
+      }
+    }
   }
 };
 
