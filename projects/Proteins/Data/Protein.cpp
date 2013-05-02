@@ -25,7 +25,7 @@ ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile
   std::vector<ProteinPtr> proteins = parser->getAllChains();
   jassert(proteins.size());
   ProteinPtr res = proteins[0];
-  if (proteins.size() > 1)
+  if (!beTolerant && proteins.size() > 1)
   {
     size_t chainSize = proteins[0]->getLength();
     for (size_t i = 1; i < proteins.size(); ++i)

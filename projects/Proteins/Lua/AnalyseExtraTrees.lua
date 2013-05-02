@@ -141,4 +141,4 @@ local numFolds = 9
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130423-FeatureEvaluation-DR/"
 features = {"pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
-main("DR", features, dir, ".fold", numFolds)
+main("DR", features, dir, ".LongDR.fold", numFolds)
