@@ -1,5 +1,6 @@
 #include "Data/Protein.h"
 #include "Data/Formats/TDBFileParser.h"
+#include "Data/Formats/PSSMFileParser.h"
 
 namespace lbcpp
 {
@@ -874,6 +875,219 @@ protected:
   
   File inputFile;
   File outputDirectory;
+};
+
+/*
+ * Input:
+ *  Name
+ *  Sequence AA
+ *  Secondary Structure Sequence (C, H, E)
+ * Ouput:
+ *  ObjectVector[DoubleVector[SecondaryStructureElement, Probability]]
+ */
+class SecondaryStructureSSproFileParser : public TextParser
+{
+public:
+  SecondaryStructureSSproFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file), currentLineNumber(0) {}
+  
+  virtual TypePtr getElementsType() const
+    {return objectVectorClass(doubleVectorClass(secondaryStructureElementEnumeration, probabilityType));}
+  
+  virtual void parseBegin() {}
+
+  virtual bool parseLine(const String& srcLine)
+  {
+    String line = srcLine.trim();
+
+    if (currentLineNumber != 2)
+    {
+      ++currentLineNumber;
+      return true;
+    }
+
+    const size_t n = line.length();
+    DoubleVectorPtr helix = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+    helix->setElement(0, 1.f);
+    DoubleVectorPtr sheet = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+    sheet->setElement(1, 1.f);
+    DoubleVectorPtr coil = new SparseDoubleVector(secondaryStructureElementEnumeration, probabilityType);
+    coil->setElement(2, 1.f);
+    
+    VectorPtr ss3 = objectVector(sparseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), n);
+    for (size_t i = 0; i < n; ++i)
+      if (line[i] == T('H'))
+        ss3->setElement(i, helix);
+      else if (line[i] == T('E'))
+        ss3->setElement(i, sheet);
+      else if (line[i] == T('C'))
+        ss3->setElement(i, coil);
+      else
+        jassertfalse;
+    
+    setResult(ss3);
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+    {return true;}
+  
+protected:
+  size_t currentLineNumber;
+};
+
+  /*
+ * Input:
+ *  Name
+ *  Sequence AA
+ *  Solvent accessibility Sequence (e, b)
+ * Ouput:
+ *  DoubleVector[Probability]
+ */
+class SolventAccessibilitySSproFileParser : public TextParser
+{
+public:
+  SolventAccessibilitySSproFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file), currentLineNumber(0) {}
+  
+  virtual TypePtr getElementsType() const
+    {return doubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityType);}
+  
+  virtual void parseBegin() {}
+
+  virtual bool parseLine(const String& srcLine)
+  {
+    String line = srcLine.trim();
+
+    if (currentLineNumber != 2)
+    {
+      ++currentLineNumber;
+      return true;
+    }
+
+    const size_t n = line.length();
+    DenseDoubleVectorPtr sa = Protein::createEmptyProbabilitySequence(n);
+    for (size_t i = 0; i < n; ++i)
+      if (line[i] == T('e'))
+        sa->setElement(i, probability(1.f));
+      else if (line[i] == T('b'))
+        sa->setElement(i, probability(0.f));
+      else
+        jassertfalse;
+    
+    setResult(sa);
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+    {return true;}
+  
+protected:
+  size_t currentLineNumber;
+};
+
+class MergeSSproPredictionToProtein : public WorkUnit
+{
+public:
+  MergeSSproPredictionToProtein()
+    : includeDisorderedRegions(false) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!inputFile.exists())
+    {
+      context.errorCallback(T("Protein doesn't exist: ") + inputFile.getFullPathName());
+      return false;
+    }
+
+    ProteinPtr protein = Protein::createFromXml(context, inputFile);
+    if (!protein)
+    {
+      context.errorCallback(T("Error while loading protein file: ") + inputFile.getFullPathName());
+      return false;
+    }
+
+    if (includeDisorderedRegions)
+      protein->getDisorderRegions();
+    protein->setTertiaryStructure(TertiaryStructurePtr());
+
+    if (pssmFile.exists() && !loadPositionSpecificScoringMatrix(context, protein))
+      return false;
+
+    if (ss3File.exists() && !loadSecondaryStructure(context, protein))
+      return false;
+
+    if (saFile.exists() && !loadSolventAccessibility(context, protein))
+      return false;
+
+    protein->saveToFile(context, outputFile);
+    return true;
+  }
+
+protected:
+  friend class MergeSSproPredictionToProteinClass;
+
+  File inputFile;
+  File outputFile;
+  File pssmFile;
+  File ss3File;
+  File saFile;
+  bool includeDisorderedRegions;
+
+  bool loadPositionSpecificScoringMatrix(ExecutionContext& context, ProteinPtr protein) const
+  {
+    VectorPtr primaryStructure = protein->getPrimaryStructure();
+    jassert(primaryStructure);
+    VectorPtr pssm = StreamPtr(new PSSMFileParser(context, pssmFile, primaryStructure))->next().getObjectAndCast<Vector>(); 
+    if (!pssm)
+    {
+      context.errorCallback(T("loadSecondaryStructure"), T("No position-specific scoring matrix found: ") + pssmFile.getFullPathName());
+      return false;
+    }
+
+    protein->setPositionSpecificScoringMatrix(pssm);
+    return true;
+  }
+
+  bool loadSecondaryStructure(ExecutionContext& context, ProteinPtr protein) const
+  {
+    VectorPtr ss3 = StreamPtr(new SecondaryStructureSSproFileParser(context, ss3File))->next().getObjectAndCast<Vector>();
+    if (!ss3)
+    {
+      context.errorCallback(T("loadSecondaryStructure"), T("No secondary structure found: ") + ss3File.getFullPathName());
+      return false;
+    }
+
+    if (ss3->getNumElements() != protein->getLength())
+    {
+      context.errorCallback(T("loadSecondaryStructure"), T("Secondary structure doesn't match the primary structure: ") + ss3File.getFullPathName());
+      return false;
+    }
+
+    protein->setSecondaryStructure(ss3);
+    return true;
+  }
+
+  bool loadSolventAccessibility(ExecutionContext& context, ProteinPtr protein) const
+  {
+    DoubleVectorPtr sa = StreamPtr(new SolventAccessibilitySSproFileParser(context, saFile))->next().getObjectAndCast<DoubleVector>();
+    if (!sa)
+    {
+      context.errorCallback(T("loadSolventAccessibility"), T("No solvent accessibility found: ") + saFile.getFullPathName());
+      return false;
+    }
+    
+    if (sa->getNumElements() != protein->getLength())
+    {
+      context.errorCallback(T("loadSolventAccessibility"), T("Solvent accessibility doesn't match the primary structure: ") + saFile.getFullPathName());
+      return false;
+    }
+    
+    protein->setSolventAccessibilityAt20p(sa);
+    return true;    
+  }
 };
 
 };
