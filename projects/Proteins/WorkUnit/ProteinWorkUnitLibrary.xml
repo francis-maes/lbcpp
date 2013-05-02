@@ -19,6 +19,15 @@
     <variable type="File" name="inputFile" description="The PDB (resp. Protein) input file" shortName="in"/>
     <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
   </class>
+  
+  <class name="MergeSSproPredictionToProtein" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+    <variable type="File" name="pssmFile" shortName="pssm"/>
+    <variable type="File" name="ss3File" shortName="ss3"/>
+    <variable type="File" name="saFile" shortName="sa"/>
+    <variable type="Boolean" name="includeDisorderedRegions" shortName="dr"/>
+  </class>
 
   <!-- ProteinLearner -->
   <class name="ProteinLearner" base="WorkUnit">
