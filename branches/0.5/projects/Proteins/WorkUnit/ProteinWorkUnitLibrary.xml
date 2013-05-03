@@ -28,6 +28,11 @@
     <variable type="File" name="saFile" shortName="sa"/>
     <variable type="Boolean" name="includeDisorderedRegions" shortName="dr"/>
   </class>
+  
+  <class name="ConvertDrCaspFileToProtein" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+  </class>
 
   <!-- ProteinLearner -->
   <class name="ProteinLearner" base="WorkUnit">

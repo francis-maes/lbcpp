@@ -139,6 +139,9 @@ end
 
 local numFolds = 9
 
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130423-FeatureEvaluation-DR/"
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130423-FeatureEvaluation-DR/Trace/"
 features = {"pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
-main("DR", features, dir, ".LongDR.fold", numFolds)
+--main("DR", features, dir, ".LongDR.fold", numFolds)
+
+features = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}
+main("DR - PSSM Size", features, dir .. "pssm", ".fold", numFolds)

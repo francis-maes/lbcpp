@@ -937,7 +937,7 @@ protected:
   size_t currentLineNumber;
 };
 
-  /*
+/*
  * Input:
  *  Name
  *  Sequence AA
@@ -1088,6 +1088,133 @@ protected:
     protein->setSolventAccessibilityAt20p(sa);
     return true;    
   }
+};
+
+/*
+ * Input:
+ *  PFRMAT	DR
+ *  TARGET  $name$
+ *  $aa$ $D/O$ $ID$
+ *  ...
+ *  END
+ *
+ * Ouput:
+ *  Protein (AA + DR)
+ */
+class DrCaspFileParser : public TextParser
+{
+public:
+  DrCaspFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file), currentResidueNumber(0) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass;}
+  
+  virtual void parseBegin() {}
+
+  virtual bool parseLine(const String& srcLine)
+  {
+    String line = srcLine.trim();
+    
+    if (line == String::empty || line.startsWith(T("PFRMAT"))
+                              || line == T("END"))
+      return true;
+
+    if (line.startsWith(T("TARGET")))
+    {
+      StringArray tokens;
+      tokens.addTokens(line, T(" \t"), NULL);
+      jassert(tokens.size() == 2);
+      proteinName = tokens[1];
+      return true;
+    }
+    
+    ++currentResidueNumber;
+    
+    StringArray tokens;
+    tokens.addTokens(line, T(" \t"), NULL);
+    jassert(tokens.size() == 3);
+    if (tokens[2].getIntValue() != (int)currentResidueNumber)
+    {
+      context.errorCallback(T("DrCaspFileParser::parseLine"),
+                            T("Invalid residue number: '") + tokens[2] +
+                            T("' instead of ") + String((int)currentResidueNumber));
+      return false;
+    }
+
+    jassert(tokens[0].length() == 1);
+    jassert(tokens[1].length() == 1);
+
+    primaryStructure += tokens[0];
+    if (tokens[1] != T("O") && tokens[1] != T("D") && tokens[1] != T("N") && tokens[1] != T("X"))
+    {
+      context.errorCallback(T("DrCaspFileParser::parseLine"),
+                            T("Invalid disorder annotation: ") + tokens[1]);
+      return false;
+    }
+    disorderedRegions += tokens[1];
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+  {
+    ProteinPtr protein = new Protein(proteinName);
+    protein->setPrimaryStructure(primaryStructure);
+
+    const size_t n = primaryStructure.length();
+    DenseDoubleVectorPtr dr = Protein::createEmptyProbabilitySequence(n);
+    for (size_t i = 0; i < n; ++i)
+      if (disorderedRegions[i] == T('D'))
+        dr->setElement(i, probability(1.f));
+      else if (disorderedRegions[i] == T('O'))
+        dr->setElement(i, probability(0.f));
+      else
+        dr->setElement(i, Variable::missingValue(probabilityType));
+    protein->setDisorderRegions(dr);
+    
+    setResult(protein);
+    
+    return true;
+  }
+  
+protected:
+  String proteinName;
+  String primaryStructure;
+  String disorderedRegions;
+  size_t currentResidueNumber;
+};
+
+class ConvertDrCaspFileToProtein : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!inputFile.exists())
+    {
+      context.errorCallback(T("ConvertDrCaspFileToProtein::run"),
+                            T("File not found: ") + inputFile.getFullPathName());
+      return false;
+    }
+        
+    ProteinPtr protein = StreamPtr(new DrCaspFileParser(context, inputFile))->next().getObjectAndCast<Protein>();
+    if (!protein)
+    {
+      context.errorCallback(T("ConvertDrCaspFileToProtein::run"),
+                            T("Error while parsing file: ") + inputFile.getFullPathName());
+      return false;
+    }
+    
+    protein->saveToFile(context, outputFile);
+
+    return true;
+  }
+  
+protected:
+  friend class ConvertDrCaspFileToProteinClass;
+  
+  File inputFile;
+  File outputFile;
 };
 
 };
