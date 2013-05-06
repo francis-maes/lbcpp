@@ -12,6 +12,7 @@
 # include <lbcpp/Learning/BatchLearner.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include "FisherFilterLearnableFunction.h"
+# include <algorithm>
 
 namespace lbcpp
 {
