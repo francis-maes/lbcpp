@@ -30,8 +30,8 @@ public:
       return false;
 
     // removeShortDisorderedRegions
-    removeShortDisorderedRegions(trainingProteins);
-    removeShortDisorderedRegions(testingProteins);
+//    removeShortDisorderedRegions(trainingProteins);
+//    removeShortDisorderedRegions(testingProteins);
 
     SimpleProteinModelPtr m;
     if (proteinModelFile != File::nonexistent)
