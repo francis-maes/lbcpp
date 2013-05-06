@@ -77,7 +77,7 @@ Variable AminoAcid::fromThreeLettersCode(const String& code)
     return Variable((int)leucine, aminoAcidTypeEnumeration);
   else if (code == T("MEN"))
     return Variable((int)asparagine, aminoAcidTypeEnumeration);
-  else if (code == T("HYP"))
+  else if (code == T("HYP") || code == T("CPR"))
     return Variable((int)proline, aminoAcidTypeEnumeration);
 
   return Variable::missingValue(aminoAcidTypeEnumeration);

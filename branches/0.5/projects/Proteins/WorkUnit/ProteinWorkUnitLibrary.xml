@@ -16,7 +16,7 @@
   </class>
 
   <class name="ConvertPDBToProteinWorkUnit" base="WorkUnit">
-    <variable type="File" name="inputFile" description="The PDB (resp. Protein) input file" shortName="in"/>
+    <variable type="File" name="inputFile" description="The PDB (resp. Protein) input file" shortName="i"/>
     <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
   </class>
   
@@ -33,6 +33,12 @@
     <variable type="File" name="inputFile" shortName="i"/>
     <variable type="File" name="outputFile" shortName="o"/>
   </class>
+  
+  <class name="ConvertFastaFileToSeqResPdbRecord" base="WorkUnit">
+    <variable type="File" name="fastaFile" shortName="i"/>
+    <variable type="File" name="pdbFile" shortName="o"/>
+  </class>
+  
 
   <!-- ProteinLearner -->
   <class name="ProteinLearner" base="WorkUnit">

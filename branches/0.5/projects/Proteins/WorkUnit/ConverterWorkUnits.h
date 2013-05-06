@@ -1,6 +1,8 @@
 #include "Data/Protein.h"
 #include "Data/Formats/TDBFileParser.h"
 #include "Data/Formats/PSSMFileParser.h"
+#include "Data/Formats/FASTAFileParser.h"
+#include "Data/Formats/PDBFileGenerator.h"
 
 namespace lbcpp
 {
@@ -523,7 +525,7 @@ protected:
 
   bool convertPDBToProtein(ExecutionContext& context, const File& inputFile, const File& outputFile)
   {
-    ProteinPtr protein = Protein::createFromPDB(context, inputFile, false);
+    ProteinPtr protein = Protein::createFromPDB(context, inputFile, true);
     if (!protein)
       return false;
     
@@ -1215,6 +1217,48 @@ protected:
   
   File inputFile;
   File outputFile;
+};
+
+class ConvertFastaFileToSeqResPdbRecord : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!fastaFile.exists())
+    {
+      context.errorCallback(T("ConvertFastaFileToPdbFile::run"),
+                            T("File not found: ") + fastaFile.getFullPathName());
+      return false;
+    }
+        
+    ProteinPtr protein = StreamPtr(new FASTAFileParser(context, fastaFile))->next().getObjectAndCast<Protein>();
+    if (!protein)
+    {
+      context.errorCallback(T("ConvertFastaFileToPdbFile::run"),
+                            T("Error while parsing file: ") + fastaFile.getFullPathName());
+      return false;
+    }
+
+    OutputStream* o = pdbFile.createOutputStream();
+
+    std::vector<String> residueNames(protein->getLength());
+    VectorPtr primaryStructure = protein->getPrimaryStructure();
+    for (size_t i = 0; i < protein->getLength(); ++i)
+      residueNames[i] = AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getElement(i).getInteger()).toUpperCase();
+    size_t firstResidueIndex = 0;
+    size_t seqResIndex = 1;
+    while (firstResidueIndex < protein->getLength())
+      *o << PDBFileGenerator::makeSeqResLine(seqResIndex++, String::empty, protein->getLength(), residueNames, firstResidueIndex) << "\n";
+    delete o;
+
+    return true;
+  }
+  
+protected:
+  friend class ConvertFastaFileToSeqResPdbRecordClass;
+  
+  File fastaFile;
+  File pdbFile;
 };
 
 };
