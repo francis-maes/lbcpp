@@ -134,15 +134,16 @@ public:
       x3Function->saveTreesToBinaryFile(context, rTreeFunction->getTreesFile(i));
       context.progressCallback(new ProgressionState(i + 1, rTreeFunction->numTrees, T("trees")));
     }
-
+/*
     if (rTreeFunction->getTreesFile(0).exists()
         && checkHasAtLeastOneExemples(validationData))
     {
       context.informationCallback(T("SavableRTreeBatchLearner"),
                                   T("Making predictions on validation data"));
+      context.leaveScope();
       return makePredictions(context, rTreeFunction, validationData);
     }
-
+*/
     context.leaveScope();
     return true;
   }
