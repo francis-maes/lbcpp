@@ -24,25 +24,33 @@ public:
   LowMemoryRTreeFunction(size_t numTrees,
                          size_t numAttributeSamplesPerSplit,
                          size_t minimumSizeForSplitting)
-  : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting),
-    predictionIndex((size_t)-1)
+  : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting)
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    if (!inputs[1].exists())
-      return Variable::missingValue(getOutputType());
-    const_cast<LowMemoryRTreeFunction*>(this)->predictionIndex %= predictions.size();
-    jassert(predictionIndex < predictions.size());
-    return predictions[const_cast<LowMemoryRTreeFunction*>(this)->predictionIndex++];
+    jassert(inputs[0].exists());
+    
+    ContainerPtr input = inputs[0].getObjectAndCast<Container>(context);
+    const double hashCode = computeHashCode(input);
+
+    for (PredictedMap::const_iterator it = predictedData.find(hashCode);
+        it != predictedData.end(); ++it)
+    {
+      if (input->compare(it->second.first) == 0)
+        return it->second.second;
+    }
+    
+    context.errorCallback(T("LowMemoryRTreeFunction::computeFunction"), T("Data not pre-predicted ! Skipped !"));
+    return Variable::missingValue(getOutputType());
   }
   
 protected:
   friend class LowMemoryRTreeFunctionClass;
   friend class LowMemoryRTreeBatchLearner;
 
-  size_t predictionIndex;
-  std::vector<Variable> predictions;
+  typedef std::multimap<double, std::pair<ContainerPtr, Variable> > PredictedMap;
+  PredictedMap predictedData;
 
   LowMemoryRTreeFunction() {}
 
@@ -51,6 +59,30 @@ protected:
   virtual Variable createEmptyPrediction() const = 0;
   virtual Variable addPrediction(const Variable& a, const Variable& b) const = 0;
   virtual Variable finalizePrediction(const Variable& value) const = 0;
+
+  static double computeHashCode(const ContainerPtr& input)
+  {
+    jassert(input);
+
+    double res = 0.f;
+    const size_t numAttributes = input->getNumElements();    
+    for (size_t j = 0; j < (size_t)numAttributes; ++j)
+    {
+      Variable objVariable = input->getElement(j);
+      TypePtr objType = objVariable.getType();
+      if (objType->inheritsFrom(booleanType))
+        res += objVariable.getBoolean() ? 1.f : 0.f;
+      else if (objType->inheritsFrom(enumValueType))
+        res += objVariable.getInteger();
+      else if (objType->inheritsFrom(doubleType))
+        res += objVariable.getDouble();
+      else if (objType->inheritsFrom(integerType))
+        res += objVariable.getInteger();
+      else
+        jassertfalse;
+    }
+    return res;
+  }
 };
 
 extern ClassPtr lowMemoryRTreeFunctionClass;
@@ -108,8 +140,12 @@ public:
     for (size_t j = 0; j < numTesting; ++j)
       predictions[j] = rTreeFunction->finalizePrediction(predictions[j]);
 
-    rTreeFunction->predictions = predictions;
-    rTreeFunction->predictionIndex = 0;
+    for (size_t i = 0; i < numTesting; ++i)
+    {
+      ContainerPtr input = validationData[i]->getVariable(0).getObjectAndCast<Container>();
+      rTreeFunction->predictedData.insert(std::make_pair(rTreeFunction->computeHashCode(input), 
+                                                         std::make_pair(input, predictions[i])));
+    }
 
     for (size_t i = 0; i < numTesting; ++i)
       RTreeFunction::deleteCoreTable(precomputedCoreTables[i]);
