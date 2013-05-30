@@ -245,6 +245,7 @@ public:
   size_t x3Splits;
   bool x3LowMemory;
   bool useAddBias;
+  FunctionPtr biasFunction;
 
   /* Global Feature Parameters */
   bool useProteinLength;
@@ -308,6 +309,7 @@ public:
       x3Splits(1),
       x3LowMemory(true),
       useAddBias(false),
+      biasFunction(FunctionPtr()),
     /* Global Feature Parameters */
       useProteinLength(false),
       useNumCysteines(false),
@@ -369,10 +371,8 @@ protected:
   virtual FunctionPtr createMachineLearning(ExecutionContext& context) const
   {
     FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, x3LowMemory);
-
-    if (useAddBias)
-      res = new PreProcessCompositeFunction(res, composeFunction(addBiasLearnableFunction(binaryClassificationSensitivityAndSpecificityScore, 0.0, true)
-                                                                 , signedScalarToProbabilityFunction()));
+    if (biasFunction)
+      res = new PreProcessCompositeFunction(res, composeFunction(biasFunction, signedScalarToProbabilityFunction()));
     return res;
   }
 
