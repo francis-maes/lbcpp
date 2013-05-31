@@ -24,7 +24,8 @@ public:
   LowMemoryRTreeFunction(size_t numTrees,
                          size_t numAttributeSamplesPerSplit,
                          size_t minimumSizeForSplitting)
-  : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting)
+  : ExtraTreesFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting),
+    warningSent(false)
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -40,8 +41,11 @@ public:
       if (input->compare(it->second.first) == 0)
         return it->second.second;
     }
-    
-    context.errorCallback(T("LowMemoryRTreeFunction::computeFunction"), T("Data not pre-predicted ! Skipped !"));
+    if (!warningSent)
+    {
+      context.warningCallback(T("LowMemoryRTreeFunction::computeFunction"), T("Data not pre-predicted ! Skipped !"));
+      const_cast<LowMemoryRTreeFunction* >(this)->warningSent = true;
+    }
     return Variable::missingValue(getOutputType());
   }
   
@@ -51,6 +55,7 @@ protected:
 
   typedef std::multimap<double, std::pair<ContainerPtr, Variable> > PredictedMap;
   PredictedMap predictedData;
+  bool warningSent;
 
   LowMemoryRTreeFunction() {}
 
