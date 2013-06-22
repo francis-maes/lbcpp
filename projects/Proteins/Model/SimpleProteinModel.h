@@ -652,6 +652,76 @@ public:
     }
   }
 
+  static void createStreamsForDisorderedRegions(std::vector<StreamPtr>& result)
+  {
+    const size_t n = simpleProteinModelClass->getNumMemberVariables();
+    result.clear();
+    result.resize(n);
+    const size_t firstFeatureIndex = simpleProteinModelClass->findMemberVariable(T("useProteinLength"));
+    
+    for (size_t i = firstFeatureIndex; i < n; ++i)
+    {
+      const TypePtr varType = simpleProteinModelClass->getMemberVariableType(i);
+      const String varName = simpleProteinModelClass->getMemberVariableName(i);
+      
+      if (varName == T("drGlobalHistogram"))
+        result[i] = booleanStream(true);
+      else if (varName == T("drDimericProfile"))
+        result[i] = booleanStream(true);        
+      else if (varName == T("drWindowSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+        values.push_back(25);
+        
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName == T("drLocalHistogramSize"))
+      {
+        std::vector<int> values;
+        for (int j = 10; j < 100; j += 10)
+          values.push_back(j);
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName == T("drSeparationProfileSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+        values.push_back(25);
+
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName == T("drSegmentProfileSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(21);
+        values.push_back(25);
+
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName == T("drLocalDimericProfileSize"))
+      {
+        std::vector<int> values;
+        for (int j = 10; j < 100; j += 20)
+          values.push_back(j);
+        
+        result[i] = integerStream(positiveIntegerType, values);
+      }
+    }
+  }
+
   static void createStreamsExceptFor(const String& prefix, std::vector<StreamPtr>& result)
   {
     SimpleProteinModel::createStreams(result);

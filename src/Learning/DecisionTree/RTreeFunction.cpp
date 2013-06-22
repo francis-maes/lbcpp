@@ -433,7 +433,7 @@ void* RTreeFunction::computeCoreTableOf(ExecutionContext& context, const Variabl
     jassertfalse;
     return NULL;
   }
-  
+
   const size_t numAttributes = obj->getNumElements();
   CORETABLE_TYPE* res = (CORETABLE_TYPE *)MyMalloc((size_t)numAttributes * sizeof(CORETABLE_TYPE));
   jassert(res);

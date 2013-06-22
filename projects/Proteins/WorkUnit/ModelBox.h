@@ -44,7 +44,7 @@ public:
       ProteinTarget target = drTarget;
 
       m = new SimpleProteinModel(target);
-      m->pssmWindowSize = 15;      
+      m->pssmWindowSize = 15;
     }
 
     m->train(context, trainingProteins, testingProteins, T("Training Model"));
