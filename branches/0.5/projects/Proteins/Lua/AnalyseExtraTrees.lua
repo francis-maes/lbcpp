@@ -53,6 +53,15 @@ local function getPrecision(scoreObject)
   return scoreObject:precision
 end
 
+local function getBalancedAccuracy(scoreObject)
+  return (scoreObject:recall + scoreObject:specificity) / 2
+end
+
+local function getBestBalancedAccuracy(scoreObject)
+  return (scoreObject.bestConfusionMatrix:recall + scoreObject.bestConfusionMatrix:specificity) / 2
+end
+
+
 local function getScores(traces, nodeName, scoresOfInterest)
   -- Init. results
   local res = {}
@@ -96,11 +105,25 @@ end
 local function main(varName, varValues, filePrefix, filePostfix, numFolds)
   local scoresOfInterest = {}
 
-  scoresOfInterest["AUC"] =       {index = 1, getScore = getAreaUnderCurve}
-  scoresOfInterest["Acc 5FPR"] =  {index = 1, getScore = getAccuracyAt5FPR}
-  scoresOfInterest["MCC"] =       {index = 2, getScore = getScoreToMaximize}
-  scoresOfInterest["Precision"] = {index = 2, getScore = getPrecision}
-  scoresOfInterest["Recall"] =    {index = 2, getScore = getRecall}
+--  scoresOfInterest["AUC"] =           {index = 1, getScore = |x| x.areaUnderCurve}
+--  scoresOfInterest["Balanced Acc."] = {index = 2, getScore = getBalancedAccuracy}
+--  scoresOfInterest["Recall"] =        {index = 2, getScore = |x| x:recall}
+--  scoresOfInterest["Specificity"] =   {index = 2, getScore = |x| x:specificity}
+  scoresOfInterest["F1"] =            {index = 2, getScore = |x| x:f1}
+
+--  scoresOfInterest["AUC"] =           {index = 5, getScore = |x| x.areaUnderCurve}
+--  scoresOfInterest["Balanced Acc."] = {index = 5, getScore = getBestBalancedAccuracy}
+--  scoresOfInterest["Recall"] =        {index = 5, getScore = |x| x.bestConfusionMatrix:recall}
+--  scoresOfInterest["Specificity"] =   {index = 5, getScore = |x| x.bestConfusionMatrix:specificity}
+--  scoresOfInterest["F1"] =            {index = 5, getScore = |x| x.bestConfusionMatrix:f1}
+--  scoresOfInterest["Th. SensSpec"] =  {index = 1, getScore = |x| x.bestConfusionMatrix.threshold}
+
+
+
+--  scoresOfInterest["Acc 5FPR"] =  {index = 1, getScore = getAccuracyAt5FPR}
+--  scoresOfInterest["MCC"] =       {index = 2, getScore = getScoreToMaximize}
+--  scoresOfInterest["Precision"] = {index = 2, getScore = getPrecision}
+--  scoresOfInterest["Recall"] =    {index = 2, getScore = getRecall}
 
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
@@ -110,7 +133,7 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
       local fileName = filePrefix .. varValues[i] .. filePostfix .. fold .. ".trace"
       traces[fold] = lbcpp.Object.fromFile(fileName)
       if traces[fold] == nil then
-        context:warning("Missing file: " .. fileName)
+        context:warning("Missing file: " .. varValues[i] .. filePostfix .. fold .. ".trace")
       end
     end
 
@@ -141,7 +164,12 @@ local numFolds = 9
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130423-FeatureEvaluation-DR/Trace/"
 features = {"pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
---main("DR", features, dir, ".LongDR.fold", numFolds)
+--main("DR", features, dir, ".fold", numFolds)
 
-features = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}
-main("DR - PSSM Size", features, dir .. "pssm", ".fold", numFolds)
+features = {49}
+--main("DR - SEP(SA) Size", features, dir .. "pssm23sepsa", ".fold", numFolds)
+
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130527-CASP10FeatureEvaluation/Trace/"
+features = {"SegSA21", "SegSA21_HlocalPSSM60", "SegSA21_HlocalPSSM60_WinSA21", "pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
+
+main("DR - DISpro", features, dir .. "Merge.Low-DoubleBias-F1.", ".fold", numFolds)
