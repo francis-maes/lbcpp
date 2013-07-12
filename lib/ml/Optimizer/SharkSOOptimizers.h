@@ -81,14 +81,14 @@ public:
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
     cma = new CMASearch();
+    cma->init(*objective);
+    context.resultCallback("population size", (size_t)cma->lambda());
   }
   
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
   {
     jassert(cma && objective);
-    if (iter == 0)
-      cma->init(*objective);
-    else
+    if (iter > 0)
       cma->run();
     DenseDoubleVectorPtr bestSolutionObject = new DenseDoubleVector(objective->dimension(), 0.0);
     double* bestSolutionVector = cma->bestSolution();

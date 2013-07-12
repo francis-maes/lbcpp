@@ -224,6 +224,34 @@ public:
     return *this;
   }
 #endif // LBCPP_ENABLE_CPP0X_RVALUES
+  
+  /** Dynamic cast the object that this pointer references.
+   
+   If the cast is invalid, this function returns a null pointer.
+   */
+  template<class O>
+  inline ReferenceCountedObjectPtr<O> dynamicCast() const
+  {
+    if (ptr)
+    {
+      O* res = dynamic_cast<O* >(ptr);
+      jassert(!res || res == ptr);
+      if (res)
+        return res;
+    }
+    return ReferenceCountedObjectPtr<O>();
+  }
+  
+  /** Static cast the object that this pointer references.
+   
+   This cast is unchecked, so be sure of what you are doing.
+   */
+  template<class O>
+  inline const ReferenceCountedObjectPtr<O>& staticCast() const
+  {
+    jassert(!ptr || dynamic_cast<O* >(ptr));
+    return *(const ReferenceCountedObjectPtr<O>* )this;
+  }
 
   /** Changes this pointer to point at a different object.
 
@@ -294,34 +322,6 @@ public:
   /** Returns a reference to the object that this pointer references. */
   T& operator * () const
     {jassert(ptr); return *ptr;}
-
-  /** Dynamic cast the object that this pointer references.
-
-    If the cast is invalid, this function returns a null pointer.
-  */
-  template<class O>
-  inline ReferenceCountedObjectPtr<O> dynamicCast() const
-  {
-    if (ptr)
-    {
-      O* res = dynamic_cast<O* >(ptr);
-      jassert(!res || res == ptr);
-      if (res)
-        return res;
-    }
-    return ReferenceCountedObjectPtr<O>();
-  }
-
-  /** Static cast the object that this pointer references.
-
-     This cast is unchecked, so be sure of what you are doing.
-  */
-  template<class O>
-  inline const ReferenceCountedObjectPtr<O>& staticCast() const
-  {
-    jassert(!ptr || dynamic_cast<O* >(ptr));
-    return *(const ReferenceCountedObjectPtr<O>* )this;
-  }
 
   /** Returns true if the object that this pointer references is an instance of the given class. */
   template<class O>

@@ -16,9 +16,6 @@
 namespace lbcpp
 {
 
-class RandomGenerator;
-typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
-
 class ExecutionContext : public CompositeExecutionCallback
 {
 public:

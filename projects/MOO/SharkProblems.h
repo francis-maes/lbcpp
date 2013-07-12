@@ -51,10 +51,10 @@ protected:
 class ProblemFromSharkObjectiveFunction : public Problem
 {
 public:
-  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective) 
-    : numDimensions(objective->dimension()), objective(objective) {}
-  ProblemFromSharkObjectiveFunction(size_t numDimensions, ObjectiveFunctionVS<double>* objective)
-    : numDimensions(numDimensions), objective(objective) {}
+  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, bool randomizeOptimum = false) 
+    : numDimensions(objective->dimension()), objective(objective), randomizeOptimum(randomizeOptimum) {}
+  ProblemFromSharkObjectiveFunction(size_t numDimensions, ObjectiveFunctionVS<double>* objective, bool randomizeOptimum = false)
+    : numDimensions(numDimensions), objective(objective), randomizeOptimum(randomizeOptimum) {}
 
   virtual ~ProblemFromSharkObjectiveFunction()
     {delete objective;}
@@ -77,7 +77,11 @@ public:
     }
 
     ScalarVectorDomainPtr scalarVectorDomain = getDomain().staticCast<ScalarVectorDomain>();
-    DenseDoubleVectorPtr optimum = scalarVectorDomain->sampleUniformly(context.getRandomGenerator()).staticCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr optimum;
+    if (randomizeOptimum)
+      optimum = scalarVectorDomain->sampleUniformly(context.getRandomGenerator()).staticCast<DenseDoubleVector>();
+    else
+      optimum = new DenseDoubleVector(
 
     for (size_t i = 0; i < objective->objectives(); ++i)
     {
@@ -104,6 +108,7 @@ protected:
   friend class ProblemFromSharkObjectiveFunctionClass;
   size_t numDimensions;
   ObjectiveFunctionVS<double>* objective;
+  bool randomizeOptimum;
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const = 0;
 };
 

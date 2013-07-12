@@ -36,8 +36,8 @@ public:
   virtual ObjectPtr run(ExecutionContext& context)
   {
     lbCppMLLibraryCacheTypes(context);
-    testSingleObjectiveOptimizers(context);
-    //testBiObjectiveOptimizers(context);
+    //testSingleObjectiveOptimizers(context);
+    testBiObjectiveOptimizers(context);
     //testSolutionVectorComponent(context);
     return ObjectPtr();
   }
@@ -188,20 +188,21 @@ protected:
   void testBiObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<ProblemPtr> problems;
-    problems.push_back(new ZDT1MOProblem());
-    problems.push_back(new ZDT2MOProblem());
+    problems.push_back(new ZDT1MOProblem(numDimensions));
+/*    problems.push_back(new ZDT2MOProblem());
     problems.push_back(new ZDT3MOProblem());
     problems.push_back(new ZDT4MOProblem());
     problems.push_back(new ZDT6MOProblem());
-
+*/
     for (size_t i = 0; i < problems.size(); ++i)
     {
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
-      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
+//      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
+//      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
+//      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, parEGOOptimizer());
 
       //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
       solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
