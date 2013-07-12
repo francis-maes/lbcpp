@@ -340,6 +340,8 @@ private:
     {size_t tmp = a; a = b; b = tmp;}
 };
 
+typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !OIL_CORE_RANDOM_GENERATOR_H_

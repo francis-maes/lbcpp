@@ -9,6 +9,7 @@
 #ifndef ML_SOLVER_H_
 # define ML_SOLVER_H_
 
+# include "predeclarations.h"
 # include "SolverCallback.h"
 # include "Problem.h"
 # include "SolutionContainer.h"
@@ -107,6 +108,7 @@ extern IterativeSolverPtr randomSolver(SamplerPtr sampler, size_t numIterations 
 extern IterativeSolverPtr repeatSolver(SolverPtr solver, size_t numIterations = 0);
 extern IterativeSolverPtr lbfgsOptimizer(size_t numIterations = 0);
 extern IterativeSolverPtr cmaessoOptimizer(size_t numGenerations = 0);
+extern IterativeSolverPtr parEGOOptimizer();
 
 extern IterativeSolverPtr incrementalSurrogateBasedSolver(SamplerPtr initialVectorSampler, IncrementalLearnerPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
 extern IterativeSolverPtr batchSurrogateBasedSolver(SamplerPtr initialVectorSampler, SolverPtr surrogateLearner, SolverPtr surrogateSolver, VariableEncoderPtr variableEncoder, SelectionCriterionPtr selectionCriterion, size_t numIterations = 0);
