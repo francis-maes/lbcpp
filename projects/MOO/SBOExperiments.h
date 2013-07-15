@@ -54,7 +54,7 @@ public:
   virtual ObjectPtr run(ExecutionContext& context)
   {
     lbCppMLLibraryCacheTypes(context);
-    jassert(problemIdx >= 1 && problemIdx <= 6);
+    jassert(problemIdx >= 1 && problemIdx <= 7);
 
     context.getRandomGenerator()->setSeed(1664);
 
@@ -118,8 +118,8 @@ protected:
     SamplerPtr testExpressionsSampler = subsetVectorSampler(scalarExpressionVectorSampler(), (size_t)(sqrt((double)numDims) + 0.5));
 
     // create inner optimization loop solver
-    SolverPtr innerSolver = cmaessoOptimizer(100);
-    //SolverPtr innerSolver = crossEntropySolver(diagonalGaussianSampler(), numDims * 10, numDims * 3, 20);
+    //SolverPtr innerSolver = cmaessoOptimizer(100);
+    SolverPtr innerSolver = crossEntropySolver(diagonalGaussianSampler(), numDims * 10, numDims * 3, 20);
     innerSolver->setVerbosity((SolverVerbosity)optimizerVerbosity);
     
     // Variable Encoder
@@ -289,6 +289,7 @@ protected:
     case 3: return new RastriginProblem(numDims);
     case 4: return new RosenbrockProblem(numDims);
     case 5: return new RosenbrockRotatedProblem(numDims);
+    case 6: return new ZDT1MOProblem(numDims);
     default: jassertfalse; return ProblemPtr();
     };
   }

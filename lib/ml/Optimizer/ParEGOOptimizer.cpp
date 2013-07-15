@@ -137,7 +137,7 @@ void ParEGOOptimizer::mutate(double *x)
   // this is to avoid duplicating points which would cause the R matrix to be singular
   double m_rate=1.0/dim;
   double shift;
-  bool mut[dim];
+  bool* mut = new bool[dim];
   int nmutations=0;
   for(int i=0;i<dim;i++)
   {
@@ -149,7 +149,7 @@ void ParEGOOptimizer::mutate(double *x)
     }
   }
   if(nmutations==0)
-    mut[1+(int)(RN*dim)]=true;
+    mut[(int)(RN*dim)]=true;
   
   for(int d=0;d<dim;d++)
     if(mut[d])
@@ -165,6 +165,8 @@ void ParEGOOptimizer::mutate(double *x)
       else if(x[d]<xmin[d])
         x[d]=xmin[d]+myabs(shift);
     }
+
+  delete[] mut;
 }
 
 double ParEGOOptimizer::Tcheby(double *wv, double *vec, double *ideal)
@@ -212,14 +214,19 @@ void ParEGOOptimizer::latin_hyp(double **ax, int iter)
 {
   int v;
   
-  double L[dim][iter];
-  bool viable[dim][iter];
+  double** L = new double*[dim];
+  double** viable = new double*[dim];
+  for (int i = 0; i < dim; ++i)
+  {
+    L[i] = new double[iter];
+    viable[i] = new double[iter];
+  }
   
   for(int d=0; d<dim; d++)
     for(int i=0;i<iter;i++)
     {
       viable[d][i]=true;
-      L[d][i] = xmin[d+1] + i*((xmax[d+1]-xmin[d+1])/double(iter));      
+      L[d][i] = xmin[d] + i*((xmax[d]-xmin[d])/double(iter));      
     }
   
   for(int i=0; i<iter; i++)
@@ -229,8 +236,16 @@ void ParEGOOptimizer::latin_hyp(double **ax, int iter)
         v = int(RN*iter);
       while(!viable[d][v]);
       viable[d][v]=false;
-      ax[i+1][d+1] = L[d][v]+RN*((xmax[d+1]-xmin[d+1])/double(iter));
+      ax[i][d] = L[d][v]+RN*((xmax[d]-xmin[d])/double(iter));
     }
+
+  for (int i = 0; i < dim; ++i)
+  {
+    delete[] L[i];
+    delete[] viable[i];
+  }
+  delete[] L;
+  delete[] viable;
 }
 
 double ParEGOOptimizer::posdet(Matrix& R, int n)
@@ -269,7 +284,9 @@ double ParEGOOptimizer::myfit(ExecutionContext &context, double *x, double *ff)
   DenseDoubleVectorPtr xvector = new DenseDoubleVector(dim, 0.0);
   for (int i = 0; i < dim; ++i)
     xvector->setValue(i, x[i]);
-  ff[0] = problem->evaluate(context, xvector)->toDouble();
+  FitnessPtr fitness = problem->evaluate(context, xvector);
+  for (int i = 0; i < nobjs; ++i)
+    ff[i] = fitness->getValue(i);
   return Tcheby(gwv,&(ff[0]),gideal);
 }
 
@@ -277,9 +294,14 @@ double ParEGOOptimizer::myfit(ExecutionContext &context, double *x, double *ff)
 void ParEGOOptimizer::init_arrays(double ***ax, double **ay, int n, int dim)
 {
   *ax = new double*[n];
+  *ay = new double[n];
   for(int i=0;i<n;i++)
-    (*ax)[i]=new double[dim];
-  (*ay)=new double[n];
+  {
+    (*ax)[i] = new double[dim];
+    (*ay)[i] = 0.0;
+    for (int j=0; j<dim;++j)
+      (*ax)[i][j] = 0.0;
+  }
 }
 
 void ParEGOOptimizer::get_params(double **param, double *theta, double *p, double *sigma, double *mu)
@@ -312,7 +334,7 @@ void ParEGOOptimizer::cwr(int **target, int k, int n)  // choose without replace
   int *to;
   to = &((*target)[0]);
   
-  int from[n];
+  int* from = new int[n];
   
   for(i=0;i<n;i++)
     from[i]=i;
@@ -325,6 +347,8 @@ void ParEGOOptimizer::cwr(int **target, int k, int n)  // choose without replace
     from[j]=from[l_t-1];
     l_t--;
   }
+
+  delete[] from;
 }
 
 
@@ -337,14 +361,14 @@ double ParEGOOptimizer::wrap_ei(double *x)
   
   double fit;
   // predict the fitness
-  fit=predict_y(*pax, *pInvR, *pgy, gmu, *gtheta, *gp, titer, dim);
+  fit=predict_y(*pax, *pInvR, *pgy, gmu, gtheta, gp, titer, dim);
   
   // fprintf(stdout,"predicted fitness in wrap_ei() = %lg\n", fit);
   
   
   // compute the error
   double ss;
-  ss=s2(*pax, *gtheta, *gp, gsigma, dim, titer, *pInvR);
+  ss=s2(*pax, gtheta, gp, gsigma, dim, titer, *pInvR);
   // fprintf(stdout,"s^2 error in wrap_ei() = %lg\n", ss);
   //  fprintf(stderr,"%.9lf %.9lf ", x[1], ss);
   
@@ -416,9 +440,9 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
   for(int i=0;i<gapopsize;i++)
     popx[i]=new double[dim];
   
-  double popy[gapopsize];
+  double* popy = new double[gapopsize];
   
-  double mutx[dim];
+  double* mutx = new double[dim];
   double muty;
   
   static bool change=true;
@@ -449,11 +473,11 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
       }
     }
     
-    if(iter>dim+24)
+    if(iter>11*dim+24)
     {
       titer =11*dim+24;
       
-      int ind[iter];
+      int* ind = new int[iter];
       mysort(ind, ay, iter);
       
       for (int i=0; i<titer/2; i++)       
@@ -477,6 +501,7 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
       pax=&tmpax;
       pay=&tmpay;
       delete[] choose;
+      delete[] ind;
     }
     else // iter>11*dim+24
     {
@@ -527,15 +552,18 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
         }
         change=false;
       }
+      get_params(bestparam, theta_last, p_last, &sigma_last, &mu_last);
+      gmu = mu_last;
+      gsigma = sigma_last;
+      memcpy(gtheta, theta_last, (dim+1)*sizeof(double));
+      memcpy(gp, p_last, (dim+1)*sizeof(double));
     }
-    
-    get_params(bestparam, theta_last, p_last, &sigma_last, &mu_last);
     
     /* Use the full R matrix */
     titer=iter;
     pax = &ax;
     Matrix Rpred(titer,titer);
-    build_R(*pax, theta_last, p_last, dim, titer, Rpred);
+    build_R(*pax, gtheta, gp, dim, titer, Rpred);
     Matrix InvR = Rpred.inverseSymmPositiveDefinite();
     ::Vector fy(titer);
     build_y(ay, titer, fy);
@@ -547,13 +575,10 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
     
     
     double best_imp=INFTY;
-    double best_x[dim+1];
+    double* best_x = new double[dim+1];
     
     // set the global variables equal to the local ones
-    gmu = mu_last;
-    gsigma = sigma_last;
-    gtheta = &theta_last;
-    gp = &p_last;
+    
     pgR=&Rpred;
     pInvR=&InvR;
     pgy=&fy;
@@ -577,13 +602,13 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
       popy[i] = wrap_ei(popx[i]);
     
     // initialize with mutants of nearby good solutions
-    int ind[iter];
+    int* ind = new int[iter];
     mysort(ind, ay, iter);
     
     for (int i=0; i<5; i++)       
     {
       parA=ind[i];
-      for(int d=1;d<=dim;d++)
+      for(int d=0;d<dim;d++)
         popx[i][d] = ax[parA][d];
       mutate(popx[i]);                              // fprintf(stderr, "mutate\n");
       popy[i] = wrap_ei(popx[i]);                   // fprintf(stderr, "evaluate\n");
@@ -607,7 +632,7 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
       muty = wrap_ei(mutx);                      //  fprintf(stderr, "evaluate\n");
       if(muty<popy[parA])
       {
-        for(int d=1;d<=dim;d++)
+        for(int d=0;d<dim;d++)
           popx[parA][d]=mutx[d];
         popy[parA]=muty;
       }
@@ -673,9 +698,10 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
      ~InvR;
      ~Rpred;
      ~fy;
-     */
-    iter++;
-    
+     */   
+    delete[] best_x;
+    delete[] ind;
+
   } while(0);
   
   delete[] p_last;
@@ -692,8 +718,17 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
   for(int i=0;i<pdim+2;++i)
     delete[] bestparam[i];
   delete[] bestparam;
+
+  delete[] popy;
+  delete[] mutx;
   
-  return NULL;
+  DenseDoubleVectorPtr result = new DenseDoubleVector(dim, 0.0);
+  for (int i = 0; i < dim; ++i)
+    result->setValue(i, ax[iter][i]);
+
+  iter++;
+
+  return result;
 }
 
 // returns an OVectorPtr of DenseDoubleVectors with the initial sample
@@ -748,6 +783,9 @@ ObjectPtr ParEGOOptimizer::init_ParEGO(ExecutionContext& context)
     absmin[obj]=problem->getFitnessLimits()->getLowerLimit(obj);
   }
   pdim=dim*2+2;
+
+  gp = new double[dim+1];
+  gtheta = new double[dim+1];
   
   if(nobjs==2)
     N=10;  // gives 11 weight vectors  - the formula is: number of weight vectors = (N+k-1)!/N!(k-1)! where k is number of objectives
@@ -755,6 +793,8 @@ ObjectPtr ParEGOOptimizer::init_ParEGO(ExecutionContext& context)
     N=4;  // gives 15 weight vectors
   else if(nobjs==4)
     N=3;   // gives 20 weight vectors
+  else
+    context.errorCallback(T("Unsupported number of objectives"));
   
   snake_wv(N,nobjs);  // function to create evenly spaced normalized weight vectors
   
@@ -763,7 +803,7 @@ ObjectPtr ParEGOOptimizer::init_ParEGO(ExecutionContext& context)
   
   ff = new double*[MAX_ITERS+2];
   for(int i=0;i<=MAX_ITERS+1;i++)
-    ff[i]=new double[dim];
+    ff[i]=new double[nobjs];
   
   int iter=10*dim+(dim-1);
   OVectorPtr result = new OVector(iter, NULL);
@@ -831,7 +871,7 @@ double ParEGOOptimizer::standard_density(double z)
  }
  */
 
-double ParEGOOptimizer::predict_y(double **ax, ::Matrix InvR, ::Vector y, double mu_hat, double *theta, double *p, int n, int dim)
+double ParEGOOptimizer::predict_y(double **ax, const ::Matrix& InvR, const ::Vector& y, double mu_hat, double *theta, double *p, int n, int dim)
 {
   double y_hat;
   //  Matrix InvR = R.Inverse();
@@ -852,8 +892,8 @@ double ParEGOOptimizer::weighted_distance(double *xi, double *xj, double *theta,
 {
   double sum=0.0;
   
-  double nxi[dim];
-  double nxj[dim];
+  double* nxi = new double[dim];
+  double* nxj = new double[dim];
   
   for(int h=0; h<dim; ++h)
   {
@@ -862,6 +902,9 @@ double ParEGOOptimizer::weighted_distance(double *xi, double *xj, double *theta,
     
     sum += theta[h]*pow(myabs(nxi[h]-nxj[h]),p[h]);     
   }
+
+  delete[] nxi;
+  delete[] nxj;
   return sum;
 }
 
@@ -873,13 +916,13 @@ double ParEGOOptimizer::correlation(double *xi, double *xj, double *theta, doubl
   return exp(-weighted_distance(xi,xj,theta,p,dim));
 }
 
-void ParEGOOptimizer::build_y(double *ay, int n, ::Vector y)
+void ParEGOOptimizer::build_y(double *ay, int n, ::Vector &y)
 {
   for(int i=0;i<n;i++)
     y(i)=ay[i];
 }
 
-void ParEGOOptimizer::build_R(double **ax, double *theta, double *p, int dim, int n, Matrix R)
+void ParEGOOptimizer::build_R(double **ax, double *theta, double *p, int dim, int n, Matrix &R)
 {
   // takes the array of x vectors, theta, and p, and returns the correlation matrix R.
   // TODO: can be optimized slightly since R is symmetric
@@ -888,7 +931,7 @@ void ParEGOOptimizer::build_R(double **ax, double *theta, double *p, int dim, in
       R[i][j]=correlation(ax[i],ax[j], theta, p, dim);
 }
 
-double ParEGOOptimizer::s2(double **ax, double *theta, double *p, double sigma, int dim, int n, Matrix InvR)
+double ParEGOOptimizer::s2(double **ax, double *theta, double *p, double sigma, int dim, int n, const Matrix& InvR)
 {
   double s2;
   //  Matrix InvR = R.Inverse();
@@ -905,7 +948,7 @@ double ParEGOOptimizer::s2(double **ax, double *theta, double *p, double sigma, 
   return s2;
 }
 
-double ParEGOOptimizer::sigma_squared_hat(Matrix InvR, ::Vector y, double mu_hat, int n)
+double ParEGOOptimizer::sigma_squared_hat(const Matrix& InvR, const ::Vector& y, double mu_hat, int n)
 {
   double numerator, denominator;
   
@@ -998,7 +1041,7 @@ double ParEGOOptimizer::likelihood(double *param)
 }
 
 
-double ParEGOOptimizer::mu_hat(Matrix InvR, ::Vector y, int n)
+double ParEGOOptimizer::mu_hat(const Matrix& InvR, const ::Vector& y, int n)
 {
   double numerator, denominator;
   ::Vector one(n);
@@ -1012,7 +1055,7 @@ double ParEGOOptimizer::mu_hat(Matrix InvR, ::Vector y, int n)
 }
 
 
-void ParEGOOptimizer::pr_sq_mat(Matrix m, int dim)
+void ParEGOOptimizer::pr_sq_mat(const Matrix& m, int dim)
 {
   for (int i=0; i<dim; ++i) 
   {
@@ -1022,7 +1065,7 @@ void ParEGOOptimizer::pr_sq_mat(Matrix m, int dim)
   }
 }
 
-void ParEGOOptimizer::pr_vec(::Vector v, int dim)
+void ParEGOOptimizer::pr_vec(const ::Vector& v, int dim)
 {
   for (int i=0; i<dim; ++i)
     std::cout << v(i) << " ";
@@ -1208,7 +1251,7 @@ void ParEGOOptimizer::reverse(int k, int n, int s)
 
 void ParEGOOptimizer::mysort(int *idx, double *val, int num)
 {    
-  SOR ss[num];
+  SOR* ss = new SOR[num];
   
   for(int i=0;i<num;++i)
   {
@@ -1220,6 +1263,8 @@ void ParEGOOptimizer::mysort(int *idx, double *val, int num)
   
   for(int i=0;i<num;i++)
     idx[i]=ss[i].indx;
+
+  delete[] ss;
 }
 
 int ParEGOOptimizer::pcomp(const void *i, const void *j)
@@ -1241,6 +1286,8 @@ void ParEGOOptimizer::cleanup()
   delete[] absmin;
   delete[] gideal;
   delete[] gwv;
+  delete[] gp;
+  delete[] gtheta;
   
   for (int i=0; i<40402; ++i)
   {

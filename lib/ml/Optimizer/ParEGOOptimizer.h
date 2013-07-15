@@ -11,6 +11,7 @@
 
 # include <ml/Solver.h>
 # include <LinAlg/VecMat.h>
+# include <ctime>
 # define MAX_K 5
 
 namespace lbcpp
@@ -98,8 +99,8 @@ private:
   double global_min;
   double gmu;
   double gsigma;
-  double **gtheta;
-  double **gp;
+  double *gtheta;
+  double *gp;
   double ymin;
   double gymin;
   ::Matrix *pgR;
@@ -128,23 +129,23 @@ private:
   void init_gz();
   void cwr(int **target, int k, int n);
   ::Matrix identM(int n);
-  void pr_sq_mat(::Matrix m, int dim);
-  void pr_vec(::Vector v, int dim);
-  double mu_hat(::Matrix InvR, ::Vector y, int n);
-  double sigma_squared_hat(::Matrix InvR, ::Vector y, double mu_hat, int n);
+  void pr_sq_mat(const ::Matrix& m, int dim);
+  void pr_vec(const ::Vector& v, int dim);
+  double mu_hat(const ::Matrix& InvR, const ::Vector& y, int n);
+  double sigma_squared_hat(const ::Matrix& InvR, const ::Vector& y, double mu_hat, int n);
   double likelihood(double *param);
   double weighted_distance(double *xi, double *xj, double *theta, double *p, int dim);
   double correlation(double *xi, double *xj, double *theta, double *p, int dim);
-  void build_R(double **ax, double *theta, double *p, int dim, int n, ::Matrix R);
-  void build_y(double *ay, int n, ::Vector y);
+  void build_R(double **ax, double *theta, double *p, int dim, int n, ::Matrix &R);
+  void build_y(double *ay, int n, ::Vector &y);
   void init_arrays(double ***ax, double **ay, int n, int dim);
   double myabs(double v);
   int mypow(int x, int expon);
-  double predict_y(double **ax, ::Matrix R, ::Vector y, double mu_hat, double *theta, double *p, int n, int dim);
+  double predict_y(double **ax, const ::Matrix& R, const ::Vector& y, double mu_hat, double *theta, double *p, int n, int dim);
   void get_params(double **param, double *theta, double *p, double *sigma, double *mu);
   double myfit(lbcpp::ExecutionContext &context, double *x, double *ff);
   double posdet(Matrix& R, int n);
-  double s2(double **ax, double *theta, double *p, double sigma, int dim, int n, Matrix InvR);
+  double s2(double **ax, double *theta, double *p, double sigma, int dim, int n, const Matrix& InvR);
   double standard_density(double z);
   double standard_distribution(double z);
   double expected_improvement(double yhat, double ymin, double s);
