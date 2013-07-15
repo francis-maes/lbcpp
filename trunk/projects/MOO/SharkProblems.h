@@ -51,9 +51,9 @@ protected:
 class ProblemFromSharkObjectiveFunction : public Problem
 {
 public:
-  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, bool randomizeOptimum = false) 
+  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective, bool randomizeOptimum = true) 
     : numDimensions(objective->dimension()), objective(objective), randomizeOptimum(randomizeOptimum) {}
-  ProblemFromSharkObjectiveFunction(size_t numDimensions, ObjectiveFunctionVS<double>* objective, bool randomizeOptimum = false)
+  ProblemFromSharkObjectiveFunction(size_t numDimensions, ObjectiveFunctionVS<double>* objective, bool randomizeOptimum = true)
     : numDimensions(numDimensions), objective(objective), randomizeOptimum(randomizeOptimum) {}
 
   virtual ~ProblemFromSharkObjectiveFunction()
@@ -81,7 +81,7 @@ public:
     if (randomizeOptimum)
       optimum = scalarVectorDomain->sampleUniformly(context.getRandomGenerator()).staticCast<DenseDoubleVector>();
     else
-      optimum = new DenseDoubleVector(
+      optimum = new DenseDoubleVector(scalarVectorDomain->getNumDimensions(), 0.0);
 
     for (size_t i = 0; i < objective->objectives(); ++i)
     {
@@ -228,7 +228,7 @@ class ZDTMOProblem : public ProblemFromSharkObjectiveFunction
 {
 public:
   ZDTMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
-    : ProblemFromSharkObjectiveFunction(objective), max1(10.0), max2(10.0)
+    : ProblemFromSharkObjectiveFunction(objective, false), max1(10.0), max2(10.0)
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const

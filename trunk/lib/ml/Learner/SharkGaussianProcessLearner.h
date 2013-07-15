@@ -35,16 +35,20 @@ public:
   SharkGaussianProcess(const Array<double>& train, const Array<double>& supervisions, GaussianProcess* gaussianProcess = new GaussianProcess(new SVM(new NormalizedRBFKernel())))
     : gaussianProcess(gaussianProcess) 
   {
+    double sigma = computeWidth(train) / 4;
     gaussianProcess->setBetaInv(1.0);
-    gaussianProcess->setSigma(1.0);
+    gaussianProcess->setSigma(sigma);
     gaussianProcess->train(train, supervisions);
-    AdpBP90a optimizer;
+    GaussianProcessEvidence evidence = GaussianProcessEvidence();
+    Array<double> derivative;
+    evidence.errorDerivative(*gaussianProcess, train, supervisions, derivative);
+    /*AdpBP90a optimizer;
     //CG optimizer;
     //BFGS optimizer;
     GaussianProcessEvidence error;
     optimizer.init(*gaussianProcess);
     for (size_t i = 0; i < 5; ++i)
-      optimizer.optimize(*gaussianProcess, error, train, supervisions);
+      optimizer.optimize(*gaussianProcess, error, train, supervisions);*/
   }
 
   /**
@@ -75,6 +79,32 @@ public:
 
 protected:
   GaussianProcess* gaussianProcess;
+
+  double computeWidth(const Array<double>& data)
+  {
+    std::vector< std::pair<double, double> > limits(data.cols());
+    for (size_t i = 0; i < data.cols(); ++i)
+      limits[i] = std::pair<double, double>(DBL_MAX, -DBL_MAX);
+    // compute limits for all dimensions
+    for (size_t i = 0; i < data.rows(); ++i)
+    {
+      for (size_t j = 0; j < data.cols(); ++j)
+      {
+        if (limits[j].first > data(i,j))
+          limits[j].first = data(i,j);
+        if (limits[j].second < data(i,j))
+          limits[j].second = data(i,j);
+      }
+    }
+    // compute largest dim
+    double largest = 0.0;
+    for (size_t i = 0; i < limits.size(); ++i)
+    {
+      double width = limits[i].second - limits[i].first;
+      if (largest < width) largest = width;
+    }
+    return largest;
+  }
 };
 
 typedef ReferenceCountedObjectPtr<SharkGaussianProcess> SharkGaussianProcessPtr;
