@@ -172,6 +172,11 @@
   <class name="ManuallyAddDisulfidePatternWorkUnit" base="WorkUnit">
     <variable type="File" name="proteinFile"/>
   </class>
+  
+  <class name="ExtractPrimaryAndDisroderedSequencesFromPdb" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+  </class>
 
   <!-- BEGIN CysteinBox -->
   <class name="StreamBasedOptimizationProblem" base="OptimizationProblem">
