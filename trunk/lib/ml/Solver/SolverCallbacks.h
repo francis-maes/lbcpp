@@ -179,11 +179,13 @@ protected:
   double startTime;
   size_t numEvaluations;
   
-  void appendResult(size_t numEvaluations, double cpuTime, double score)
+  void appendResult(ExecutionContext& context, SolverPtr solver, size_t numEvaluations, double cpuTime, double score)
   {
     evaluations->append(numEvaluations);
     cpuTimes->append(cpuTime);
     scores->append(score);
+    if (solver->getVerbosity() > verbosityQuiet)
+      context.resultCallback(solverEvaluator->getDescription(), score);
   }
 };
 
@@ -201,7 +203,7 @@ public:
   {
     ++numEvaluations;
     if (numEvaluations % evaluationPeriod == 0)
-      appendResult(numEvaluations, Time::getHighResolutionCounter() - startTime, solverEvaluator->evaluateSolver(context, solver));
+      appendResult(context, solver, numEvaluations, Time::getHighResolutionCounter() - startTime, solverEvaluator->evaluateSolver(context, solver));
   }
 
 protected:
@@ -230,7 +232,7 @@ public:
     double curTime = Time::getHighResolutionCounter();
     while (curTime - lastEvaluationTime >= evaluationPeriod)
     {
-      appendResult(numEvaluations, lastEvaluationTime - startTime, prevScore);
+      appendResult(context, solver, numEvaluations, lastEvaluationTime - startTime, prevScore);
       lastEvaluationTime += evaluationPeriod;
     }
     prevScore = solverEvaluator->evaluateSolver(context, solver);
@@ -259,7 +261,7 @@ public:
     while (curTime - lastEvaluationTime >= evaluationPeriod)
     {
       double timeElapsed = lastEvaluationTime - startTime;
-      appendResult(numEvaluations, timeElapsed, prevScore);
+      appendResult(context, solver, numEvaluations, timeElapsed, prevScore);
       lastEvaluationTime += evaluationPeriod;
       evaluationPeriod *= factor;
     }
