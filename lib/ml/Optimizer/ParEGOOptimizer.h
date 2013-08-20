@@ -40,7 +40,8 @@ public:
     if (verbosity >= verbosityDetailed)
     {
       context.resultCallback("object", object);
-      context.resultCallback("fitness", fitness);
+      for (size_t i = 0; i < fitness->getNumValues(); ++i)
+        context.resultCallback("fitness" + string((int) i), fitness->getValue(i));
     }
     return true;
   }

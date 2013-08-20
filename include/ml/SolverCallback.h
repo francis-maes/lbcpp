@@ -21,6 +21,7 @@ class SolverEvaluator : public Object
 {
 public:
   virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver) = 0;
+  virtual string getDescription() = 0;
 };
 
 extern SolverEvaluatorPtr singleObjectiveSolverEvaluator(FitnessPtr& bestFitness);

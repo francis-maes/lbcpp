@@ -280,7 +280,7 @@ public:
   /** Returns true if this pointer refers to the given object. */
   template<class O>
   bool operator ==(const ReferenceCountedObjectPtr<O>& other) const
-    {return ptr == other.staticCast<T>().ptr;}
+    {return ptr == other.template staticCast<T>().ptr;}
   
   template<class O>
   bool operator ==(const O* other) const
@@ -289,7 +289,7 @@ public:
   /** Returns true if this pointer doesn't refer to the given object. */
   template<class O>
   bool operator !=(const ReferenceCountedObjectPtr<O>& other) const
-    {return ptr != other.staticCast<T>().ptr;}
+    {return ptr != other.template staticCast<T>().ptr;}
 
   template<class O>
   bool operator !=(const O* other) const
@@ -298,7 +298,7 @@ public:
   /** Returns true if this pointer is smaller to the pointer of the given object. */
   template<class O>
   bool operator <(const ReferenceCountedObjectPtr<O>& other) const
-    {return ptr < other.staticCast<T>().ptr;}
+    {return ptr < other.template staticCast<T>().ptr;}
 
   template<class O>
   bool operator <(const O* other) const

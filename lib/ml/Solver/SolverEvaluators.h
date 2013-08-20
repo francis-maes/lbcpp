@@ -23,6 +23,9 @@ public:
   double evaluateSolver(ExecutionContext& context, SolverPtr solver)
     {return bestFitness->getValue(0);}
   
+  virtual string getDescription()
+    {return T("Best fitness");}
+  
 protected:
   friend class SingleObjectiveSolverEvaluatorClass;
   
@@ -37,6 +40,9 @@ public:
   
   double evaluateSolver(ExecutionContext& context, SolverPtr solver)
     {return front->computeHyperVolume(front->getFitnessLimits()->getWorstPossibleFitness());}
+  
+  virtual string getDescription()
+    {return T("Hypervolume");}
   
 protected:
   friend class HyperVolumeSolverEvaluatorClass;
