@@ -304,7 +304,6 @@ public:
   SurrogateBasedSolverInformationContentComponent(SurrogateBasedSolverInformationPtr information)
     : information(information)
   {
-    jassert(information->getProblem()->getNumObjectives() == 1);
     jassert(information->getProblem()->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions() == 2); // asserts scalarvector domain and input type
     drawable = new SurrogateBasedSolverInformation2DDrawable(information);
   }

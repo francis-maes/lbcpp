@@ -12,6 +12,7 @@
 # include <ml/Solver.h>
 # include <LinAlg/VecMat.h>
 # include <ctime>
+# include "Solver/SurrogateBasedSolverInformation.h"
 # define MAX_K 5
 
 namespace lbcpp
@@ -43,6 +44,20 @@ public:
       for (size_t i = 0; i < fitness->getNumValues(); ++i)
         context.resultCallback("fitness" + string((int) i), fitness->getValue(i));
     }
+
+    if (verbosity >= verbosityDetailed)
+    {
+      SurrogateBasedSolverInformationPtr information(new SurrogateBasedSolverInformation(iter + 1));
+      information->setProblem(problem);
+      if (lastInformation)
+        information->setSolutions(lastInformation->getSolutions());
+      else
+        information->setSolutions(new SolutionVector(problem->getFitnessLimits()));
+      information->getSolutions()->insertSolution(object, fitness);
+      information->setSurrogateModel(ExpressionPtr());
+      context.resultCallback("information", information);
+      lastInformation = information;
+    }
     return true;
   }
   
@@ -55,6 +70,7 @@ public:
   
 protected:
   friend class ParEGOSolverClass;
+  SurrogateBasedSolverInformationPtr lastInformation;
   
 private:
   OVectorPtr initialSamples;
