@@ -650,7 +650,7 @@ ObjectPtr ParEGOOptimizer::iterate_ParEGO(ExecutionContext& context, int iter)
       }	  
     }
     //    fprintf(stdout,"ei= %lf\n", best_imp);
-    if(improved==false)
+    if(!improved)
     {
       for(int d=0; d<dim; d++)
         best_x[d]=popx[0][d];
