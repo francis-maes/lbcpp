@@ -125,6 +125,71 @@ protected:
   File drProteinDirectory;
 };
 
+class SACompositionWithRespectToDRWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory, 2);
+
+    size_t numDisordered = 0;
+    size_t numOrdered = 0;
+
+    size_t numDisorderedExposed = 0;
+    size_t numDisorderedBuried = 0;
+
+    size_t numOrderedExposed = 0;
+    size_t numOrderedBuried = 0;
+
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+    {
+      ProteinPtr saProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getFirst().getObjectAndCast<Protein>();
+      ProteinPtr drProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>();
+      jassert(saProtein);
+      jassert(drProtein);
+      jassert(saProtein->getLength() == drProtein->getLength());
+      DenseDoubleVectorPtr dr = drProtein->getDisorderRegions();
+      jassert(dr);
+      DenseDoubleVectorPtr sa = saProtein->getSolventAccessibilityAt20p();
+      jassert(sa);
+      for (size_t j = 0; j < drProtein->getLength(); ++j)
+      {
+        jassert(dr->getElement(j).exists());
+        jassert(sa->getElement(j).exists());
+        if (dr->getValue(j) > 0.5)
+        {
+          ++numDisordered;
+          if (sa->getValue(j) > 0.5)
+            ++numDisorderedExposed;
+          else
+            ++numDisorderedBuried;
+        }
+        else
+        {
+          ++numOrdered;
+          if (sa->getValue(j) > 0.5)
+            ++numOrderedExposed;
+          else
+            ++numOrderedBuried;
+        }
+      }
+    }
+
+    std::cout << "          Ordered   Disordered   Total" << std::endl;
+    std::cout << "Exposed " << numOrderedExposed << "   " << numDisorderedExposed << "   " << (numOrderedExposed + numDisorderedExposed) << std::endl;
+    std::cout << "Buried  " << numOrderedBuried << "   " << numDisorderedBuried << "   " << (numOrderedBuried + numDisorderedBuried) << std::endl;
+    std::cout << "        " << numOrdered << "   " << numDisordered << std::endl;
+
+    return Variable();
+  }
+  
+protected:
+  friend class SACompositionWithRespectToDRWorkUnitClass;
+
+  File saProteinDirectory;
+  File drProteinDirectory;
+};
+
 class CheckARFFDataFileParserWorkUnit : public WorkUnit
 {
 public:
