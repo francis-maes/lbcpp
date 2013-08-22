@@ -64,6 +64,12 @@
     <variable type="File" name="ss3ProteinDirectory" shortName="ss3"/>
     <variable type="File" name="drProteinDirectory" shortName="dr"/>
   </class>
+
+  <class name="SACompositionWithRespectToDRWorkUnit" base="WorkUnit">
+    <variable type="File" name="saProteinDirectory" shortName="sa"/>
+    <variable type="File" name="drProteinDirectory" shortName="dr"/>
+  </class>
+
   
   <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
     <variable type="File" name="dataFile"/>
