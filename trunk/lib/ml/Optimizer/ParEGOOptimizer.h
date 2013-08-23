@@ -40,13 +40,12 @@ public:
     fitness = evaluate(context, object);
     if (verbosity >= verbosityDetailed)
     {
+      // fitnesses
       context.resultCallback("object", object);
       for (size_t i = 0; i < fitness->getNumValues(); ++i)
         context.resultCallback("fitness" + string((int) i), fitness->getValue(i));
-    }
 
-    if (verbosity >= verbosityDetailed)
-    {
+      // SurrogateBasedSolverInformation
       SurrogateBasedSolverInformationPtr information(new SurrogateBasedSolverInformation(iter + 1));
       information->setProblem(problem);
       if (lastInformation)
