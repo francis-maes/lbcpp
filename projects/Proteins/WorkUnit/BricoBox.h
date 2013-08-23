@@ -201,6 +201,9 @@ public:
 
     FunctionPtr createProfile = new ProbabilityCreateSeparationProfileFunction();
 
+    std::vector<size_t> buriedOrdered(1000, 0), buriedDisordered(1000, 0), buriedMix(1000, 0), buried(1000, 0);
+    std::vector<size_t> exposedOrdered(1000, 0), exposedDisordered(1000, 0), exposedMix(1000, 0), exposed(1000, 0);
+
     for (size_t i = 0; i < proteins->getNumElements(); ++i)
     {
       ProteinPtr saProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getFirst().getObjectAndCast<Protein>();
@@ -216,20 +219,18 @@ public:
       SeparationProfilePtr profile = createProfile->compute(context, sa).getObjectAndCast<SeparationProfile>();
 
       
-      std::vector<size_t> buriedOrdered(1000, 0), buriedDisordered(1000, 0), buriedMix(1000, 0), buried(1000, 0);
       computeComposition(context, profile->getProfile(0), dr, buriedOrdered, buriedDisordered, buriedMix, buried);
       
-      std::vector<size_t> exposedOrdered(1000, 0), exposedDisordered(1000, 0), exposedMix(1000, 0), exposed(1000, 0);
       computeComposition(context, profile->getProfile(1), dr, exposedOrdered, exposedDisordered, exposedMix, exposed);
+    }
 
-      for (size_t i = 0; i < 1000; ++i)
-      {
-        std::cout << ((int)i - 500) << "\t"
-                  << buriedOrdered[i] << "\t" << buriedDisordered[i] << "\t"
-                  << buriedMix[i] << "\t" << buried[i] << "\t"
-                  << exposedOrdered[i] << "\t" << exposedDisordered[i] << "\t"
-                  << exposedMix[i] << "\t" << exposed[i] << std::endl;
-      }
+    for (size_t i = 0; i < 1000; ++i)
+    {
+      std::cout << ((int)i - 500) << "\t"
+                << buriedOrdered[i] << "\t" << buriedDisordered[i] << "\t"
+                << buriedMix[i] << "\t" << buried[i] << "\t"
+                << exposedOrdered[i] << "\t" << exposedDisordered[i] << "\t"
+                << exposedMix[i] << "\t" << exposed[i] << std::endl;
     }
 
     return Variable();
@@ -246,10 +247,6 @@ protected:
                           std::vector<size_t>& mix, std::vector<size_t>& all) const
   {
     const size_t n = profile.size();
-    for (size_t i = 0; i < n; ++i)
-      std::cout << profile[i] << " ";
-    std::cout << std::endl;
-    
     for (size_t i = 0; i < n; ++i)
     {
       for (size_t j = 0; j < n; ++j)
