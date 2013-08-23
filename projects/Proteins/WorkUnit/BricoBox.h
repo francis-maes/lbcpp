@@ -17,6 +17,8 @@
 
 #include "../Predictor/NumericalCysteinPredictorParameters.h"
 #include "../Predictor/Lin09PredictorParameters.h"
+# include "../Model/SeparationProfileFunction.h"
+
 
 #ifndef _PROTEINS_BRICO_BOX_
 #define _PROTEINS_BRICO_BOX_
@@ -55,7 +57,7 @@ class SS3CompositionWithRespectToDRWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, ss3ProteinDirectory, drProteinDirectory, 2);
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, ss3ProteinDirectory, drProteinDirectory);
 
     size_t numDisordered = 0;
     size_t numOrdered = 0;
@@ -130,7 +132,7 @@ class SACompositionWithRespectToDRWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory, 2);
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory);
 
     size_t numDisordered = 0;
     size_t numOrdered = 0;
@@ -188,6 +190,90 @@ protected:
 
   File saProteinDirectory;
   File drProteinDirectory;
+};
+
+class SASeparationProfileCompositionWithRespectToDRWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory);
+
+    FunctionPtr createProfile = new ProbabilityCreateSeparationProfileFunction();
+
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+    {
+      ProteinPtr saProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getFirst().getObjectAndCast<Protein>();
+      ProteinPtr drProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>();
+      jassert(saProtein);
+      jassert(drProtein);
+      jassert(saProtein->getLength() == drProtein->getLength());
+      DenseDoubleVectorPtr dr = drProtein->getDisorderRegions();
+      jassert(dr);
+      DenseDoubleVectorPtr sa = saProtein->getSolventAccessibilityAt20p();
+      jassert(sa);
+
+      SeparationProfilePtr profile = createProfile->compute(context, sa).getObjectAndCast<SeparationProfile>();
+
+      
+      std::vector<size_t> buriedOrdered(1000, 0), buriedDisordered(1000, 0), buriedMix(1000, 0), buried(1000, 0);
+      computeComposition(context, profile->getProfile(0), dr, buriedOrdered, buriedDisordered, buriedMix, buried);
+      
+      std::vector<size_t> exposedOrdered(1000, 0), exposedDisordered(1000, 0), exposedMix(1000, 0), exposed(1000, 0);
+      computeComposition(context, profile->getProfile(1), dr, exposedOrdered, exposedDisordered, exposedMix, exposed);
+
+      for (size_t i = 0; i < 1000; ++i)
+      {
+        std::cout << ((int)i - 500) << "\t"
+                  << buriedOrdered[i] << "\t" << buriedDisordered[i] << "\t"
+                  << buriedMix[i] << "\t" << buried[i] << "\t"
+                  << exposedOrdered[i] << "\t" << exposedDisordered[i] << "\t"
+                  << exposedMix[i] << "\t" << exposed[i] << std::endl;
+      }
+    }
+
+    return Variable();
+  }
+  
+protected:
+  friend class SASeparationProfileCompositionWithRespectToDRWorkUnitClass;
+
+  File saProteinDirectory;
+  File drProteinDirectory;
+
+  void computeComposition(ExecutionContext& context, std::vector<size_t>& profile, const DenseDoubleVectorPtr& dr,
+                          std::vector<size_t>& ordered, std::vector<size_t>& disordered,
+                          std::vector<size_t>& mix, std::vector<size_t>& all) const
+  {
+    const size_t n = profile.size();
+    for (size_t i = 0; i < n; ++i)
+      std::cout << profile[i] << " ";
+    std::cout << std::endl;
+    
+    for (size_t i = 0; i < n; ++i)
+    {
+      for (size_t j = 0; j < n; ++j)
+      {
+        if (i == j)
+          continue;
+
+        jassert(dr->getElement(i).exists());
+        jassert(dr->getElement(j).exists());
+
+        int sep = 500 + profile[j] - profile[i];
+        if (sep < 0 || sep >= 1000 || sep == 500)
+          continue;
+
+        ++all[sep];
+        if (dr->getValue(i) > 0.5 && dr->getValue(j) > 0.5)
+          ++disordered[sep];
+        else if (dr->getValue(i) <= 0.5 && dr->getValue(j) <= 0.5)
+          ++ordered[sep];
+        else
+          ++mix[sep];
+      }
+    }
+  }
 };
 
 class CheckARFFDataFileParserWorkUnit : public WorkUnit
