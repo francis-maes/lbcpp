@@ -81,36 +81,8 @@ public:
     if (w <= 1 || h <= 1)
       return;
 
-    SurrogateBasedSolverInformation::Layer layer = information->getLayerToDraw();
+    SurrogateBasedSolverInformationLayerPtr layer = information->getLayerToDraw();
 
-    FitnessPtr bestFitness;
-    if (layer == SurrogateBasedSolverInformation::expectedImprovementLayer ||
-        layer == SurrogateBasedSolverInformation::probabilityOfImprovementLayer)
-    {
-      bestFitness = information->getSolutions()->getFitness(0);
-      for (size_t i = 1; i < information->getStepNumber(); ++i)
-      {
-        FitnessPtr fitness = information->getSolutions()->getFitness(i);
-        if (fitness->strictlyDominates(bestFitness))
-          bestFitness = fitness;
-      }
-    }
-    
-    SelectionCriterionPtr criterion;
-    if (layer == SurrogateBasedSolverInformation::expectedImprovementLayer)
-      criterion = expectedImprovementSelectionCriterion(bestFitness);
-    else if (layer == SurrogateBasedSolverInformation::probabilityOfImprovementLayer)
-      criterion = probabilityOfImprovementSelectionCriterion(bestFitness);
-    else if (layer == SurrogateBasedSolverInformation::optimistic1Layer)
-      criterion = optimisticSelectionCriterion(1.0);
-    else if (layer == SurrogateBasedSolverInformation::optimistic2Layer)
-      criterion = optimisticSelectionCriterion(2.0);
-    else if (layer == SurrogateBasedSolverInformation::optimistic5Layer)
-      criterion = optimisticSelectionCriterion(5.0);
-
-    if (criterion)
-      criterion->initialize(information->getProblem());
-    
     data = new Table(h);
     for (int i = 0; i < w; ++i)
       data->addColumn(T("c" + i), doubleClass);
@@ -124,7 +96,7 @@ public:
         DenseDoubleVectorPtr vector(new DenseDoubleVector(2, 0.0));
         vector->setValue(0, vx);
         vector->setValue(1, vy);
-        double value = computeLayer(defaultExecutionContext(), vector, criterion);
+        double value = layer->computeValue(defaultExecutionContext(), vector);
         data->setElement(y, x, new Double(value));
       }
   }
@@ -152,29 +124,6 @@ protected:
         rangeMax = value;
     }
     return new PlotAxis(rangeMin, rangeMax, elementsEnumeration->getElementName(inputDimension), false);
-  }
-
-  double computeLayer(ExecutionContext& context, DenseDoubleVectorPtr vector, SelectionCriterionPtr criterion) const
-  {
-    SurrogateBasedSolverInformation::Layer layer = information->getLayerToDraw();
-
-    if (layer == SurrogateBasedSolverInformation::objectiveLayer)
-      return information->getProblem()->getObjective(0)->evaluate(context, vector);
-
-    std::vector<ObjectPtr> objectVector(vector->getNumElements());
-    for (size_t i = 0; i < vector->getNumElements(); ++i)
-      objectVector[i] = vector->getElement(i);
-    ScalarVariableMeanAndVariancePtr prediction = information->getSurrogateModel()->compute(context, objectVector).staticCast<ScalarVariableMeanAndVariance>();
-
-    if (layer == SurrogateBasedSolverInformation::modelLayer)
-      return prediction->getMean();
-    else if (layer == SurrogateBasedSolverInformation::stddevLayer)
-      return prediction->getStandardDeviation();
-    else
-    {
-      jassert(criterion);
-      return criterion->evaluate(context, prediction);
-    }
   }
 
   void getPixelPosition(DenseDoubleVectorPtr vector, int& x, int& y, const juce::AffineTransform& transform) const
@@ -234,7 +183,7 @@ public:
   {
     if (box == layerComboBox)
     {
-      information->setLayerToDraw((SurrogateBasedSolverInformation::Layer)box->getSelectedItemIndex());
+      information->setLayerToDraw(box->getSelectedItemIndex());
     }
     else if (box == precisionComboBox)
     {
@@ -267,8 +216,8 @@ private:
   juce::ComboBox* createLayerSelectionComboBox()
   {
     juce::ComboBox* res = new juce::ComboBox(T("layerSelectionCombo"));
-    for (size_t layer = 0; layer < SurrogateBasedSolverInformation::numLayers; ++layer)
-      res->addItem(SurrogateBasedSolverInformation::getLayerName((SurrogateBasedSolverInformation::Layer)layer), (int)layer + 1);
+    for (size_t layer = 0; layer < information->getNumLayers(); ++layer)
+      res->addItem(information->getLayer(layer)->getName(), (int)layer + 1);
     res->addListener(this);
     res->setSelectedId(1);
     return res;
