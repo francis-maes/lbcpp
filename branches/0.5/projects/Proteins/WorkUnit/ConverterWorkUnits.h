@@ -1261,4 +1261,35 @@ protected:
   File pdbFile;
 };
 
+class ConvertFastaFileToProtein : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!fastaFile.exists())
+    {
+      context.errorCallback(T("ConvertFastaFileToProtein::run"),
+                            T("File not found: ") + fastaFile.getFullPathName());
+      return false;
+    }
+        
+    ProteinPtr protein = StreamPtr(new FASTAFileParser(context, fastaFile))->next().getObjectAndCast<Protein>();
+    if (!protein)
+    {
+      context.errorCallback(T("ConvertFastaFileToProtein::run"),
+                            T("Error while parsing file: ") + fastaFile.getFullPathName());
+      return false;
+    }
+
+    protein->saveToXmlFile(context, xmlFile);
+    return true;
+  }
+  
+protected:
+  friend class ConvertFastaFileToProteinClass;
+  
+  File fastaFile;
+  File xmlFile;
+};
+
 };
