@@ -1034,7 +1034,7 @@ public:
       inputFile.findChildFiles(files, File::findFiles, false, T("*.pdb"));
       bool res = true;
       for (size_t i = 0; i < (size_t)files.size(); ++i)
-        res &= extract(context, *files[i], outputFile.getChildFile(files[i]->getFileName()));
+        res &= extract(context, *files[i], outputFile.getChildFile(files[i]->getFileNameWithoutExtension()));
       return res;
     }
     else
@@ -1056,10 +1056,18 @@ protected:
       return false;
     }
 
+    /*
     OutputStream* o = output.createOutputStream();
     *o << protein->getPrimaryStructure()->toString() << "\n";
     *o << protein->getDisorderRegions()->toString();
     delete o;
+    */
+
+    ProteinPtr toSave = new Protein(pdbFile.getFileNameWithoutExtension());
+    toSave->setPrimaryStructure(protein->getPrimaryStructure());
+    toSave->setDisorderRegions(protein->getDisorderRegions());
+    toSave->saveToXmlFile(context, output);
+
     return true;
   }
 };
