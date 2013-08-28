@@ -33,10 +33,50 @@
     <variable type="File" name="inputFile" shortName="i"/>
     <variable type="File" name="outputFile" shortName="o"/>
   </class>
+
+  <class name="ConvertCB513FileToProtein" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
+  <class name="ConvertASTRALFileToPDB" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
+  <class name="ConvertRS126FileToProtein" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
+  <class name="ConvertSPXFileToProteins" base="WorkUnit">
+    <variable type="File" name="spxFile"/>
+    <variable type="File" name="outputDirectory"/>
+  </class>
+
+  <class name="ConvertTDBFileToProtein" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
+  <class name="ConvertDisproFileToProteins" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
+  <class name="ConvertSpineFileToProteins" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
   
   <class name="ConvertFastaFileToSeqResPdbRecord" base="WorkUnit">
     <variable type="File" name="fastaFile" shortName="i"/>
     <variable type="File" name="pdbFile" shortName="o"/>
+  </class>
+  
+  <class name="ConvertFastaFileToProtein" base="WorkUnit">
+    <variable type="File" name="fastaFile" shortName="i"/>
+    <variable type="File" name="xmlFile" shortName="o"/>
   </class>
   
 
@@ -100,41 +140,6 @@
   
   <class name="DebugExecutionTraceLoading" base="WorkUnit">
     <variable type="File" name="traceFile" shortName="i"/>
-  </class>
-    
-  <class name="ConvertCB513FileToProtein" base="WorkUnit">
-    <variable type="File" name="inputDirectory" shortName="i"/>
-    <variable type="File" name="outputDirectory" shortName="o"/>
-  </class>
-
-  <class name="ConvertASTRALFileToPDB" base="WorkUnit">
-    <variable type="File" name="inputDirectory" shortName="i"/>
-    <variable type="File" name="outputDirectory" shortName="o"/>
-  </class>
-
-  <class name="ConvertRS126FileToProtein" base="WorkUnit">
-    <variable type="File" name="inputDirectory" shortName="i"/>
-    <variable type="File" name="outputDirectory" shortName="o"/>
-  </class>
-
-  <class name="ConvertSPXFileToProteins" base="WorkUnit">
-    <variable type="File" name="spxFile"/>
-    <variable type="File" name="outputDirectory"/>
-  </class>
-
-  <class name="ConvertTDBFileToProtein" base="WorkUnit">
-    <variable type="File" name="inputDirectory" shortName="i"/>
-    <variable type="File" name="outputDirectory" shortName="o"/>
-  </class>
-
-  <class name="ConvertDisproFileToProteins" base="WorkUnit">
-    <variable type="File" name="inputFile" shortName="i"/>
-    <variable type="File" name="outputDirectory" shortName="o"/>
-  </class>
-
-  <class name="ConvertSpineFileToProteins" base="WorkUnit">
-    <variable type="File" name="inputFile" shortName="i"/>
-    <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
 
   <class name="CountCysteinesWorkUnit" base="WorkUnit">
