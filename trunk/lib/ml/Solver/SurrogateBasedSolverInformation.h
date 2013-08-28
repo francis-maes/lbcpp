@@ -230,7 +230,7 @@ public:
     layers.clear();
     if (problem)
       for (size_t i = 0; i < problem->getNumObjectives(); ++i)
-        layers.push_back(new ObjectiveLayer(problem->getObjective(i), T("Objective " + string(i))));
+        layers.push_back(new ObjectiveLayer(problem->getObjective(i), T("Objective " + string((int) i))));
     if (surrogateModel)
     {
       layers.push_back(new ModelLayer(surrogateModel));
