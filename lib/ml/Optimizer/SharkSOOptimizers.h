@@ -70,19 +70,26 @@ protected:
   SolverPtr solver;
 };
 
-class CMAESSOOptimizer : public IterativeSolver
+class CMAESSOOptimizer : public PopulationBasedSolver
 {
 public:
-  CMAESSOOptimizer(size_t numGenerations = 0)
-    : IterativeSolver(numGenerations), objective(NULL), cma(NULL) {}
+  CMAESSOOptimizer(size_t populationSize = 100, size_t mu = 100, size_t numGenerations = 0)
+    : PopulationBasedSolver(populationSize, numGenerations), mu(mu), objective(NULL), cma(NULL) {}
   
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
-    IterativeSolver::startSolver(context, problem, callback, startingSolution);
     objective = new SharkObjectiveFunctionFromProblem(context, problem, refCountedPointerFromThis(this));
     cma = new CMASearch();
-    cma->init(*objective);
-    context.resultCallback("population size", (size_t)cma->lambda());
+    if (populationSize == 0)
+      cma->init(*objective); // cma decides mu and populationsize
+    else
+    {
+      if (mu == 0)
+        mu = populationSize / 3;
+      cma->init(*objective, mu, populationSize);
+    }
+    populationSize = (size_t) cma->lambda();
+    IterativeSolver::startSolver(context, problem, callback, startingSolution);
   }
   
   virtual bool iterateSolver(ExecutionContext& context, size_t iter)
@@ -109,6 +116,7 @@ public:
   
 protected:
   friend class CMAESSOOptimizerClass;
+  size_t mu;
   
   SharkObjectiveFunctionFromProblem* objective;
   CMASearch* cma;

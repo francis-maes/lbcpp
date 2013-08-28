@@ -8,8 +8,9 @@
   </class>
   
   <!-- Single objective -->
-  <class name="CMAESSOOptimizer" base="IterativeSolver">
-    <constructor arguments="size_t numIterations"/>
+  <class name="CMAESSOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t populationSize, size_t mu, size_t numGenerations"/>
+    <variable type="PositiveInteger" name="mu"/>
   </class>
 
   <!-- Multi objective -->
