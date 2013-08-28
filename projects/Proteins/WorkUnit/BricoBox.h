@@ -1023,55 +1023,6 @@ protected:
   File proteinFile;
 };
 
-class ExtractPrimaryAndDisroderedSequencesFromPdb : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    if (inputFile.isDirectory())
-    {
-      juce::OwnedArray<File> files;
-      inputFile.findChildFiles(files, File::findFiles, false, T("*.pdb"));
-      bool res = true;
-      for (size_t i = 0; i < (size_t)files.size(); ++i)
-        res &= extract(context, *files[i], outputFile.getChildFile(files[i]->getFileNameWithoutExtension()));
-      return res;
-    }
-    else
-      return extract(context, inputFile, outputFile);
-  }
-
-protected:
-  friend class ExtractPrimaryAndDisroderedSequencesFromPdbClass;
-
-  File inputFile;
-  File outputFile;
-
-  bool extract(ExecutionContext& context, File pdbFile, File output) const
-  {
-    ProteinPtr protein = Protein::createFromPDB(context, pdbFile);
-    if (!protein)
-    {
-      context.errorCallback(T("ExtractPrimaryAndDisroderedSequencesFromPdb::extract"), T("No protein parsed in file: ") + pdbFile.getFullPathName());
-      return false;
-    }
-
-    /*
-    OutputStream* o = output.createOutputStream();
-    *o << protein->getPrimaryStructure()->toString() << "\n";
-    *o << protein->getDisorderRegions()->toString();
-    delete o;
-    */
-
-    ProteinPtr toSave = new Protein(pdbFile.getFileNameWithoutExtension());
-    toSave->setPrimaryStructure(protein->getPrimaryStructure());
-    toSave->setDisorderRegions(protein->getDisorderRegions());
-    toSave->saveToXmlFile(context, output);
-
-    return true;
-  }
-};
-
 };
 
 #endif // !_PROTEINS_BRICO_BOX_

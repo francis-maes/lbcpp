@@ -1292,4 +1292,165 @@ protected:
   File xmlFile;
 };
 
+class ExtractPrimaryAndDisroderedSequencesFromPdb : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputFile.isDirectory())
+    {
+      juce::OwnedArray<File> files;
+      inputFile.findChildFiles(files, File::findFiles, false, T("*.pdb"));
+      bool res = true;
+      for (size_t i = 0; i < (size_t)files.size(); ++i)
+        res &= extract(context, *files[i], outputFile.getChildFile(files[i]->getFileNameWithoutExtension()));
+      return res;
+    }
+    else
+      return extract(context, inputFile, outputFile);
+  }
+
+protected:
+  friend class ExtractPrimaryAndDisroderedSequencesFromPdbClass;
+
+  File inputFile;
+  File outputFile;
+
+  bool extract(ExecutionContext& context, File pdbFile, File output) const
+  {
+    ProteinPtr protein = Protein::createFromPDB(context, pdbFile);
+    if (!protein)
+    {
+      context.errorCallback(T("ExtractPrimaryAndDisroderedSequencesFromPdb::extract"), T("No protein parsed in file: ") + pdbFile.getFullPathName());
+      return false;
+    }
+
+    /*
+    OutputStream* o = output.createOutputStream();
+    *o << protein->getPrimaryStructure()->toString() << "\n";
+    *o << protein->getDisorderRegions()->toString();
+    delete o;
+    */
+
+    ProteinPtr toSave = new Protein(pdbFile.getFileNameWithoutExtension());
+    toSave->setPrimaryStructure(protein->getPrimaryStructure());
+    toSave->setDisorderRegions(protein->getDisorderRegions());
+    toSave->saveToXmlFile(context, output);
+
+    return true;
+  }
+};
+
+class DisopredPredictionFileParser : public TextParser
+{
+public:
+  DisopredPredictionFileParser(ExecutionContext& context, const File& file, const ProteinPtr& protein)
+    : TextParser(context, file), protein(protein)
+    , lineNumber(0), residueNumber(0) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass;}
+  
+  virtual void parseBegin()
+  {
+    dr = Protein::createEmptyProbabilitySequence(protein->getLength());
+  }
+
+  virtual bool parseLine(const String& line)
+  {
+    if (lineNumber < 5)
+      ++lineNumber;
+
+    ++residueNumber;
+
+    String str = line.trim();
+    StringArray tokens;
+    tokens.addTokens(str, false);
+
+    size_t currentResidueNumber = tokens[0].getIntValue();
+    if (currentResidueNumber != residueNumber)
+    {
+      context.errorCallback(T("DisopredPredictionFileParser::parseLine"),
+                            T("Invalid residue number: ") + String((int)currentResidueNumber)
+                            + T(" instead of ") + String((int)residueNumber));
+      return false;
+    }
+    
+    if (tokens[2] == T("*"))
+      dr->setElement(currentResidueNumber - 1, probability(1.f));
+    else if (tokens[2] == T("."))
+      dr->setElement(currentResidueNumber - 1, probability(0.f));
+    else
+      jassertfalse;
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+  {
+    if (residueNumber != protein->getLength())
+    {
+      context.errorCallback(T("DisopredPredictionFileParser::parseEnd")
+                          , T("Invalide number of residues"));
+      return false;
+    }
+
+    protein->setDisorderRegions(dr);
+    setResult(protein);
+
+    return true;
+  }
+
+private:
+  ProteinPtr protein;
+  size_t lineNumber;
+  size_t residueNumber;
+  DenseDoubleVectorPtr dr;
+};
+
+class DisopredPredictionToProtein : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (disopredFile.isDirectory())
+    {
+      juce::OwnedArray<File> files;
+      disopredFile.findChildFiles(files, File::findFiles, false, T("*.diso"));
+      bool res = true;
+      for (size_t i = 0; i < (size_t)files.size(); ++i)
+        res &= extract(context
+                     , inputFile.getChildFile(files[i]->getFileNameWithoutExtension() + T(".xml"))
+                     , *files[i]
+                     , outputFile.getChildFile(files[i]->getFileNameWithoutExtension() + T(".xml")));
+      return res;
+    }
+    else
+      return extract(context, inputFile, disopredFile, outputFile);
+  }
+
+protected:
+  friend class DisopredPredictionToProteinClass;
+
+  File inputFile;
+  File disopredFile;
+  File outputFile;
+
+  bool extract(ExecutionContext& context, File input, File disopred, File output) const
+  {
+    ProteinPtr protein = Protein::createFromXml(context, input);
+    if (!protein)
+    {
+      context.errorCallback(T("DisopredPredictionToProtein::extract"),
+                            T("Error while loading file: ") + disopredFile.getFullPathName());
+      return false;
+    }
+
+    StreamPtr(new DisopredPredictionFileParser(context, disopred, protein))->next();
+
+    protein->saveToXmlFile(context, output);
+    return true;    
+  }
+};
+
 };
