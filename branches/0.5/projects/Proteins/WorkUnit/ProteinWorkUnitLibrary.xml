@@ -78,7 +78,12 @@
     <variable type="File" name="fastaFile" shortName="i"/>
     <variable type="File" name="xmlFile" shortName="o"/>
   </class>
-  
+
+  <class name="DisopredPredictionToProtein" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="disopredFile" shortName="d"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+  </class>
 
   <!-- ProteinLearner -->
   <class name="ProteinLearner" base="WorkUnit">
