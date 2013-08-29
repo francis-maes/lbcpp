@@ -163,6 +163,65 @@ protected:
   }
 };
 
+class GetInputElement : public Function
+{
+public:
+  GetInputElement(size_t inputIndex = 0)
+    : inputIndex(inputIndex) {}
+
+  /*
+  ** Function
+  */
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+  
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual String getOutputPostFix() const
+    {return T("GetInput");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return inputVariables[inputIndex]->getType();}
+
+protected:
+  friend class GetInputElementClass;
+  
+  size_t inputIndex;
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {return inputs[inputIndex];}
+};
+
+class EvaluatePredictionsWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, predictionDirectory, supervisionDirectory, 0, T("Loading proteins"));
+    if (!proteins || proteins->getNumElements() == 0)
+    {
+      context.errorCallback(T("No proteins found !"));
+      return false;
+    }
+
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, true)), T("DR-AUC"), true);
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
+
+    FunctionPtr f = new GetInputElement();
+    f->evaluate(context, proteins, evaluator, T("Evaluation"));
+
+    return evaluator;
+  }
+
+protected:
+  friend class EvaluatePredictionsWorkUnitClass;
+
+  File predictionDirectory;
+  File supervisionDirectory;
+};
+
 class ProteinModelLearnerFunction : public Function
 {
 public:
