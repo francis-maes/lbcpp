@@ -442,6 +442,13 @@
     <variable type="PositiveInteger" name="numFolds" shortName="n"/>
     <variable type="PositiveInteger" name="fold" shortName="f"/>
   </class>
+  <class name="GetInputElement" base="Function">
+    <variable type="PositiveInteger" name="inputIndex"/>
+  </class>
+  <class name="EvaluatePredictionsWorkUnit" base="WorkUnit">
+    <variable type="File" name="predictionDirectory" shortName="pred"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
+  </class>
   <class name="ProteinModelLearnerFunction" base="Function">
     <variable type="String" name="inputDirectory"/>
     <variable type="String" name="supervisionDirectory"/>

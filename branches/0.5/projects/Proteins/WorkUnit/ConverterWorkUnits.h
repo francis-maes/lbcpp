@@ -1515,7 +1515,7 @@ public:
     if (espritzFile.isDirectory())
     {
       juce::OwnedArray<File> files;
-      espritzFile.findChildFiles(files, File::findFiles, false, T("*.diso"));
+      espritzFile.findChildFiles(files, File::findFiles, false, T("*.espritz"));
       bool res = true;
       for (size_t i = 0; i < (size_t)files.size(); ++i)
         res &= extract(context
