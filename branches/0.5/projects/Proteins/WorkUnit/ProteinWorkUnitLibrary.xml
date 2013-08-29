@@ -85,6 +85,12 @@
     <variable type="File" name="outputFile" shortName="o"/>
   </class>
 
+  <class name="EspritzPredictionToProtein" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="espritzFile" shortName="d"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+  </class>
+
   <!-- ProteinLearner -->
   <class name="ProteinLearner" base="WorkUnit">
     <variable type="File" name="supervisionDirectory" shortName="s"/>
