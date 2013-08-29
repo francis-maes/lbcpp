@@ -180,6 +180,9 @@ public:
 
   virtual String getOutputPostFix() const
     {return T("GetInput");}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return anyType;}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return inputVariables[inputIndex]->getType();}
