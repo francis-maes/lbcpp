@@ -1442,7 +1442,7 @@ protected:
     if (!protein)
     {
       context.errorCallback(T("DisopredPredictionToProtein::extract"),
-                            T("Error while loading file: ") + disopredFile.getFullPathName());
+                            T("Error while loading file: ") + disopred.getFullPathName());
       return false;
     }
 
@@ -1540,12 +1540,122 @@ protected:
     ProteinPtr protein = Protein::createFromXml(context, input);
     if (!protein)
     {
-      context.errorCallback(T("DisopredPredictionToProtein::extract"),
+      context.errorCallback(T("EspritzPredictionToProtein::extract"),
                             T("Error while loading file: ") + espritz.getFullPathName());
       return false;
     }
 
     StreamPtr(new EspritzPredictionFileParser(context, espritz, protein))->next();
+
+    protein->saveToXmlFile(context, output);
+    return true;    
+  }
+};
+
+class IupredPredictionFileParser : public TextParser
+{
+public:
+  IupredPredictionFileParser(ExecutionContext& context, const File& file, const ProteinPtr& protein)
+    : TextParser(context, file), protein(protein)
+    , residueNumber(0) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass;}
+  
+  virtual void parseBegin()
+  {
+    dr = Protein::createEmptyProbabilitySequence(protein->getLength());
+  }
+
+  virtual bool parseLine(const String& line)
+  {
+    if (line.startsWithChar(T('#')))
+      return true;
+
+    ++residueNumber;
+
+    String str = line.trim();
+    StringArray tokens;
+    tokens.addTokens(str, false);
+
+    size_t currentResidueNumber = tokens[0].getIntValue();
+    if (currentResidueNumber != residueNumber)
+    {
+      context.errorCallback(T("IupredPredictionFileParser::parseLine"),
+                            T("Invalid residue number: ") + String((int)currentResidueNumber)
+                            + T(" instead of ") + String((int)residueNumber));
+      return false;
+    }
+
+    double prediction = tokens[2].getDoubleValue();
+    if (prediction > 0.5)
+      dr->setElement(residueNumber - 1, probability(1.f));
+    else
+      dr->setElement(residueNumber - 1, probability(0.f));
+
+    return true;
+  }
+  
+  virtual bool parseEnd()
+  {
+    if (residueNumber != protein->getLength())
+    {
+      context.errorCallback(T("IupredPredictionFileParser::parseEnd")
+                          , T("Invalide number of residues"));
+      return false;
+    }
+
+    protein->setDisorderRegions(dr);
+    setResult(protein);
+
+    return true;
+  }
+
+private:
+  ProteinPtr protein;
+  size_t residueNumber;
+  DenseDoubleVectorPtr dr;
+};
+
+class IupredPredictionToProtein : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (iupredFile.isDirectory())
+    {
+      juce::OwnedArray<File> files;
+      iupredFile.findChildFiles(files, File::findFiles, false, T("*.iupred"));
+      bool res = true;
+      for (size_t i = 0; i < (size_t)files.size(); ++i)
+        res &= extract(context
+                     , inputFile.getChildFile(files[i]->getFileNameWithoutExtension() + T(".xml"))
+                     , *files[i]
+                     , outputFile.getChildFile(files[i]->getFileNameWithoutExtension() + T(".xml")));
+      return res;
+    }
+    else
+      return extract(context, inputFile, iupredFile, outputFile);
+  }
+
+protected:
+  friend class IupredPredictionToProteinClass;
+
+  File inputFile;
+  File iupredFile;
+  File outputFile;
+
+  bool extract(ExecutionContext& context, File input, File iupred, File output) const
+  {
+    ProteinPtr protein = Protein::createFromXml(context, input);
+    if (!protein)
+    {
+      context.errorCallback(T("IupredPredictionToProtein::extract"),
+                            T("Error while loading file: ") + iupred.getFullPathName());
+      return false;
+    }
+
+    StreamPtr(new IupredPredictionFileParser(context, iupred, protein))->next();
 
     protein->saveToXmlFile(context, output);
     return true;    
