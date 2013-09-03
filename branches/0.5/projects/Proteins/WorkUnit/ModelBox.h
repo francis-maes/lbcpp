@@ -111,7 +111,7 @@ protected:
     }
     else if (target == drTarget)
     {
-      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, true)), T("DR-AUC"), true);
+      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("DR-AUC"), true);
       evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
     }
     else
@@ -209,7 +209,7 @@ public:
     }
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationAreaUnderCurve, true)), T("DR-AUC"), true);
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("DR-AUC"), true);
     evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
 
     FunctionPtr f = new GetInputElement();
