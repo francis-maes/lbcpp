@@ -132,6 +132,10 @@
     <variable type="File" name="drProteinDirectory" shortName="dr"/>
   </class>
   
+  <class name="DisorderCompositionWorkUnit" base="WorkUnit">
+    <variable type="File" name="proteinDirectory" shortName="i"/>
+  </class>
+  
   <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
     <variable type="File" name="dataFile"/>
   </class>

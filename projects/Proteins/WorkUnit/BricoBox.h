@@ -273,6 +273,69 @@ protected:
   }
 };
 
+class DisorderCompositionWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory);
+
+    size_t numOrderedResidues = 0;
+    size_t numDisorderedResidues = 0;
+    size_t numDisorderedRegions = 0;
+    size_t numResiudes = 0;
+    std::vector<size_t> regionLength(1000, 0);
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      DenseDoubleVectorPtr dr = protein->getDisorderRegions();
+      jassert(dr);
+
+      const size_t length = dr->getNumElements();
+      numResiudes += length;
+      for (size_t j = 0; j < length; ++j)
+      {
+        if (dr->getValue(j) <= 0.5)
+        {
+          ++numOrderedResidues;
+          continue;
+        }
+        
+        size_t drLength = 1;
+        while (j + drLength < length && dr->getValue(j + drLength) > 0.5)
+          ++drLength;
+
+        if (drLength < 1000)
+          ++regionLength[drLength];
+
+        numDisorderedResidues += drLength;
+        ++numDisorderedRegions;
+        j += drLength - 1;
+      }
+    }
+
+    std::cout << "# numOrderedResidues:    " << numOrderedResidues << std::endl;
+    std::cout << "# numDisorderedResidues: " << numDisorderedResidues << std::endl;
+    std::cout << "# numResiudes:           " << numResiudes << std::endl;
+    std::cout << "# numDisorderedRegions:  " << numDisorderedRegions << std::endl;
+    for (size_t i = 0; i < 1000; ++i)
+    {
+      if (regionLength[i] == 0)
+        continue;
+      std::cout << (int)i << " " << regionLength[i] << std::endl;
+    }
+
+    return true;
+  }
+
+protected:
+  friend class DisorderCompositionWorkUnitClass;
+
+  File proteinDirectory;
+};
+
 class CheckARFFDataFileParserWorkUnit : public WorkUnit
 {
 public:
