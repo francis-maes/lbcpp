@@ -324,7 +324,7 @@ public:
     {
       if (regionLength[i] == 0)
         continue;
-      std::cout << (int)i << " " << regionLength[i] << std::endl;
+      std::cout << i << " " << regionLength[i] << " " << ((double)regionLength[i] / numDisorderedRegions) << std::endl;
     }
 
     return true;
@@ -332,6 +332,41 @@ public:
 
 protected:
   friend class DisorderCompositionWorkUnitClass;
+
+  File proteinDirectory;
+};
+
+class ProteinLengthCompositionWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, proteinDirectory);
+
+    std::vector<size_t> lengths(1000, 0);
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      const size_t length = protein->getLength();
+      if (length < 1000)
+        ++lengths[length];
+    }
+
+    std::cout << "# numProteins:    " << n << std::endl;
+    for (size_t i = 0; i < 1000; ++i)
+    {
+      if (lengths[i] == 0)
+        continue;
+      std::cout << i << " " << lengths[i] << " " << ((double)lengths[i] / n) << std::endl;
+    }
+
+    return true;
+  }
+
+protected:
+  friend class ProteinLengthCompositionWorkUnitClass;
 
   File proteinDirectory;
 };
