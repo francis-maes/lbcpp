@@ -80,7 +80,11 @@ public:
       DenseDoubleVectorPtr dr = drProtein->getDisorderRegions();
       jassert(dr);
       ContainerPtr ss3 = ss3Protein->getSecondaryStructure();
-      jassert(ss3);
+      if (!ss3)
+      {
+        std::cout << "No SS3: " << ss3Protein->getName() << std::endl;
+        continue;
+      }
       for (size_t j = 0; j < drProtein->getLength(); ++j)
       {
         jassert(dr->getElement(j).exists());
@@ -93,7 +97,7 @@ public:
           {
             case helix: ++numDisorderedHelices; break;
             case sheet: ++numDisorderedSheets; break;
-            case coil: ++numDisorderedCoils; break;
+            case other: ++numDisorderedCoils; break;
             default: jassertfalse;
           }
         }
@@ -224,13 +228,21 @@ public:
       computeComposition(context, profile->getProfile(1), dr, exposedOrdered, exposedDisordered, exposedMix, exposed);
     }
 
+    size_t totalBuriedPairs = 0;
+    size_t totalExposedPairs = 0;
     for (size_t i = 0; i < 1000; ++i)
     {
-      std::cout << ((int)i - 500) << "\t"
-                << buriedOrdered[i] << "\t" << buriedDisordered[i] << "\t"
-                << buriedMix[i] << "\t" << buried[i] << "\t"
-                << exposedOrdered[i] << "\t" << exposedDisordered[i] << "\t"
-                << exposedMix[i] << "\t" << exposed[i] << std::endl;
+      totalBuriedPairs += buried[i];
+      totalExposedPairs += exposed[i];
+    }
+
+    for (size_t i = 0; i < 1000; ++i)
+    {
+      std::cout << i << "\t"
+                << ((double)buriedOrdered[i] / totalBuriedPairs * 100) << "\t" << ((double)buriedDisordered[i] / totalBuriedPairs * 100) << "\t"
+                << ((double)buriedMix[i] / totalBuriedPairs * 100) << "\t" << ((double)buried[i] / totalBuriedPairs * 100) << "\t"
+                << ((double)exposedOrdered[i] / totalExposedPairs * 100) << "\t" << ((double)exposedDisordered[i] / totalExposedPairs * 100) << "\t"
+                << ((double)exposedMix[i] / totalExposedPairs * 100) << "\t" << ((double)exposed[i] / totalExposedPairs * 100) << std::endl;
     }
 
     return Variable();
@@ -249,7 +261,7 @@ protected:
     const size_t n = profile.size();
     for (size_t i = 0; i < n; ++i)
     {
-      for (size_t j = 0; j < n; ++j)
+      for (size_t j = i + 1; j < n; ++j)
       {
         if (i == j)
           continue;
@@ -257,8 +269,8 @@ protected:
         jassert(dr->getElement(i).exists());
         jassert(dr->getElement(j).exists());
 
-        int sep = 500 + profile[j] - profile[i];
-        if (sep < 0 || sep >= 1000 || sep == 500)
+        int sep = profile[j] - profile[i];
+        if (sep <= 0 || sep >= 1000)
           continue;
 
         ++all[sep];
@@ -320,11 +332,25 @@ public:
     std::cout << "# numDisorderedResidues: " << numDisorderedResidues << std::endl;
     std::cout << "# numResiudes:           " << numResiudes << std::endl;
     std::cout << "# numDisorderedRegions:  " << numDisorderedRegions << std::endl;
+    
+    const size_t stepLength = 3;
+    const size_t numBuckets = 1000 / stepLength + 1;
+    std::vector<size_t> buckets(numBuckets, 0);
     for (size_t i = 0; i < 1000; ++i)
     {
       if (regionLength[i] == 0)
         continue;
-      std::cout << i << " " << regionLength[i] << " " << ((double)regionLength[i] / numDisorderedRegions) << std::endl;
+      buckets[(i-1) / stepLength] += regionLength[i];
+    }
+
+    for (size_t i = 0; i < numBuckets; ++i)
+    {
+      if (buckets[i] == 0)
+        continue;
+      const size_t lowerLimit = i * stepLength;
+      const size_t upperLimit = (i + 1) * stepLength - 1;
+      const size_t middle = (lowerLimit + upperLimit) / 2;
+      std::cout << lowerLimit << " " << middle << " " <<  upperLimit << " " << buckets[i] << " " << ((double)buckets[i] / numDisorderedRegions) << std::endl;
     }
 
     return true;
@@ -355,11 +381,25 @@ public:
     }
 
     std::cout << "# numProteins:    " << n << std::endl;
+
+    const size_t stepLength = 30;
+    const size_t numBuckets = 1000 / 30 + 1;
+    std::vector<size_t> buckets(numBuckets, 0);
     for (size_t i = 0; i < 1000; ++i)
     {
       if (lengths[i] == 0)
         continue;
-      std::cout << i << " " << lengths[i] << " " << ((double)lengths[i] / n) << std::endl;
+      buckets[(i+1) / stepLength] += lengths[i];
+    }
+
+    for (size_t i = 0; i < numBuckets; ++i)
+    {
+      if (buckets[i] == 0)
+        continue;
+      const size_t lowerLimit = i * stepLength;
+      const size_t upperLimit = (i + 1) * stepLength - 1;
+      const size_t middle = (lowerLimit + upperLimit) / 2;
+      std::cout << lowerLimit << " " << middle << " " <<  upperLimit << " " << buckets[i] << " " << ((double)buckets[i] / n) << std::endl;
     }
 
     return true;
