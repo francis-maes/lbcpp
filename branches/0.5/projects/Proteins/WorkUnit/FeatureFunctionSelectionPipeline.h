@@ -75,7 +75,7 @@ public:
       LargeProteinPredictorParametersPtr res = new LargeProteinPredictorParameters(parameter);
       res->learningMachineName = T("ExtraTrees");
       res->x3Trees = 1000;
-      res->x3Attributes = 0;
+      res->x3Attributes = 10000;
       res->x3Splits = 1;
       res->x3LowMemory = true;
       return res;

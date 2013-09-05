@@ -12,6 +12,7 @@
 # include <lbcpp/Core/Function.h>
 # include "../Model/SimpleProteinModel.h"
 # include "../Evaluator/SegmentOverlapEvaluator.h"
+# include "../../../src/Learning/Numerical/AddBiasLearnableFunction.h"
 
 namespace lbcpp
 {
@@ -33,6 +34,10 @@ public:
 //    removeShortDisorderedRegions(trainingProteins);
 //    removeShortDisorderedRegions(testingProteins);
 
+    bool useBias = true;
+// TO REMOVE
+//useBias = false;
+
     SimpleProteinModelPtr m;
     if (proteinModelFile != File::nonexistent)
     {
@@ -42,12 +47,36 @@ public:
     else
     {
       ProteinTarget target = drTarget;
-
       m = new SimpleProteinModel(target);
       m->pssmWindowSize = 15;
     }
 
-    m->train(context, trainingProteins, testingProteins, T("Training Model"));
+    if (useBias)
+    {
+      ContainerPtr validationProteins = trainingProteins->fold(0,5);
+      trainingProteins = trainingProteins->invFold(0,5);
+
+      m->biasFunction = addBiasLearnableFunction(binaryClassificationF1Score, 0.0, true);
+      //m->biasFunction = addBiasLearnableFunction(binaryClassificationSensitivityAndSpecificityScore, 0.0, true);
+      m->train(context, trainingProteins, validationProteins, T("Training Model"));
+      double bias = m->biasFunction.dynamicCast<AddBiasLearnableFunction>()->getBias();
+
+      m = SimpleProteinModel::createFromFile(context, proteinModelFile);
+      m->biasFunction = addBiasLearnableFunction(binaryClassificationF1Score, bias, false);
+      //m->biasFunction = addBiasLearnableFunction(binaryClassificationSensitivityAndSpecificityScore, bias, false);
+      m->biasFunction->setBatchLearner(BatchLearnerPtr());
+      m->train(context, trainingProteins, testingProteins, T("Training Model"));
+    }
+    else
+    {
+// TO REMOVE
+/*
+      m->biasFunction = addBiasLearnableFunction(binaryClassificationF1Score, 0.26500000, false);
+      context.warningCallback("USE OF USER-DEFINED BIAS !!!");
+      m->biasFunction->setBatchLearner(BatchLearnerPtr());
+*/
+      m->train(context, trainingProteins, testingProteins, T("Training Model"));
+    }
 
     if (outputDirectory != File::nonexistent)
       m->evaluate(context, testingProteins, saveToDirectoryEvaluator(outputDirectory, T(".xml")), T("Saving test predictions to directory"));
@@ -113,6 +142,9 @@ protected:
     {
       evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("DR-AUC"), true);
       evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
+//      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationF1Score, true)), T("DR - Threshold F1"), true);
+//      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("DR - Threshold SensSpec"), true);
+//      evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationMCCScore, true)), T("DR - Threshold MCC"), true);
     }
     else
       jassertfalse;
