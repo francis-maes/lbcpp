@@ -514,7 +514,7 @@ DenseDoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(Tertia
   for (size_t i = 0; i < n; ++i)
     res->getValueReference(i) = tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0;
   
-  static const int minimumDisorderLength = 4;
+  static const int minimumDisorderLength = 3;
   for (size_t i = 0; i < n; )
   {
     if (res->getValueReference(i) == 1.0)

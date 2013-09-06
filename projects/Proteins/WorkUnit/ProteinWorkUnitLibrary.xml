@@ -140,6 +140,12 @@
     <variable type="File" name="proteinDirectory" shortName="i"/>
   </class>
   
+  <class name="SASeparationWithRespectToDRWorkUnit" base="WorkUnit">
+    <variable type="File" name="saProteinDirectory" shortName="sa"/>
+    <variable type="File" name="drProteinDirectory" shortName="dr"/>
+  </class>
+
+  
   <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
     <variable type="File" name="dataFile"/>
   </class>
