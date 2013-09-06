@@ -1303,7 +1303,7 @@ public:
       inputFile.findChildFiles(files, File::findFiles, false, T("*.pdb"));
       bool res = true;
       for (size_t i = 0; i < (size_t)files.size(); ++i)
-        res &= extract(context, *files[i], outputFile.getChildFile(files[i]->getFileNameWithoutExtension()));
+        res &= extract(context, *files[i], outputFile.getChildFile(files[i]->getFileNameWithoutExtension() + T(".xml")));
       return res;
     }
     else

@@ -411,6 +411,85 @@ protected:
   File proteinDirectory;
 };
 
+class SASeparationWithRespectToDRWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    bool focusOnExposed = true;
+    bool focusOnDisordered = true;
+    
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory, 2);
+
+    std::vector<size_t> distances(1000, 0);
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr saProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getFirst().getObjectAndCast<Protein>();
+      ProteinPtr drProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>();
+      jassert(saProtein);
+      jassert(drProtein);
+      jassert(saProtein->getLength() == drProtein->getLength());
+      DenseDoubleVectorPtr dr = drProtein->getDisorderRegions();
+      jassert(dr);
+      DenseDoubleVectorPtr sa = saProtein->getSolventAccessibilityAt20p();
+      jassert(sa);
+
+      const size_t numResidues = drProtein->getLength();
+      for (size_t j = 0; j < numResidues; ++j)
+      {
+        bool isDisordered = dr->getElement(j).exists() ? (dr->getValue(j) > 0.5 ? true : false) : true;
+        bool isExposed = sa->getElement(j).exists() ? (sa->getValue(j) > 0.5 ? true : false) : true;
+
+        if (isExposed == focusOnExposed && isDisordered == focusOnDisordered)
+        {
+          size_t distance = getDistanceToNearestResidue(sa, j, !focusOnExposed);
+          if (distance >= 1000)
+            continue;
+          distances[distance]++;
+        }
+      }
+    }
+
+    for (size_t i = 0; i < 1000; ++i)
+    {
+      if (distances[i] == 0)
+        continue;
+      std::cout << i << " " << distances[i] << std::endl;
+    }    
+
+    return true;
+  }
+
+protected:
+  friend class SASeparationWithRespectToDRWorkUnitClass;
+
+  File saProteinDirectory;
+  File drProteinDirectory;
+
+  size_t getDistanceToNearestResidue(const DenseDoubleVectorPtr& sa, size_t index, bool isLookingAfterAnExposed)
+  {
+    typedef std::multimap<size_t, bool> ScoresMap;
+    ScoresMap distances;
+
+    const size_t numResidues = sa->getNumElements();
+    for (size_t i = 0; i < numResidues; ++i)
+    {
+      bool isExposed = sa->getElement(i).exists() ? (sa->getValue(i) > 0.5 ? true : false) : true;
+      if (isExposed == isLookingAfterAnExposed)
+      {
+        size_t distance = index >= i ? index - i : i - index;
+        distances.insert(std::make_pair(distance, true));
+      }
+    }
+
+    if (distances.size() == 0)
+      return (size_t)-1;
+    
+    return distances.begin()->first;
+  }
+};
+
 class CheckARFFDataFileParserWorkUnit : public WorkUnit
 {
 public:
