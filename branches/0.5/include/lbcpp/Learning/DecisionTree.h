@@ -10,6 +10,8 @@
 # define LBCPP_DECISION_TREE_H_
 
 # include "../Core/Function.h"
+# include "BatchLearner.h"
+
 
 namespace lbcpp
 {
@@ -81,7 +83,6 @@ extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100,
                                                    size_t minimumSizeForSplitting = 0,
                                                    bool useLowMemory = false,
                                                    const File& saveTreesToFilePrefix = File::nonexistent);
-
 
 }; /* namespace lbcpp */
 

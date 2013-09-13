@@ -245,6 +245,7 @@ public:
   size_t x3Splits;
   bool x3LowMemory;
   bool useAddBias;
+  FunctionPtr learnerFunction;
   FunctionPtr biasFunction;
 
   /* Global Feature Parameters */
@@ -370,9 +371,13 @@ protected:
 
   virtual FunctionPtr createMachineLearning(ExecutionContext& context) const
   {
-    FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, x3LowMemory);
+    FunctionPtr res = learnerFunction ? learnerFunction : extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, x3LowMemory);
     if (biasFunction)
-      res = new PreProcessCompositeFunction(res, composeFunction(biasFunction, signedScalarToProbabilityFunction()));
+    {
+      FunctionPtr compose = composeFunction(biasFunction, signedScalarToProbabilityFunction());
+      compose->setBatchLearner(BatchLearnerPtr());
+      res = new PreProcessCompositeFunction(res, compose);
+    }
     return res;
   }
 

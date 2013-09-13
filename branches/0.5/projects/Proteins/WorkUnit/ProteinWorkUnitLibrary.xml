@@ -590,6 +590,16 @@
     <variable type="File" name="dsbProteinsDirectory" shortName="dsb"/>
   </class>
 
+  <class name="ExtraTreesDisorderPredictor" base="WorkUnit">
+    <variable type="File" name="inputFile" shortName="i"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+  </class>
+  
+  <class name="ExtraTreesDisorderLearner" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
+  </class>
+
   <class name="TestStudentDistributionWorkUnit" base="WorkUnit"/>
 
 
