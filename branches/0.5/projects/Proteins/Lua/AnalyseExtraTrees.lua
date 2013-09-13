@@ -82,6 +82,7 @@ local function getScores(traces, nodeName, scoresOfInterest)
       -- Observe scores
       scoresNode = node.results[1].second
       for scoreName, scoreInfo in pairs(scoresOfInterest) do
+        context:result(fold, scoreInfo.getScore(scoresNode.scores[scoreInfo.index]))
         res[scoreName]:observe(scoreInfo.getScore(scoresNode.scores[scoreInfo.index]))
       end
     end
@@ -105,11 +106,11 @@ end
 local function main(varName, varValues, filePrefix, filePostfix, numFolds)
   local scoresOfInterest = {}
 
---  scoresOfInterest["AUC"] =           {index = 1, getScore = |x| x.areaUnderCurve}
+  scoresOfInterest["AUC"] =           {index = 1, getScore = |x| x.areaUnderCurve}
 --  scoresOfInterest["Balanced Acc."] = {index = 2, getScore = getBalancedAccuracy}
 --  scoresOfInterest["Recall"] =        {index = 2, getScore = |x| x:recall}
 --  scoresOfInterest["Specificity"] =   {index = 2, getScore = |x| x:specificity}
-  scoresOfInterest["F1"] =            {index = 2, getScore = |x| x:f1}
+--  scoresOfInterest["F1"] =            {index = 2, getScore = |x| x:f1}
 
 --  scoresOfInterest["AUC"] =           {index = 5, getScore = |x| x.areaUnderCurve}
 --  scoresOfInterest["Balanced Acc."] = {index = 5, getScore = getBestBalancedAccuracy}
@@ -164,7 +165,7 @@ local numFolds = 9
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130423-FeatureEvaluation-DR/Trace/"
 features = {"pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
---main("DR", features, dir, ".fold", numFolds)
+main("DR", features, dir, ".fold", numFolds)
 
 features = {49}
 --main("DR - SEP(SA) Size", features, dir .. "pssm23sepsa", ".fold", numFolds)
@@ -172,4 +173,4 @@ features = {49}
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/drExperiments/130527-CASP10FeatureEvaluation/Trace/"
 features = {"SegSA21", "SegSA21_HlocalPSSM60", "SegSA21_HlocalPSSM60_WinSA21", "pssm21", "pssm21sepsa21", "pssm21sepsa21hlaa60", "pssm21sepsa21hlaa60ss311", "pssm21sepsa21hlaa60ss311aa1"}
 
-main("DR - DISpro", features, dir .. "Merge.Low-DoubleBias-F1.", ".fold", numFolds)
+--main("DR - DISpro", features, dir .. "Merge.Low-DoubleBias-F1.", ".fold", numFolds)
