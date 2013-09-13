@@ -417,7 +417,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     bool focusOnExposed = true;
-    bool focusOnDisordered = true;
+    bool focusOnDisordered = false;
     
     ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory, 2);
 
@@ -488,6 +488,74 @@ protected:
     
     return distances.begin()->first;
   }
+};
+
+class ExportProteinDataWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory, 2);
+    
+    OutputStream* o = outputFile.createOutputStream();
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr saProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getFirst().getObjectAndCast<Protein>();
+      ProteinPtr drProtein = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>();
+      jassert(saProtein);
+      jassert(drProtein);
+      jassert(saProtein->getLength() == drProtein->getLength());
+
+      DenseDoubleVectorPtr dr = drProtein->getDisorderRegions();
+      jassert(dr);
+      ContainerPtr ss3 = saProtein->getSecondaryStructure();
+      jassert(ss3);
+      DenseDoubleVectorPtr sa = saProtein->getSolventAccessibilityAt20p();
+      jassert(sa);
+
+      const size_t numResidues = dr->getNumElements();
+
+      *o << "\n";
+      *o << drProtein->getName() << "\n";
+      *o << drProtein->getPrimaryStructure()->toString() << "\n";
+
+      for (size_t j = 0; j < numResidues; ++j)
+      {
+        char ss3Letter = 'c';
+        if (ss3->getElement(j).exists())
+        {
+          DenseDoubleVectorPtr ss3Element = ss3->getElement(j).getObjectAndCast<DenseDoubleVector>();
+          jassert(ss3Element);
+          switch(ss3Element->getIndexOfMaximumValue())
+          {
+            case 0: ss3Letter = 'h'; break;
+            case 1: ss3Letter = 'e'; break;
+          } 
+        }
+        *o << ss3Letter;
+      }
+      *o << "\n";
+
+      for (size_t j = 0; j < numResidues; ++j)
+        *o << (sa->getElement(j).exists() ? (sa->getValue(j) > 0.5 ? 'e' : 'b') : 'e');
+      *o << "\n";
+      
+      for (size_t j = 0; j < numResidues; ++j)
+        *o << (dr->getElement(j).exists() ? (dr->getValue(j) > 0.5 ? 'd' : 'o') : 'd');
+      *o << "\n";
+    }
+
+    delete o;
+    return true;
+  }
+  
+protected:
+  friend class ExportProteinDataWorkUnitClass;
+
+  File saProteinDirectory;
+  File drProteinDirectory;
+  File outputFile;
 };
 
 class CheckARFFDataFileParserWorkUnit : public WorkUnit

@@ -144,6 +144,12 @@
     <variable type="File" name="saProteinDirectory" shortName="sa"/>
     <variable type="File" name="drProteinDirectory" shortName="dr"/>
   </class>
+  
+  <class name="ExportProteinDataWorkUnit" base="WorkUnit">
+    <variable type="File" name="saProteinDirectory" shortName="sa"/>
+    <variable type="File" name="drProteinDirectory" shortName="dr"/>
+    <variable type="File" name="outputFile" shortName="o"/>
+  </class>
 
   
   <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
