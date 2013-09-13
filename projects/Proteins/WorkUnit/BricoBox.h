@@ -419,7 +419,7 @@ public:
     bool focusOnExposed = true;
     bool focusOnDisordered = false;
     
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory, 2);
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, saProteinDirectory, drProteinDirectory);
 
     std::vector<size_t> distances(1000, 0);
     const size_t n = proteins->getNumElements();

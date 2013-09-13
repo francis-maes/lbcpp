@@ -149,6 +149,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/FeatureFunctionSelectionPipeline.h
   WorkUnit/ESANN11.h
   WorkUnit/PlosComputationalBiologyJournal.h
+  WorkUnit/PlosOneDisorder.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
