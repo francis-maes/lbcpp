@@ -260,15 +260,18 @@ public:
     {return new BinaryRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
   virtual Variable createEmptyPrediction() const
-    {return Variable(0.f, probabilityType);}
+    {return probability(0.f);}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
-    {return Variable(a.getDouble() + b.getDouble(), probabilityType);}
+  {
+    std::cout << "a: " << a.toString() << " + b: "<< b.toString() << std::endl;
+    return probability(a.getDouble() + b.getDouble());
+  }
   
   virtual Variable finalizePrediction(const Variable& value) const
   {
     std::cout << "Prediction: " << value.toString() << " - Trees: " << numTrees << std::endl;
-    return Variable(value.getDouble() / (double)numTrees, probabilityType);
+    return probability(value.getDouble() / (double)numTrees);
   }
 
 protected:
