@@ -108,7 +108,10 @@ public:
     const ProteinPtr& protein = input.getObjectAndCast<Protein>();
     if (!protein)
       return Variable::missingValue(getOutputType());
-    return protein->getTargetOrComputeIfMissing(context, target);
+    Variable res = protein->getTargetOrComputeIfMissing(context, target);
+    if (!res.exists())
+      return Variable::missingValue(getOutputType());
+    return res;
   }
 
 protected:
