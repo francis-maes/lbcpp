@@ -38,7 +38,6 @@ public:
     {
       const_cast<SavableRTreeFunction*>(this)->predictionIndex %= predictions.size();
       jassert(predictionIndex < predictions.size());
-      std::cout << predictionIndex << " > " << predictions[const_cast<SavableRTreeFunction*>(this)->predictionIndex].toDouble() << std::endl;
       return predictions[const_cast<SavableRTreeFunction*>(this)->predictionIndex++];
     }
 
@@ -177,8 +176,9 @@ public:
 
       for (size_t j = 0; j < numExamples; ++j)
       {
-        const Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
-        jassert(result.exists());
+        Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
+        if (result.getDouble() != result.getDouble())
+          result = probability(0.5f);
         rTreeFunction->predictions[j] = rTreeFunction->addPrediction(rTreeFunction->predictions[j], result);
       }
       
@@ -263,16 +263,10 @@ public:
     {return probability(0.f);}
 
   virtual Variable addPrediction(const Variable& a, const Variable& b) const
-  {
-    std::cout << "a: " << a.toString() << " + b: "<< b.toString() << std::endl;
-    return probability(a.getDouble() + b.getDouble());
-  }
+    {return probability(a.getDouble() + b.getDouble());}
   
   virtual Variable finalizePrediction(const Variable& value) const
-  {
-    std::cout << "Prediction: " << value.toString() << " - Trees: " << numTrees << std::endl;
-    return probability(value.getDouble() / (double)numTrees);
-  }
+    {return probability(value.getDouble() / (double)numTrees);}
 
 protected:
   friend class BinarySavableRTreeFunctionClass;
