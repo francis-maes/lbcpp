@@ -179,7 +179,6 @@ public:
       {
         const Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
         jassert(result.exists());
-        std::cout << "Tree " << i << " - Prediction: " << result.toString() << std::endl; 
         rTreeFunction->predictions[j] = rTreeFunction->addPrediction(rTreeFunction->predictions[j], result);
       }
       
@@ -187,7 +186,10 @@ public:
     }
     
     for (size_t j = 0; j < numExamples; ++j)
+    {
       rTreeFunction->predictions[j] = rTreeFunction->finalizePrediction(rTreeFunction->predictions[j]);
+      std::cout << "Example " << j << " - Prediction: " << rTreeFunction->predictions[j].toString() << std::endl; 
+    }
     
     rTreeFunction->predictionIndex = 0;
 
@@ -267,7 +269,7 @@ public:
     {return Variable(a.getDouble() + b.getDouble(), probabilityType);}
   
   virtual Variable finalizePrediction(const Variable& value) const
-  {return Variable(value.getDouble() / (double)numTrees, probabilityType);}
+    {return Variable(value.getDouble() / (double)numTrees, probabilityType);}
 
 protected:
   friend class BinarySavableRTreeFunctionClass;
