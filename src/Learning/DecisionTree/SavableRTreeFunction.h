@@ -38,6 +38,7 @@ public:
     {
       const_cast<SavableRTreeFunction*>(this)->predictionIndex %= predictions.size();
       jassert(predictionIndex < predictions.size());
+      std::cout << predictionIndex << " > " << predictions[const_cast<SavableRTreeFunction*>(this)->predictionIndex].toDouble() << std::endl;
       return predictions[const_cast<SavableRTreeFunction*>(this)->predictionIndex++];
     }
 
@@ -177,6 +178,8 @@ public:
       for (size_t j = 0; j < numExamples; ++j)
       {
         const Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
+        jassert(result.exists());
+        std::cout << "Tree " << i << " - Prediction: " << result.toString() << std::endl; 
         rTreeFunction->predictions[j] = rTreeFunction->addPrediction(rTreeFunction->predictions[j], result);
       }
       
