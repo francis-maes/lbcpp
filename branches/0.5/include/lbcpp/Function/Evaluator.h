@@ -193,7 +193,7 @@ enum BinaryClassificationScore
 extern EnumerationPtr binaryClassificationScoreEnumeration;
 
 // Classification
-extern SupervisedEvaluatorPtr binaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+extern SupervisedEvaluatorPtr binaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, double threshold = 0.5f);
 extern SupervisedEvaluatorPtr binaryClassificationCurveEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false);
 
 extern SupervisedEvaluatorPtr classificationEvaluator();

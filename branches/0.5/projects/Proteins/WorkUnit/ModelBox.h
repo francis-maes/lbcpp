@@ -242,7 +242,7 @@ public:
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationCurveEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("DR-AUC"), true);
-    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR - MCC-Precision-Recall @ 50%"));
+    evaluator->addEvaluator(drTarget, elementContainerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore, 0.52547791)), T("DR - MCC-Precision-Recall @ 50%"));
 
     FunctionPtr f = new GetInputElement();
     f->evaluate(context, proteins, evaluator, T("Evaluation"));

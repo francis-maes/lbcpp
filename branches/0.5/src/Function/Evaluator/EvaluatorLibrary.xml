@@ -85,7 +85,7 @@
 
   <!-- Binary Classification -->
   <class name="BinaryClassificationEvaluator" base="SupervisedEvaluator">
-    <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
+    <constructor arguments="BinaryClassificationScore scoreToOptimize, double threshold"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
   
