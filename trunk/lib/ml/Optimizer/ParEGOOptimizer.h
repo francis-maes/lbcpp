@@ -21,6 +21,7 @@ namespace lbcpp
 class ParEGOOptimizer : public IterativeSolver
 {
 public:
+  ParEGOOptimizer(size_t numIterations = 0) : IterativeSolver(numIterations) {}
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution)
   {
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
@@ -63,6 +64,7 @@ public:
   virtual void stopSolver(ExecutionContext& context)
   {
     IterativeSolver::stopSolver(context);
+	cleanup();
   }
   
   static int pcomp(const void *i, const void *j);

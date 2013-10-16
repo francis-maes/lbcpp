@@ -27,7 +27,7 @@
   </class>
   
   <class name="ParEGOOptimizer" base="IterativeSolver">
-    <constructor/>
+    <constructor arguments="size_t numIterations"/>
   </class>
 
 </library>

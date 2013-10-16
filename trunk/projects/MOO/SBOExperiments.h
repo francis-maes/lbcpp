@@ -142,7 +142,7 @@ protected:
     
     if (runParEGO || runAll)
     {
-      solvers.push_back(SolverSettings(parEGOOptimizer(), numRuns, numEvaluations, evaluationPeriod, 
+      solvers.push_back(SolverSettings(parEGOOptimizer(numEvaluations), numRuns, numEvaluations, evaluationPeriod, 
          evaluationPeriodFactor, verbosity, optimizerVerbosity, "ParEGO"));
     }
 
