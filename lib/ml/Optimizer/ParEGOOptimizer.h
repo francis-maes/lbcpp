@@ -64,7 +64,7 @@ public:
   virtual void stopSolver(ExecutionContext& context)
   {
     IterativeSolver::stopSolver(context);
-	cleanup();
+    cleanup();
   }
   
   static int pcomp(const void *i, const void *j);

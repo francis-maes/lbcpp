@@ -1281,6 +1281,7 @@ int ParEGOOptimizer::pcomp(const void *i, const void *j)
 
 void ParEGOOptimizer::cleanup()
 {
+  // clean up everything that was set up in init_parego()
   delete[] improvements;
   delete[] absmax;
   delete[] absmin;
@@ -1288,6 +1289,9 @@ void ParEGOOptimizer::cleanup()
   delete[] gwv;
   delete[] gp;
   delete[] gtheta;
+
+  delete[] xmin;
+  delete[] xmax;
   
   for (int i=0; i<40402; ++i)
   {
@@ -1297,11 +1301,24 @@ void ParEGOOptimizer::cleanup()
   delete[] wv;
   delete[] dwv;
   
-  for (int i=0; i<300; ++i)
+  for (int i=0; i<MAX_ITERS; ++i)
+  {
     delete[] normwv[i];
+    delete[] ax[i];
+    delete[] tmpax[i];
+  }
+
   delete[] normwv;
+  delete[] ax;
+  delete[] tmpax;
+  delete[] ay;
+  delete[] tmpay;
   
   delete[] gz;
+
+  for (int i=0; i<MAX_ITERS+2; ++i)
+    delete[] ff[i];
+  delete[] ff;
 }
   
   
