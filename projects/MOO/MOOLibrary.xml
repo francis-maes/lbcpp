@@ -98,4 +98,8 @@
     <variable type="PositiveInteger" name="ensembleSize"/>
   </class>
 
+  <class name="HoeffdingTreeLearnerTest" base="WorkUnit" >
+    <variable type="PositiveInteger" name="randomSeed"/>
+    <variable type="PositiveInteger" name="nbSamples"/>
+  </class>
 </library>
