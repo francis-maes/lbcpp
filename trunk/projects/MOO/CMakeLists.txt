@@ -9,6 +9,9 @@ GENERATE_INTROSPECTION_CODE(MOOLibrary.xml MOOLibrary.cpp)
 SET(MOO_SOURCES
   precompiled.h
   precompiled.cpp
+  HoeffdingTreeLearner.h
+  HoeffdingTreeLearner.cpp
+  HoeffdingTreeLearnerTest.h
   SolverInfo.h
   SharkProblems.h
   FQIBasedSolver.h
