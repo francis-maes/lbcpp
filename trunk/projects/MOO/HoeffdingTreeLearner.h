@@ -196,18 +196,24 @@ public:
 };*/
 
 class Split {
+private:
+  void init(unsigned attributeNb, double value, double quality) {
+		this->attributeNb = attributeNb;
+		this->value = value;
+		this->quality = quality;
+  }
 public:
 	double quality;
 	unsigned attributeNb;
 	double value;
 
 	Split(unsigned attributeNb, double value, double quality) {
-		this->attributeNb = attributeNb;
-		this->value = value;
-		this->quality = quality;
+    init(attributeNb, value, quality);
 	}
 
-	Split() : Split(0, 0, 0) {}
+	Split() {
+    init(0, 0, 0);
+  }
 
 	int Compare (const Split& split) const {
 
@@ -368,18 +374,24 @@ public:
 };
 
 class NominalAttributeObservation : public AttributeObservation {
+private:
+  void init(unsigned nbNominalValues) {
+		models.resize(nbNominalValues);
+		for(unsigned i = 0; i < nbNominalValues; i++)
+			models[i] = *(new DerivedModel());
+  }
 public:
 	vector<DerivedModel> models;
 
 	~NominalAttributeObservation() {};
 
 	NominalAttributeObservation(unsigned attributeNb, unsigned nbNominalValues) : AttributeObservation(attributeNb) {
-		models.resize(nbNominalValues);
-		for(unsigned i = 0; i < nbNominalValues; i++)
-			models[i] = *(new DerivedModel());
+    init(nbNominalValues);
 	}
 
-	NominalAttributeObservation() : NominalAttributeObservation(-1, 0) {}
+	NominalAttributeObservation() : AttributeObservation(-1) {
+    init(0);
+  }
 
 	Split* findBestSplitPoint() {
 		Split* bestSplit = new Split(attributeNb, 0, 0);
@@ -406,16 +418,23 @@ public:
 };
 
 class NumericalAttributeObservation : public AttributeObservation {
+private:
+  void init() {
+		model = new EBST();
+  }
+  
 public:
 	EBST* model;
 
 	~NumericalAttributeObservation() {};
 
 	NumericalAttributeObservation(unsigned attributeNb) : AttributeObservation(attributeNb){
-		model = new EBST();
+    init();
 	}
 
-	NumericalAttributeObservation() : NumericalAttributeObservation(-1) {}
+	NumericalAttributeObservation() : AttributeObservation(-1) {
+    init();
+  }
 
 	Split* findBestSplitPoint() {
 		double maxSDR;
@@ -507,11 +526,11 @@ public:
 
 	~InternalNode() {};
 
-	InternalNode(const Split& split, LeafNode& left, LeafNode& right, InternalNode& parent){
-		this->left = &left;
-		this->right = &right;
-		this->parent = &parent;
-		this->split = &split;
+	InternalNode(Split* split, LeafNode* left, LeafNode* right, InternalNode* parent){
+		this->left = left;
+		this->right = right;
+		this->parent = parent;
+		this->split = split;
 	}
 
 	bool isLeaf() const{

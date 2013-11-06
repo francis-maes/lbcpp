@@ -146,6 +146,7 @@ public:
 
 	//! A new instance of EarlyStopping is created, internal variables
 	//! are initialized.
+  EarlyStopping();
 	EarlyStopping(unsigned);
 
 	//! Returns the current value of the generalization loss.

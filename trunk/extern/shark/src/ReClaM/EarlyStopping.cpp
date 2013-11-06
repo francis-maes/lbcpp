@@ -78,7 +78,16 @@
  *      stable
  *
  */
-EarlyStopping::EarlyStopping(unsigned sl = 5)
+EarlyStopping::EarlyStopping() {
+	GLvalue     = 0;
+	e_opt       = MAXDOUBLE;
+	e_va_old    = MAXDOUBLE;
+	time        = 0;
+	UPvalue     = 0;
+	striplength = 5;
+	e_tr.resize(striplength, false);
+}
+EarlyStopping::EarlyStopping(unsigned sl)
 {
 	GLvalue     = 0;
 	e_opt       = MAXDOUBLE;

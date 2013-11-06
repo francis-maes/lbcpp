@@ -122,7 +122,7 @@ InternalNode* HoeffdingTreeLearner::makeSplit(const Split& split, const LeafNode
 	}
 	LeafNode* leftChild = new LeafNode(*dataDefinition, *(leaf.linearModel), NULL);
 	LeafNode* rightChild = new LeafNode(*dataDefinition, *(leaf.linearModel), NULL);
-	InternalNode* parent = new InternalNode(split, *leftChild, *rightChild, *static_cast<InternalNode*>(leaf.parent));
+	InternalNode* parent = new InternalNode(new Split(split), leftChild, rightChild, leaf.parent);
 	leftChild->parent = parent;
 	rightChild->parent = parent;
 	//delete leaf;
