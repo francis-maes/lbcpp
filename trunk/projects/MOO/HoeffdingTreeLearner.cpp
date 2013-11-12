@@ -7,6 +7,7 @@
 //============================================================================
 
 #include <iostream>
+#include "precompiled.h"
 #include "HoeffdingTreeLearner.h"
 using namespace std;
 
@@ -14,6 +15,19 @@ HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, dou
 	this->delta = delta;
 	this->dataDefinition = &dataDefinition;
 	root = new LeafNode(dataDefinition, initialLearningRate, learningRateDecay, NULL);
+
+	// default settings:
+	chunkSize = 1;
+	pruneOnly = true;
+	initialLearningRate = 0.75;
+	learningRateDecay = 0.005;
+	threshold = 0.05;
+	verbosity = 3;
+	seenExamples = 0;
+
+	//tmp
+	splitWasMade = false;
+	nbOfLeavesSplit = -1;
 };
 
 HoeffdingTreeLearner::~HoeffdingTreeLearner(){};

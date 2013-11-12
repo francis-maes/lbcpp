@@ -5,7 +5,7 @@ using namespace std;
 
 #include <vector>
 #include <stdlib.h> // rand
-#include <math.h>
+#include <cmath>
 #include <iomanip> // std::setw
 #include <oil/Execution/ExecutionContext.h>
 
@@ -21,6 +21,11 @@ class Split;
 
 class MathUtils {
 public:
+	static double Log2( double n )  
+	{  
+		// log(n)/log(2) is log2.  
+		return log( n ) / log( 2.0f );  
+	}
 	// incremental standard deviation
 	static double sd(double Sy, double Syy, unsigned N){
 		return sqrt((Syy - (Sy*Sy)/N)/N);
@@ -32,7 +37,7 @@ public:
 	}
 
 	static double hoeffdingBound(unsigned R, unsigned N, double delta){
-		return (N==0 || delta==0)?1:sqrt(R*R*log2(1/delta)/2/N);
+		return (N==0 || delta==0)?1:sqrt(R*R*Log2(1/delta)/2/N);
 	}
 
 	static double randDouble(){
@@ -562,17 +567,17 @@ class HoeffdingTreeLearner {
 
 protected:
 	double delta; /* confidence level */
-	unsigned chunkSize = 1; /* number of samples before tree is recalculated */
-	bool pruneOnly = true; /* whether to prune only or to generate alternate trees for drift detection */
+	unsigned chunkSize; /* number of samples before tree is recalculated */
+	bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */
 	const DataDefinition* dataDefinition; /* the data definition of the samples */
-	double initialLearningRate = 0.75; /* initial learning rate for the perceptron */
-	double learningRateDecay = 0.005; /* decay of learning rate for the perceptron */
-	double threshold = 0.05; /* threshold for splitting criterium */
-	int verbosity = 3;
+	double initialLearningRate; /* initial learning rate for the perceptron */
+	double learningRateDecay; /* decay of learning rate for the perceptron */
+	double threshold; /* threshold for splitting criterium */
+	int verbosity;
 	Node* root;
 	lbcpp::ExecutionContext& context;
 
-	unsigned seenExamples = 0; /* number of unprocessed examples */
+	unsigned seenExamples; /* number of unprocessed examples */
 public:
 	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, const DataDefinition& dataDefinition);
 	HoeffdingTreeLearner();
@@ -586,8 +591,8 @@ public:
 	vector<Split>* findBestSplitPerAttribute(const LeafNode& leaf) const;
 
 	//tmp
-	bool splitWasMade = false;
-	int nbOfLeavesSplit = -1;
+	bool splitWasMade;
+	int nbOfLeavesSplit;
 private:
 	void updateStatistics(const vector<float>& sample, LeafNode& leaf);
 	void updateLinearModel(const vector<float>& sample, LeafNode& leaf);
