@@ -21,14 +21,13 @@ class Split;
 
 class MathUtils {
 public:
-	static double Log2( double n )  
-	{  
+	static double Log2(double n){  
 		// log(n)/log(2) is log2.  
-		return log( n ) / log( 2.0f );  
+		return log(n) / log(2.0f);  
 	}
 	// incremental mean
 	static double mean(double Sy, unsigned N){
-		return Sy / N;
+		return Sy/N;
 	}
 	// incremental standard deviation
 	static double sd(double Sy, double Syy, unsigned N){
@@ -51,18 +50,25 @@ public:
 	static double normalize(double y, double mean, double sd){
 		return sd == 0? (y - mean) : (y - mean) / (3*sd);
 	}
+
+	// residual standard deviation
+	static double rsd(double Sx, double Sy, double Sxy, double Sxx, double Syy, double n){
+		// linear regression: Y = a + bX
+		double div = n*Sxx-Sx*Sx;
+		double b = div==0?0:(n*Sxy-Sx*Sy)/div;
+		double a = n==0?0:(Sy-b*Sx)/n;
+		return sqrt(1.0/n*(Syy-2*a*Sy-2*b*Sxy+n*a*a+2*a*b*Sx+b*b*Sxx));
+	}
 };
 
 class AttributeDefinition {
 public:
 	string name;
-	int index;
 
 	double Sx, Sxx;
 	int examplesSeen;
 
-	AttributeDefinition(int index, string name){
-		this->index = index;
+	AttributeDefinition(string name){
 		this->name = name;
 		this->Sx = 0;
 		this->Sxx = 0;
@@ -84,63 +90,27 @@ public:
 	}
 };
 
-class NominalAttributeDefinition : public AttributeDefinition{
-public:
-	unsigned size;
-
-	NominalAttributeDefinition(int index, string name, unsigned size) : AttributeDefinition(index, name){
-		this->size = size;
-	}
-};
-
-class NumericalAttributeDefinition : public AttributeDefinition{
-public:
-	NumericalAttributeDefinition(int index, string name) : AttributeDefinition(index, name){
-	}
-};
-
 // assumes the last attribute is the target attribute
 class DataDefinition {
 public:
-	vector<NominalAttributeDefinition> nominalAttributeDefinitions;
-	vector<NumericalAttributeDefinition> numericalAttributeDefinitions;
 	vector<AttributeDefinition> attributeDefinitions;
 	int nbAttributes;
 
 	DataDefinition(){
-		nominalAttributeDefinitions = vector<NominalAttributeDefinition>();
-		numericalAttributeDefinitions = vector<NumericalAttributeDefinition>();
 		attributeDefinitions = vector<AttributeDefinition>();
 		nbAttributes = 0;
 	}
 
-	void addNominalAttribute(string name, unsigned size){
-		NominalAttributeDefinition def = NominalAttributeDefinition(nbAttributes, name, size);
-		nominalAttributeDefinitions.push_back(def);
-		attributeDefinitions.push_back(def);
-		nbAttributes++;
-	}
-
-	void addNumericalAttribute(string name){
-		NumericalAttributeDefinition def = NumericalAttributeDefinition(nbAttributes, name);
-		numericalAttributeDefinitions.push_back(def);
+	void addAttribute(string name){
+		AttributeDefinition def = AttributeDefinition(name);
 		attributeDefinitions.push_back(def);
 		nbAttributes++;
 	}
 
 	void addSample(const vector<float>& sample){
 		int index;
-		for(unsigned i = 0; i < nominalAttributeDefinitions.size(); i++){
-			if(i == 0){
-				index = sample[nominalAttributeDefinitions[0].index];
-			}
-			nominalAttributeDefinitions[i].addAttributeInstance(sample[index]);
-			index +=-sample[nominalAttributeDefinitions[i].index] +
-					nominalAttributeDefinitions[i].size +
-					sample[nominalAttributeDefinitions[i+1].index];
-		}
-		for(unsigned i = 0; i < numericalAttributeDefinitions.size(); i++){
-			numericalAttributeDefinitions[i].addAttributeInstance(sample[numericalAttributeDefinitions[i].index]);
+		for(unsigned i = 0; i < attributeDefinitions.size(); i++){
+			attributeDefinitions[i].addAttributeInstance(sample[i]);
 		}
 	}
 
@@ -153,8 +123,7 @@ public:
 // the last weight contains the threshold
 class Perceptron {
 public:
-	vector<double> nominalWeights;
-	vector<double> numericalWeights;
+	vector<double> weights;
 	double threshold;
 	double learningRate;
 	double initialLearningRate;
@@ -162,17 +131,10 @@ public:
 	const DataDefinition* dataDefinition;
 
 	Perceptron(const DataDefinition& dataDefinition, double initialLearningRate, double learningRateDecay){
-		// initialize nominal weights
-		int totalNominalSize = 0;
-		for(unsigned i = 0; i < dataDefinition.nominalAttributeDefinitions.size(); i++)
-			totalNominalSize += dataDefinition.nominalAttributeDefinitions[i].size;
-		nominalWeights.resize(totalNominalSize);
-		for(int i = 0; i < totalNominalSize; i++)
-			nominalWeights[i] = MathUtils::randDouble()*2 - 1;
-		// initialize numerical weights
-		numericalWeights.resize(dataDefinition.numericalAttributeDefinitions.size());
-		for(unsigned i = 0; i < dataDefinition.numericalAttributeDefinitions.size(); i++)
-			numericalWeights[i] = MathUtils::randDouble()*2 - 1;
+		// initialize weights
+		weights.resize(dataDefinition.attributeDefinitions.size());
+		for(unsigned i = 0; i < dataDefinition.attributeDefinitions.size(); i++)
+			weights[i] = MathUtils::randDouble()*2 - 1;
 		threshold = MathUtils::randDouble()*2 - 1;
 		learningRate = initialLearningRate;
 		this->initialLearningRate = initialLearningRate;
@@ -181,8 +143,7 @@ public:
 	}
 
 	Perceptron(const Perceptron& perceptron){
-		this->nominalWeights = vector<double>(perceptron.nominalWeights);
-		this->numericalWeights = vector<double>(perceptron.numericalWeights);
+		this->weights = vector<double>(perceptron.weights);
 		this->threshold = perceptron.threshold;
 		this->learningRate = perceptron.initialLearningRate;
 		this->initialLearningRate = perceptron.initialLearningRate;
@@ -193,26 +154,10 @@ public:
 	void train(const vector<float>& sample){
 		unsigned n = 1; // Number of samples used
 		learningRate = initialLearningRate / (1 + n * learningRateDecay);
-		// update nominal weights
 		double dy = sample[sample.size() - 1] - predict(sample);
-		int index;
-		for(unsigned i = 0; i < dataDefinition->nominalAttributeDefinitions.size(); i++){
-			if(i == 0){
-				index = sample[dataDefinition->nominalAttributeDefinitions[0].index];
-			}
-			nominalWeights[index] += learningRate * dy * 1;
-			index +=-sample[(dataDefinition->nominalAttributeDefinitions)[i].index] +
-					(dataDefinition->nominalAttributeDefinitions)[i].size +
-					sample[(dataDefinition->nominalAttributeDefinitions)[i+1].index];
-		}
 		// update numerical weights
-		for(unsigned i = 0; i < dataDefinition->numericalAttributeDefinitions.size(); i++){
-			cout << "------------------------" << numericalWeights.size() << endl;
-			cout << "------------------------" << numericalWeights[i] << endl;
-			numericalWeights[i] += learningRate * dy * sample[dataDefinition->numericalAttributeDefinitions[i].index];
-			cout << "------------------------" << sample[dataDefinition->numericalAttributeDefinitions[i].index] << endl;
-			cout << "------------------------" << dataDefinition->numericalAttributeDefinitions[i].index << endl;
-			cout << "------------------------" << numericalWeights[i] << endl;
+		for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
+			weights[i] += learningRate * dy * sample[i];
 		}
 		// update threshold
 		threshold += learningRate * dy * 1;
@@ -220,21 +165,9 @@ public:
 
 	double predict(const vector<float>& sample){
 		double prediction = 0;
-		// use nominal weights
-		int index;
-		double normalizedX;
-		for(unsigned i = 0; i < dataDefinition->nominalAttributeDefinitions.size(); i++){
-			if(i == 0){
-				index = sample[dataDefinition->nominalAttributeDefinitions[0].index];
-			}
-			prediction += nominalWeights[index] * 1;
-			index +=-sample[dataDefinition->nominalAttributeDefinitions[i].index] +
-					dataDefinition->nominalAttributeDefinitions[i].size +
-					sample[dataDefinition->nominalAttributeDefinitions[i+1].index];
-		}
 		// use numerical weights
-		for(unsigned i = 0; i < dataDefinition->numericalAttributeDefinitions.size(); i++){
-			prediction += numericalWeights[i] * sample[dataDefinition->numericalAttributeDefinitions[i].index];
+		for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
+			prediction += weights[i] * sample[i];
 		}
 		// use threshold
 		prediction += threshold * 1;
@@ -394,61 +327,6 @@ private:
 };
 
 class AttributeObservation {
-public:
-	unsigned attributeNb;
-
-	virtual ~AttributeObservation(){};
-	AttributeObservation(unsigned attributeNb) {
-		this->attributeNb = attributeNb;
-	};
-	virtual Split* findBestSplitPoint() = 0;
-};
-
-class NominalAttributeObservation : public AttributeObservation {
-private:
-  void init(unsigned nbNominalValues) {
-		models.resize(nbNominalValues);
-		for(unsigned i = 0; i < nbNominalValues; i++)
-			models[i] = *(new DerivedModel());
-  }
-public:
-	vector<DerivedModel> models;
-
-	~NominalAttributeObservation() {};
-
-	NominalAttributeObservation(unsigned attributeNb, unsigned nbNominalValues) : AttributeObservation(attributeNb) {
-    init(nbNominalValues);
-	}
-
-	NominalAttributeObservation() : AttributeObservation(-1) {
-    init(0);
-  }
-
-	Split* findBestSplitPoint() {
-		Split* bestSplit = new Split(attributeNb, 0, 0);
-		DerivedModel* totalModel = new DerivedModel();
-		for(unsigned k = 0; k < models.size(); k++){
-			DerivedModel m = models[k];
-			totalModel->update(m.n, m.Sy, m.Syy);
-		}
-		for(unsigned j = 0; j < models.size(); j++){
-			double splitQuality = 0;
-			DerivedModel m = models[j];
-			double sdP = MathUtils::sd(totalModel->Sy, totalModel->Syy, totalModel->n);
-			double sdL = MathUtils::sd(m.Sy, m.Syy, m.n);
-			double sdR = MathUtils::sd(totalModel->Sy-m.Sy, totalModel->Syy-m.Syy, totalModel->n-m.n);
-			splitQuality = MathUtils::sdr(sdP, sdL, sdR, m.n, totalModel->n-m.n);
-			if(splitQuality > bestSplit->quality) {
-				delete bestSplit;
-				bestSplit->quality = splitQuality;
-				bestSplit->value = j;
-			}
-		}
-		return bestSplit;
-	}
-};
-
-class NumericalAttributeObservation : public AttributeObservation {
 private:
   void init() {
 		model = new EBST();
@@ -456,16 +334,18 @@ private:
   
 public:
 	EBST* model;
+	int attributeNb;
 
-	~NumericalAttributeObservation() {};
+	~AttributeObservation() {};
 
-	NumericalAttributeObservation(unsigned attributeNb) : AttributeObservation(attributeNb){
-    init();
+	AttributeObservation(unsigned attributeNb){
+		init();
+		this->attributeNb = attributeNb;
 	}
 
-	NumericalAttributeObservation() : AttributeObservation(-1) {
-    init();
-  }
+	AttributeObservation() {
+		init();
+	}
 
 	Split* findBestSplitPoint() {
 		double maxSDR;
@@ -501,8 +381,7 @@ class LeafNode : public Node {
 public:
 	const DataDefinition* dataDefinition;
 	Perceptron* linearModel;
-	vector<NominalAttributeObservation> nominalAttributeObservations;
-	vector<NumericalAttributeObservation> numericalAttributeObservations;
+	vector<AttributeObservation> attributeObservations;
 	unsigned examplesSeen;
 
 
@@ -537,14 +416,9 @@ public:
 
 private:
 	void initAttributeObservations() {
-		nominalAttributeObservations = vector<NominalAttributeObservation>(dataDefinition->nominalAttributeDefinitions.size());
-		for(unsigned i = 0; i < dataDefinition->nominalAttributeDefinitions.size(); i++){
-			nominalAttributeObservations[i] = NominalAttributeObservation(dataDefinition->nominalAttributeDefinitions[i].index, dataDefinition->nominalAttributeDefinitions[i].size);
-		}
-
-		numericalAttributeObservations = vector<NumericalAttributeObservation>(dataDefinition->numericalAttributeDefinitions.size());
-		for(unsigned i = 0; i < dataDefinition->numericalAttributeDefinitions.size(); i++){
-			numericalAttributeObservations[i] = NumericalAttributeObservation(dataDefinition->numericalAttributeDefinitions[i].index);
+		attributeObservations = vector<AttributeObservation>(dataDefinition->attributeDefinitions.size());
+		for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
+			attributeObservations[i] = AttributeObservation(i);
 		}
 	}
 };
@@ -625,6 +499,5 @@ private:
 	void swap(Node& originalNode, Node& newNode);
 	double getBestSplitratio(const std::vector<Split>& bestSplits) const;
 };
-
 
 #endif
