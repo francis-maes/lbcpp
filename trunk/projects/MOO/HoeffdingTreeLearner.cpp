@@ -11,7 +11,7 @@
 #include "HoeffdingTreeLearner.h"
 using namespace std;
 
-HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, const DataDefinition& dataDefinition) : context(context) {
+HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, DataDefinition& dataDefinition) : context(context) {
 	this->delta = delta;
 	this->dataDefinition = &dataDefinition;
 	root = new LeafNode(dataDefinition, initialLearningRate, learningRateDecay, NULL);
@@ -24,22 +24,30 @@ HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, dou
 	threshold = 0.05;
 	verbosity = 3;
 	seenExamples = 0;
-
-	//tmp
-	splitWasMade = false;
-	nbOfLeavesSplit = -1;
 };
 
 HoeffdingTreeLearner::~HoeffdingTreeLearner(){};
+
+void HoeffdingTreeLearner::normalizeSample(vector<float>& sample, LeafNode& leaf) const{
+	// normalize numerical weights
+	for(unsigned i = 0; i < dataDefinition->numericalAttributeDefinitions.size(); i++){
+		sample[i] = MathUtils::normalize(sample[i], dataDefinition->numericalAttributeDefinitions[i].getMean(), dataDefinition->numericalAttributeDefinitions[i].getStd());
+		std::cout << "=================" << dataDefinition->numericalAttributeDefinitions[i].getMean() << std::endl;
+		std::cout << "=================" << dataDefinition->numericalAttributeDefinitions[i].getStd() << std::endl;
+	}
+}
 
 void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 	if(verbosity >= 2) {
 		cout << "add training sample\n";
 	}
+	dataDefinition->addSample(sample);
 	seenExamples++;
 	LeafNode* leaf = traverseSample(sample);
 	updateStatistics(sample, *leaf);
-	updateLinearModel(sample, *leaf);
+	vector<float> normSample(sample);
+	normalizeSample(normSample, *leaf);
+	updateLinearModel(normSample, *leaf);
 	if(seenExamples % chunkSize == 0){
 		// find two best splits Sa and Sb
 		cout << "try split\n";
@@ -61,11 +69,11 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 		Sb = Sb==0?1:Sb;
 
 		// splitting?
-		double epsilon = MathUtils::hoeffdingBound(1,leaf->n, delta);
-		cout << "epsilon: " << epsilon << "n: " << leaf->n << "\n";
-		cout << "splitquality: " << Sb/Sa << "\n";
-		if(Sa != 0 && ((Sb/Sa < 1 - epsilon) )){//|| epsilon < threshold
-			nbOfLeavesSplit = leaf->n;
+		double epsilon = MathUtils::hoeffdingBound(1,leaf->examplesSeen, delta);
+		bool splitWasMade = false;
+		int nbOfLeavesSplit = 0;
+		if(Sa != 0 && ((Sb/Sa < 1 - epsilon) || epsilon < threshold)){//|| epsilon < threshold
+			nbOfLeavesSplit = leaf->examplesSeen;
 			cout <<"----->split :x" << bestSplits[indexBestSplit].attributeNb << " <= "<< bestSplits[indexBestSplit].value << "\n";
 			if(leaf->isRoot())
 				cout << "leaf is root";
@@ -75,13 +83,23 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 			cout << "splittednode: " << splittedNode->split->value << "\n";
 			swap(*leaf, *splittedNode);
 			//delete leaf;
-			cout << "splittednode: " << static_cast<InternalNode*>(root)->split->value << "\n";
 			splitWasMade = true;
 		}
 		else{
 			splitWasMade = false;
 			nbOfLeavesSplit = -1;
 		}
+
+		for(int i = 0; i < sample.size() - 1; i++){
+			context.resultCallback("attribute"+i, sample[i]);
+		}
+		context.resultCallback("targetValue", sample[sample.size()-1]);
+		context.resultCallback("bestSplitQuality0", Sa);
+		context.resultCallback("bestSplitQuality1", Sb);
+		context.resultCallback("splitQualityRatio", Sb/Sa);
+		context.resultCallback("hoeffdingBound", epsilon);
+		context.resultCallback("Split?", splitWasMade);
+		context.resultCallback("SplitNbOfLeaves", (double) nbOfLeavesSplit);
 	}
 
 }
@@ -96,8 +114,8 @@ void HoeffdingTreeLearner::updateStatistics(const vector<float>& sample, LeafNod
 	if(verbosity >= 2) {
 		cout << "update statistics \n";
 	}
-	leaf.n++;
 	double y = sample[sample.size() - 1];
+	leaf.examplesSeen++;
 	// update models of nominal attributes
 	for(unsigned i = 0; i < leaf.nominalAttributeObservations.size(); i++){
 		DerivedModel m = leaf.nominalAttributeObservations[i].models[sample[dataDefinition->nominalAttributeDefinitions[i].index]];
@@ -171,7 +189,11 @@ void HoeffdingTreeLearner::swap(Node& originalNode, Node& newNode) {
 
 double HoeffdingTreeLearner::predict(const vector<float>& sample) const {
 	LeafNode* leaf = traverseSample(sample);
-	return leaf->linearModel->predict(sample);
+	vector<float> normSample(sample);
+	normalizeSample(normSample, *leaf);
+		std::cout << ":::::::::::::::::::" << sample[0] << " " << sample[1] << " " << sample[2] << std::endl;
+	std::cout << ":::::::::::::::::::" << normSample[0] << " " << normSample[1] << " " << normSample[2] << std::endl;
+	return leaf->linearModel->predict(normSample);
 }
 
 void HoeffdingTreeLearner::pprint() const {

@@ -26,6 +26,10 @@ public:
 		// log(n)/log(2) is log2.  
 		return log( n ) / log( 2.0f );  
 	}
+	// incremental mean
+	static double mean(double Sy, unsigned N){
+		return Sy / N;
+	}
 	// incremental standard deviation
 	static double sd(double Sy, double Syy, unsigned N){
 		return sqrt((Syy - (Sy*Sy)/N)/N);
@@ -43,6 +47,10 @@ public:
 	static double randDouble(){
 		return (double)rand()/(double)RAND_MAX;
 	}
+
+	static double normalize(double y, double mean, double sd){
+		return sd == 0? (y - mean) : (y - mean) / (3*sd);
+	}
 };
 
 class AttributeDefinition {
@@ -50,9 +58,29 @@ public:
 	string name;
 	int index;
 
+	double Sx, Sxx;
+	int examplesSeen;
+
 	AttributeDefinition(int index, string name){
 		this->index = index;
 		this->name = name;
+		this->Sx = 0;
+		this->Sxx = 0;
+		this->examplesSeen = 0;
+	}
+
+	double getMean() const{
+		return MathUtils::mean(Sx,examplesSeen);
+	}
+
+	double getStd() const{
+		return MathUtils::sd(Sx, Sxx, examplesSeen);
+	}
+
+	void addAttributeInstance(const double x){
+		Sx+=x;
+		Sxx+=x*x;
+		examplesSeen++;
 	}
 };
 
@@ -100,6 +128,22 @@ public:
 		nbAttributes++;
 	}
 
+	void addSample(const vector<float>& sample){
+		int index;
+		for(unsigned i = 0; i < nominalAttributeDefinitions.size(); i++){
+			if(i == 0){
+				index = sample[nominalAttributeDefinitions[0].index];
+			}
+			nominalAttributeDefinitions[i].addAttributeInstance(sample[index]);
+			index +=-sample[nominalAttributeDefinitions[i].index] +
+					nominalAttributeDefinitions[i].size +
+					sample[nominalAttributeDefinitions[i+1].index];
+		}
+		for(unsigned i = 0; i < numericalAttributeDefinitions.size(); i++){
+			numericalAttributeDefinitions[i].addAttributeInstance(sample[numericalAttributeDefinitions[i].index]);
+		}
+	}
+
 	// TODO: temporary measure
 	void addTargetAttribute(string name){
 		nbAttributes++;
@@ -140,8 +184,8 @@ public:
 		this->nominalWeights = vector<double>(perceptron.nominalWeights);
 		this->numericalWeights = vector<double>(perceptron.numericalWeights);
 		this->threshold = perceptron.threshold;
-		this->learningRate = perceptron.learningRate;
-		this->initialLearningRate = perceptron.learningRate;
+		this->learningRate = perceptron.initialLearningRate;
+		this->initialLearningRate = perceptron.initialLearningRate;
 		this->learningRateDecay = perceptron.learningRateDecay;
 		this->dataDefinition = perceptron.dataDefinition;
 	}
@@ -163,7 +207,12 @@ public:
 		}
 		// update numerical weights
 		for(unsigned i = 0; i < dataDefinition->numericalAttributeDefinitions.size(); i++){
-			numericalWeights[i] += learningRate * dy * sample[(dataDefinition->numericalAttributeDefinitions)[i].index];
+			cout << "------------------------" << numericalWeights.size() << endl;
+			cout << "------------------------" << numericalWeights[i] << endl;
+			numericalWeights[i] += learningRate * dy * sample[dataDefinition->numericalAttributeDefinitions[i].index];
+			cout << "------------------------" << sample[dataDefinition->numericalAttributeDefinitions[i].index] << endl;
+			cout << "------------------------" << dataDefinition->numericalAttributeDefinitions[i].index << endl;
+			cout << "------------------------" << numericalWeights[i] << endl;
 		}
 		// update threshold
 		threshold += learningRate * dy * 1;
@@ -173,6 +222,7 @@ public:
 		double prediction = 0;
 		// use nominal weights
 		int index;
+		double normalizedX;
 		for(unsigned i = 0; i < dataDefinition->nominalAttributeDefinitions.size(); i++){
 			if(i == 0){
 				index = sample[dataDefinition->nominalAttributeDefinitions[0].index];
@@ -184,21 +234,13 @@ public:
 		}
 		// use numerical weights
 		for(unsigned i = 0; i < dataDefinition->numericalAttributeDefinitions.size(); i++){
-			prediction += numericalWeights[i] * sample[(dataDefinition->numericalAttributeDefinitions)[i].index];
+			prediction += numericalWeights[i] * sample[dataDefinition->numericalAttributeDefinitions[i].index];
 		}
 		// use threshold
 		prediction += threshold * 1;
 		return prediction;
 	}
 };
-
-/*class Split {
-	double quality;
-
-	Split(double quality){
-		this->quality = quality;
-	}
-};*/
 
 class Split {
 private:
@@ -234,22 +276,6 @@ public:
 	  return Compare(split)<0;
 	}
 };
-
-/*class NumericalSplit : public Split{
-public:
-	unsigned attNb;
-	int threshhold;
-
-	NumericalSplit(unsigned attNb, int threshold, double quality) : Split(quality){
-		this->attNb = attNb;
-		this->threshhold = threshold;
-	}
-
-	NumericalSplit() : Split(0){
-		this->attNb = 0;
-		this->threshhold = 0;
-	}
-};*/
 
 class DerivedModel {
 public:
@@ -477,20 +503,21 @@ public:
 	Perceptron* linearModel;
 	vector<NominalAttributeObservation> nominalAttributeObservations;
 	vector<NumericalAttributeObservation> numericalAttributeObservations;
-	unsigned n; /* examples seen */
+	unsigned examplesSeen;
+
 
 	~LeafNode() {};
 
 	LeafNode(const DataDefinition& dataDefinition, double initialLearningRate, double learningRateDecay, InternalNode* parent) : Node(parent){
 		this->dataDefinition = &dataDefinition;
-		this->n = 0;
+		examplesSeen = 0;
 		linearModel = new Perceptron(dataDefinition, initialLearningRate, learningRateDecay);
 		initAttributeObservations();
 	}
 
 	LeafNode(const DataDefinition& dataDefinition, const Perceptron& linearModel, InternalNode* parent) : Node(parent){
 		this->dataDefinition = &dataDefinition;
-		this->n = 0;
+		examplesSeen = 0;
 		this->linearModel = new Perceptron(linearModel);
 		initAttributeObservations();
 	}
@@ -500,8 +527,8 @@ public:
 	}
 
 	void pprint(int indent = 0) const {
-        if (indent) std::cout << std::setw(indent) << ' ';
-		cout<< "samples: " << n << "\n";
+        if (indent) cout << setw(indent) << ' ';
+		cout<< "samples: " << examplesSeen << endl;
 	}
 
 	LeafNode* traverseSample(const vector<float>& sample) {
@@ -543,10 +570,11 @@ public:
 	}
 
 	void pprint(int indent) const{
-		if (indent) std::cout << std::setw(indent) << ' ';
-		cout << "Split is at " << split << endl;
-		cout<< split->attributeNb << "/" << split->value << "\n ";
+		if (indent) cout << setw(indent) << ' ';
+		cout<< split->attributeNb << "/" << split->value << endl;
+		cout << "left:" << endl;
 		left->pprint(indent+4);
+		cout << "right:" << endl;
 		right->pprint(indent+4);
 	}
 
@@ -569,7 +597,7 @@ protected:
 	double delta; /* confidence level */
 	unsigned chunkSize; /* number of samples before tree is recalculated */
 	bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */
-	const DataDefinition* dataDefinition; /* the data definition of the samples */
+	DataDefinition* dataDefinition; /* the data definition of the samples */
 	double initialLearningRate; /* initial learning rate for the perceptron */
 	double learningRateDecay; /* decay of learning rate for the perceptron */
 	double threshold; /* threshold for splitting criterium */
@@ -579,7 +607,7 @@ protected:
 
 	unsigned seenExamples; /* number of unprocessed examples */
 public:
-	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, const DataDefinition& dataDefinition);
+	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, DataDefinition& dataDefinition);
 	HoeffdingTreeLearner();
 	~HoeffdingTreeLearner();
 	/* add the training sample to the tree */
@@ -589,10 +617,7 @@ public:
 	/* traverses the sample to the leaf of the tree */
 	LeafNode* traverseSample(const vector<float>& sample) const; // temp for testing, should be private
 	vector<Split>* findBestSplitPerAttribute(const LeafNode& leaf) const;
-
-	//tmp
-	bool splitWasMade;
-	int nbOfLeavesSplit;
+	void normalizeSample(vector<float>& sample, LeafNode& leaf) const;
 private:
 	void updateStatistics(const vector<float>& sample, LeafNode& leaf);
 	void updateLinearModel(const vector<float>& sample, LeafNode& leaf);
