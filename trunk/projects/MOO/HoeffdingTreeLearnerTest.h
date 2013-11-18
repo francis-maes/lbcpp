@@ -3,6 +3,7 @@
 # include <stdlib.h> // abs
 # define _USE_MATH_DEFINES
 # include <math.h> // sin
+# include <ctime>
 
 namespace lbcpp {
 
@@ -36,6 +37,10 @@ public:
 		context.enterScope("HoeffdingTreeTest");
 		context.enterScope("testFunctions");
 
+		std::clock_t start;
+		start = std::clock();
+
+		// START TRAINING
 		double x1, x2, x3, x4, x5, y, noise;
 		for (size_t i = 0; i < nbSamples; i++) {
 			std::vector<float> sample;
@@ -59,9 +64,58 @@ public:
 
 			context.resultCallback("prediction",htl.predict(sample));
 			context.resultCallback("predictionError", abs(y - htl.predict(sample))/y);
+			context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
 
 			context.leaveScope();
-		}*/
+			if(i % 10000 == 0){
+				std::cout << i << std::endl;
+			}
+		}
+		///END TRAINING
+
+		std::cout << "results: " << std::endl;
+		std::cout << "NbOfLeaves: " << htl.getNbOfLeaves() << std::endl;
+		std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << std::endl;
+
+		double re = 0; // relative error
+
+		// START TESTING
+		start = std::clock();
+
+		for (size_t i = 0; i < 300000; i++) {
+			std::vector<float> sample;
+			x1 = MathUtils::randDouble();
+			x2 = MathUtils::randDouble();
+			x3 = MathUtils::randDouble();
+			x4 = MathUtils::randDouble();
+			x5 = MathUtils::randDouble();
+			sample.push_back(x1);
+			sample.push_back(x2);
+			sample.push_back(x3);
+			sample.push_back(x4);
+			sample.push_back(x5);
+			noise = MathUtils::randDouble();
+			y = 10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise;
+			sample.push_back(y);
+
+			//context.enterScope(string((double) i));
+			//context.resultCallback("i", (double) i);
+			//context.resultCallback("prediction",htl.predict(sample));
+			//context.resultCallback("predictionError", abs(y - htl.predict(sample))/y);
+			//context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
+
+			re+= abs(y-htl.predict(sample))/y;
+
+			//context.leaveScope();
+			if(i % 10000 == 0){
+				std::cout << i << std::endl;
+			}
+		}
+
+		re /= 300000;
+		std::cout << "Relative error: " << re << std::endl;*/
+
+		// END TESTING
 
 		// setup htl learner
 		DataDefinition* dataDef = new DataDefinition();
@@ -71,8 +125,12 @@ public:
 		HoeffdingTreeLearner htl = HoeffdingTreeLearner(context, 0.01, *dataDef);
 
 		context.enterScope("HoeffdingTreeTest");
-		context.enterScope("testFunctions");
+		context.enterScope("training");
 
+		std::clock_t start;
+		start = std::clock();
+
+		double re = 0;
 		double x1, x2, y;
 		for (size_t i = 0; i < nbSamples; i++) {
 			std::vector<float> sample;
@@ -105,7 +163,7 @@ public:
 				y = 0.6 * sample[0] - 0.4 * sample[1] - 3;
 				sample.push_back(y);
 			}
-			std::cout << "sample" << i << " =" << x1 << ", " << x2 << " , " << y << "\n";
+			//std::cout << "sample" << i << " =" << x1 << ", " << x2 << " , " << y << "\n";
 			context.enterScope(string((double) i));
 			context.resultCallback("i", (double) i);
 
@@ -132,8 +190,13 @@ public:
 				context.resultCallback("predictionError",
 						abs(y - htl.predict(samplex))/y);
 
+			context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
+			re+=abs(y - htl.predict(samplex))/y;
 			context.leaveScope();
 		}
+		std::cout << re/nbSamples << std::endl;
+
+
 
 		context.leaveScope();
 		context.leaveScope();

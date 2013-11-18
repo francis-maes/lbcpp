@@ -1,9 +1,7 @@
 //============================================================================
 // Name        : HoeffdingTreeLearner.cpp
 // Author      : Xavier Rasschaert
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
+// Description : 
 //============================================================================
 
 #include <iostream>
@@ -14,15 +12,16 @@ using namespace std;
 HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, DataDefinition& dataDefinition) : context(context) {
 	this->delta = delta;
 	this->dataDefinition = &dataDefinition;
-	root = new LeafNode(dataDefinition, initialLearningRate, learningRateDecay, NULL);
+	modelType = ModelType::NXY;
+	root = new LeafNode(modelType, dataDefinition, initialLearningRate, learningRateDecay, NULL);
 
 	// default settings:
-	chunkSize = 1;// 1
+	chunkSize = 200;// 1
 	pruneOnly = true;
 	initialLearningRate = 0.75;// 0.75
 	learningRateDecay = 0.005;
 	threshold = 0.05;
-	verbosity = 3;
+	verbosity = 0; // 3
 	seenExamples = 0;
 };
 
@@ -33,6 +32,10 @@ void HoeffdingTreeLearner::normalizeSample(vector<float>& sample, LeafNode& leaf
 	for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
 		sample[i] = MathUtils::normalize(sample[i], dataDefinition->attributeDefinitions[i].getMean(), dataDefinition->attributeDefinitions[i].getStd());
 	}
+}
+
+int HoeffdingTreeLearner::getNbOfLeaves() const{
+	return root->getNbOfLeaves();
 }
 
 void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
@@ -48,7 +51,9 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 	updateLinearModel(normSample, *leaf);
 	if(seenExamples % chunkSize == 0){
 		// find two best splits Sa and Sb
-		cout << "try split\n";
+		if(verbosity >= 3) {
+			cout << "try split\n";
+		}
 		vector<Split> bestSplits = *findBestSplitPerAttribute(*leaf);
 		int indexBestSplit = 0;
 		double Sa = 0;
@@ -72,13 +77,15 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 		int nbOfLeavesSplit = 0;
 		if(Sa != 0 && ((Sb/Sa < 1 - epsilon) || epsilon < threshold)){//|| epsilon < threshold
 			nbOfLeavesSplit = leaf->examplesSeen;
-			cout <<"----->split :x" << bestSplits[indexBestSplit].attributeNb << " <= "<< bestSplits[indexBestSplit].value << "\n";
-			if(leaf->isRoot())
-				cout << "leaf is root";
-			else
-				cout <<"----->parent :x" << leaf->parent->split->attributeNb << " <= "<< leaf->parent->split->value << "\n";
 			InternalNode* splittedNode = makeSplit(bestSplits[indexBestSplit], *leaf);
-			cout << "splittednode: " << splittedNode->split->value << "\n";
+			if(verbosity >= 3){
+				cout <<"----->split :x" << bestSplits[indexBestSplit].attributeNb << " <= "<< bestSplits[indexBestSplit].value << "\n";
+				if(leaf->isRoot())
+					cout << "leaf is root";
+				else
+					cout <<"----->parent :x" << leaf->parent->split->attributeNb << " <= "<< leaf->parent->split->value << "\n";
+				cout << "splittednode: " << splittedNode->split->value << "\n";
+			}
 			swap(*leaf, *splittedNode);
 			//delete leaf;
 			splitWasMade = true;
@@ -144,8 +151,8 @@ InternalNode* HoeffdingTreeLearner::makeSplit(const Split& split, const LeafNode
 		cout << "split was made at leaf:\n";
 		leaf.pprint();
 	}
-	LeafNode* leftChild = new LeafNode(*dataDefinition, *(leaf.linearModel), NULL);
-	LeafNode* rightChild = new LeafNode(*dataDefinition, *(leaf.linearModel), NULL);
+	LeafNode* leftChild = new LeafNode(modelType, *dataDefinition, *(leaf.linearModel), NULL);
+	LeafNode* rightChild = new LeafNode(modelType, *dataDefinition, *(leaf.linearModel), NULL);
 	InternalNode* parent = new InternalNode(new Split(split), leftChild, rightChild, leaf.parent);
 	leftChild->parent = parent;
 	rightChild->parent = parent;
@@ -164,19 +171,16 @@ InternalNode* HoeffdingTreeLearner::makeSplit(const Split& split, const LeafNode
 	{
 		leaf = static_cast<InternalNode*>(parent);
 	}*/
-	cout << "reached the end of splitting proc \n";
 	return parent;
 }
 
 void HoeffdingTreeLearner::swap(Node& originalNode, Node& newNode) {
-	cout << "begin swap \n";
 	if(originalNode.isRoot())
 		root = &newNode;
 	else if(originalNode.parent->left == &originalNode)
 		originalNode.parent->left = &newNode;
 	else
 		originalNode.parent->right = &newNode;
-	cout << "end swap \n";
 }
 
 double HoeffdingTreeLearner::predict(const vector<float>& sample) const {
