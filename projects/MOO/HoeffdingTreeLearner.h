@@ -11,13 +11,17 @@ using namespace std;
 
 class MathUtils;
 class DerivedModel;
+class DerivedModelNY;
 class EBST;
+class EBSTNY;
 class Node;
 class LeafNode;
 class InternalNode;
 class AttributeObservation;
 class Perceptron;
 class Split;
+
+enum ModelType {NY, NXY};
 
 class MathUtils {
 public:
@@ -213,16 +217,51 @@ public:
 class DerivedModel {
 public:
 	unsigned n; /* number of samples */
+
+	virtual void update(unsigned dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) = 0;
+};
+
+class DerivedModelNXY : public DerivedModel{
+public:
 	double Sy; /* sum of y values */
 	double Syy; /* sum of y-squared values */
 
-	DerivedModel(){
+	double Sx; /*sum of x-values */
+	double Sxx; /* sum of x-squared values */
+	double Sxy; /* sum of product x and y values*/
+
+	DerivedModelNXY(){
 		n = 0;
 		Sy = 0;
 		Syy = 0;
-	};
 
-	void update(int dn, double dSy, double dSyy){
+		Sx = 0;
+		Sxx = 0;
+		Sxy = 0;
+	}
+
+	void update(unsigned dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) {
+		n += dn;
+		Sy += dSy;
+		Syy += dSyy;
+		Sx += dSx;
+		Sxx += dSxx;
+		Sxy += dSxy;
+	}
+};
+
+class DerivedModelNY : public DerivedModel{
+public:
+	double Sy; /* sum of y values */
+	double Syy; /* sum of y-squared values */
+
+	DerivedModelNY(){
+		n = 0;
+		Sy = 0;
+		Syy = 0;
+	}
+
+	void update(unsigned dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) {
 		n += dn;
 		Sy += dSy;
 		Syy += dSyy;
@@ -232,87 +271,55 @@ public:
 //extended binary search tree
 class EBST {
 public:
-	EBST* left;
-	EBST* right;
+	virtual void findBestSplit(double& quality, double& splitPoint) const = 0;
+	virtual bool isEmpty() const = 0;
+	virtual bool hasLeftChild() const = 0;
+	virtual bool hasRightChild() const = 0;
+	virtual void add(double attribute, double y) = 0;
+};
 
-	DerivedModel* leftModel;
-	DerivedModel* rightModel;
+class EBSTNY : public EBST{
+public:
+
+	EBSTNY* left;
+	EBSTNY* right;
+
+	DerivedModelNY* leftModel;
+	DerivedModelNY* rightModel;
 
 	double key; // each node has a value
 
-	EBST() {
+	EBSTNY() {
 		left = NULL;
 		right = NULL;
 
-		leftModel = new DerivedModel();
-		rightModel = new DerivedModel();
+		leftModel = new DerivedModelNY();
+		rightModel = new DerivedModelNY();
 
 		key = 0;
 	}
 
 	void add(double attribute, double y) {
 		if(isEmpty() || attribute == key){
-			leftModel->update(1,y,y*y);
+			leftModel->update(1, y, y*y, attribute, attribute*attribute, attribute*y);
 			key = attribute;
 		}
 		else if(attribute < key){
 			if(!hasLeftChild()) {
-				left = new EBST();
+				left = new EBSTNY();
 			}
-			leftModel->update(1,y,y*y);
+			leftModel->update(1, y, y*y, attribute, attribute*attribute, attribute*y);
 			left->add(attribute, y);
 		}
 		else {
 			if(!hasRightChild()) {
-				right = new EBST();
+				right = new EBSTNY();
 			}
-			rightModel->update(1,y,y*y);
+			rightModel->update(1, y, y*y, attribute, attribute*attribute, attribute*y);
 			right->add(attribute, y);
 		}
-
 	}
-
-	void findBestSplit(double& maxSDR, double& splitPoint) const{
-		DerivedModel * totalLeftModel = new DerivedModel();
-		DerivedModel * totalRightModel = new DerivedModel();
-		totalLeftModel->Sy = 0;
-		totalRightModel->Sy = leftModel->Sy + rightModel->Sy;
-		totalLeftModel->Syy = 0;
-		totalRightModel->Syy = leftModel->Syy + rightModel->Syy;
-		totalRightModel->n = leftModel->n + rightModel->n;
-		double total = leftModel->n + rightModel->n;
-		maxSDR = 0;
-		findBestSplit(*this, maxSDR, splitPoint, *totalLeftModel, *totalRightModel, total);
-	}
-
-private:
-	void findBestSplit(const EBST& node, double& maxSDR, double& splitPoint,
-		DerivedModel& totalLeftModel, DerivedModel& totalRightModel, double& total) const{
-		if(node.hasLeftChild()){
-			findBestSplit(*node.left, maxSDR, splitPoint,
-					totalLeftModel, totalRightModel, total);
-		}
-		//update the sums and counts for computing the SDR of the split
-		totalLeftModel.update(0, node.leftModel->Sy, node.leftModel->Syy);
-		totalRightModel.update(-node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy);
-		double sdParent = MathUtils::sd(totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Syy+totalRightModel.Syy, total);
-		double sdLeftChild = MathUtils::sd(totalLeftModel.Sy, totalLeftModel.Syy, total - totalRightModel.n);
-		double sdRightChild = MathUtils::sd(totalRightModel.Sy, totalRightModel.Syy, totalRightModel.n);
-		double sdr = MathUtils::sdr(sdParent, sdLeftChild, sdRightChild, total - totalRightModel.n, totalRightModel.n);
-		if(maxSDR < sdr){
-			//cout <<"new max:" << maxSDR << "\n";
-			maxSDR = sdr;
-			splitPoint = node.key;
-		}
-		if(node.hasRightChild()){
-			findBestSplit(*node.right, maxSDR, splitPoint,
-					totalLeftModel, totalRightModel, total);
-		}
-		//update the sums and counts for returning to the parent node
-		totalLeftModel.update(0, -node.leftModel->Sy, -node.leftModel->Syy);
-		totalRightModel.update(node.leftModel->n, node.leftModel->Sy, node.leftModel->Syy);
-	}
-
+	
 	bool isEmpty() const{
 		return leftModel->n == 0 && rightModel->n == 0;
 	}
@@ -324,13 +331,159 @@ private:
 	bool hasRightChild() const{
 		return right != NULL;
 	}
+
+	void findBestSplit(double& quality, double& splitPoint) const{
+		DerivedModelNY * totalLeftModel = new DerivedModelNY();
+		DerivedModelNY * totalRightModel = new DerivedModelNY();
+		totalLeftModel->Sy = 0;
+		totalRightModel->Sy = leftModel->Sy + rightModel->Sy;
+		totalLeftModel->Syy = 0;
+		totalRightModel->Syy = leftModel->Syy + rightModel->Syy;
+		totalRightModel->n = leftModel->n + rightModel->n;
+		double total = leftModel->n + rightModel->n;
+		quality = 0;
+		findBestSplit(*this, quality, splitPoint, *totalLeftModel, *totalRightModel, total);
+	}
+
+private:
+	void findBestSplit(const EBSTNY& node, double& quality, double& splitPoint,
+		DerivedModelNY& totalLeftModel, DerivedModelNY& totalRightModel, double& total) const{
+		if(node.hasLeftChild()){
+			findBestSplit(*node.left, quality, splitPoint,
+					totalLeftModel, totalRightModel, total);
+		}
+		//update the sums and counts for computing the SDR of the split
+		totalLeftModel.update(0, node.leftModel->Sy, node.leftModel->Syy, 0, 0, 0);
+		totalRightModel.update(-node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, 0, 0, 0);
+		double sdParent = MathUtils::sd(totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Syy+totalRightModel.Syy, total);
+		double sdLeftChild = MathUtils::sd(totalLeftModel.Sy, totalLeftModel.Syy, total - totalRightModel.n);
+		double sdRightChild = MathUtils::sd(totalRightModel.Sy, totalRightModel.Syy, totalRightModel.n);
+		double sdr = MathUtils::sdr(sdParent, sdLeftChild, sdRightChild, total - totalRightModel.n, totalRightModel.n);
+		if(quality < sdr){
+			//cout <<"new max:" << maxSDR << "\n";
+			quality = sdr;
+			splitPoint = node.key;
+		}
+		if(node.hasRightChild()){
+			findBestSplit(*node.right, quality, splitPoint,
+					totalLeftModel, totalRightModel, total);
+		}
+		//update the sums and counts for returning to the parent node
+		totalLeftModel.update(0, -node.leftModel->Sy, -node.leftModel->Syy, 0, 0, 0);
+		totalRightModel.update(node.leftModel->n, node.leftModel->Sy, node.leftModel->Syy, 0, 0, 0);
+	}
+};
+
+class EBSTNXY : public EBST{
+public:
+
+	EBSTNXY* left;
+	EBSTNXY* right;
+
+	DerivedModelNXY* leftModel;
+	DerivedModelNXY* rightModel;
+
+	double key; // each node has a value
+
+	EBSTNXY() {
+		left = NULL;
+		right = NULL;
+
+		leftModel = new DerivedModelNXY();
+		rightModel = new DerivedModelNXY();
+
+		key = 0;
+	}
+
+	void add(double attribute, double y) {
+		if(isEmpty() || attribute == key){
+			leftModel->update(1, y, y*y, attribute, attribute*attribute, attribute*y);
+			key = attribute;
+		}
+		else if(attribute < key){
+			if(!hasLeftChild()) {
+				left = new EBSTNXY();
+			}
+			leftModel->update(1, y, y*y, attribute, attribute*attribute, attribute*y);
+			left->add(attribute, y);
+		}
+		else {
+			if(!hasRightChild()) {
+				right = new EBSTNXY();
+			}
+			rightModel->update(1, y, y*y, attribute, attribute*attribute, attribute*y);
+			right->add(attribute, y);
+		}
+	}
+	
+	bool isEmpty() const{
+		return leftModel->n == 0 && rightModel->n == 0;
+	}
+
+	bool hasLeftChild() const{
+		return left != NULL;
+	}
+
+	bool hasRightChild() const{
+		return right != NULL;
+	}
+
+	void findBestSplit(double& quality, double& splitPoint) const{
+		DerivedModelNXY * totalLeftModel = new DerivedModelNXY();
+		DerivedModelNXY * totalRightModel = new DerivedModelNXY();
+		totalLeftModel->Sy = 0;
+		totalRightModel->Sy = leftModel->Sy + rightModel->Sy;
+		totalLeftModel->Syy = 0;
+		totalRightModel->Syy = leftModel->Syy + rightModel->Syy;
+		totalLeftModel->Sxx = 0;
+		totalRightModel->Sxx = leftModel->Sxx + rightModel->Sxx;
+		totalLeftModel->Sxy = 0;
+		totalRightModel->Sxy = leftModel->Sxy + rightModel->Sxy;
+		totalRightModel->n = leftModel->n + rightModel->n;
+		double total = leftModel->n + rightModel->n;
+		quality = 0;
+		findBestSplit(*this, quality, splitPoint, *totalLeftModel, *totalRightModel, total);
+	}
+
+private:
+	void findBestSplit(const EBSTNXY& node, double& quality, double& splitPoint,
+		DerivedModelNXY& totalLeftModel, DerivedModelNXY& totalRightModel, double& total) const{
+		if(node.hasLeftChild()){
+			findBestSplit(*node.left, quality, splitPoint,
+					totalLeftModel, totalRightModel, total);
+		}
+		//update the sums and counts for computing the SDR of the split
+		totalLeftModel.update(0, node.leftModel->Sy, node.leftModel->Syy, node.leftModel->Sx, node.leftModel->Sxx, node.leftModel->Sxy);
+		totalRightModel.update(-node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, -node.leftModel->Sx, -node.leftModel->Sxx, -node.leftModel->Sxy);
+		double sdParent = MathUtils::rsd(totalLeftModel.Sx+totalRightModel.Sx, totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Sxy+totalRightModel.Sxy, totalLeftModel.Sxx+totalRightModel.Sxx, totalLeftModel.Syy+totalRightModel.Syy, total);
+		double sdLeftChild = MathUtils::rsd(totalLeftModel.Sx, totalLeftModel.Sy, totalLeftModel.Sxy, totalLeftModel.Sxx, totalLeftModel.Syy, total - totalRightModel.n);
+		double sdRightChild = MathUtils::rsd(totalRightModel.Sx, totalRightModel.Sy, totalRightModel.Sxy, totalRightModel.Sxx, totalRightModel.Syy, totalRightModel.n);
+		double sdr = MathUtils::sdr(sdParent, sdLeftChild, sdRightChild, total - totalRightModel.n, totalRightModel.n);
+		if(quality < sdr){
+			//cout <<"new max:" << maxSDR << "\n";
+			quality = sdr;
+			splitPoint = node.key;
+		}
+		if(node.hasRightChild()){
+			findBestSplit(*node.right, quality, splitPoint,
+					totalLeftModel, totalRightModel, total);
+		}
+		//update the sums and counts for returning to the parent node
+		totalLeftModel.update(0, -node.leftModel->Sy, -node.leftModel->Syy, -node.leftModel->Sx, -node.leftModel->Sxx, -node.leftModel->Sxy);
+		totalRightModel.update(node.leftModel->n, node.leftModel->Sy, node.leftModel->Syy, node.leftModel->Sx, node.leftModel->Sxx, node.leftModel->Sxy);
+	}
 };
 
 class AttributeObservation {
 private:
-  void init() {
-		model = new EBST();
-  }
+	void init(ModelType modelType) {
+		if(modelType == ModelType::NY){
+			model = new EBSTNY();
+		}
+		else{
+			model = new EBSTNXY();
+		}
+	}
   
 public:
 	EBST* model;
@@ -338,13 +491,17 @@ public:
 
 	~AttributeObservation() {};
 
-	AttributeObservation(unsigned attributeNb){
-		init();
+	AttributeObservation(ModelType modelType, unsigned attributeNb){
+		init(modelType);
 		this->attributeNb = attributeNb;
 	}
 
-	AttributeObservation() {
-		init();
+	AttributeObservation(){
+		init(ModelType::NY);
+	}
+
+	AttributeObservation(ModelType modelType) {
+		init(modelType);
 	}
 
 	Split* findBestSplitPoint() {
@@ -362,7 +519,7 @@ public:
 
 	Node(){
 		parent = NULL;
-	};
+	}
 
 	Node(InternalNode* parent){
 		this->parent = parent;
@@ -371,6 +528,7 @@ public:
 	virtual bool isLeaf() const = 0;
 	virtual void pprint(int indent = 0) const = 0;
 	virtual LeafNode* traverseSample(const vector<float>& sample) = 0;
+	virtual int getNbOfLeaves() const = 0;
 
 	bool isRoot() const{
 		return parent == NULL;
@@ -387,18 +545,18 @@ public:
 
 	~LeafNode() {};
 
-	LeafNode(const DataDefinition& dataDefinition, double initialLearningRate, double learningRateDecay, InternalNode* parent) : Node(parent){
+	LeafNode(ModelType modelType, const DataDefinition& dataDefinition, double initialLearningRate, double learningRateDecay, InternalNode* parent) : Node(parent){
 		this->dataDefinition = &dataDefinition;
 		examplesSeen = 0;
 		linearModel = new Perceptron(dataDefinition, initialLearningRate, learningRateDecay);
-		initAttributeObservations();
+		initAttributeObservations(modelType);
 	}
 
-	LeafNode(const DataDefinition& dataDefinition, const Perceptron& linearModel, InternalNode* parent) : Node(parent){
+	LeafNode(ModelType modelType, const DataDefinition& dataDefinition, const Perceptron& linearModel, InternalNode* parent) : Node(parent){
 		this->dataDefinition = &dataDefinition;
 		examplesSeen = 0;
 		this->linearModel = new Perceptron(linearModel);
-		initAttributeObservations();
+		initAttributeObservations(modelType);
 	}
 
 	bool isLeaf() const{
@@ -414,11 +572,15 @@ public:
 		return this;
 	}
 
+	int getNbOfLeaves() const{
+		return 1;
+	}
+
 private:
-	void initAttributeObservations() {
+	void initAttributeObservations(ModelType modelType) {
 		attributeObservations = vector<AttributeObservation>(dataDefinition->attributeDefinitions.size());
 		for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
-			attributeObservations[i] = AttributeObservation(i);
+			attributeObservations[i] = AttributeObservation(modelType, i);
 		}
 	}
 };
@@ -461,6 +623,9 @@ public:
 		}
 	}
 
+	int getNbOfLeaves() const{
+		return left->getNbOfLeaves()+right->getNbOfLeaves()+1;
+	}
 };
 
 // nominal values go from 0 to nbNominalValues
@@ -478,6 +643,7 @@ protected:
 	int verbosity;
 	Node* root;
 	lbcpp::ExecutionContext& context;
+	ModelType modelType;
 
 	unsigned seenExamples; /* number of unprocessed examples */
 public:
@@ -492,6 +658,7 @@ public:
 	LeafNode* traverseSample(const vector<float>& sample) const; // temp for testing, should be private
 	vector<Split>* findBestSplitPerAttribute(const LeafNode& leaf) const;
 	void normalizeSample(vector<float>& sample, LeafNode& leaf) const;
+	int getNbOfLeaves() const;
 private:
 	void updateStatistics(const vector<float>& sample, LeafNode& leaf);
 	void updateLinearModel(const vector<float>& sample, LeafNode& leaf);
