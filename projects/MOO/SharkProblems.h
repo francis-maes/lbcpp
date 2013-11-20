@@ -228,7 +228,7 @@ class ZDTMOProblem : public ProblemFromSharkObjectiveFunction
 {
 public:
   ZDTMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
-    : ProblemFromSharkObjectiveFunction(objective, false), max1(10.0), max2(10.0)
+    : ProblemFromSharkObjectiveFunction(objective, false), max1(max1), max2(max2)
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
@@ -240,11 +240,33 @@ private:
 };
 
 struct ZDT1MOProblem : public ZDTMOProblem {ZDT1MOProblem(size_t numDimensions = 30) : ZDTMOProblem(new ZDT1(numDimensions), 1.0, 1.0) {} };
-struct ZDT2MOProblem : public ZDTMOProblem {ZDT2MOProblem() : ZDTMOProblem(new ZDT2(30), 1.0, 1.0) {} };
-struct ZDT3MOProblem : public ZDTMOProblem {ZDT3MOProblem() : ZDTMOProblem(new ZDT3(30), 0.852, 1.0) {} };
-struct ZDT4MOProblem : public ZDTMOProblem {ZDT4MOProblem() : ZDTMOProblem(new ZDT4(30), 1.0, 1.0) {} };
+struct ZDT2MOProblem : public ZDTMOProblem {ZDT2MOProblem(size_t numDimensions = 30) : ZDTMOProblem(new ZDT2(numDimensions), 1.0, 1.0) {} };
+struct ZDT3MOProblem : public ZDTMOProblem {ZDT3MOProblem(size_t numDimensions = 30) : ZDTMOProblem(new ZDT3(numDimensions), 0.852, 1.0) {} };
+struct ZDT4MOProblem : public ZDTMOProblem {ZDT4MOProblem(size_t numDimensions = 30) : ZDTMOProblem(new ZDT4(numDimensions), 1.0, 1.0) {} };
 // ZDT5 not wrapper yet (domain is discrete)
-struct ZDT6MOProblem : public ZDTMOProblem {ZDT6MOProblem() : ZDTMOProblem(new ZDT6(30), 1.0, 1.0) {} };
+struct ZDT6MOProblem : public ZDTMOProblem {ZDT6MOProblem(size_t numDimensions = 30) : ZDTMOProblem(new ZDT6(numDimensions), 1.0, 1.0) {} };
+  
+
+/*
+** LZ06 functions
+*/
+  
+class LZ06MOProblem : public ProblemFromSharkObjectiveFunction
+{
+public:
+  LZ06MOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
+    : ProblemFromSharkObjectiveFunction(objective, false), max1(max1), max2(max2)
+    {initialize(defaultExecutionContext());}
+  
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = objectiveIndex == 1 ? max2 : max1; best = 0.0;}
+  
+private:
+  double max1;
+  double max2;
+};
+  
+struct LZ06_F1MOProblem : public LZ06MOProblem {LZ06_F1MOProblem(size_t numDimensions = 30) : LZ06MOProblem(new LZ06_F1(numDimensions), 1.0, 1.0) {} };
 
 }; /* namespace lbcpp */
 

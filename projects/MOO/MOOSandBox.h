@@ -94,32 +94,33 @@ protected:
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize), bestFitness);
       solveWithSingleObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, numEvaluations / populationSize, true), bestFitness);
       solveWithSingleObjectiveOptimizer(context, problem, cmaessoOptimizer(numEvaluations), bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, nsga2moOptimizer(), bestFitness);
 
       /*
       ** Common to surrogate based solvers
       */
-      SamplerPtr sbsInitialSampler = latinHypercubeVectorSampler(60);
+      /*SamplerPtr sbsInitialSampler = latinHypercubeVectorSampler(60);
       SolverPtr sbsInnerSolver = crossEntropySolver(diagonalGaussianSampler(), populationSize, numBests, 5, true);
       sbsInnerSolver->setVerbosity((SolverVerbosity)verbosity);
       VariableEncoderPtr sbsVariableEncoder = scalarVectorVariableEncoder();
-      SelectionCriterionPtr sbsSelectionCriterion = expectedImprovementSelectionCriterion(bestFitness);
+      SelectionCriterionPtr sbsSelectionCriterion = expectedImprovementSelectionCriterion(bestFitness);*/
 
       /*
       ** Incremental surroggate based solver with extremely randomized trees
       */
-      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      /*IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       SolverPtr incrementalXTBasedSolver = incrementalSurrogateBasedSolver(sbsInitialSampler, xtIncrementalLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
-      solveWithSingleObjectiveOptimizer(context, problem, incrementalXTBasedSolver, bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, incrementalXTBasedSolver, bestFitness);*/
 
       /*
       ** Batch surroggate based solver with extremely randomized trees
       */
-      SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
+      /*SplittingCriterionPtr splittingCriterion = stddevReductionSplittingCriterion();
       SamplerPtr sampler = subsetVectorSampler(scalarExpressionVectorSampler(), K);
       SolverPtr xtBatchLearner = simpleEnsembleLearner(treeLearner(splittingCriterion, randomSplitConditionLearner(sampler)), numTrees);
       xtBatchLearner->setVerbosity((SolverVerbosity)verbosity);
       SolverPtr batchXTBasedSolver = batchSurrogateBasedSolver(sbsInitialSampler, xtBatchLearner, sbsInnerSolver, sbsVariableEncoder, sbsSelectionCriterion, numEvaluations);
-      solveWithSingleObjectiveOptimizer(context, problem, batchXTBasedSolver, bestFitness);
+      solveWithSingleObjectiveOptimizer(context, problem, batchXTBasedSolver, bestFitness);*/
 
       context.leaveScope(); 
     }
@@ -189,23 +190,24 @@ protected:
   {
     std::vector<ProblemPtr> problems;
     problems.push_back(new ZDT1MOProblem(numDimensions));
-/*    problems.push_back(new ZDT2MOProblem());
+    problems.push_back(new ZDT2MOProblem());
     problems.push_back(new ZDT3MOProblem());
     problems.push_back(new ZDT4MOProblem());
     problems.push_back(new ZDT6MOProblem());
-*/
+    problems.push_back(new LZ06_F1MOProblem());
+    
     for (size_t i = 0; i < problems.size(); ++i)
     {
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-//      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
-//      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
-//      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, parEGOOptimizer());
+      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
+      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
+//      solveWithMultiObjectiveOptimizer(context, problem, parEGOOptimizer());
 
       //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
-      solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 25, numEvaluations / 100, true));
       /*
       double explorationCoefficient = 5.0;
       IterativeSolverPtr baseOptimizer = crossEntropySolver(diagonalGaussianSampler(), 100, 50, 0, true);
