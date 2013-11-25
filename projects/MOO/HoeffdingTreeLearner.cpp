@@ -9,10 +9,10 @@
 #include "HoeffdingTreeLearner.h"
 using namespace std;
 
-HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, DataDefinition& dataDefinition) : context(context) {
+HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, ModelType modelType, double delta, DataDefinition& dataDefinition) : context(context) {
 	this->delta = delta;
 	this->dataDefinition = &dataDefinition;
-	modelType = ModelType::NXY;
+	this->modelType = modelType;
 	root = new LeafNode(modelType, dataDefinition, initialLearningRate, learningRateDecay, NULL);
 
 	// default settings:

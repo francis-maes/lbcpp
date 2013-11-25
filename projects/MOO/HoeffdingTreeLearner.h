@@ -60,7 +60,8 @@ public:
 		// linear regression: Y = a + bX
 		double div = n*Sxx-Sx*Sx;
 		double b = div==0?0:(n*Sxy-Sx*Sy)/div;
-		double a = n==0?0:(Sy-b*Sx)/n;
+		//double a = n==0?0:(Sy-b*Sx)/n;
+		double a = div==0?0:Sy*Sxx-Sx*Sxy;
 		return sqrt(1.0/n*(Syy-2*a*Sy-2*b*Sxy+n*a*a+2*a*b*Sx+b*b*Sxx));
 	}
 };
@@ -218,7 +219,7 @@ class DerivedModel {
 public:
 	unsigned n; /* number of samples */
 
-	virtual void update(unsigned dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) = 0;
+	virtual void update(int dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) = 0;
 };
 
 class DerivedModelNXY : public DerivedModel{
@@ -240,7 +241,7 @@ public:
 		Sxy = 0;
 	}
 
-	void update(unsigned dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) {
+	void update(int dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) {
 		n += dn;
 		Sy += dSy;
 		Syy += dSyy;
@@ -261,7 +262,7 @@ public:
 		Syy = 0;
 	}
 
-	void update(unsigned dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) {
+	void update(int dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) {
 		n += dn;
 		Sy += dSy;
 		Syy += dSyy;
@@ -354,7 +355,7 @@ private:
 		}
 		//update the sums and counts for computing the SDR of the split
 		totalLeftModel.update(0, node.leftModel->Sy, node.leftModel->Syy, 0, 0, 0);
-		totalRightModel.update(-node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, 0, 0, 0);
+		totalRightModel.update(-(int)node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, 0, 0, 0);
 		double sdParent = MathUtils::sd(totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Syy+totalRightModel.Syy, total);
 		double sdLeftChild = MathUtils::sd(totalLeftModel.Sy, totalLeftModel.Syy, total - totalRightModel.n);
 		double sdRightChild = MathUtils::sd(totalRightModel.Sy, totalRightModel.Syy, totalRightModel.n);
@@ -439,6 +440,8 @@ public:
 		totalRightModel->Sxx = leftModel->Sxx + rightModel->Sxx;
 		totalLeftModel->Sxy = 0;
 		totalRightModel->Sxy = leftModel->Sxy + rightModel->Sxy;
+		totalLeftModel->Sx = 0;
+		totalRightModel->Sx = leftModel->Sx + rightModel->Sx;
 		totalRightModel->n = leftModel->n + rightModel->n;
 		double total = leftModel->n + rightModel->n;
 		quality = 0;
@@ -454,7 +457,7 @@ private:
 		}
 		//update the sums and counts for computing the SDR of the split
 		totalLeftModel.update(0, node.leftModel->Sy, node.leftModel->Syy, node.leftModel->Sx, node.leftModel->Sxx, node.leftModel->Sxy);
-		totalRightModel.update(-node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, -node.leftModel->Sx, -node.leftModel->Sxx, -node.leftModel->Sxy);
+		totalRightModel.update(-(int)node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, -node.leftModel->Sx, -node.leftModel->Sxx, -node.leftModel->Sxy);
 		double sdParent = MathUtils::rsd(totalLeftModel.Sx+totalRightModel.Sx, totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Sxy+totalRightModel.Sxy, totalLeftModel.Sxx+totalRightModel.Sxx, totalLeftModel.Syy+totalRightModel.Syy, total);
 		double sdLeftChild = MathUtils::rsd(totalLeftModel.Sx, totalLeftModel.Sy, totalLeftModel.Sxy, totalLeftModel.Sxx, totalLeftModel.Syy, total - totalRightModel.n);
 		double sdRightChild = MathUtils::rsd(totalRightModel.Sx, totalRightModel.Sy, totalRightModel.Sxy, totalRightModel.Sxx, totalRightModel.Syy, totalRightModel.n);
@@ -477,7 +480,7 @@ private:
 class AttributeObservation {
 private:
 	void init(ModelType modelType) {
-		if(modelType == ModelType::NY){
+		if(modelType == NY){
 			model = new EBSTNY();
 		}
 		else{
@@ -497,7 +500,7 @@ public:
 	}
 
 	AttributeObservation(){
-		init(ModelType::NY);
+		init(NY);
 	}
 
 	AttributeObservation(ModelType modelType) {
@@ -647,7 +650,7 @@ protected:
 
 	unsigned seenExamples; /* number of unprocessed examples */
 public:
-	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, double delta, DataDefinition& dataDefinition);
+	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, ModelType modelType, double delta, DataDefinition& dataDefinition);
 	HoeffdingTreeLearner();
 	~HoeffdingTreeLearner();
 	/* add the training sample to the tree */
