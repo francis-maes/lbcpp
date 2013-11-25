@@ -13,9 +13,12 @@ class HoeffdingTreeLearnerTest: public WorkUnit {
 public:
 	int randomSeed;
 	int nbSamples;
+	int nbTestSamples;
+	bool modelNY;
+	bool modelNXY;
 
 	HoeffdingTreeLearnerTest() :
-			randomSeed(0), nbSamples(80) {
+			randomSeed(0), nbSamples(10000), nbTestSamples(3000), modelNY(false), modelNXY(false) {
 	}
 
 public:
@@ -24,15 +27,20 @@ public:
 		//pick a random seed
 		context.getRandomGenerator()->setSeed(randomSeed);
 
+		//ModelType modelType = static_cast<ModelType>(modelTypeInt);
+
 		// Fried dataset
-		/*DataDefinition* dataDef = new DataDefinition();
+		DataDefinition* dataDef = new DataDefinition();
 		dataDef->addAttribute("numAtt0");
 		dataDef->addAttribute("numAtt1");
 		dataDef->addAttribute("numAtt2");
 		dataDef->addAttribute("numAtt3");
 		dataDef->addAttribute("numAtt4");
 		dataDef->addTargetAttribute("targetValue");
-		HoeffdingTreeLearner htl = HoeffdingTreeLearner(context, 0.01, *dataDef);
+		HoeffdingTreeLearner htlNY = HoeffdingTreeLearner(context, ModelType::NY, 0.01, *dataDef);
+		HoeffdingTreeLearner htlNXY = HoeffdingTreeLearner(context, ModelType::NXY, 0.01, *dataDef);
+		if(!modelNY && !modelNXY)
+			new Boolean(false);
 
 		context.enterScope("HoeffdingTreeTest");
 		context.enterScope("testFunctions");
@@ -60,10 +68,16 @@ public:
 
 			context.enterScope(string((double) i));
 			context.resultCallback("i", (double) i);
-			htl.addTrainingSample(sample);
-
-			context.resultCallback("prediction",htl.predict(sample));
-			context.resultCallback("predictionError", abs(y - htl.predict(sample))/y);
+			if(modelNY){
+				htlNY.addTrainingSample(sample);
+				context.resultCallback("prediction NY",htlNY.predict(sample));
+				context.resultCallback("predictionError NY", abs(y - htlNY.predict(sample))/y);
+			}
+			if(modelNXY){
+				htlNXY.addTrainingSample(sample);
+				context.resultCallback("prediction NXY",htlNXY.predict(sample));
+				context.resultCallback("predictionError NXY", abs(y - htlNXY.predict(sample))/y);
+			}
 			context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
 
 			context.leaveScope();
@@ -74,15 +88,19 @@ public:
 		///END TRAINING
 
 		std::cout << "results: " << std::endl;
-		std::cout << "NbOfLeaves: " << htl.getNbOfLeaves() << std::endl;
+		if(modelNY)
+			std::cout << "NbOfLeaves NY: " << htlNY.getNbOfLeaves() << std::endl;
+		if(modelNXY)
+			std::cout << "NbOfLeaves NXY: " << htlNXY.getNbOfLeaves() << std::endl;
 		std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << std::endl;
 
-		double re = 0; // relative error
+		double reNY = 0; // relative error
+		double reNXY = 0;
 
 		// START TESTING
 		start = std::clock();
 
-		for (size_t i = 0; i < 300000; i++) {
+		for (size_t i = 0; i < nbTestSamples; i++) {
 			std::vector<float> sample;
 			x1 = MathUtils::randDouble();
 			x2 = MathUtils::randDouble();
@@ -104,7 +122,10 @@ public:
 			//context.resultCallback("predictionError", abs(y - htl.predict(sample))/y);
 			//context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
 
-			re+= abs(y-htl.predict(sample))/y;
+			if(modelNY)
+				reNY+= abs(y-htlNY.predict(sample))/y;
+			if(modelNXY)
+				reNXY+= abs(y-htlNXY.predict(sample))/y;
 
 			//context.leaveScope();
 			if(i % 10000 == 0){
@@ -112,17 +133,21 @@ public:
 			}
 		}
 
-		re /= 300000;
-		std::cout << "Relative error: " << re << std::endl;*/
+		reNY /= 300000;
+		reNXY /= 300000;
+		if(modelNY)
+			std::cout << "Relative error NY: " << reNY << std::endl;
+		if(modelNXY)
+			std::cout << "Relative error NXY: " << reNXY << std::endl;
 
 		// END TESTING
 
 		// setup htl learner
-		DataDefinition* dataDef = new DataDefinition();
+		/*DataDefinition* dataDef = new DataDefinition();
 		dataDef->addAttribute("numAtt0");
 		dataDef->addAttribute("numAtt1");
 		dataDef->addTargetAttribute("targetValue");
-		HoeffdingTreeLearner htl = HoeffdingTreeLearner(context, 0.01, *dataDef);
+		HoeffdingTreeLearner htl = HoeffdingTreeLearner(context, modelType, 0.01, *dataDef);
 
 		context.enterScope("HoeffdingTreeTest");
 		context.enterScope("training");
@@ -191,10 +216,10 @@ public:
 						abs(y - htl.predict(samplex))/y);
 
 			context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
-			re+=abs(y - htl.predict(samplex))/y;
+			re+=abs((y - htl.predict(samplex))/y);
 			context.leaveScope();
 		}
-		std::cout << re/nbSamples << std::endl;
+		std::cout << re/nbSamples << std::endl;*/
 
 
 

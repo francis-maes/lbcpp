@@ -101,5 +101,8 @@
   <class name="HoeffdingTreeLearnerTest" base="WorkUnit" >
     <variable type="PositiveInteger" name="randomSeed"/>
     <variable type="PositiveInteger" name="nbSamples"/>
+    <variable type="PositiveInteger" name="nbTestSamples"/>
+    <variable type="Boolean" name="modelNY"/>
+    <variable type="Boolean" name="modelNXY"/>
   </class>
 </library>
