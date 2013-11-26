@@ -113,7 +113,6 @@ public:
 	}
 
 	void addSample(const vector<float>& sample){
-		int index;
 		for(unsigned i = 0; i < attributeDefinitions.size(); i++){
 			attributeDefinitions[i].addAttributeInstance(sample[i]);
 		}
@@ -341,14 +340,14 @@ public:
 		totalLeftModel->Syy = 0;
 		totalRightModel->Syy = leftModel->Syy + rightModel->Syy;
 		totalRightModel->n = leftModel->n + rightModel->n;
-		double total = leftModel->n + rightModel->n;
+		unsigned total = leftModel->n + rightModel->n;
 		quality = 0;
 		findBestSplit(*this, quality, splitPoint, *totalLeftModel, *totalRightModel, total);
 	}
 
 private:
 	void findBestSplit(const EBSTNY& node, double& quality, double& splitPoint,
-		DerivedModelNY& totalLeftModel, DerivedModelNY& totalRightModel, double& total) const{
+		DerivedModelNY& totalLeftModel, DerivedModelNY& totalRightModel, unsigned& total) const{
 		if(node.hasLeftChild()){
 			findBestSplit(*node.left, quality, splitPoint,
 					totalLeftModel, totalRightModel, total);
@@ -443,14 +442,14 @@ public:
 		totalLeftModel->Sx = 0;
 		totalRightModel->Sx = leftModel->Sx + rightModel->Sx;
 		totalRightModel->n = leftModel->n + rightModel->n;
-		double total = leftModel->n + rightModel->n;
+		unsigned total = leftModel->n + rightModel->n;
 		quality = 0;
 		findBestSplit(*this, quality, splitPoint, *totalLeftModel, *totalRightModel, total);
 	}
 
 private:
 	void findBestSplit(const EBSTNXY& node, double& quality, double& splitPoint,
-		DerivedModelNXY& totalLeftModel, DerivedModelNXY& totalRightModel, double& total) const{
+		DerivedModelNXY& totalLeftModel, DerivedModelNXY& totalRightModel, unsigned& total) const{
 		if(node.hasLeftChild()){
 			findBestSplit(*node.left, quality, splitPoint,
 					totalLeftModel, totalRightModel, total);
