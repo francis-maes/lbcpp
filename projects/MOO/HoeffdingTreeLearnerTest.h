@@ -37,8 +37,8 @@ public:
 		dataDef->addAttribute("numAtt3");
 		dataDef->addAttribute("numAtt4");
 		dataDef->addTargetAttribute("targetValue");
-		HoeffdingTreeLearner htlNY = HoeffdingTreeLearner(context, ModelType::NY, 0.01, *dataDef);
-		HoeffdingTreeLearner htlNXY = HoeffdingTreeLearner(context, ModelType::NXY, 0.01, *dataDef);
+		HoeffdingTreeLearner htlNY = HoeffdingTreeLearner(context, NY, 0.01, *dataDef);
+		HoeffdingTreeLearner htlNXY = HoeffdingTreeLearner(context, NXY, 0.01, *dataDef);
 		if(!modelNY && !modelNXY)
 			new Boolean(false);
 
@@ -49,21 +49,21 @@ public:
 		start = std::clock();
 
 		// START TRAINING
-		double x1, x2, x3, x4, x5, y, noise;
-		for (size_t i = 0; i < nbSamples; i++) {
+		float x1, x2, x3, x4, x5, y, noise;
+		for (int i = 0; i < nbSamples; i++) {
 			std::vector<float> sample;
-			x1 = MathUtils::randDouble();
-			x2 = MathUtils::randDouble();
-			x3 = MathUtils::randDouble();
-			x4 = MathUtils::randDouble();
-			x5 = MathUtils::randDouble();
+			x1 = (float)MathUtils::randDouble();
+			x2 = (float)MathUtils::randDouble();
+			x3 = (float)MathUtils::randDouble();
+			x4 = (float)MathUtils::randDouble();
+			x5 = (float)MathUtils::randDouble();
 			sample.push_back(x1);
 			sample.push_back(x2);
 			sample.push_back(x3);
 			sample.push_back(x4);
 			sample.push_back(x5);
-			noise = MathUtils::randDouble();
-			y = 10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise;
+			noise = (float)MathUtils::randDouble();
+			y = (float)(10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise);
 			sample.push_back(y);
 
 			context.enterScope(string((double) i));
@@ -100,20 +100,20 @@ public:
 		// START TESTING
 		start = std::clock();
 
-		for (size_t i = 0; i < nbTestSamples; i++) {
+		for (int i = 0; i < nbTestSamples; i++) {
 			std::vector<float> sample;
-			x1 = MathUtils::randDouble();
-			x2 = MathUtils::randDouble();
-			x3 = MathUtils::randDouble();
-			x4 = MathUtils::randDouble();
-			x5 = MathUtils::randDouble();
+			x1 = (float)MathUtils::randDouble();
+			x2 = (float)MathUtils::randDouble();
+			x3 = (float)MathUtils::randDouble();
+			x4 = (float)MathUtils::randDouble();
+			x5 = (float)MathUtils::randDouble();
 			sample.push_back(x1);
 			sample.push_back(x2);
 			sample.push_back(x3);
 			sample.push_back(x4);
 			sample.push_back(x5);
-			noise = MathUtils::randDouble();
-			y = 10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise;
+			noise = (float)MathUtils::randDouble();
+			y = (float)(10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise);
 			sample.push_back(y);
 
 			//context.enterScope(string((double) i));
