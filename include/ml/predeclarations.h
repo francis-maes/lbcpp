@@ -69,6 +69,9 @@ typedef ReferenceCountedObjectPtr<SolutionVector> SolutionVectorPtr;
 class ParetoFront;
 typedef ReferenceCountedObjectPtr<ParetoFront> ParetoFrontPtr;
 
+class CrowdingArchive;
+typedef ReferenceCountedObjectPtr<CrowdingArchive> CrowdingArchivePtr;
+
 class SolverEvaluator;
 typedef ReferenceCountedObjectPtr<SolverEvaluator> SolverEvaluatorPtr;
 

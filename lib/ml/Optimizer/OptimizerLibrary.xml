@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Optimizer" directory="Optimizer">
-
+  
   <!-- Gradient-based optimizers -->
   <class name="LBFGSOptimizer" base="IterativeSolver">
     <constructor arguments="size_t numIterations"/>
@@ -28,6 +28,10 @@
   
   <class name="ParEGOOptimizer" base="IterativeSolver">
     <constructor arguments="size_t numIterations"/>
+  </class>
+
+  <class name="SMPSOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t swarmSize, size_t numIterations, SamplerPtr initialVectorSampler"/>
   </class>
 
 </library>

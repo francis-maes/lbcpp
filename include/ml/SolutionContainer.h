@@ -10,6 +10,7 @@
 # define ML_SOLUTION_CONTAINER_H_
 
 # include "predeclarations.h"
+# include <ml/SolutionComparator.h>
 
 namespace lbcpp
 {
@@ -133,6 +134,28 @@ public:
   virtual void insertSolutions(SolutionContainerPtr solutions);
 
   double computeHyperVolume(FitnessPtr referenceFitness = FitnessPtr()) const;
+};
+
+class CrowdingArchive : public ParetoFront
+{
+public:
+  CrowdingArchive(size_t maxSize, FitnessLimitsPtr limits, const std::vector<SolutionAndFitness>& solutions) 
+    : ParetoFront(limits, solutions, paretoRankAndCrowdingDistanceComparator()), maxSize(maxSize) 
+  {reserve(maxSize + 1);} // we reserve maxSize+1 because we insert a solution first, then remove the worst
+  
+  CrowdingArchive(size_t maxSize, FitnessLimitsPtr limits) 
+    : ParetoFront(limits, std::vector<SolutionAndFitness>(), paretoRankAndCrowdingDistanceComparator()), maxSize(maxSize)
+  {reserve(maxSize + 1);}
+  
+  CrowdingArchive(size_t maxSize = 100) : maxSize(maxSize)
+  {reserve(maxSize + 1);}
+
+  virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness);
+
+protected:
+  friend class CrowdingArchiveClass;
+
+  size_t maxSize;
 };
 
 }; /* namespace lbcpp */
