@@ -84,6 +84,8 @@ SET(ML_OPTIMIZER_SOURCES
   Optimizer/LBFGSOptimizer.cpp
   Optimizer/ParEGOOptimizer.h
   Optimizer/ParEGOOptimizer.cpp
+  Optimizer/SMPSOOptimizer.h
+  Optimizer/SMPSOOptimizer.cpp
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )

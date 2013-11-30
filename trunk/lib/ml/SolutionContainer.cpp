@@ -389,3 +389,18 @@ double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
     return hypervolume(&points[0], &ref[0], (unsigned int)numObjectives, (unsigned int)numPoints);
   }
 }
+
+void CrowdingArchive::insertSolution(ObjectPtr solution, FitnessPtr fitness)
+{
+  ParetoFront::insertSolution(solution, fitness);
+  if (getNumSolutions() > maxSize)
+  {
+    /* now we remove the worst solution */
+    int worst = 0;
+    comparator->initialize(this);
+    for (size_t i = 1; i < getNumSolutions(); ++i)
+      if (comparator->compareSolutions(worst, i) == 1) // i is worse than worst
+        worst = i;
+    solutions.erase(solutions.begin() + worst);
+  }
+}

@@ -190,11 +190,11 @@ protected:
   {
     std::vector<ProblemPtr> problems;
     problems.push_back(new ZDT1MOProblem(numDimensions));
-    problems.push_back(new ZDT2MOProblem());
-    problems.push_back(new ZDT3MOProblem());
-    problems.push_back(new ZDT4MOProblem());
-    problems.push_back(new ZDT6MOProblem());
-    problems.push_back(new LZ06_F1MOProblem());
+    problems.push_back(new ZDT2MOProblem(numDimensions));
+    problems.push_back(new ZDT3MOProblem(numDimensions));
+    problems.push_back(new ZDT4MOProblem(numDimensions));
+    problems.push_back(new ZDT6MOProblem(numDimensions));
+    problems.push_back(new LZ06_F1MOProblem(numDimensions));
     
     for (size_t i = 0; i < problems.size(); ++i)
     {
@@ -204,31 +204,13 @@ protected:
       solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
       solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
       solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
-//      solveWithMultiObjectiveOptimizer(context, problem, parEGOOptimizer());
-
-      //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropySolver(diagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
       solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 25, numEvaluations / 100, true));
-      /*
-      double explorationCoefficient = 5.0;
-      IterativeSolverPtr baseOptimizer = crossEntropySolver(diagonalGaussianSampler(), 100, 50, 0, true);
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 2, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 5, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 10, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 20, explorationCoefficient, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new MABMetaSolver(baseOptimizer, 50, explorationCoefficient, numEvaluations / 100));*/
-
-      
-      /*solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, false));
-      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, true));
-
-      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 1, 50, 25, 2, false));
-      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropySolver(new DiagonalGaussianSampler(), 1, 50, 25, 2, true));*/
-      
+      solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(100, numEvaluations / 100, samplerToVectorSampler(uniformSampler(), 100)));
       context.leaveScope();
     }
   }
 
-  void solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
+  double solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
     context.enterScope(optimizer->toShortString());
 
@@ -263,7 +245,9 @@ protected:
       context.leaveScope();
     }
 
-    context.leaveScope(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+    double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
+    context.leaveScope(hv);
+    return hv;
   }
 
   void testSolutionVectorComponent(ExecutionContext& context)
