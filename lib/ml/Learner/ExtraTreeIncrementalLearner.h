@@ -6,65 +6,32 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef MOO_EXTRA_TREE_INCREMENTAL_LEARNER_H_
-# define MOO_EXTRA_TREE_INCREMENTAL_LEARNER_H_
+#ifndef ML_EXTRA_TREE_INCREMENTAL_LEARNER_H_
+# define ML_EXTRA_TREE_INCREMENTAL_LEARNER_H_
 
+# include <ml/Expression.h>
 # include <ml/SplittingCriterion.h>
 # include <ml/IncrementalLearner.h>
-# include "ScalarVectorTreeExpression.h"
 
 namespace lbcpp
 {
  
-class ScalarVectorTreeIncrementalLearner : public IncrementalLearner
-{
-public:
-  typedef std::vector<double> InputVector;
-  typedef std::vector<double> Prediction;
-
-  virtual void addSampleToTree(ExecutionContext& context, ScalarVectorTreeNode* root, const InputVector& input, const Prediction& output) const = 0;
-
-  virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
-    {return new ScalarVectorTreeExpression(supervisionType);}
-
-  virtual void addTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& sample, ExpressionPtr expr) const
-  {
-    ScalarVectorTreeExpressionPtr expression = expr.staticCast<ScalarVectorTreeExpression>();
-
-    std::vector<double> input(sample.size() - 1);
-    for (size_t i = 0; i < input.size(); ++i)
-      input[i] = Double::get(sample[i]);
-
-    std::vector<double> output;
-    ObjectPtr supervision = sample.back();
-    if (supervision.isInstanceOf<Double>())
-      output.resize(1, Double::get(supervision));
-    else
-      output = supervision.staticCast<DenseDoubleVector>()->getValues();
-
-    if (expression->hasRoot())
-      addSampleToTree(context, expression->getRoot(), input, output);
-    else
-      expression->createRoot(input, output);
-  }
-};
-
 class PureRandomScalarVectorTreeIncrementalLearner : public ScalarVectorTreeIncrementalLearner
 {
 public:
-  virtual void addSampleToTree(ExecutionContext& context, ScalarVectorTreeNode* root, const InputVector& input, const Prediction& output) const
+  virtual void addSampleToTree(ExecutionContext& context, TreeNodePtr root, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
-    ScalarVectorTreeNode* leaf = root->findLeaf(input);
+    TreeNodePtr leaf = root->findLeaf(input);
     leaf->addSample(input, output);
       
-    size_t numAttributes = input.size(); 
+    size_t numAttributes = input->getNumValues(); 
     size_t testVariable = context.getRandomGenerator()->sampleSize(numAttributes);
 
     double minValue = DBL_MAX;
     double maxValue = -DBL_MAX;
     for (size_t i = 0; i < leaf->getNumSamples(); ++i)
     {
-      double value = leaf->getSampleInput(i)[testVariable];
+      double value = leaf->getSampleInput(i).staticCast<DenseDoubleVector>()->getValue(testVariable);
       if (value < minValue)
         minValue = value;
       if (value > maxValue)
@@ -113,4 +80,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !MOO_SANDBOX_H_
+#endif // !ML_EXTRA_TREE_INCREMENTAL_LEARNER_H_

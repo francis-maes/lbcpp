@@ -33,6 +33,17 @@
     <variable type="Expression" name="missingNode"/>
   </class>
   
+  <!-- Tree Expressions -->
+  <class name="TreeNode" base="Expression" abstract="yes"/>
+  <class name="ScalarVectorTreeNode" base="TreeNode">
+    <constructor arguments=""/>
+    <constructor arguments="const DenseDoubleVectorPtr&amp; input, const DenseDoubleVectorPtr&amp; output"/>
+  </class>
+  <!--
+  <class name="ScalarVectorTreeExpression" base="Expression">
+    <constructor arguments="ClassPtr type"/>
+  </class>-->
+  
   <!-- Gaussian Process Expression -->
   <class name="GaussianProcessExpression" base="Expression">
     <variable type="SharkGaussianProcess" name="gaussianProcess"/>

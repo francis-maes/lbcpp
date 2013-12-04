@@ -18,6 +18,12 @@
     <variable type="PositiveInteger" name="ensembleSize"/>
   </class>
 
+  <class name="EnsembleIncrementalLearner" base="IncrementalLearner">
+    <constructor arguments="IncrementalLearnerPtr baseLearner, size_t ensembleSize"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+    <variable type="IncrementalLearner" name="baseLearner"/>
+  </class>
+
   <class name="SimpleEnsembleLearner" base="EnsembleLearner">
     <constructor arguments="const SolverPtr&amp; baseLearner, size_t ensembleSize" returnType="Solver"/>
     <variable type="Solver" name="baseLearner"/>
@@ -35,6 +41,10 @@
     <variable type="PositiveInteger" name="minExamplesToSplit"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
+
+  <class name="PureRandomScalarVectorTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
+    <constructor arguments="" returnType="IncrementalLearner"/>
+  </class>
   
   <!-- Gaussian Process Learner -->
   <class name="SharkGaussianProcess" base="Object">
@@ -48,5 +58,4 @@
     <constructor arguments="IncrementalLearnerPtr learner"/>
     <variable type="IncrementalLearner" name="learner"/>
   </class>
-  
 </library>

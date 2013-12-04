@@ -12,6 +12,7 @@
 # include <oil/Execution/WorkUnit.h>
 # include <ml/RandomVariable.h>
 # include <ml/Solver.h>
+# include <ml/IncrementalLearner.h>
 # include <ml/Sampler.h>
 # include <ml/SolutionContainer.h>
 # include <ml/ExpressionSampler.h>
@@ -107,7 +108,7 @@ protected:
     {
       FitnessPtr bestEI;
       size_t numTrees = numDims * factors[i];
-      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      IncrementalLearnerPtr xtIncrementalLearner =ensembleIncrementalLearner(pureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeModified, xtIncrementalLearner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "IXT(" + string((int)numTrees) + ")", &bestEI)); 
     }
     

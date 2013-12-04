@@ -88,16 +88,6 @@
   </class>
   <class name="ScalarVectorFQIBasedSolver" base="FQIBasedSolver"/>
 
-  <!-- Incremental XT -->
-  <class name="ScalarVectorTreeExpression" base="Expression"/>
-  <class name="ScalarVectorTreeIncrementalLearner" base="IncrementalLearner" abstract="yes"/>
-
-  <class name="PureRandomScalarVectorTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner"/>
-  <class name="EnsembleIncrementalLearner" base="IncrementalLearner">
-    <variable type="IncrementalLearner" name="baseLearner"/>
-    <variable type="PositiveInteger" name="ensembleSize"/>
-  </class>
-
   <class name="HoeffdingTreeLearnerTest" base="WorkUnit" >
     <variable type="PositiveInteger" name="randomSeed"/>
     <variable type="PositiveInteger" name="nbSamples"/>

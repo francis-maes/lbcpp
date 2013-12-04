@@ -175,6 +175,9 @@ typedef ReferenceCountedObjectPtr<PostfixExpressionTypeSpace> PostfixExpressionT
 class IncrementalLearner;
 typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 
+class TreeNode;
+typedef ReferenceCountedObjectPtr<TreeNode> TreeNodePtr;
+
 }; /* namespace lbcpp */
 
 #endif // !ML_PREDECLARATIONS_H_

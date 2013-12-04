@@ -12,6 +12,7 @@
 # include <oil/Execution/WorkUnit.h>
 # include <ml/RandomVariable.h>
 # include <ml/Solver.h>
+# include <ml/IncrementalLearner.h>
 # include <ml/Sampler.h>
 # include <ml/SolutionContainer.h>
 
@@ -37,6 +38,7 @@ public:
                       runXT(false),
                       runIncrementalXT(false),
                       runGP(false),
+                      runParEGO(false),
                       uniformSampling(false),
                       latinHypercubeSampling(false),
                       modifiedLatinHypercubeSampling(false),
@@ -177,7 +179,7 @@ protected:
     
     if (runIncrementalXT)
     {
-      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      IncrementalLearnerPtr xtIncrementalLearner = ensembleIncrementalLearner(pureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       if (uniformSampling || runAll)
       {
         FitnessPtr bestEI;
