@@ -268,6 +268,33 @@ private:
   
 struct LZ06_F1MOProblem : public LZ06MOProblem {LZ06_F1MOProblem(size_t numDimensions = 30) : LZ06MOProblem(new LZ06_F1(numDimensions), 1.0, 1.0) {} };
 
+/*
+** DTLZ functions
+*/
+
+class DTLZMOProblem : public ProblemFromSharkObjectiveFunction
+{
+public:
+  DTLZMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2) 
+    : ProblemFromSharkObjectiveFunction(objective, false), max1(max1), max2(max2)
+    {initialize(defaultExecutionContext());}
+
+  virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
+    {worst = objectiveIndex == 1 ? max2 : max1; best = 0.0;}
+
+private:
+  double max1;
+  double max2;
+};
+
+struct DTLZ1MOProblem : public DTLZMOProblem {DTLZ1MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ1(numDimensions, 2), 0.5, 0.5) {} };
+struct DTLZ2MOProblem : public DTLZMOProblem {DTLZ2MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ2(numDimensions, 2), 1.0, 1.0) {} };
+struct DTLZ3MOProblem : public DTLZMOProblem {DTLZ3MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ3(numDimensions, 2), 1.0, 1.0) {} };
+struct DTLZ4MOProblem : public DTLZMOProblem {DTLZ4MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ4(numDimensions, 2), 1.0, 1.0) {} };
+struct DTLZ5MOProblem : public DTLZMOProblem {DTLZ5MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ5(numDimensions, 2), 1.0, 1.0) {} };
+struct DTLZ6MOProblem : public DTLZMOProblem {DTLZ6MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ6(numDimensions, 2), 1.0, 1.0) {} };
+struct DTLZ7MOProblem : public DTLZMOProblem {DTLZ7MOProblem(size_t numDimensions = 30) : DTLZMOProblem(new DTLZ7(numDimensions, 2), 1.0, 4.0) {} };
+
 }; /* namespace lbcpp */
 
 #endif // !MOO_PROBLEM_SHARK_H_

@@ -92,5 +92,6 @@
   
   <!-- Incremental Learner -->
   <class name="IncrementalLearner" abstract="yes"/>
+  <class name="ScalarVectorTreeIncrementalLearner" base="IncrementalLearner" abstract="yes"/>
 
 </library>

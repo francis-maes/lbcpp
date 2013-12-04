@@ -12,6 +12,8 @@
 # include "Function.h"
 # include "Aggregator.h"
 # include <oil/Core/Table.h>
+# include <ml/predeclarations.h>
+# include <ml/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -425,6 +427,44 @@ protected:
 
   DataVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const;
 };
+
+class TreeNode : public Expression
+{
+public:
+
+  //virtual ObjectPtr compute (ExecutionContext &context, const std::vector< ObjectPtr > &inputs) const
+  TreeNode(size_t testVariable, double testThreshold, const ClassPtr& type) : Expression(type), testVariable(testVariable), testThreshold(testThreshold), left(NULL), right(NULL) {}
+  TreeNode() : testVariable(-1), testThreshold(0), left(NULL), right(NULL) {}
+
+  virtual TreeNodePtr findLeaf(const ObjectPtr& input) const = 0;
+
+  bool isLeaf() const
+    {return (!left && !right);}
+
+  bool isInternal() const
+    {return left && right;}
+
+  virtual ObjectPtr getSampleInput(size_t index) const = 0;
+  virtual ObjectPtr getSamplePrediction(size_t index) const = 0;
+
+  virtual void addSample(const ObjectPtr& input, const ObjectPtr& output) = 0;
+  virtual void split(ExecutionContext& context, size_t testVariable, double testThreshold) = 0;
+  virtual size_t getNumSamples() const = 0;
+ // void split(ExecutionContext& context, size_t testVariable, double testThreshold) = 0;
+  
+
+protected:
+  friend class TreeNodeClass;
+
+  size_t testVariable;
+  double testThreshold;
+  TreeNodePtr left;
+  TreeNodePtr right;
+
+};
+
+extern TreeNodePtr scalarVectorTreeNode();
+extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output);
 
 }; /* namespace lbcpp */
 

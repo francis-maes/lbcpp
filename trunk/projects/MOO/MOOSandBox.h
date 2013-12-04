@@ -19,7 +19,6 @@
 # include <ml/SelectionCriterion.h>
 # include <ml/ExpressionSampler.h>
 
-# include "ExtraTreeIncrementalLearner.h"
 # include "SharkProblems.h"
 # include "FQIBasedSolver.h"
 
@@ -195,6 +194,13 @@ protected:
     problems.push_back(new ZDT4MOProblem(numDimensions));
     problems.push_back(new ZDT6MOProblem(numDimensions));
     problems.push_back(new LZ06_F1MOProblem(numDimensions));
+    problems.push_back(new DTLZ1MOProblem(numDimensions));
+    problems.push_back(new DTLZ2MOProblem(numDimensions));
+    problems.push_back(new DTLZ3MOProblem(numDimensions));
+    problems.push_back(new DTLZ4MOProblem(numDimensions));
+    problems.push_back(new DTLZ5MOProblem(numDimensions));
+    problems.push_back(new DTLZ6MOProblem(numDimensions));
+    problems.push_back(new DTLZ7MOProblem(numDimensions));
     
     for (size_t i = 0; i < problems.size(); ++i)
     {

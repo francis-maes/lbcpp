@@ -12,6 +12,7 @@
 # include <oil/Execution/WorkUnit.h>
 # include <ml/RandomVariable.h>
 # include <ml/Solver.h>
+# include <ml/IncrementalLearner.h>
 # include <ml/Sampler.h>
 # include <ml/SolutionContainer.h>
 
@@ -103,7 +104,7 @@ protected:
       FitnessPtr& bestEI1 = fitnessptrs[numSolvers * i];
       SolverPtr solver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 25, true);
       solver->setVerbosity(verbosityQuiet);
-      IncrementalLearnerPtr xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      IncrementalLearnerPtr xtIncrementalLearner = ensembleIncrementalLearner(pureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
                                                                         xtIncrementalLearner, 
                                                                         solver, 
@@ -117,7 +118,7 @@ protected:
       FitnessPtr& bestEI4 = fitnessptrs[numSolvers * i + 3];
       solver = crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 3, 100, true);
       solver->setVerbosity(verbosityQuiet);
-      xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      xtIncrementalLearner = ensembleIncrementalLearner(pureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
                                                                         xtIncrementalLearner, 
                                                                         solver, 
@@ -131,7 +132,7 @@ protected:
       FitnessPtr& bestEI2 = fitnessptrs[numSolvers * i + 1];
       solver = cmaessoOptimizer(100);
       solver->setVerbosity(verbosityQuiet);
-      xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      xtIncrementalLearner = ensembleIncrementalLearner(pureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
                                                                         xtIncrementalLearner, 
                                                                         solver, 
@@ -145,7 +146,7 @@ protected:
       FitnessPtr& bestEI3 = fitnessptrs[numSolvers * i + 2];
       solver = cmaessoOptimizer(500);
       solver->setVerbosity(verbosityQuiet);
-      xtIncrementalLearner = new EnsembleIncrementalLearner(new PureRandomScalarVectorTreeIncrementalLearner(), numTrees);
+      xtIncrementalLearner = ensembleIncrementalLearner(pureRandomScalarVectorTreeIncrementalLearner(), numTrees);
       subWorkUnits->addWorkUnit(new TestOneOptimizer(new SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeVectorSampler(numInitialSamples, true), 
                                                                         xtIncrementalLearner, 
                                                                         solver, 
