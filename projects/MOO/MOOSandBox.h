@@ -201,11 +201,13 @@ protected:
       ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
+      size_t populationSize = 100;
       solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
-      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(100, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(100, 100, numEvaluations / 100));
-      solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), 100, 25, numEvaluations / 100, true));
-      solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(100, numEvaluations / 100, samplerToVectorSampler(uniformSampler(), 100)));
+      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize));
+      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize));
+      solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, 25, numEvaluations / populationSize, true));
+      solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)));
+      solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)));
       context.leaveScope();
     }
   }
