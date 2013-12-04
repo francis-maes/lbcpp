@@ -31,7 +31,11 @@
   </class>
 
   <class name="SMPSOOptimizer" base="PopulationBasedSolver">
-    <constructor arguments="size_t swarmSize, size_t numIterations, SamplerPtr initialVectorSampler"/>
+    <constructor arguments="size_t swarmSize, size_t archiveSize, size_t numIterations, SamplerPtr initialVectorSampler"/>
+  </class>
+  
+  <class name="OMOPSOOptimizer" base="PopulationBasedSolver">
+    <constructor arguments="size_t swarmSize, size_t archiveSize, size_t numIterations, SamplerPtr initialVectorSampler"/>
   </class>
 
 </library>

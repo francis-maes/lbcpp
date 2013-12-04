@@ -132,7 +132,8 @@ extern PopulationBasedSolverPtr crossEntropySolver(SamplerPtr sampler, size_t po
 extern PopulationBasedSolverPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
 extern PopulationBasedSolverPtr cmaessoOptimizer(size_t populationSize = 100, size_t mu = 100, size_t numGenerations = 0);
 extern PopulationBasedSolverPtr cmaesmoOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0);
-extern PopulationBasedSolverPtr smpsoOptimizer(size_t swarmSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr());
+extern PopulationBasedSolverPtr smpsoOptimizer(size_t swarmSize = 100, size_t archiveSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr());
+extern PopulationBasedSolverPtr omopsoOptimizer(size_t swarmSize = 100, size_t archiveSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr());
   
 }; /* namespace lbcpp */
 

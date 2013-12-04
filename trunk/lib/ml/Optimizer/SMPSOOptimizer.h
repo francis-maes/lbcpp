@@ -30,8 +30,8 @@ namespace lbcpp
 class SMPSOOptimizer : public PopulationBasedSolver
 {
 public:
-  SMPSOOptimizer(size_t swarmSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr())
-    : PopulationBasedSolver(swarmSize, numIterations), initialVectorSampler(initialVectorSampler) {}
+  SMPSOOptimizer(size_t swarmSize = 100, size_t archiveSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr())
+    : PopulationBasedSolver(swarmSize, numIterations), archiveSize(archiveSize), initialVectorSampler(initialVectorSampler) {}
 
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution = ObjectPtr())
   {
@@ -44,6 +44,9 @@ public:
     PopulationBasedSolver::stopSolver(context);
     cleanUp();
   }
+
+  ~SMPSOOptimizer()
+    {cleanUp();}
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter);
 
@@ -59,11 +62,17 @@ protected:
   double constrictionCoefficient(double c1, double c2);
   double velocityConstriction(double v, double* deltaMax, double* deltaMin, int variableIndex, int particleIndex);
   double inertiaWeight(int iter, int miter, double wma, double wmin);
+  DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source)
+  {
+    DenseDoubleVectorPtr o1 = new DenseDoubleVector();
+    source->clone(context, o1);
+    return o1;
+  }
 
   SamplerPtr initialVectorSampler;
-  OVectorPtr initialSamples;
 
   /* parameters */
+  size_t archiveSize;
   double r1Max_;
   double r1Min_;
   double r2Max_;

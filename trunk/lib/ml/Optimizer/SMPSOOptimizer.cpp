@@ -32,7 +32,7 @@ void SMPSOOptimizer::init(ExecutionContext& context)
 
   particles = new SolutionVector(problem->getFitnessLimits());
   best = new SolutionVector(problem->getFitnessLimits());
-  leaders = new CrowdingArchive(populationSize, problem->getFitnessLimits());
+  leaders = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
 
   ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
   size_t numDimensions = domain->getNumDimensions();
@@ -59,96 +59,100 @@ void SMPSOOptimizer::init(ExecutionContext& context)
   eta_m = 20.0;
 
   /* Create initial population */
+  DenseDoubleVectorPtr object;
+  FitnessPtr fitness;
   initialVectorSampler->initialize(context, new VectorDomain(problem->getDomain()));
-  initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
+  OVectorPtr initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
   jassert(initialSamples->getNumElements() == populationSize);
+  for (size_t i = 0; i < initialSamples->getNumElements(); ++i)
+  {
+    object = initialSamples->getAndCast<DenseDoubleVector>(i);
+    fitness = evaluate(context, object);
+    particles->insertSolution(cloneVector(context, object), fitness);
+    leaders->insertSolution(object, fitness);
+    best->insertSolution(object, fitness);
+  }
 }
 
 bool SMPSOOptimizer::iterateSolver(ExecutionContext& context, size_t iter)
 {
   DenseDoubleVectorPtr object;
   FitnessPtr fitness;
-  if (iter == 0)
+  computeSpeed(context, iter);
+  computeNewPositions();
+  mopsoMutation(context, iter);
+  double totalLeaderInsertTime = 0.0;
+  for (size_t i = 0; i < populationSize; ++i)
   {
-    // First iteration: initialize population
-    for (size_t i = 0; i < initialSamples->getNumElements(); ++i)
-    {
-      object = initialSamples->getAndCast<DenseDoubleVector>(i);
-      fitness = evaluate(context, object);
-      particles->insertSolution(new DenseDoubleVector(*object), new Fitness(*fitness));
-      leaders->insertSolution(new DenseDoubleVector(*object), new Fitness(*fitness));
-      best->insertSolution(new DenseDoubleVector(*object), new Fitness(*fitness));
-    }
+    object = particles->getSolution(i).staticCast<DenseDoubleVector>();
+    fitness = evaluate(context, object);
+    double t = Time::getHighResolutionCounter();
+    leaders->insertSolution(cloneVector(context, object), fitness);
+    totalLeaderInsertTime += Time::getHighResolutionCounter() - t;
+    if (fitness->strictlyDominates(best->getFitness(i)))
+      best->setSolution(i, cloneVector(context, object), fitness);
   }
-  else {
-    computeSpeed(context, iter);
-    computeNewPositions();
-    mopsoMutation(context, iter);
-    for (size_t i = 0; i < populationSize; ++i)
-    {
-      object = particles->getSolution(i).staticCast<DenseDoubleVector>();
-      fitness = evaluate(context, object);
-      leaders->insertSolution(new DenseDoubleVector(*object), fitness);
-      if (fitness->strictlyDominates(best->getFitness(i)))
-        best->setSolution(i, new DenseDoubleVector(*object), new Fitness(*fitness));
-    }
+  if (verbosity >= verbosityDetailed)
+  {
+    context.resultCallback("Leader insert time", totalLeaderInsertTime);
+    context.resultCallback("Leader archive size", ((double) leaders->getNumSolutions()) / archiveSize );
   }
   return true;
 }
 
 void SMPSOOptimizer::computeSpeed(ExecutionContext& context, size_t iter)
 {
-    double r1, r2, W, C1, C2;
-    double wmax, wmin;
-    DenseDoubleVectorPtr bestGlobal;
-    SolutionComparatorPtr comparator = paretoRankAndCrowdingDistanceComparator();
-    comparator->initialize(leaders);
+  double r1, r2, W, C1, C2;
+  double wmax, wmin;
+  DenseDoubleVectorPtr bestGlobal;
+  SolutionComparatorPtr comparator = paretoRankAndCrowdingDistanceComparator();
+  comparator->initialize(leaders);
 
-    for (size_t i = 0; i < populationSize; ++i)
+  for (size_t i = 0; i < populationSize; ++i)
+  {
+    DenseDoubleVectorPtr particle = particles->getSolution(i);
+    DenseDoubleVectorPtr bestParticle = best->getSolution(i);
+
+    //Select a global best_ for calculate the speed of particle i, bestGlobal
+    if (leaders->getNumSolutions() > 1)
     {
-      DenseDoubleVectorPtr particle = particles->getSolution(i);
-      DenseDoubleVectorPtr bestParticle = best->getSolution(i);
+      DenseDoubleVectorPtr one, two;
+      int pos1 = context.getRandomGenerator()->sampleInt(leaders->getNumSolutions() - 1);
+      int pos2 = context.getRandomGenerator()->sampleInt(leaders->getNumSolutions() - 1);
 
-      //Select a global best_ for calculate the speed of particle i, bestGlobal
-      if (leaders->getNumSolutions() > 1)
-      {
-        DenseDoubleVectorPtr one, two;
-        int pos1 = context.getRandomGenerator()->sampleInt(leaders->getNumSolutions() - 1);
-        int pos2 = context.getRandomGenerator()->sampleInt(leaders->getNumSolutions() - 1);
-
-        if (comparator->compareSolutions(one, two) < 1)
-          bestGlobal = leaders->getSolution(pos1);
-        else
-          bestGlobal = leaders->getSolution(pos2);
-      }
+      if (comparator->compareSolutions(one, two) < 1)
+        bestGlobal = leaders->getSolution(pos1);
       else
-        bestGlobal = leaders->getSolution(0);
-
-      //Params for velocity equation
-      r1 = context.getRandomGenerator()->sampleDouble(r1Min_, r1Max_);
-      r2 = context.getRandomGenerator()->sampleDouble(r2Min_, r2Max_);
-      C1 = context.getRandomGenerator()->sampleDouble(C1Min_, C1Max_);
-      C2 = context.getRandomGenerator()->sampleDouble(C2Min_, C2Max_);
-      W = context.getRandomGenerator()->sampleDouble(WMin_, WMax_);
-      //
-      wmax = WMax_;
-      wmin = WMin_;
-
-      for (size_t var = 0; var < particle->getNumValues(); ++var)
-      {
-        //Computing the velocity of this particle 
-        speed[i][var] = velocityConstriction(constrictionCoefficient(C1, C2) *
-          (inertiaWeight(iter, numIterations, wmax, wmin) *
-          speed[i][var] +
-          C1 * r1 * (bestParticle->getValue(var) -
-          particle->getValue(var)) +
-          C2 * r2 * (bestGlobal->getValue(var) -
-          particle->getValue(var))), deltaMax_, //[var],
-          deltaMin_, //[var], 
-          var,
-          i);
-      }
+        bestGlobal = leaders->getSolution(pos2);
     }
+    else
+      bestGlobal = leaders->getSolution(0);
+
+    //Params for velocity equation
+    r1 = context.getRandomGenerator()->sampleDouble(r1Min_, r1Max_);
+    r2 = context.getRandomGenerator()->sampleDouble(r2Min_, r2Max_);
+    C1 = context.getRandomGenerator()->sampleDouble(C1Min_, C1Max_);
+    C2 = context.getRandomGenerator()->sampleDouble(C2Min_, C2Max_);
+    W = context.getRandomGenerator()->sampleDouble(WMin_, WMax_);
+    //
+    wmax = WMax_;
+    wmin = WMin_;
+
+    for (size_t var = 0; var < particle->getNumValues(); ++var)
+    {
+      //Computing the velocity of this particle 
+      speed[i][var] = velocityConstriction(constrictionCoefficient(C1, C2) *
+        (inertiaWeight(iter, numIterations, wmax, wmin) *
+        speed[i][var] +
+        C1 * r1 * (bestParticle->getValue(var) -
+        particle->getValue(var)) +
+        C2 * r2 * (bestGlobal->getValue(var) -
+        particle->getValue(var))), deltaMax_, //[var],
+        deltaMin_, //[var], 
+        var,
+        i);
+    }
+  }
 }
 
 double SMPSOOptimizer::inertiaWeight(int iter, int miter, double wma, double wmin) {
@@ -246,11 +250,19 @@ void SMPSOOptimizer::doMutation(ExecutionContext& context, DenseDoubleVectorPtr 
 
 void SMPSOOptimizer::cleanUp()
 {
-  delete[] deltaMin_;
-  delete[] deltaMax_;
-  for (size_t i = 0; i < populationSize; ++i)
+  if (deltaMin_)
+    delete[] deltaMin_;
+  if (deltaMax_)
+    delete[] deltaMax_;
+  if (speed)
+  {
+    for (size_t i = 0; i < populationSize; ++i)
       delete[] speed[i];
     delete[] speed;
+  }
+  deltaMin_ = 0;
+  deltaMax_ = 0;
+  speed = 0;
 }
 
 } /* namespace lbcpp */
