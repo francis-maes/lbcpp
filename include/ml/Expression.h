@@ -11,6 +11,7 @@
 
 # include "Function.h"
 # include "Aggregator.h"
+# include "RandomVariable.h"
 # include <oil/Core/Table.h>
 # include <ml/predeclarations.h>
 # include <ml/DoubleVector.h>
@@ -460,11 +461,32 @@ protected:
   double testThreshold;
   TreeNodePtr left;
   TreeNodePtr right;
-
 };
 
 extern TreeNodePtr scalarVectorTreeNode();
 extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output);
+
+class PerceptronExpression : public Expression
+{
+public:
+  PerceptronExpression(double learningRate, double learningRateDecay)
+    : learningRate(learningRate), learningRateDecay(learningRateDecay), numProcessedInstances(0),
+      weights(std::vector<double>()), statistics(std::vector<ScalarVariableMeanAndVariance>()) {}
+
+  virtual void updateWeights(ExecutionContext &context, const std::vector<ObjectPtr>& inputs, double output);
+  virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
+
+protected:
+  double learningRate;
+  double learningRateDecay;
+  double threshold;
+  size_t numProcessedInstances;
+  std::vector<double> weights;
+
+  /* Parameters for input normalization */
+  std::vector<ScalarVariableMeanAndVariance> statistics;
+};
+
 
 }; /* namespace lbcpp */
 

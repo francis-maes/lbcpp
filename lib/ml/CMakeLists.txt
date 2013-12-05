@@ -18,6 +18,7 @@ GENERATE_INTROSPECTION_CODE(Loader/LoaderLibrary.xml LoaderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SplittingCriterion/SplittingCriterionLibrary.xml SplittingCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SelectionCriterion/SelectionCriterionLibrary.xml SelectionCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learner/LearnerLibrary.xml LearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(IncrementalLearner/IncrementalLearnerLibrary.xml IncrementalLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 SET(ML_INCLUDES ../../include/ml)
@@ -221,10 +222,16 @@ SET(ML_LEARNER_SOURCES
   Learner/TreeLearner.h
   Learner/EnsembleLearner.h
   Learner/IncrementalLearnerBasedLearner.h
-  Learner/ExtraTreeIncrementalLearner.h
-  Learner/HoeffdingTreeLearner.h
   Learner/LearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LearnerLibrary.cpp
+)
+
+SET(ML_INCREMENTAL_LEARNER_SOURCES
+  IncrementalLearner/ExtraTreeIncrementalLearner.h
+  IncrementalLearner/HoeffdingTreeLearner.h
+  IncrementalLearner/PerceptronIncrementalLearner.h
+  IncrementalLearner/IncrementalLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/IncrementalLearnerLibrary.cpp
 )
 
 SET(ML_DATA_SOURCES
@@ -277,8 +284,8 @@ SET(ML_SOURCES
   ${ML_SPLITTING_CRITERION_SOURCES}
   ${ML_SELECTION_CRITERION_SOURCES}
   ${ML_LEARNER_SOURCES}
+  ${ML_INCREMENTAL_LEARNER_SOURCES}
   ${ML_DATA_SOURCES}
-
   ${ML_TOPLEVEL_SOURCES}
   ${ML_MAIN_SOURCES}
 )
@@ -303,6 +310,7 @@ SOURCE_GROUP(Loader FILES ${ML_LOADER_SOURCES})
 SOURCE_GROUP(SplittingCriterion FILES ${ML_SPLITTING_CRITERION_SOURCES})
 SOURCE_GROUP(SelectionCriterion FILES ${ML_SELECTION_CRITERION_SOURCES})
 SOURCE_GROUP(Learner FILES ${ML_LEARNER_SOURCES})
+SOURCE_GROUP(IncrementalLearner FILES ${ML_INCREMENTAL_LEARNER_SOURCES})
 SOURCE_GROUP(Data FILES ${ML_DATA_SOURCES})
 
 SOURCE_GROUP(Main FILES ${ML_MAIN_SOURCES})

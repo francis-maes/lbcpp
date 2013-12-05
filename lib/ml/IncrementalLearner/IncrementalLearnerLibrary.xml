@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<library name="IncrementalLearner" directory="IncrementalLearner">
+
+  <class name="PureRandomScalarVectorTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
+    <constructor arguments="" returnType="IncrementalLearner"/>
+  </class>
+
+  <class name="EnsembleIncrementalLearner" base="IncrementalLearner">
+    <constructor arguments="IncrementalLearnerPtr baseLearner, size_t ensembleSize"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+    <variable type="IncrementalLearner" name="baseLearner"/>
+  </class>
+  
+</library>
