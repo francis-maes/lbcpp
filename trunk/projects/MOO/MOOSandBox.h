@@ -60,6 +60,8 @@ protected:
   size_t numEvaluations;
   size_t verbosity;
 
+  typedef std::pair<double, SolverPtr> SolverResult;
+
   /*
   ** Single Objective
   */
@@ -208,17 +210,19 @@ protected:
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       size_t populationSize = 100;
-      solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations));
-      solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize));
-      solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize));
-      solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, 25, numEvaluations / populationSize, true));
-      solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)));
-      solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)));
-      context.leaveScope();
+      std::vector<SolverResult> results = std::vector<SolverResult>();
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 4, numEvaluations / populationSize, true)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
+      std::vector<SolverResult>::iterator best = std::max_element(results.begin(), results.end(), [](SolverResult r1, SolverResult r2) {return r1.first < r2.first;});
+      context.leaveScope(best->second);
     }
   }
 
-  double solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
+  SolverResult solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
   {
     context.enterScope(optimizer->toShortString());
 
@@ -255,7 +259,7 @@ protected:
 
     double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
     context.leaveScope(hv);
-    return hv;
+    return SolverResult(hv, optimizer);
   }
 
   void testSolutionVectorComponent(ExecutionContext& context)

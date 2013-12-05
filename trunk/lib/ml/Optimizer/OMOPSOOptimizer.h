@@ -66,7 +66,7 @@ protected:
   double delta(ExecutionContext& context, size_t iter, double y, double bMutationParameter);
   DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source)
   {
-    DenseDoubleVectorPtr o1 = new DenseDoubleVector();
+    DenseDoubleVectorPtr o1 = new DenseDoubleVector(1, 0.0);
     source->clone(context, o1);
     return o1;
   }

@@ -20,6 +20,18 @@
   <class name="ZDT4MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT6MOProblem" base="ZDTMOProblem"/>
 
+  <class name="LZ06MOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="LZ06_F1MOProblem" base="LZ06MOProblem"/>
+
+  <class name="DTLZMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="DTLZ1MOProblem" base="DTLZMOProblem"/>
+  <class name="DTLZ2MOProblem" base="DTLZMOProblem"/>
+  <class name="DTLZ3MOProblem" base="DTLZMOProblem"/>
+  <class name="DTLZ4MOProblem" base="DTLZMOProblem"/>
+  <class name="DTLZ5MOProblem" base="DTLZMOProblem"/>
+  <class name="DTLZ6MOProblem" base="DTLZMOProblem"/>
+  <class name="DTLZ7MOProblem" base="DTLZMOProblem"/>
+
   <class name="SolverInfo"/>
   <class name="TestOneOptimizer" base="WorkUnit"/>
 

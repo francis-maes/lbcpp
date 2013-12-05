@@ -64,7 +64,7 @@ protected:
   double inertiaWeight(int iter, int miter, double wma, double wmin);
   DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source)
   {
-    DenseDoubleVectorPtr o1 = new DenseDoubleVector();
+    DenseDoubleVectorPtr o1 = new DenseDoubleVector(1, 0.0);
     source->clone(context, o1);
     return o1;
   }

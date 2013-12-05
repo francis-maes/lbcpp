@@ -82,7 +82,7 @@ bool Double::loadFromString(ExecutionContext& context, const string& str)
     value = DVector::missingValue;
     return true;
   }
-  if (!v.containsOnly(T("0123456789e.-")))
+  if (!v.containsOnly(T("0123456789e.-+")))
   {
     context.errorCallback(T("Double::loadFromString"), T("Could not read double value ") + str.quoted());
     return false;
