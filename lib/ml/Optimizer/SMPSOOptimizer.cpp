@@ -31,7 +31,9 @@ void SMPSOOptimizer::init(ExecutionContext& context)
   ChVel2_ = -1;
 
   particles = new SolutionVector(problem->getFitnessLimits());
+  particles->reserve(populationSize);
   best = new SolutionVector(problem->getFitnessLimits());
+  best->reserve(populationSize);
   leaders = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
 
   ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
@@ -57,45 +59,40 @@ void SMPSOOptimizer::init(ExecutionContext& context)
   mutationProbability = 1.0 / domain->getNumDimensions();
   distributionIndex = 20.0;
   eta_m = 20.0;
-
-  /* Create initial population */
-  DenseDoubleVectorPtr object;
-  FitnessPtr fitness;
-  initialVectorSampler->initialize(context, new VectorDomain(problem->getDomain()));
-  OVectorPtr initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
-  jassert(initialSamples->getNumElements() == populationSize);
-  for (size_t i = 0; i < initialSamples->getNumElements(); ++i)
-  {
-    object = initialSamples->getAndCast<DenseDoubleVector>(i);
-    fitness = evaluate(context, object);
-    particles->insertSolution(cloneVector(context, object), fitness);
-    leaders->insertSolution(object, fitness);
-    best->insertSolution(object, fitness);
-  }
 }
 
 bool SMPSOOptimizer::iterateSolver(ExecutionContext& context, size_t iter)
 {
   DenseDoubleVectorPtr object;
   FitnessPtr fitness;
-  computeSpeed(context, iter);
-  computeNewPositions();
-  mopsoMutation(context, iter);
-  double totalLeaderInsertTime = 0.0;
-  for (size_t i = 0; i < populationSize; ++i)
+  if (iter == 0)
   {
-    object = particles->getSolution(i).staticCast<DenseDoubleVector>();
-    fitness = evaluate(context, object);
-    double t = Time::getHighResolutionCounter();
-    leaders->insertSolution(cloneVector(context, object), fitness);
-    totalLeaderInsertTime += Time::getHighResolutionCounter() - t;
-    if (fitness->strictlyDominates(best->getFitness(i)))
-      best->setSolution(i, cloneVector(context, object), fitness);
+    /* Create initial population */
+    initialVectorSampler->initialize(context, new VectorDomain(problem->getDomain()));
+    OVectorPtr initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
+    jassert(initialSamples->getNumElements() == populationSize);
+    for (size_t i = 0; i < initialSamples->getNumElements(); ++i)
+    {
+      object = initialSamples->getAndCast<DenseDoubleVector>(i);
+      fitness = evaluate(context, object);
+      particles->insertSolution(cloneVector(context, object), fitness);
+      leaders->insertSolution(object, fitness);
+      best->insertSolution(object, fitness);
+    }
   }
-  if (verbosity >= verbosityDetailed)
+  else 
   {
-    context.resultCallback("Leader insert time", totalLeaderInsertTime);
-    context.resultCallback("Leader archive size", ((double) leaders->getNumSolutions()) / archiveSize );
+    computeSpeed(context, iter);
+    computeNewPositions();
+    mopsoMutation(context, iter);
+    for (size_t i = 0; i < populationSize; ++i)
+    {
+      object = particles->getSolution(i).staticCast<DenseDoubleVector>();
+      fitness = evaluate(context, object);
+      leaders->insertSolution(cloneVector(context, object), fitness);
+      if (fitness->strictlyDominates(best->getFitness(i)))
+        best->setSolution(i, cloneVector(context, object), fitness);
+    }
   }
   return true;
 }

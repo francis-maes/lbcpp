@@ -15,7 +15,9 @@ namespace lbcpp
 void OMOPSOOptimizer::init(ExecutionContext& context)
 {
   particles = new SolutionVector(problem->getFitnessLimits());
+  particles->reserve(populationSize);
   best = new SolutionVector(problem->getFitnessLimits());
+  best->reserve(populationSize);
   leaders = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
 
   ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
@@ -32,37 +34,40 @@ void OMOPSOOptimizer::init(ExecutionContext& context)
   nonUniformMutationProbability = 1.0 / numDimensions;
   uniformMutationPerturbationIndex = 0.5;
   nonUniformMutationPerturbationIndex = 0.5;
-
-  /* Create initial population */
-  DenseDoubleVectorPtr object;
-  FitnessPtr fitness;
-  initialVectorSampler->initialize(context, new VectorDomain(problem->getDomain()));
-  OVectorPtr initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
-  jassert(initialSamples->getNumElements() == populationSize);
-  for (size_t i = 0; i < initialSamples->getNumElements(); ++i)
-  {
-    object = initialSamples->getAndCast<DenseDoubleVector>(i);
-    fitness = evaluate(context, object);
-    particles->insertSolution(cloneVector(context, object), new Fitness(*fitness));
-    leaders->insertSolution(object, new Fitness(*fitness));
-    best->insertSolution(object, new Fitness(*fitness));
-  }
 }
 
 bool OMOPSOOptimizer::iterateSolver(ExecutionContext& context, size_t iter)
 {
   DenseDoubleVectorPtr object;
   FitnessPtr fitness;
-  computeSpeed(context, iter);
-  computeNewPositions();
-  mopsoMutation(context, iter);
-  for (size_t i = 0; i < populationSize; ++i)
+  if (iter == 0)
   {
-    object = particles->getSolution(i).staticCast<DenseDoubleVector>();
-    fitness = evaluate(context, object);
-    leaders->insertSolution(cloneVector(context, object), fitness);
-    if (fitness->strictlyDominates(best->getFitness(i)))
-      best->setSolution(i, cloneVector(context, object), new Fitness(*fitness));
+    /* Create initial population */
+    initialVectorSampler->initialize(context, new VectorDomain(problem->getDomain()));
+    OVectorPtr initialSamples = initialVectorSampler->sample(context).staticCast<OVector>();
+    jassert(initialSamples->getNumElements() == populationSize);
+    for (size_t i = 0; i < initialSamples->getNumElements(); ++i)
+    {
+      object = initialSamples->getAndCast<DenseDoubleVector>(i);
+      fitness = evaluate(context, object);
+      particles->insertSolution(cloneVector(context, object), fitness);
+      leaders->insertSolution(object, fitness);
+      best->insertSolution(object, fitness);
+    }
+  }
+  else
+  {
+    computeSpeed(context, iter);
+    computeNewPositions();
+    mopsoMutation(context, iter);
+    for (size_t i = 0; i < populationSize; ++i)
+    {
+      object = particles->getSolution(i).staticCast<DenseDoubleVector>();
+      fitness = evaluate(context, object);
+      leaders->insertSolution(cloneVector(context, object), fitness);
+      if (fitness->strictlyDominates(best->getFitness(i)))
+        best->setSolution(i, cloneVector(context, object), new Fitness(*fitness));
+    }
   }
   return true;
 }
