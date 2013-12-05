@@ -178,6 +178,9 @@ typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 class TreeNode;
 typedef ReferenceCountedObjectPtr<TreeNode> TreeNodePtr;
 
+class PerceptronExpression;
+typedef ReferenceCountedObjectPtr<PerceptronExpression> PerceptronExpressionPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !ML_PREDECLARATIONS_H_

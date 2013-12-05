@@ -515,3 +515,40 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
 
 DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const
   {return subNode && subIndices->size() ? subNode->compute(context, data, subIndices) : DataVector::createConstant(subIndices, getType()->createObject(context));}
+
+void PerceptronExpression::updateWeights(ExecutionContext &context, const std::vector<ObjectPtr>& inputs, double output)
+{
+  if (!numProcessedInstances)
+  {
+    // This is the first sample, initialize the perceptron
+    threshold = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
+    weights.resize(inputs.size());
+    statistics.resize(inputs.size());
+    for (size_t i = 0; i < inputs.size(); ++i)
+    {
+      weights[i] = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
+      statistics[i] = ScalarVariableMeanAndVariance();
+    }
+  }
+  jassert(inputs.size() == weights.size());
+  double curLearningRate = learningRate / (1 + numProcessedInstances * learningRateDecay);
+  double dy = Double::get(compute(context, inputs)) - output;
+  size_t i = 0;
+  for (std::vector<double>::iterator it = weights.begin(); it != weights.end(); ++it, ++i)
+  {
+    *it += curLearningRate * dy * Double::get(inputs[i]);
+    statistics[i].push(inputs[i]);
+  }
+  ++numProcessedInstances;
+}
+
+ObjectPtr PerceptronExpression::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
+{
+  if (!numProcessedInstances) 
+    return new Double(0.0);
+  jassert(inputs.size() == weights.size());
+  double prediction = -threshold;
+  for (size_t i = 0; i < inputs.size(); ++i)
+    prediction += weights[i] * (Double::get(inputs[i]) - statistics[i].getMean()) / (3*statistics[i].getStandardDeviation());
+  return new Double(prediction);
+}

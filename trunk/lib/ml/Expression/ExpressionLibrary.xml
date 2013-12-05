@@ -4,6 +4,7 @@
 
   <include file="ml/Expression.h"/>
   <include file="ml/ExpressionDomain.h"/>
+  <include file="ml/RandomVariable.h"/>
   <include file="Learner/SharkGaussianProcessLearner.h"/>
     
   <!-- Expressions-->
@@ -39,10 +40,16 @@
     <constructor arguments=""/>
     <constructor arguments="const DenseDoubleVectorPtr&amp; input, const DenseDoubleVectorPtr&amp; output"/>
   </class>
-  <!--
-  <class name="ScalarVectorTreeExpression" base="Expression">
-    <constructor arguments="ClassPtr type"/>
-  </class>-->
+
+  <!-- Perceptron Expression -->
+  <class name="PerceptronExpression" base="Expression">
+    <variable type="Double" name="learningRate"/>
+    <variable type="Double" name="learningRateDecay"/>
+    <variable type="Double" name="treshold"/>
+    <variable type="PositiveInteger" name="numProcessedInstances"/>
+    <variable type="Vector[Double]" name="weights"/>
+    <variable type="Vector[ScalarVariableMeanAndVariance]" name="statistics"/>
+  </class>
   
   <!-- Gaussian Process Expression -->
   <class name="GaussianProcessExpression" base="Expression">
