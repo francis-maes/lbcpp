@@ -539,6 +539,7 @@ void PerceptronExpression::updateWeights(ExecutionContext &context, const std::v
     *it += curLearningRate * dy * Double::get(inputs[i]);
     statistics[i].push(inputs[i]);
   }
+  threshold += curLearningRate * dy;
   ++numProcessedInstances;
 }
 
@@ -547,8 +548,8 @@ ObjectPtr PerceptronExpression::compute(ExecutionContext &context, const std::ve
   if (!numProcessedInstances) 
     return new Double(0.0);
   jassert(inputs.size() == weights.size());
-  double prediction = -threshold;
+  double prediction = threshold;
   for (size_t i = 0; i < inputs.size(); ++i)
-    prediction += weights[i] * (Double::get(inputs[i]) - statistics[i].getMean()) / (3*statistics[i].getStandardDeviation());
+    prediction += weights[i] * (Double::get(inputs[i]) - statistics[i].getMean()) / (3*(statistics[i].getStandardDeviation() == 0 ? 1 : statistics[i].getStandardDeviation()));
   return new Double(prediction);
 }
