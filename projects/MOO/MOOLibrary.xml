@@ -48,6 +48,11 @@
     <variable type="PositiveInteger" name="randomSeed"/>
   </class>
 
+  <class name="PerceptronTest" base="WorkUnit">
+    <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="PositiveInteger" name="randomSeed"/>
+  </class>
+
   <class name="SBOExperiments" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations" shortName="n" description="Number of evaluations [1000]"/>
     <variable type="Boolean" name="runBaseline" description="Run baseline methods [false]"/>

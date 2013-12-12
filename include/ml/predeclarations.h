@@ -178,6 +178,9 @@ typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 class TreeNode;
 typedef ReferenceCountedObjectPtr<TreeNode> TreeNodePtr;
 
+class LinearModelExpression;
+typedef ReferenceCountedObjectPtr<LinearModelExpression> LinearModelExpressionPtr;
+
 class PerceptronExpression;
 typedef ReferenceCountedObjectPtr<PerceptronExpression> PerceptronExpressionPtr;
 

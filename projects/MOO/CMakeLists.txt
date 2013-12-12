@@ -20,6 +20,7 @@ SET(MOO_SOURCES
   TestSBOInnerOptimizers.h
   SBOExperiments.h
   SBOEnsembleSizeExperiments.h
+  PerceptronTest.h
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
 )

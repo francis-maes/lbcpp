@@ -450,9 +450,7 @@ public:
 
   virtual void addSample(const ObjectPtr& input, const ObjectPtr& output) = 0;
   virtual void split(ExecutionContext& context, size_t testVariable, double testThreshold) = 0;
-  virtual size_t getNumSamples() const = 0;
- // void split(ExecutionContext& context, size_t testVariable, double testThreshold) = 0;
-  
+  virtual size_t getNumSamples() const = 0;  
 
 protected:
   friend class TreeNodeClass;
@@ -466,27 +464,89 @@ protected:
 extern TreeNodePtr scalarVectorTreeNode();
 extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output);
 
+/** 
+ * \brief Expression representing a linear model.
+ * The first element in the weight vector \f$\mathbf{w}\f$ is the constant offset of the linear model.
+ * The result of a computation will be \f$f(\mathbf{x}) = \mathbf{w} \cdot [1 \mathbf{x}]\f$.
+ */
+class LinearModelExpression : public Expression
+{
+public:
+  LinearModelExpression() : Expression(doubleClass), weights(std::vector<double>()) {}
+  /** Constructor
+   *  \param weights Weight vector. The weight vector is copied on construction.
+   */
+  LinearModelExpression(const std::vector<double>& weights) : Expression(doubleClass), weights(std::vector<double>(weights)) {}
+
+  virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
+  /** Get a reference to the weight vector
+   *  \return a reference to the weight vector, allowing it to be updated
+   */
+  inline std::vector<double>& getWeights()
+    {return weights;}
+
+protected:
+  friend class LinearModelExpressionClass;
+
+  std::vector<double> weights;
+
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
+};
+
+
 class PerceptronExpression : public Expression
 {
 public:
-  PerceptronExpression(double learningRate, double learningRateDecay)
-    : learningRate(learningRate), learningRateDecay(learningRateDecay), numProcessedInstances(0),
-      weights(std::vector<double>()), statistics(std::vector<ScalarVariableMeanAndVariance>()) {}
+  PerceptronExpression() : Expression(doubleClass), statistics(std::vector<ScalarVariableMeanAndVariancePtr>()), 
+    normalizedInput(std::vector<ObjectPtr>()), model(new LinearModelExpression()) {}
 
-  virtual void updateWeights(ExecutionContext &context, const std::vector<ObjectPtr>& inputs, double output);
-  virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
+  virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
+    {calculateNormalizedInput(inputs); return model->compute(context, normalizedInput);}
+
+  ScalarVariableMeanAndVariancePtr getStatistics(size_t i) const
+    {return statistics[i];}
+
+  std::vector<double> normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample);
+
+  /** \brief Update the input vector statistics
+   *  This method will also initialize the statistics and linear model weight vectors if these are uninitialized
+   *  \param inputs vector of input values
+   */
+  void updateStatistics(ExecutionContext& context, const std::vector<ObjectPtr>& inputs);
+  /** \brief Update the input vector statistics, using a training sample
+   *  This method will also initialize the statistics and linear model weight vectors if these are uninitialized
+   *  \param sample All values except the last one will be regarded as the input vector
+   */
+  void updateStatisticsFromTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& inputs);
+  /** Get a reference to the model's weight vector
+   *  \return a reference to the weight vector, allowing it to be updated
+   */
+  inline std::vector<double>& getWeights()
+    {return model->getWeights();}
 
 protected:
-  double learningRate;
-  double learningRateDecay;
-  double threshold;
-  size_t numProcessedInstances;
-  std::vector<double> weights;
+  friend class PerceptronExpressionClass;
+  
+  LinearModelExpressionPtr model;                            /**< Underlying linear model */
+  std::vector<ScalarVariableMeanAndVariancePtr> statistics;  /**< Parameters for input normalization */
+  std::vector<ObjectPtr> normalizedInput;                    /**< placeholder for result of normalization of input, this avoids allocating a vector everytime a training sample is added or prediction is required */
 
-  /* Parameters for input normalization */
-  std::vector<ScalarVariableMeanAndVariance> statistics;
+  /** \brief Calculate the normalized input based on a given input
+   *  This method stores the normalized input vector in the class member normalizedInput.
+   *  \param inputs Input vector to be normalized, the first \f$n\f$ values of this vector will be normalized, where \f$n\f$ is the size of the normalizedInput class member.
+   *                This allows this method to be used with either input vectors or training samples.
+   */
+  void calculateNormalizedInput(const std::vector<ObjectPtr>& inputs) const
+  {
+    for (size_t i = 0; i < normalizedInput.size(); ++i)
+      normalizedInput[i].staticCast<Double>()->set(normalize(Double::get(inputs[i]), statistics[i]->getMean(), statistics[i]->getStandardDeviation()));
+  }
+
+  inline double normalize(double input, double mean, double stddev) const
+    {return (input - mean) / (3*stddev);}
+
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 };
-
 
 }; /* namespace lbcpp */
 

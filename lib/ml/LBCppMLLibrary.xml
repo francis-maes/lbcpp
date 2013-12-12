@@ -20,6 +20,7 @@
   <include file="ml/Problem.h"/>
   <include file="ml/Perturbator.h"/>
   <include file="ml/BanditPool.h"/>
+  <include file="ml/DataStream.h"/>
 
   <!-- Objective -->
   <class name="ScalarProperty" abstract="yes"/>
@@ -93,5 +94,15 @@
   <!-- Incremental Learner -->
   <class name="IncrementalLearner" abstract="yes"/>
   <class name="ScalarVectorTreeIncrementalLearner" base="IncrementalLearner" abstract="yes"/>
+  
+  <!-- Data Stream -->
+  <class name="DataStream" abstract="yes"/>
+  <class name="ProblemDataStream">
+    <constructor arguments="ProblemPtr problem, SamplerPtr sampler, size_t numObjects"/>
+    <variable type="Problem" name="problem"/>
+    <variable type="Sampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numObjects"/>
+    <variable type="PositiveInteger" name="numObjectsDrawn"/>
+  </class>
 
 </library>
