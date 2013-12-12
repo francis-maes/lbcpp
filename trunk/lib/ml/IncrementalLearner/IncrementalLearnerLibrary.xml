@@ -11,5 +11,12 @@
     <variable type="PositiveInteger" name="ensembleSize"/>
     <variable type="IncrementalLearner" name="baseLearner"/>
   </class>
+
+  <class name="PerceptronIncrementalLearner" base="IncrementalLearner">
+    <constructor arguments="size_t numInitialTrainingSamples, double learningRate, double learningRateDecay"/>
+    <variable type="PositiveInteger" name="numInitialTrainingSamples"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="Double" name="learningRateDecay"/>
+  </class>
   
 </library>

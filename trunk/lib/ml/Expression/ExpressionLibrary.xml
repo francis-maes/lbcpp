@@ -33,22 +33,15 @@
     <variable type="Expression" name="successNode"/>
     <variable type="Expression" name="missingNode"/>
   </class>
+  <class name="LinearModelExpression" base="Expression">
+    <variable type="Vector[Double]" name="weights"/>
+  </class>
   
   <!-- Tree Expressions -->
   <class name="TreeNode" base="Expression" abstract="yes"/>
   <class name="ScalarVectorTreeNode" base="TreeNode">
     <constructor arguments=""/>
     <constructor arguments="const DenseDoubleVectorPtr&amp; input, const DenseDoubleVectorPtr&amp; output"/>
-  </class>
-
-  <!-- Perceptron Expression -->
-  <class name="PerceptronExpression" base="Expression">
-    <variable type="Double" name="learningRate"/>
-    <variable type="Double" name="learningRateDecay"/>
-    <variable type="Double" name="treshold"/>
-    <variable type="PositiveInteger" name="numProcessedInstances"/>
-    <variable type="Vector[Double]" name="weights"/>
-    <variable type="Vector[ScalarVariableMeanAndVariance]" name="statistics"/>
   </class>
   
   <!-- Gaussian Process Expression -->

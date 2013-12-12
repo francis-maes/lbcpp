@@ -516,40 +516,83 @@ DataVectorPtr TestExpression::computeSamples(ExecutionContext& context, const Ta
 DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const TablePtr& data, const IndexSetPtr& subIndices) const
   {return subNode && subIndices->size() ? subNode->compute(context, data, subIndices) : DataVector::createConstant(subIndices, getType()->createObject(context));}
 
-void PerceptronExpression::updateWeights(ExecutionContext &context, const std::vector<ObjectPtr>& inputs, double output)
+ObjectPtr LinearModelExpression::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
 {
-  if (!numProcessedInstances)
-  {
-    // This is the first sample, initialize the perceptron
-    threshold = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
-    weights.resize(inputs.size());
-    statistics.resize(inputs.size());
-    for (size_t i = 0; i < inputs.size(); ++i)
-    {
-      weights[i] = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
-      statistics[i] = ScalarVariableMeanAndVariance();
-    }
-  }
-  jassert(inputs.size() == weights.size());
-  double curLearningRate = learningRate / (1 + numProcessedInstances * learningRateDecay);
-  double dy = Double::get(compute(context, inputs)) - output;
-  size_t i = 0;
-  for (std::vector<double>::iterator it = weights.begin(); it != weights.end(); ++it, ++i)
-  {
-    *it += curLearningRate * dy * Double::get(inputs[i]);
-    statistics[i].push(inputs[i]);
-  }
-  threshold += curLearningRate * dy;
-  ++numProcessedInstances;
+  if (weights.empty())
+    return new Double(0.0);
+  jassert(inputs.size() + 1 == weights.size());
+  double result = weights[0];
+  for (size_t i = 0; i < inputs.size(); ++i)
+    result += weights[i+1] * Double::get(inputs[i]);
+  return new Double(result);
 }
 
-ObjectPtr PerceptronExpression::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
+DataVectorPtr LinearModelExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
-  if (!numProcessedInstances) 
-    return new Double(0.0);
-  jassert(inputs.size() == weights.size());
-  double prediction = threshold;
+  DVectorPtr vector = new DVector(indices->size());
+  size_t i = 0;
+  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    vector->set(i++, Double::get(compute(context, data->getRow(*it))));
+  return new DataVector(indices, vector);
+}
+
+DataVectorPtr PerceptronExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
+{
+  DVectorPtr vector = new DVector(indices->size());
+  size_t i = 0;
+  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    vector->set(i++, Double::get(compute(context, data->getRow(*it))));
+  return new DataVector(indices, vector);
+}
+
+void PerceptronExpression::updateStatistics(ExecutionContext& context, const std::vector<ObjectPtr>& inputs)
+{
+  if (statistics.empty())
+  {
+    std::vector<double>& weights = model->getWeights();
+    // This is the first sample, initialize the statistics
+    statistics.resize(inputs.size());
+    normalizedInput.resize(inputs.size());
+    weights.resize(inputs.size() + 1);
+
+    for (size_t i = 0; i < statistics.size(); ++i)
+    {
+      statistics[i] = new ScalarVariableMeanAndVariance();
+      normalizedInput[i] = new Double();
+    }
+    for (size_t i = 0; i < weights.size(); ++i)
+      weights[i] = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
+  }
   for (size_t i = 0; i < inputs.size(); ++i)
-    prediction += weights[i] * (Double::get(inputs[i]) - statistics[i].getMean()) / (3*(statistics[i].getStandardDeviation() == 0 ? 1 : statistics[i].getStandardDeviation()));
-  return new Double(prediction);
+    statistics[i]->push(Double::get(inputs[i]));
+}
+
+void PerceptronExpression::updateStatisticsFromTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& sample)
+{
+  if (statistics.empty())
+  {
+    std::vector<double>& weights = model->getWeights();
+    // This is the first sample, initialize the statistics
+    statistics.resize(sample.size() - 1);
+    normalizedInput.resize(sample.size() - 1);
+    weights.resize(sample.size());
+
+    for (size_t i = 0; i < statistics.size(); ++i)
+    {
+      statistics[i] = new ScalarVariableMeanAndVariance();
+      normalizedInput[i] = new Double();
+    }
+    for (size_t i = 0; i < weights.size(); ++i)
+      weights[i] = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
+  }
+  for (size_t i = 0; i < sample.size() - 1; ++i)
+    statistics[i]->push(Double::get(sample[i]));
+}
+
+std::vector<double> PerceptronExpression::normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample)
+{
+  std::vector<double> result = std::vector<double>(sample.size() - 1, 0.0);
+  for (size_t i = 0; i < result.size(); ++i)
+    result[i] = normalize(Double::get(sample[i]), statistics[i]->getMean(), statistics[i]->getStandardDeviation());
+  return result;
 }
