@@ -518,12 +518,12 @@ DataVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const Exp
 
 ObjectPtr LinearModelExpression::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
 {
-  if (weights.empty())
+  if (weights->getNumValues() == 0)
     return new Double(0.0);
-  jassert(inputs.size() + 1 == weights.size());
-  double result = weights[0];
+  jassert(inputs.size() + 1 == weights->getNumValues());
+  double result = weights->getValue(0);
   for (size_t i = 0; i < inputs.size(); ++i)
-    result += weights[i+1] * Double::get(inputs[i]);
+    result += weights->getValue(i+1) * Double::get(inputs[i]);
   return new Double(result);
 }
 
@@ -549,19 +549,19 @@ void PerceptronExpression::updateStatistics(ExecutionContext& context, const std
 {
   if (statistics.empty())
   {
-    std::vector<double>& weights = model->getWeights();
+    DenseDoubleVectorPtr& weights = model->getWeights();
     // This is the first sample, initialize the statistics
     statistics.resize(inputs.size());
     normalizedInput.resize(inputs.size());
-    weights.resize(inputs.size() + 1);
+    weights->resize(inputs.size() + 1);
 
     for (size_t i = 0; i < statistics.size(); ++i)
     {
       statistics[i] = new ScalarVariableMeanAndVariance();
       normalizedInput[i] = new Double();
     }
-    for (size_t i = 0; i < weights.size(); ++i)
-      weights[i] = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
+    for (size_t i = 0; i < weights->getNumValues(); ++i)
+      weights->setValue(i, context.getRandomGenerator()->sampleDouble(-1.0, 1.0));
   }
   for (size_t i = 0; i < inputs.size(); ++i)
     statistics[i]->push(Double::get(inputs[i]));
@@ -571,28 +571,34 @@ void PerceptronExpression::updateStatisticsFromTrainingSample(ExecutionContext& 
 {
   if (statistics.empty())
   {
-    std::vector<double>& weights = model->getWeights();
+    DenseDoubleVectorPtr& weights = model->getWeights();
     // This is the first sample, initialize the statistics
     statistics.resize(sample.size() - 1);
     normalizedInput.resize(sample.size() - 1);
-    weights.resize(sample.size());
+    weights = new DenseDoubleVector(sample.size(), 0.0);
 
     for (size_t i = 0; i < statistics.size(); ++i)
     {
       statistics[i] = new ScalarVariableMeanAndVariance();
       normalizedInput[i] = new Double();
     }
-    for (size_t i = 0; i < weights.size(); ++i)
-      weights[i] = context.getRandomGenerator()->sampleDouble(-1.0, 1.0);
+    for (size_t i = 0; i < weights->getNumValues(); ++i)
+      weights->setValue(i, context.getRandomGenerator()->sampleDouble(-1.0, 1.0));
   }
   for (size_t i = 0; i < sample.size() - 1; ++i)
     statistics[i]->push(Double::get(sample[i]));
 }
 
-std::vector<double> PerceptronExpression::normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample)
+/** Calculate the normalization of an input vector based on a training sample
+ *  \param sample The training sample: a vector of length \f$n\f$. The first \f$n-1\f$ elements are
+ *                considered the input vector.
+ *  \return A DenseDoubleVectorPtr where the first element is 1.0, and the following \f$n-1\f$ elements are
+ *          the normalized input vector. This allows for easy updating of the weight vector by learners.
+ */
+DenseDoubleVectorPtr PerceptronExpression::normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample)
 {
-  std::vector<double> result = std::vector<double>(sample.size() - 1, 0.0);
-  for (size_t i = 0; i < result.size(); ++i)
-    result[i] = normalize(Double::get(sample[i]), statistics[i]->getMean(), statistics[i]->getStandardDeviation());
+  DenseDoubleVectorPtr result = new DenseDoubleVector(sample.size(), 1.0);
+  for (size_t i = 1; i < result->getNumValues(); ++i)
+    result->setValue(i, normalize(Double::get(sample[i-1]), statistics[i-1]->getMean(), statistics[i-1]->getStandardDeviation()));
   return result;
 }

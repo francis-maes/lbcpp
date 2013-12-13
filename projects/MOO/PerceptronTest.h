@@ -33,41 +33,39 @@ public:
     context.getRandomGenerator()->setSeed(randomSeed);
     
     // create the domain
-    ExpressionDomainPtr domain = new ExpressionDomain();
-    VariableExpressionPtr x = domain->addInput(doubleClass, "x");
-    VariableExpressionPtr y = domain->createSupervision(doubleClass, "y");
+    for (size_t functionNumber = 0; functionNumber < 9; ++functionNumber)
+    {
+      ExpressionDomainPtr domain = new ExpressionDomain();
+      VariableExpressionPtr x = domain->addInput(doubleClass, "x");
+      VariableExpressionPtr y = domain->createSupervision(doubleClass, "y");
     
-    // create the learning problem
-    ProblemPtr problem = makeProblem(context, domain);
+      // create the learning problem
+      ProblemPtr problem = makeProblem(context, functionNumber, domain);
     
-    // put learners in a vector
-    SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, 0.75, 0.005));
+      // put learners in a vector
+      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, 0.1, 0.005));
     
-    ObjectivePtr problemObj = problem->getObjective(0);
-    const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
+      ObjectivePtr problemObj = problem->getObjective(0);
+      const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
     
-    TablePtr testTable = makeTestTable(domain->getInput(0));
+      TablePtr testTable = makeTestTable(domain->getInput(0));
 
-    ExpressionPtr model;
-    FitnessPtr fitness;
-    context.enterScope("Learning");
-    learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
-    context.leaveScope();
-    context.resultCallback("model", model);
-    context.resultCallback("fitness", fitness);      
-    context.resultCallback("data", problemData);
-
-    // evaluate
-    double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
-    context.resultCallback("testingScore", testingScore);
-      
-    // make curve
-    context.enterScope("test");
-      
-    VectorPtr predictions = model->compute(context, testTable)->getVector();
-    context.resultCallback("predictions", predictions);
-
-    context.leaveScope();
+      ExpressionPtr model;
+      FitnessPtr fitness;
+      context.enterScope("Function " + ((string) functionNumber));
+      context.enterScope("Learning");
+      learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+      context.leaveScope();
+      context.resultCallback("model", model);
+      context.resultCallback("fitness", fitness);      
+      context.resultCallback("data", problemData);
+      VectorPtr predictions = model->compute(context, testTable)->getVector();
+      context.resultCallback("predictions", predictions);
+      double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
+      context.resultCallback("testingScore", testingScore);
+      makeCurve(context, functionNumber, model);
+      context.leaveScope();
+    }
 
     /*
     for (size_t i = 0; i < solvers.size(); i++)
@@ -185,8 +183,26 @@ protected:
   int randomSeed;
 
 private:
+
+  void makeCurve(ExecutionContext& context, size_t functionNumber, ExpressionPtr expression)
+  {
+      context.enterScope("Curve");
+      double x = -1.0;
+      std::vector<ObjectPtr> input = std::vector<ObjectPtr>(1);
+      input[0] = new Double(0.0);
+      for (size_t i = 0; i < 200; ++i, x += 0.01)
+      {
+        context.enterScope(string(x));
+        context.resultCallback("x", x);
+        context.resultCallback("supervision", targetFunction(context, x, functionNumber));
+        input[0].staticCast<Double>()->set(x);
+        context.resultCallback("prediction", expression->compute(context, input));
+        context.leaveScope();
+      }
+      context.leaveScope();
+  }
       
-  ProblemPtr makeProblem(ExecutionContext& context, ExpressionDomainPtr domain)
+  ProblemPtr makeProblem(ExecutionContext& context, size_t functionNumber, ExpressionDomainPtr domain)
   {
     ProblemPtr res = new Problem();
     
@@ -194,13 +210,13 @@ private:
     VariableExpressionPtr y = domain->getSupervision();
     
     res->setDomain(domain);
-    res->addObjective(mseRegressionObjective(makeTable(context, numSamples, x, y), y));
-    res->addValidationObjective(mseRegressionObjective(makeTable(context, 101, x, y), y));
+    res->addObjective(mseRegressionObjective(makeTable(context, functionNumber, numSamples, x, y), y));
+    res->addValidationObjective(mseRegressionObjective(makeTable(context, functionNumber, 101, x, y), y));
 
     return res;
   }
   
-  TablePtr makeTable(ExecutionContext& context, size_t count, VariableExpressionPtr x, VariableExpressionPtr y)
+  TablePtr makeTable(ExecutionContext& context, size_t functionNumber, size_t count, VariableExpressionPtr x, VariableExpressionPtr y)
   {
     TablePtr res = new Table(count);
     res->addColumn(x, doubleClass);
@@ -212,7 +228,7 @@ private:
       x = juce::roundDoubleToInt(x * 100) / 100.0;
       res->setElement(i, 0, new Double(x));
       
-      double y = targetFunction(x, 0);
+      double y = targetFunction(context, x, functionNumber);
       res->setElement(i, 1, new Double(y));
     }
     return res;
@@ -232,7 +248,7 @@ private:
     return res;
   }
   
-  double targetFunction(double x, size_t functionIndex)
+  double targetFunction(ExecutionContext& context, double x, size_t functionIndex)
   {
     double x2 = x * x;
     switch (functionIndex)
@@ -245,6 +261,7 @@ private:
       case 5: return sin(x) + sin(x + x2);
       case 6: return log(x + 2) + log(x2 + 1);
       case 7: return sqrt(2 + x);
+      case 8: return sqrt(2.0) * x - 1.0 + context.getRandomGenerator()->sampleDoubleFromGaussian(0.0, 0.1);
     }
     jassert(false);
     return 0.0;

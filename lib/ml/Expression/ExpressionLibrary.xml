@@ -36,6 +36,10 @@
   <class name="LinearModelExpression" base="Expression">
     <variable type="Vector[Double]" name="weights"/>
   </class>
+  <class name="PerceptronExpression" base="Expression">
+    <variable type="LinearModelExpression" name="model"/>
+    <variable type="Vector[ScalarVariableMeanAndVariance]" name="statistics"/>
+  </class>
   
   <!-- Tree Expressions -->
   <class name="TreeNode" base="Expression" abstract="yes"/>

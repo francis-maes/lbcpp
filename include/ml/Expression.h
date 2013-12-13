@@ -472,23 +472,28 @@ extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const
 class LinearModelExpression : public Expression
 {
 public:
-  LinearModelExpression() : Expression(doubleClass), weights(std::vector<double>()) {}
+  LinearModelExpression() : Expression(doubleClass), weights(DenseDoubleVectorPtr()) {}
   /** Constructor
    *  \param weights Weight vector. The weight vector is copied on construction.
    */
-  LinearModelExpression(const std::vector<double>& weights) : Expression(doubleClass), weights(std::vector<double>(weights)) {}
+  LinearModelExpression(const std::vector<double>& weights_) : Expression(doubleClass) 
+  {
+    weights = new DenseDoubleVector(weights_.size(), 0.0);
+    for (size_t i = 0; i < weights->getNumValues(); ++i)
+      weights->setValue(i, weights_[i]);
+  }
 
   virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
   /** Get a reference to the weight vector
    *  \return a reference to the weight vector, allowing it to be updated
    */
-  inline std::vector<double>& getWeights()
+  inline DenseDoubleVectorPtr& getWeights()
     {return weights;}
 
 protected:
   friend class LinearModelExpressionClass;
 
-  std::vector<double> weights;
+  DenseDoubleVectorPtr weights;
 
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 };
@@ -506,7 +511,7 @@ public:
   ScalarVariableMeanAndVariancePtr getStatistics(size_t i) const
     {return statistics[i];}
 
-  std::vector<double> normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample);
+  DenseDoubleVectorPtr normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample);
 
   /** \brief Update the input vector statistics
    *  This method will also initialize the statistics and linear model weight vectors if these are uninitialized
@@ -521,7 +526,7 @@ public:
   /** Get a reference to the model's weight vector
    *  \return a reference to the weight vector, allowing it to be updated
    */
-  inline std::vector<double>& getWeights()
+  inline DenseDoubleVectorPtr& getWeights()
     {return model->getWeights();}
 
 protected:

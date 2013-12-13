@@ -36,12 +36,31 @@ public:
       return;
     
     double curLearningRate = learningRate / (1 + numTrainingSamples * learningRateDecay);
-    double dy = Double::get(perceptron->compute(context, sample)) - Double::get(sample.back());
-    std::vector<double>& weights = perceptron->getWeights();
-    weights[0] += curLearningRate * dy;
-    std::vector<double> normalized = perceptron->normalizedInputVectorFromTrainingSample(sample);
-    for (size_t i = 1; i < weights.size(); ++i)
-      weights[i] += curLearningRate * dy * normalized[i-1];
+    double prediction = Double::get(perceptron->compute(context, sample));
+    double realVal = Double::get(sample.back());
+    double dy = realVal - prediction;
+    DenseDoubleVectorPtr& weights = perceptron->getWeights();
+    DenseDoubleVectorPtr normalized = perceptron->normalizedInputVectorFromTrainingSample(sample);
+    context.enterScope((string) numTrainingSamples);
+    context.resultCallback("numTrainingSamples", numTrainingSamples);
+    context.resultCallback("error", dy);
+    context.resultCallback("mean0", perceptron->getStatistics(0)->getMean());
+    context.resultCallback("stddev0", perceptron->getStatistics(0)->getStandardDeviation());
+    DenseDoubleVectorPtr s = new DenseDoubleVector(sample.size() - 1, 0.0);
+    for (size_t i = 0; i < sample.size() - 1; ++i)
+      s->setValue(i, Double::get(sample[i+1]));
+    context.resultCallback("sample", s);
+    context.resultCallback("normalized sample", normalized);
+    context.resultCallback("prediction", prediction);
+    context.resultCallback("real value", realVal);
+    context.resultCallback("current learning rate", curLearningRate);
+    double update = 0.0;
+    for (size_t i = 0; i < weights->getNumValues(); ++i)
+    {
+      weights->getValueReference(i) += curLearningRate * dy * normalized->getValue(i);
+      context.resultCallback("weight" + ((string) i), weights->getValue(i));
+    }
+    context.leaveScope();
   }
 
 protected:
