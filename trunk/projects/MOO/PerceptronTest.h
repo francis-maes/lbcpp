@@ -54,6 +54,7 @@ public:
       FitnessPtr fitness;
       context.enterScope("Function " + ((string) functionNumber));
       context.enterScope("Learning");
+      context.resultCallback("x", 0.0);
       learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
       context.leaveScope();
       context.resultCallback("model", model);
@@ -66,113 +67,6 @@ public:
       makeCurve(context, functionNumber, model);
       context.leaveScope();
     }
-
-    /*
-    for (size_t i = 0; i < solvers.size(); i++)
-    {
-      // learn
-      SolverPtr learner = solvers[i];
-      context.enterScope(learner->toShortString());
-      ExpressionPtr model;
-      FitnessPtr fitness;
-      context.enterScope("Learning");
-      learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
-      context.leaveScope();
-      context.resultCallback("model", model);
-      context.resultCallback("fitness", fitness);      
-      context.resultCallback("data", problemData);
-      // evaluate
-      double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
-      context.resultCallback("testingScore", testingScore);
-      
-      // make curve
-      context.enterScope("test");
-      
-      VectorPtr predictions = model->compute(context, testTable)->getVector();
-      context.resultCallback("predictions", predictions);
-      
-      // find best fitness
-      FitnessPtr bestFitness;
-      FitnessLimitsPtr limits = new FitnessLimits();
-      double worst, best;
-      problem->getObjective(0)->getObjectiveRange(worst, best);
-      limits->addObjective(worst, best);
-      for (size_t r = 0; r < problemData->getNumRows(); r++)
-      {
-        ObjectPtr supervision = problemData->getElement(r, 1);
-        FitnessPtr fitnessR = new Fitness(Double::get(supervision), limits);
-        bestFitness = (!bestFitness || fitnessR->dominates(bestFitness) ? fitnessR : bestFitness);
-      }
-      
-      SelectionCriterionPtr greedy = greedySelectionCriterion();
-      greedy->initialize(problem);
-      SelectionCriterionPtr optimistic = optimisticSelectionCriterion(2.0);
-      optimistic->initialize(problem);
-      SelectionCriterionPtr probabilityOfImprovement = probabilityOfImprovementSelectionCriterion(bestFitness);
-      probabilityOfImprovement->initialize(problem);
-      SelectionCriterionPtr expectedImprovement = expectedImprovementSelectionCriterion(bestFitness);
-      expectedImprovement->initialize(problem);
-      
-      double x = -1.0;
-      for (size_t i = 0; i < 200; ++i, x += 0.01)
-      {
-        context.enterScope(string(x));
-        context.resultCallback("x", x);
-       
-        for (size_t j = 0; j < numObjectives; ++j)
-        {
-          context.resultCallback("supervision" + string((int)j), targetFunction(x, moFunctionIdx[j]));
-        
-          bool found = false;
-          for (size_t r = 0; r < problemData->getNumRows() && !found; r++)
-          {
-            if (fabs(Double::get(problemData->getElement(r,0)) - x) < 0.005)
-            {
-              found = true;
-              ObjectPtr supervision = problemData->getElement(r, 1);
-              context.resultCallback("examples" + string((int)j), getIthValue(supervision, j));
-            }
-          }
-          
-          ScalarVariableMeanAndVariancePtr test = predictions->getElement(0).dynamicCast<ScalarVariableMeanAndVariance>();
-          if (test)  // it's an ensemble
-          {
-            ScalarVariableMeanAndVariancePtr prediction;
-            if (numObjectives == 1)
-              prediction = predictions->getElement(i).staticCast<ScalarVariableMeanAndVariance>();
-            else
-            {
-              OVectorPtr multiPrediction = predictions->getElement(i).staticCast<OVector>();
-              prediction = multiPrediction->getAndCast<ScalarVariableMeanAndVariance>(j);
-            }
-            double pred = prediction->getMean();
-            double stddev = prediction->getStandardDeviation();
-            context.resultCallback("prediction" + string((int)j), pred);
-            //context.resultCallback("stddevUp" + string((int)j), pred + stddev);
-            //context.resultCallback("stddevDown" + string((int)j), pred - stddev);
-            context.resultCallback("stddev" + string((int)j), stddev);
-            if (numObjectives == 1)
-            {
-              if (fabs(x - 0.2) < 1e-6)
-                jassert(true);
-              context.resultCallback("greedySelectionCriterion", greedy->evaluate(context, prediction));
-              context.resultCallback("optimisticSelectionCriterion", optimistic->evaluate(context, prediction));
-              context.resultCallback("probabilityOfImprovementSelectionCriterion", probabilityOfImprovement->evaluate(context, prediction));
-              context.resultCallback("expectedImprovementSelectionCriterion", expectedImprovement->evaluate(context, prediction));
-            }
-
-          }
-          else
-          {
-            context.resultCallback("prediction" + string((int)j), getIthValue(predictions->getElement(i), j));
-          }
-        }
-        context.leaveScope();
-      }
-      context.leaveScope();
-      context.leaveScope();
-    }*/
-    
     return new Boolean(true);
   }
   
@@ -186,7 +80,7 @@ private:
 
   void makeCurve(ExecutionContext& context, size_t functionNumber, ExpressionPtr expression)
   {
-      context.enterScope("Curve");
+      //context.enterScope("Curve");
       double x = -1.0;
       std::vector<ObjectPtr> input = std::vector<ObjectPtr>(1);
       input[0] = new Double(0.0);
@@ -199,7 +93,7 @@ private:
         context.resultCallback("prediction", expression->compute(context, input));
         context.leaveScope();
       }
-      context.leaveScope();
+      //context.leaveScope();
   }
       
   ProblemPtr makeProblem(ExecutionContext& context, size_t functionNumber, ExpressionDomainPtr domain)

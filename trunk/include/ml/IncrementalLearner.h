@@ -33,7 +33,7 @@ typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 
 /**
  *  Abstract base class for Incremental Decision Tree Learners
- *  Subclasses should
+ *  Subclasses should implement addSampleToTree
  */
 class ScalarVectorTreeIncrementalLearner : public IncrementalLearner
 {
