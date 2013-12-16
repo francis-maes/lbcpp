@@ -115,76 +115,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ScalarVectorTreeNode> ScalarVectorTreeNodePtr;
 
-/*
-class ScalarVectorTreeExpression : public Expression
-{
-public:
-  ScalarVectorTreeExpression(ClassPtr type = objectClass) 
-    : Expression(type), root(NULL) {}
 
-  virtual ObjectPtr compute(ExecutionContext& context, const std::vector<ObjectPtr>& inputs) const
-    {return root ? root->compute(context, inputs) : ObjectPtr();}
-
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
-  {
-    if (!root)
-      return DataVectorPtr();
-    if (getType() == doubleClass)
-    {
-      DVectorPtr vector = new DVector(indices->size());
-      size_t i = 0;
-      for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-        vector->set(i++, root->compute(context, makeInput(data, *it)));
-      return new DataVector(indices, vector);
-    }
-    else
-    {
-      OVectorPtr vector = new OVector(indices->size());
-      size_t i = 0;
-      for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-        vector->set(i++, compute(context, data->getRow(*it)));
-      return new DataVector(indices, vector);
-    }
-  }
-
-private:
-  ScalarVectorTreeNodePtr root;
-
-  ObjectPtr makeObject(const std::vector<double>& prediction) const
-  {
-    if (prediction.size() == 1)
-      return new Double(prediction[0]);
-    else
-    {
-      DenseDoubleVectorPtr res = new DenseDoubleVector(getType());
-      jassert(res->getNumValues() == prediction.size());
-      for (size_t i = 0; i < prediction.size(); ++i)
-        res->setValue(i, prediction[i]);
-      return res;
-    }
-  }
-
-  std::vector<ObjectPtr> makeInput(TablePtr data, size_t row) const
-  {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(data->getNumColumns(), 0.0);
-    for (size_t i = 0; i < res->getNumValues(); ++i)
-      res->setValue(i, data->getData(i).staticCast<DVector>()->get(row));
-    std::vector<ObjectPtr> result;
-    result.push_back(res);
-    return result;
-  }
-
-  std::vector<double> makeInput(const std::vector<ObjectPtr>& sample) const
-  {
-    std::vector<double> res(sample.size());
-    for (size_t i = 0; i < res.size(); ++i)
-      res[i] = Double::get(sample[i]);
-    return res;
-  }
-};
-
-typedef ReferenceCountedObjectPtr<ScalarVectorTreeExpression> ScalarVectorTreeExpressionPtr;
-*/
 } /* namespace lbcpp */
 
 #endif //!ML_SCALAR_VECTOR_TREE_EXPRESSION_H_
