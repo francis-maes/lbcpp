@@ -51,6 +51,8 @@
   <class name="PerceptronTest" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="randomSeed"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="Double" name="learningRateDecay"/>
   </class>
 
   <class name="SBOExperiments" base="WorkUnit">
