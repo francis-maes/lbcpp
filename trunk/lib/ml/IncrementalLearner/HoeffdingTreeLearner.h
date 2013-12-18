@@ -11,16 +11,16 @@
 
 namespace lbcpp
 {
-  /*
+
 class HoeffdingTreeLearner : public ScalarVectorTreeIncrementalLearner
 {
-  virtual void addSampleToTree(ExecutionContext& context, ScalarVectorTreeNode* root, const InputVector& input, const Prediction& output);
+/*  virtual void addSampleToTree(ExecutionContext& context, ScalarVectorTreeNode* root, const InputVector& input, const Prediction& output);
 
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
     {return new ScalarVectorTreeExpression(supervisionType);}
-
-};
 */
+};
+
 } /* namespace lbcpp */
 
 #endif //!ML_HOEFFDING_TREE_LEARNER_H_
