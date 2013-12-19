@@ -54,7 +54,7 @@ public:
 
       ExpressionPtr model;
       FitnessPtr fitness;
-      context.enterScope("Function " + ((string) functionNumber));
+      context.enterScope("Function " + string((int) functionNumber));
       context.enterScope("Learning");
       context.resultCallback("x", 0.0);
       learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));

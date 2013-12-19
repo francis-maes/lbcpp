@@ -30,7 +30,7 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : numDimensions(6), numEvaluations(1000), verbosity(1) {}
+  MOOSandBox() : numDimensions(6), numEvaluations(1000), numRuns(1), verbosity(1) {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -58,6 +58,7 @@ protected:
 
   size_t numDimensions;
   size_t numEvaluations;
+  size_t numRuns;
   size_t verbosity;
 
   typedef std::pair<double, SolverPtr> SolverResult;
@@ -211,13 +212,23 @@ protected:
       context.resultCallback("problem", problem);
       size_t populationSize = 100;
       std::vector<SolverResult> results = std::vector<SolverResult>();
+      context.progressCallback(new ProgressionState((size_t) 0, 6, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations)));
+      context.progressCallback(new ProgressionState((size_t) 1, 6, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize)));
+      context.progressCallback(new ProgressionState((size_t) 2, 6, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize)));
+      context.progressCallback(new ProgressionState((size_t) 3, 6, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 4, numEvaluations / populationSize, true)));
+      context.progressCallback(new ProgressionState((size_t) 4, 6, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
+      context.progressCallback(new ProgressionState((size_t) 5, 6, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
-      std::vector<SolverResult>::iterator best = std::max_element(results.begin(), results.end(), [](SolverResult r1, SolverResult r2) {return r1.first < r2.first;});
+      context.progressCallback(new ProgressionState((size_t) 6, 6, "Solvers"));
+//      std::vector<SolverResult>::iterator best = std::max_element(results.begin(), results.end(), [](SolverResult r1, SolverResult r2) {return r1.first < r2.first;}); // not supported pre-C++11
+      std::vector<SolverResult>::iterator best = results.begin();
+      for (std::vector<SolverResult>::iterator it = results.begin(); it != results.end(); ++it)
+        if (it->first > best->first) best = it;
       context.leaveScope(best->second);
     }
   }
@@ -226,40 +237,49 @@ protected:
   {
     context.enterScope(optimizer->toShortString());
 
-    DVectorPtr cpuTimes = new DVector();
-    DVectorPtr hyperVolumes = new DVector();
-    IVectorPtr evaluations = new IVector();
-    size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
-    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
-    SolverCallbackPtr callback = compositeSolverCallback(
-      fillParetoFrontSolverCallback(front),
-      evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
-      maxEvaluationsSolverCallback(numEvaluations));
-
-
-    optimizer->setVerbosity((SolverVerbosity)verbosity);
-    optimizer->solve(context, problem, callback);
-    context.resultCallback("optimizer", optimizer);
-    //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
-
-    if (verbosity >= 1)
+    ScalarVariableMeanAndVariancePtr hvs = new ScalarVariableMeanAndVariance();
+    context.progressCallback(new ProgressionState(0, numRuns, "Runs"));
+    for (size_t i = 0; i < numRuns; ++i)
     {
-      context.enterScope("curve");
+      context.enterScope("Run " + string((int) i));
+      DVectorPtr cpuTimes = new DVector();
+      DVectorPtr hyperVolumes = new DVector();
+      IVectorPtr evaluations = new IVector();
+      size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
+      ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+      SolverCallbackPtr callback = compositeSolverCallback(
+        fillParetoFrontSolverCallback(front),
+        evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
+        maxEvaluationsSolverCallback(numEvaluations));
 
-      for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)
+
+      optimizer->setVerbosity((SolverVerbosity)verbosity);
+      optimizer->solve(context, problem, callback);
+      context.resultCallback("optimizer", optimizer);
+      //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+
+      if (verbosity >= 1)
       {
-        context.enterScope(string(evaluations->get(i)));
-        context.resultCallback("numEvaluations", evaluations->get(i));
-        context.resultCallback("hyperVolume", hyperVolumes->get(i));
-        context.resultCallback("cpuTime", cpuTimes->get(i));
+        context.enterScope("curve");
+
+        for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)
+        {
+          context.enterScope(string(evaluations->get(i)));
+          context.resultCallback("numEvaluations", evaluations->get(i));
+          context.resultCallback("hyperVolume", hyperVolumes->get(i));
+          context.resultCallback("cpuTime", cpuTimes->get(i));
+          context.leaveScope();
+        }
         context.leaveScope();
       }
-      context.leaveScope();
-    }
 
-    double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
-    context.leaveScope(hv);
-    return SolverResult(hv, optimizer);
+      double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
+      context.leaveScope(hv);
+      hvs->push(hv);
+      context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
+    }
+    context.leaveScope(hvs);
+    return SolverResult(hvs->getMean(), optimizer);
   }
 
   void testSolutionVectorComponent(ExecutionContext& context)
