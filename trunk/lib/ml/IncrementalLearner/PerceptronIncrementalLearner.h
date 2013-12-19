@@ -41,7 +41,7 @@ public:
     double dy = realVal - prediction;
     DenseDoubleVectorPtr& weights = perceptron->getWeights();
     DenseDoubleVectorPtr normalized = perceptron->normalizedInputVectorFromTrainingSample(sample);
-    context.enterScope((string) numTrainingSamples);
+    context.enterScope(string((int) numTrainingSamples));
     context.resultCallback("numTrainingSamples", numTrainingSamples);
     context.resultCallback("error", dy);
     context.resultCallback("mean0", perceptron->getStatistics(0)->getMean());
@@ -54,11 +54,10 @@ public:
     context.resultCallback("prediction", prediction);
     context.resultCallback("real value", realVal);
     context.resultCallback("current learning rate", curLearningRate);
-    double update = 0.0;
     for (size_t i = 0; i < weights->getNumValues(); ++i)
     {
       weights->getValueReference(i) += curLearningRate * dy * normalized->getValue(i);
-      context.resultCallback("weight" + ((string) i), weights->getValue(i));
+      context.resultCallback("weight" + string((int) i), weights->getValue(i));
     }
     context.leaveScope();
   }

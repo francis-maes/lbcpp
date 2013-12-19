@@ -39,6 +39,7 @@
     <variable type="PositiveInteger" name="numDimensions"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="verbosity"/>
+    <variable type="PositiveInteger" name="numRuns"/>
   </class>
   
   <class name="TestRandomForestUncertainties" base="WorkUnit">
