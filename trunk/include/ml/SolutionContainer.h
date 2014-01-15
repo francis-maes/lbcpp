@@ -51,7 +51,7 @@ public:
     {return solutions.size();}
 
   virtual void removeSolution(size_t index)
-    {jassert(index >= 0 && index < solutions.size()); solutions.erase(index);}
+    {jassert(index >= 0 && index < solutions.size()); solutions.erase(solutions.begin() + index);}
 
   virtual ObjectPtr getSolution(size_t index) const
     {jassert(index < solutions.size()); return solutions[index].first;}

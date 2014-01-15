@@ -35,8 +35,8 @@ namespace lbcpp
 class AbYSSOptimizer : public PopulationBasedSolver
 {
 public:
-  AbYSSOptimizer(size_t populationSize = 20, size_t numIterations = 0)
-    : PopulationBasedSolver(populationSize, numIterations) {}
+  AbYSSOptimizer(size_t populationSize = 20, size_t archiveSize = 100, size_t refSet1Size = 10, size_t refSet2Size = 10, size_t numIterations = 0)
+    : PopulationBasedSolver(populationSize, numIterations), archiveSize_(archiveSize), refSet1Size_(refSet1Size), refSet2Size_(refSet2Size) {}
 
   virtual void startSolver(ExecutionContext& context, ProblemPtr problem, SolverCallbackPtr callback, ObjectPtr startingSolution = ObjectPtr())
   {
@@ -62,6 +62,10 @@ protected:
   SolutionVectorPtr solutionSet;
   SolutionVectorPtr refSet1;
   SolutionVectorPtr refSet2;
+  SolutionVectorPtr subSet;
+  std::map<ObjectPtr, double> distancesToSolutionSet;
+  std::map<ObjectPtr, bool> marked;
+
   /**
    * These variables are used in the diversification method.
    */
@@ -74,9 +78,10 @@ protected:
   size_t archiveSize_;          //!< Maximum size of the external archive
   size_t refSet1Size_;          //!< Maximum size of the reference set one
   size_t refSet2Size_;          //!< Maximum size of the reference set two
-  size_t solutionSetSize_;      //!< Maximum number of solution allowed for the initial solution set
+  size_t subSetSize_;           //!< Maximum size of the subSet
 
   MutationPtr improvementOperator;
+  CrossoverPtr crossoverOperator;
 
   void init(ExecutionContext& context);
   void cleanUp();
@@ -87,8 +92,24 @@ protected:
    *               the first time. Otherwise the reference set will be updated
    *               with new solutions.
    */
-  void referenceSetUpdate(bool build);
-  size_t subSetGeneration();
+  void referenceSetUpdate(ExecutionContext& context, bool build);
+  size_t subSetGeneration(ExecutionContext& context);
+  bool refSet1Test(const ObjectPtr& solution, const FitnessPtr& fitness);
+  bool refSet2Test(const ObjectPtr& solution, const FitnessPtr& fitness);
+  
+  double distanceToSolutionSet(const DenseDoubleVectorPtr& individual, const SolutionVectorPtr& set) const
+  {
+    double distance = DBL_MAX;
+    double aux = 0.0;
+    for (size_t i = 0; i < set->getNumSolutions(); ++i)
+    {
+      aux = individual->distanceTo(set->getSolution(i).staticCast<DenseDoubleVector>());
+      if (aux < distance)
+        distance = aux;
+    }
+    return distance;
+  }
+  
   DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source) const
   {
     DenseDoubleVectorPtr o1 = new DenseDoubleVector(1, 0.0);

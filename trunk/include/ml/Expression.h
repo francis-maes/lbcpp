@@ -450,7 +450,7 @@ public:
 
   virtual void addSample(const ObjectPtr& input, const ObjectPtr& output) = 0;
   virtual void split(ExecutionContext& context, size_t testVariable, double testThreshold) = 0;
-  virtual size_t getNumSamples() const = 0;  
+  virtual size_t getNumSamples() const = 0;
 
 protected:
   friend class TreeNodeClass;
@@ -463,6 +463,27 @@ protected:
 
 extern TreeNodePtr scalarVectorTreeNode();
 extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output);
+
+class HoeffdingTreeNode : public TreeNode
+{
+public:
+  HoeffdingTreeNode() : TreeNode() {}
+  
+  virtual TreeNodePtr findLeaf(const ObjectPtr& input) const;
+  virtual ObjectPtr getSampleInput(size_t index) const;
+  virtual ObjectPtr getSamplePrediction(size_t index) const;
+  virtual void addSample(const ObjectPtr& input, const ObjectPtr& output);
+  virtual void split(ExecutionContext& context, size_t testVariable, double testThreshold);
+  virtual size_t getNumSamples() const;
+  virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
+  
+protected:
+  friend class HoeffdingTreeNodeClass;
+
+  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
+};
+
+extern TreeNodePtr hoeffdingTreeNode();
 
 /** 
  * \brief Expression representing a linear model.

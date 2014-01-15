@@ -134,7 +134,8 @@ extern PopulationBasedSolverPtr cmaessoOptimizer(size_t populationSize = 100, si
 extern PopulationBasedSolverPtr cmaesmoOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0);
 extern PopulationBasedSolverPtr smpsoOptimizer(size_t swarmSize = 100, size_t archiveSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr());
 extern PopulationBasedSolverPtr omopsoOptimizer(size_t swarmSize = 100, size_t archiveSize = 100, size_t numIterations = 0, SamplerPtr initialVectorSampler = SamplerPtr());
-  
+extern PopulationBasedSolverPtr abYSSOptimizer(size_t populationSize = 20, size_t archiveSize = 100, size_t refSet1Size = 10, size_t refSet2Size = 10, size_t numIterations = 0);
+
 }; /* namespace lbcpp */
 
 #endif // !ML_OPTIMIZER_H_

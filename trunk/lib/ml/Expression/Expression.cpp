@@ -602,3 +602,46 @@ DenseDoubleVectorPtr PerceptronExpression::normalizedInputVectorFromTrainingSamp
     result->setValue(i, normalize(Double::get(sample[i-1]), statistics[i-1]->getMean(), statistics[i-1]->getStandardDeviation()));
   return result;
 }
+
+
+TreeNodePtr HoeffdingTreeNode::findLeaf(const ObjectPtr &input) const
+{
+  if (isLeaf())
+    return refCountedPointerFromThis(this);
+  DenseDoubleVectorPtr inputVector = input.staticCast<DenseDoubleVector>();
+  if (inputVector->getValue(testVariable) > testThreshold)
+    return right->findLeaf(input);
+  else
+    return left->findLeaf(input);
+}
+
+ObjectPtr HoeffdingTreeNode::getSampleInput(size_t index) const
+  {jassertfalse; return ObjectPtr();}
+
+ObjectPtr HoeffdingTreeNode::getSamplePrediction(size_t index) const
+  {jassertfalse; return ObjectPtr();}
+
+void HoeffdingTreeNode::addSample(const ObjectPtr& input, const ObjectPtr& output)
+{
+
+}
+
+void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, double testThreshold)
+{
+  
+}
+
+size_t HoeffdingTreeNode::getNumSamples() const
+{
+  return 0;
+}
+
+ObjectPtr HoeffdingTreeNode::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
+{
+  return ObjectPtr();
+}
+
+DataVectorPtr HoeffdingTreeNode::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
+{
+  return DataVectorPtr();
+}

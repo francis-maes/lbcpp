@@ -1030,6 +1030,15 @@ double DenseDoubleVector::computeEntropy(double l1norm) const
   return res;
 }
 
+double DenseDoubleVector::distanceTo(const DenseDoubleVectorPtr& other) const
+{
+  jassert(this->getNumValues() == other->getNumValues());
+  double distance = 0.0;
+  for (size_t i = 0; i < this->getNumValues(); ++i)
+    distance += (this->getValue(i) - other->getValue(i)) * (this->getValue(i) - other->getValue(i));
+  return sqrt(distance);
+}
+
 // DoubleVector
 double DenseDoubleVector::entropy() const
   {return defaultEntropy(*this);}

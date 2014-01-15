@@ -256,6 +256,8 @@ SET(ML_GENETIC_OPERATOR_SOURCES
   GeneticOperator/UniformMutation.h
   GeneticOperator/NonUniformMutation.h
   GeneticOperator/PolynomialMutation.h
+  GeneticOperator/LocalSearchMutation.h
+  GeneticOperator/SBXCrossover.h
   GeneticOperator/GeneticOperatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/GeneticOperatorLibrary.cpp
 )
