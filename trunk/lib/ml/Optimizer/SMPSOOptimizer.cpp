@@ -59,6 +59,7 @@ void SMPSOOptimizer::init(ExecutionContext& context)
   mutationProbability = 1.0 / domain->getNumDimensions();
   distributionIndex = 20.0;
   eta_m = 20.0;
+  mutation = polynomialMutation(mutationProbability, distributionIndex, eta_m);
 }
 
 bool SMPSOOptimizer::iterateSolver(ExecutionContext& context, size_t iter)
@@ -204,45 +205,7 @@ void SMPSOOptimizer::mopsoMutation(ExecutionContext& context, size_t iter)
 {
   for (size_t i = 0; i < particles->getNumSolutions(); ++i)
     if ((i % 6) == 0)
-      doMutation(context, particles->getSolution(i).staticCast<DenseDoubleVector>()) ;
-}
-
-void SMPSOOptimizer::doMutation(ExecutionContext& context, DenseDoubleVectorPtr particle)
-{
-  double rnd, delta1, delta2, mut_pow, deltaq;
-  double y, yl, yu, val, xy;
-  ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
-  for (size_t var=0; var < particle->getNumValues(); ++var)
-  {
-    if (context.getRandomGenerator()->sampleDouble() <= mutationProbability)
-	  {
-		  y      = particle->getValue(var);
-      yl     = domain->getLowerLimit(var);              
-		  yu     = domain->getUpperLimit(var);
-		  delta1 = (y-yl)/(yu-yl);
-		  delta2 = (yu-y)/(yu-yl);
-		  rnd = context.getRandomGenerator()->sampleDouble();
-		  mut_pow = 1.0/(eta_m+1.0);
-		  if (rnd <= 0.5)
-		  {
-			  xy     = 1.0-delta1;
-			  val    = 2.0*rnd+(1.0-2.0*rnd)*(pow(xy,(distributionIndex+1.0)));
-			  deltaq =  pow(val,mut_pow) - 1.0;
-		  }
-		  else
-		  {
-			  xy = 1.0-delta2;
-			  val = 2.0*(1.0-rnd)+2.0*(rnd-0.5)*(pow(xy,(distributionIndex+1.0)));
-			  deltaq = 1.0 - (pow(val,mut_pow));
-		  }
-		  y = y + deltaq*(yu-yl);
-		  if (y<yl)
-			  y = yl;
-		  if (y>yu)
-			  y = yu;
-		  particle->setValue(var, y);                           
-	  }
-  }
+      mutation->execute(context, problem, particles->getSolution(i));
 }
 
 void SMPSOOptimizer::cleanUp()

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<library name="GeneticOperator" directory="GeneticOperator">
+
+  <!-- Base classes -->
+  <class name="Mutation" abstract="yes">
+    <variable type="Double" name="probability"/>
+  </class>
+  
+  <!-- Mutation Operators -->
+  <class name="PolynomialMutation" base="Mutation">
+    <constructor arguments="double probability, double distributionIndex, double eta_m"/>
+    <variable type="Double" name="distributionIndex"/>
+    <variable type="Double" name="eta_m"/>
+  </class>
+
+  <class name="UniformMutation" base="Mutation">
+    <constructor arguments="double probability, double perturbation"/>
+    <variable type="Double" name="perturbation"/>
+  </class>
+
+  <class name="NonUniformMutation" base="Mutation">
+    <constructor arguments="double probability, double perturbation, size_t currentIteration, size_t maxIterations"/>
+    <variable type="Double" name="perturbation"/>
+    <variable type="PositiveInteger" name="currentIteration"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
+  </class>
+</library>

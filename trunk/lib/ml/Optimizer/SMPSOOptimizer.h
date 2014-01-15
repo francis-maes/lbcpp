@@ -14,6 +14,7 @@
 # include <ml/Solver.h>
 # include <ml/SolutionContainer.h>
 # include <ml/SolutionComparator.h>
+# include <ml/GeneticOperator.h>
 
 namespace lbcpp
 {
@@ -58,11 +59,10 @@ protected:
   void computeSpeed(ExecutionContext& context, size_t iter);
   void computeNewPositions();
   void mopsoMutation(ExecutionContext& context, size_t iter);
-  void doMutation(ExecutionContext& context, DenseDoubleVectorPtr particle);
   double constrictionCoefficient(double c1, double c2);
   double velocityConstriction(double v, double* deltaMax, double* deltaMin, int variableIndex, int particleIndex);
   double inertiaWeight(int iter, int miter, double wma, double wmin);
-  DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source)
+  DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source) const
   {
     DenseDoubleVectorPtr o1 = new DenseDoubleVector(1, 0.0);
     source->clone(context, o1);
@@ -104,6 +104,7 @@ protected:
   double mutationProbability;
   double distributionIndex;
   double eta_m;
+  MutationPtr mutation;
 };
 
 } /* namespace lbcpp */

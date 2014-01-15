@@ -20,6 +20,7 @@ GENERATE_INTROSPECTION_CODE(SelectionCriterion/SelectionCriterionLibrary.xml Sel
 GENERATE_INTROSPECTION_CODE(Learner/LearnerLibrary.xml LearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(IncrementalLearner/IncrementalLearnerLibrary.xml IncrementalLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(GeneticOperator/GeneticOperatorLibrary.xml GeneticOperatorLibrary.cpp)
 
 SET(ML_INCLUDES ../../include/ml)
 
@@ -54,6 +55,7 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/IterationFunction.h
   ${ML_INCLUDES}/IncrementalLearner.h
   ${ML_INCLUDES}/DataStream.h
+  ${ML_INCLUDES}/GeneticOperator.h
 )
 
 SET(ML_VARIABLE_ENCODER_SOURCES
@@ -90,6 +92,8 @@ SET(ML_OPTIMIZER_SOURCES
   Optimizer/SMPSOOptimizer.cpp
   Optimizer/OMOPSOOptimizer.h
   Optimizer/OMOPSOOptimizer.cpp
+  Optimizer/AbYSSOptimizer.h
+  Optimizer/AbYSSOptimizer.cpp
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )
@@ -113,6 +117,7 @@ SET(ML_COMPARATOR_SOURCES
   Comparator/LexicographicComparator.h
   Comparator/DominanceComparator.h
   Comparator/ParetoRankComparator.h
+  Comparator/SPEA2Comparator.h
   Comparator/ComparatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ComparatorLibrary.cpp
 )
@@ -247,6 +252,13 @@ SET(ML_DATA_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )
 
+SET(ML_GENETIC_OPERATOR_SOURCES
+  GeneticOperator/UniformMutation.h
+  GeneticOperator/NonUniformMutation.h
+  GeneticOperator/PolynomialMutation.h
+  GeneticOperator/GeneticOperatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/GeneticOperatorLibrary.cpp
+)
 
 SET(ML_TOPLEVEL_SOURCES
   SolutionContainer.cpp
@@ -287,6 +299,7 @@ SET(ML_SOURCES
   ${ML_LEARNER_SOURCES}
   ${ML_INCREMENTAL_LEARNER_SOURCES}
   ${ML_DATA_SOURCES}
+  ${ML_GENETIC_OPERATOR_SOURCES}
   ${ML_TOPLEVEL_SOURCES}
   ${ML_MAIN_SOURCES}
 )
@@ -313,6 +326,7 @@ SOURCE_GROUP(SelectionCriterion FILES ${ML_SELECTION_CRITERION_SOURCES})
 SOURCE_GROUP(Learner FILES ${ML_LEARNER_SOURCES})
 SOURCE_GROUP(IncrementalLearner FILES ${ML_INCREMENTAL_LEARNER_SOURCES})
 SOURCE_GROUP(Data FILES ${ML_DATA_SOURCES})
+SOURCE_GROUP(GeneticOperator FILES ${ML_GENETIC_OPERATOR_SOURCES})
 
 SOURCE_GROUP(Main FILES ${ML_MAIN_SOURCES})
 

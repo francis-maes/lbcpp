@@ -17,5 +17,8 @@
   <class name="ParetoRankAndCrowdingDistanceComparator" base="SolutionComparator">
     <constructor/>
   </class>
+  <class name="SPEA2Comparator" base="SolutionComparator">
+    <constructor/>
+  </class>
 
 </library>

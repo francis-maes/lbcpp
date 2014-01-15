@@ -27,6 +27,7 @@ extern SolutionComparatorPtr objectiveComparator(size_t index);
 extern SolutionComparatorPtr lexicographicComparator();
 extern SolutionComparatorPtr dominanceComparator();
 extern SolutionComparatorPtr paretoRankAndCrowdingDistanceComparator();
+extern SolutionComparatorPtr spea2Comparator();
 
 }; /* namespace lbcpp */
 
