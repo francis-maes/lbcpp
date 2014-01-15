@@ -267,6 +267,9 @@ public:
 
   // compute -sum_i(p_i * log2(p_i)) with p_i = value[i] / l1norm. By default, l1norm is computed automatically
   double computeEntropy(double l1norm = -1.0) const;
+  
+  // compute euclidean distance to another DenseDoubleVector
+  double distanceTo(const DenseDoubleVectorPtr& other) const;
 
   // DoubleVector
   virtual double entropy() const;

@@ -32,14 +32,20 @@
 
   <class name="SMPSOOptimizer" base="PopulationBasedSolver">
     <constructor arguments="size_t swarmSize, size_t archiveSize, size_t numIterations, SamplerPtr initialVectorSampler"/>
+    <variable type="PositiveInteger" name="archiveSize"/>
   </class>
   
   <class name="OMOPSOOptimizer" base="PopulationBasedSolver">
     <constructor arguments="size_t swarmSize, size_t archiveSize, size_t numIterations, SamplerPtr initialVectorSampler"/>
+    <variable type="PositiveInteger" name="archiveSize"/>
   </class>
 
   <class name="AbYSSOptimizer" base="PopulationBasedSolver">
-    <constructor arguments=""/>
+    <constructor arguments="size_t populationSize, size_t archiveSize, size_t refSet1Size, size_t refSet2Size, size_t numIterations"/>
+    <variable type="PositiveInteger" name="archiveSize_"/>
+    <variable type="PositiveInteger" name="refSet1Size_"/>
+    <variable type="PositiveInteger" name="refSet2Size_"/>
+    <variable type="PositiveInteger" name="subSetSize_"/>
   </class>
 
 </library>

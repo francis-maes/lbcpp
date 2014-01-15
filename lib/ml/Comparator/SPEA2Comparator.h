@@ -83,12 +83,7 @@ protected:
     for (size_t i = 0; i < solutions->getNumSolutions(); ++i)
       for (size_t j = i; j < solutions->getNumSolutions(); ++j)
       {
-        double distance = 0.0;
-        DenseDoubleVectorPtr s1 = solutions->getSolution(i).staticCast<DenseDoubleVector>();
-        DenseDoubleVectorPtr s2 = solutions->getSolution(j).staticCast<DenseDoubleVector>();
-        for (size_t k = 0; k < s1->getNumValues(); ++k)
-          distance += (s1->getValue(k) - s2->getValue(k)) * (s1->getValue(k) - s2->getValue(k));
-        matrix[i][j] = sqrt(distance);
+        matrix[i][j] = solutions->getSolution(i).staticCast<DenseDoubleVector>()->distanceTo(solutions->getSolution(j).staticCast<DenseDoubleVector>());
         matrix[j][i] = matrix[i][j];
       }
   }

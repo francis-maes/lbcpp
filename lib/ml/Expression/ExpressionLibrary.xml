@@ -47,6 +47,9 @@
     <constructor arguments=""/>
     <constructor arguments="const DenseDoubleVectorPtr&amp; input, const DenseDoubleVectorPtr&amp; output"/>
   </class>
+  <class name="HoeffdingTreeNode" base="TreeNode">
+    <constructor arguments=""/>
+  </class>
   
   <!-- Gaussian Process Expression -->
   <class name="GaussianProcessExpression" base="Expression">

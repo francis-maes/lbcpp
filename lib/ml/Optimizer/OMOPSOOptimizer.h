@@ -42,6 +42,8 @@ public:
     {cleanUp();}
 
 protected:
+  friend class OMOPSOOptimizerClass;
+  
   size_t archiveSize;
   double perturbation;
   SolutionVectorPtr particles;

@@ -212,19 +212,24 @@ protected:
       context.resultCallback("problem", problem);
       size_t populationSize = 100;
       std::vector<SolverResult> results = std::vector<SolverResult>();
-      context.progressCallback(new ProgressionState((size_t) 0, 6, "Solvers"));
+      size_t numSolvers = 7;
+      size_t currentSolver = 0;
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations)));
-      context.progressCallback(new ProgressionState((size_t) 1, 6, "Solvers"));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize)));
-      context.progressCallback(new ProgressionState((size_t) 2, 6, "Solvers"));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize)));
-      context.progressCallback(new ProgressionState((size_t) 3, 6, "Solvers"));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 4, numEvaluations / populationSize, true)));
-      context.progressCallback(new ProgressionState((size_t) 4, 6, "Solvers"));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
-      context.progressCallback(new ProgressionState((size_t) 5, 6, "Solvers"));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
-      context.progressCallback(new ProgressionState((size_t) 6, 6, "Solvers"));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, abYSSOptimizer(populationSize, populationSize, populationSize / 2, populationSize / 2, numEvaluations / populationSize)));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
+      
 //      std::vector<SolverResult>::iterator best = std::max_element(results.begin(), results.end(), [](SolverResult r1, SolverResult r2) {return r1.first < r2.first;}); // not supported pre-C++11
       std::vector<SolverResult>::iterator best = results.begin();
       for (std::vector<SolverResult>::iterator it = results.begin(); it != results.end(); ++it)

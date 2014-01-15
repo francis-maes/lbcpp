@@ -7,6 +7,10 @@
     <variable type="Double" name="probability"/>
   </class>
   
+  <class name="Crossover" abstract="yes">
+    <variable type="Double" name="probability"/>
+  </class>
+  
   <!-- Mutation Operators -->
   <class name="PolynomialMutation" base="Mutation">
     <constructor arguments="double probability, double distributionIndex, double eta_m"/>
@@ -25,4 +29,17 @@
     <variable type="PositiveInteger" name="currentIteration"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
+  
+  <class name="LocalSearchMutation" base="Mutation">
+    <constructor arguments="MutationPtr mutation, size_t improvementRounds"/>
+    <variable type="Mutation" name="mutation"/>
+    <variable type="PositiveInteger" name="improvementRounds"/>
+  </class>
+  
+  <!-- Crossover Operators -->
+  <class name="SBXCrossover" base="Crossover">
+    <constructor arguments="double probability, double distributionIndex"/>
+    <variable type="Double" name="distributionIndex"/>
+  </class>
+  
 </library>
