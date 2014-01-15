@@ -11,6 +11,7 @@
 
 # include <ml/Solver.h>
 # include <ml/Sampler.h>
+# include <ml/GeneticOperator.h>
 
 namespace lbcpp
 {
@@ -53,6 +54,7 @@ protected:
 
   double uniformMutationProbability;
   double uniformMutationPerturbationIndex;
+  MutationPtr uMutation;
   double nonUniformMutationProbability;
   double nonUniformMutationPerturbationIndex;
 
@@ -61,9 +63,6 @@ protected:
   void computeSpeed(ExecutionContext& context, size_t iter);
   void computeNewPositions();
   void mopsoMutation(ExecutionContext& context, size_t iter);
-  void doUniformMutation(ExecutionContext& context, DenseDoubleVectorPtr particle);
-  void doNonUniformMutation(ExecutionContext& context, size_t iter, DenseDoubleVectorPtr particle);
-  double delta(ExecutionContext& context, size_t iter, double y, double bMutationParameter);
   DenseDoubleVectorPtr cloneVector(ExecutionContext& context, DenseDoubleVectorPtr source)
   {
     DenseDoubleVectorPtr o1 = new DenseDoubleVector(1, 0.0);

@@ -34,6 +34,7 @@ void OMOPSOOptimizer::init(ExecutionContext& context)
   nonUniformMutationProbability = 1.0 / numDimensions;
   uniformMutationPerturbationIndex = 0.5;
   nonUniformMutationPerturbationIndex = 0.5;
+  uMutation = uniformMutation(uniformMutationProbability, uniformMutationPerturbationIndex);
 }
 
 bool OMOPSOOptimizer::iterateSolver(ExecutionContext& context, size_t iter)
@@ -142,61 +143,12 @@ void OMOPSOOptimizer::mopsoMutation(ExecutionContext& context, size_t iter)
 {
   for (size_t i = 0; i < particles->getNumSolutions(); ++i)
     if ((i % 3) == 0)
-      doNonUniformMutation(context, iter, particles->getSolution(i).staticCast<DenseDoubleVector>());
-    else if ((i % 3) == 1)
-      doUniformMutation(context, particles->getSolution(i).staticCast<DenseDoubleVector>());
-}
-
-void OMOPSOOptimizer::doUniformMutation(ExecutionContext& context, DenseDoubleVectorPtr particle)
-{
-  ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
-  for (size_t var = 0; var < particle->getNumValues(); ++var)
-  {
-    if (context.getRandomGenerator()->sampleDouble() < uniformMutationProbability)
     {
-      double rand = context.getRandomGenerator()->sampleDouble();
-      double tmp = (rand - 0.5)*uniformMutationPerturbationIndex;
-      tmp += particle->getValue(var);
-      if (tmp < domain->getLowerLimit(var))
-        tmp = domain->getLowerLimit(var);
-      else if (tmp > domain->getUpperLimit(var))
-        tmp = domain->getUpperLimit(var);
-      particle->setValue(var, tmp);
+      MutationPtr nuMutation = nonUniformMutation(nonUniformMutationProbability, nonUniformMutationPerturbationIndex, iter, numIterations);
+      nuMutation->execute(context, problem, particles->getSolution(i));
     }
-  }
-}
-
-void OMOPSOOptimizer::doNonUniformMutation(ExecutionContext& context, size_t iter, DenseDoubleVectorPtr particle)
-{
-  ScalarVectorDomainPtr domain = problem->getDomain().staticCast<ScalarVectorDomain>();
-  for (size_t var = 0; var < particle->getNumValues(); ++var)
-  {
-    if (context.getRandomGenerator()->sampleDouble() < nonUniformMutationProbability) {
-      double rand = context.getRandomGenerator()->sampleDouble();
-      double tmp;
-      if (rand <= 0.5)
-      {
-        tmp = delta(context, iter, domain->getUpperLimit(var) - particle->getValue(var), nonUniformMutationPerturbationIndex);
-        tmp += particle->getValue(var);
-      }
-      else {
-        tmp = delta(context, iter, domain->getLowerLimit(var) - particle->getValue(var), nonUniformMutationPerturbationIndex);
-        tmp += particle->getValue(var);
-      }
-      if (tmp < domain->getLowerLimit(var))
-        tmp = domain->getLowerLimit(var);
-      else if (tmp > domain->getUpperLimit(var))
-        tmp = domain->getUpperLimit(var);
-
-      particle->setValue(var, tmp) ;
-    }
-  }
-}
-
-double OMOPSOOptimizer::delta(ExecutionContext& context, size_t iter, double y, double bMutationParameter)
-{
-  double rand = context.getRandomGenerator()->sampleDouble();
-  return (y * (1.0 - pow(rand, pow((1.0 - iter /(double) numIterations), bMutationParameter))));
+    else if ((i % 3) == 1)
+      uMutation->execute(context, problem, particles->getSolution(i));
 }
 
 void OMOPSOOptimizer::cleanUp()

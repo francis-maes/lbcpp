@@ -22,6 +22,7 @@ public:
 
   virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness) = 0;
   virtual void insertSolutions(SolutionContainerPtr solutions) = 0;
+  virtual void removeSolution(size_t index) = 0;
 
   virtual size_t getNumSolutions() const = 0;
   virtual ObjectPtr getSolution(size_t index) const = 0;
@@ -48,6 +49,9 @@ public:
 
   virtual size_t getNumSolutions() const
     {return solutions.size();}
+
+  virtual void removeSolution(size_t index)
+    {jassert(index >= 0 && index < solutions.size()); solutions.erase(index);}
 
   virtual ObjectPtr getSolution(size_t index) const
     {jassert(index < solutions.size()); return solutions[index].first;}
