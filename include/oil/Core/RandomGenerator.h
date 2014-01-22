@@ -29,6 +29,7 @@
 
 # include "../Core/Object.h"
 # include "predeclarations.h"
+# include <math.h>
 
 namespace lbcpp
 {
@@ -248,6 +249,9 @@ public:
   */
   double sampleDoubleFromGaussian(double mean, double standardDeviation)
     {return sampleDoubleFromGaussian() * standardDeviation + mean;}
+
+  double sampleDoubleFromLaplace(double location, double scale)
+    {double u = sampleDouble() - 0.5; return location - (u < 0.0 ? -1.0 : 1.0) * scale * log(1.0 - 2.0 * fabs(u));}
 
   // Return a random double drawn from a Gamma distribution with mean alpha*beta+lamba and variance alpha*beta^2.
   double sampleFromGamma(double alpha, double beta, double lambda = 0.0);
