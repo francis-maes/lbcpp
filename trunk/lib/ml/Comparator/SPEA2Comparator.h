@@ -32,8 +32,8 @@ public:
     std::fill_n(rawFitness, n, 0.0);
 
     double** distance = new double*[n];
-    for (size_t i = 0; i < n; ++n)
-      distance[n] = new double[n];
+    for (size_t i = 0; i < n; ++i)
+      distance[i] = new double[n];
     calculateDistanceMatrix(solutions, distance);
 
     // calculate strength value
@@ -62,8 +62,8 @@ public:
     
     delete[] strength;
     delete[] rawFitness;
-    for (size_t i = 0; i < n; ++n)
-      delete[] distance[n];
+    for (size_t i = 0; i < n; ++i)
+      delete[] distance[i];
     delete[] distance;
   }
 
