@@ -36,6 +36,7 @@
   <class name="TestOneOptimizer" base="WorkUnit"/>
 
   <class name="MOOSandBox" base="WorkUnit">
+    <variable type="Boolean" name="useDefaults" description="Use default settings for the problems. This will override any settings to numDimensions"/>
     <variable type="PositiveInteger" name="numDimensions"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="verbosity"/>

@@ -334,7 +334,7 @@ void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
     FitnessPtr solutionFitness = solutions[i].second;
     if (solutionFitness->strictlyDominates(fitness))
       return; // dominated
-    if (solutions[i].first->compare(solution) == 0 ||  // already in the front
+    if (solution.exists() && solutions[i].first->compare(solution) == 0 ||  // already in the front
         solutions[i].second->compare(fitness) == 0)  // already a solution that has the same fitness  (this test may become flagable in the future)
       return; 
     if (!fitness->strictlyDominates(solutionFitness))
@@ -388,6 +388,26 @@ double ParetoFront::computeHyperVolume(FitnessPtr referenceFitness) const
     // shark implementation
     return hypervolume(&points[0], &ref[0], (unsigned int)numObjectives, (unsigned int)numPoints);
   }
+}
+
+double ParetoFront::computeMultiplicativeEpsilonIndicator(ParetoFrontPtr referenceFront) const
+{
+  if (isEmpty() || getNumObjectives() != referenceFront->getNumObjectives())
+  {
+    jassertfalse;
+    return 0.0;
+  }
+
+  double result = 1.0;
+  for (size_t i = 0; i < getNumSolutions(); ++i)
+  {
+    FitnessPtr fitness = getFitness(i);
+    double eps = DBL_MAX;
+    for (size_t j = 0; j < referenceFront->getNumSolutions(); ++j)
+      eps = std::min(eps, fitness->multiplicativeEpsilon(referenceFront->getFitness(j)));
+    result = std::max(result, eps);
+  }
+  return result;
 }
 
 void CrowdingArchive::insertSolution(ObjectPtr solution, FitnessPtr fitness)

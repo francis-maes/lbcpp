@@ -74,6 +74,12 @@ public:
   FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
 
   /*
+  ** Reference solutions
+  */
+  virtual ObjectPtr getBestSolution() const
+    {return ObjectPtr();}
+
+  /*
   ** Loading / Initialization
   */
   void reinitialize(ExecutionContext& context);

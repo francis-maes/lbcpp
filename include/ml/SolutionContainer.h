@@ -138,6 +138,13 @@ public:
   virtual void insertSolutions(SolutionContainerPtr solutions);
 
   double computeHyperVolume(FitnessPtr referenceFitness = FitnessPtr()) const;
+  
+/** The binary multiplicative epsilon indicator, \f$I(A,B)\f$, gives the minimum factor \f$\epsilon\f$
+ *  by which each point in \f$A\f$ must be multiplied such that the resulting set weakly dominates \f$B\f$. 
+ *  \param referenceFront The reference front \f$B\f$.
+ *  \return The binary multiplicative epsilon indicator \f$I(A,B)\f$.
+ */
+  double computeMultiplicativeEpsilonIndicator(ParetoFrontPtr referenceFront) const;
 };
 
 class CrowdingArchive : public ParetoFront

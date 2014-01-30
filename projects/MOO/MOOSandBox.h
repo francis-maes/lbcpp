@@ -30,7 +30,7 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : numDimensions(6), numEvaluations(1000), numRuns(1), verbosity(1) {}
+  MOOSandBox() : numDimensions(6), numEvaluations(1000), numRuns(1), verbosity(1), useDefaults(false) {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -60,6 +60,8 @@ protected:
   size_t numEvaluations;
   size_t numRuns;
   size_t verbosity;
+
+  bool useDefaults;
 
   typedef std::pair<double, SolverPtr> SolverResult;
 
@@ -191,19 +193,34 @@ protected:
   void testBiObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<ProblemPtr> problems;
+    /*
     problems.push_back(new ZDT1MOProblem(numDimensions));
     problems.push_back(new ZDT2MOProblem(numDimensions));
     problems.push_back(new ZDT3MOProblem(numDimensions));
     problems.push_back(new ZDT4MOProblem(numDimensions));
     problems.push_back(new ZDT6MOProblem(numDimensions));
     problems.push_back(new LZ06_F1MOProblem(numDimensions));
-    problems.push_back(new DTLZ1MOProblem(numDimensions));
-    problems.push_back(new DTLZ2MOProblem(numDimensions));
-    problems.push_back(new DTLZ3MOProblem(numDimensions));
-    problems.push_back(new DTLZ4MOProblem(numDimensions));
-    problems.push_back(new DTLZ5MOProblem(numDimensions));
-    problems.push_back(new DTLZ6MOProblem(numDimensions));
-    problems.push_back(new DTLZ7MOProblem(numDimensions));
+    */
+    if (useDefaults)
+    {
+      problems.push_back(new DTLZ1MOProblem(6,2));
+      /*problems.push_back(new DTLZ2MOProblem());
+      problems.push_back(new DTLZ3MOProblem());
+      problems.push_back(new DTLZ4MOProblem());
+      problems.push_back(new DTLZ5MOProblem());
+      problems.push_back(new DTLZ6MOProblem());
+      problems.push_back(new DTLZ7MOProblem());*/
+    }
+    else
+    {
+      problems.push_back(new DTLZ1MOProblem(numDimensions));
+      /*problems.push_back(new DTLZ2MOProblem(numDimensions));
+      problems.push_back(new DTLZ3MOProblem(numDimensions));
+      problems.push_back(new DTLZ4MOProblem(numDimensions));
+      problems.push_back(new DTLZ5MOProblem(numDimensions));
+      problems.push_back(new DTLZ6MOProblem(numDimensions));
+      problems.push_back(new DTLZ7MOProblem(numDimensions));*/
+    }
     
     for (size_t i = 0; i < problems.size(); ++i)
     {
@@ -230,7 +247,6 @@ protected:
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, abYSSOptimizer(populationSize, populationSize, populationSize / 2, populationSize / 2, numEvaluations / populationSize)));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       
-//      std::vector<SolverResult>::iterator best = std::max_element(results.begin(), results.end(), [](SolverResult r1, SolverResult r2) {return r1.first < r2.first;}); // not supported pre-C++11
       std::vector<SolverResult>::iterator best = results.begin();
       for (std::vector<SolverResult>::iterator it = results.begin(); it != results.end(); ++it)
         if (it->first > best->first) best = it;
@@ -261,6 +277,9 @@ protected:
       optimizer->setVerbosity((SolverVerbosity)verbosity);
       optimizer->solve(context, problem, callback);
       context.resultCallback("optimizer", optimizer);
+      ParetoFrontPtr referenceFront = problem->getBestSolution().staticCast<ParetoFront>();
+      context.resultCallback("Reference front", referenceFront);
+      context.resultCallback("multiplicative epsilon", front->computeMultiplicativeEpsilonIndicator(referenceFront));
       //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
       if (verbosity >= 1)
