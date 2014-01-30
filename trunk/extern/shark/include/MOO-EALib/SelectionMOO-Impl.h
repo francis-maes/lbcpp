@@ -55,7 +55,7 @@ void IndicatorBasedSelectionStrategy<Indicator_T>::operator()(PopulationMOO & po
 		noObjectives = Shark::max(noObjectives, static_cast<unsigned>(pop[i].getMOOFitnessValues(m_bUnpenalizedFitness).size()));		// required for Macintosh compiler
 	}
 
-	ObjectiveSort objSort(m_bUnpenalizedFitness, noObjectives);
+	ObjectiveSort objSort(m_bUnpenalizedFitness, noObjectives-1); // EDIT: Denny: noObjectives to noObjectives-1
 	std::sort(pop.begin(), pop.end(), objSort);
 
 	std::vector<unsigned> p(0); p.reserve(pop.size());

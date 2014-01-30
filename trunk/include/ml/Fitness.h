@@ -60,6 +60,15 @@ public:
   bool dominates(const FitnessPtr& other, bool strictly = false) const;
   bool strictlyDominates(const FitnessPtr& other) const;
   bool isBetterForAtLeastOneObjectiveThan(const FitnessPtr& other, bool strictly = true) const;
+
+  /** Calculates the multiplicative epsilon indicator relative to another Fitness.
+   *  The multiplicative epsilon indicator is the minimum value by which objectives in
+   *  this Fitness must be multiplied such that the result weakly dominates the
+   *  reference fitness.
+   *  \param other The reference Fitness
+   *  \return The multiplicative epsilon indicator relative to the reference Fitness.
+   */
+  double multiplicativeEpsilon(const FitnessPtr& other) const;
   
   virtual string toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;

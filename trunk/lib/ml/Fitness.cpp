@@ -95,6 +95,16 @@ bool Fitness::isBetterForAtLeastOneObjectiveThan(const FitnessPtr& other, bool s
   return false;
 }
 
+double Fitness::multiplicativeEpsilon(const FitnessPtr& other) const
+{
+  jassert(getNumValues() == other->getNumValues());
+  double result = 1.0;
+  for (size_t i = 0; i < getNumValues(); ++i)
+    if (other->getValue(i) != 0.0)
+      result = std::max(result, getValue(i) / other->getValue(i));
+  return result;
+}
+
 FitnessPtr Fitness::makeWorstCombination(const FitnessPtr& fitness1, const FitnessPtr& fitness2)
 {
   jassert(fitness1->limits == fitness2->limits);
