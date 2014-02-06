@@ -145,6 +145,13 @@ public:
  *  \return The binary multiplicative epsilon indicator \f$I(A,B)\f$.
  */
   double computeMultiplicativeEpsilonIndicator(ParetoFrontPtr referenceFront) const;
+
+/** The binary additive epsilon indicator, \f$I(A,B)\f$, gives the minimum amount \f$\epsilon\f$
+ *  by which each point in \f$A\f$ must be displaced such that the resulting set weakly dominates \f$B\f$. 
+ *  \param referenceFront The reference front \f$B\f$.
+ *  \return The binary additive epsilon indicator \f$I(A,B)\f$.
+ */
+  double computeAdditiveEpsilonIndicator(ParetoFrontPtr referenceFront) const;
 };
 
 class CrowdingArchive : public ParetoFront

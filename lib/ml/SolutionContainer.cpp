@@ -410,6 +410,26 @@ double ParetoFront::computeMultiplicativeEpsilonIndicator(ParetoFrontPtr referen
   return result;
 }
 
+double ParetoFront::computeAdditiveEpsilonIndicator(ParetoFrontPtr referenceFront) const
+{
+  if (isEmpty() || getNumObjectives() != referenceFront->getNumObjectives())
+  {
+    jassertfalse;
+    return 0.0;
+  }
+
+  double result = 0.0;
+  for (size_t i = 0; i < getNumSolutions(); ++i)
+  {
+    FitnessPtr fitness = getFitness(i);
+    double eps = DBL_MAX;
+    for (size_t j = 0; j < referenceFront->getNumSolutions(); ++j)
+      eps = std::min(eps, fitness->additiveEpsilon(referenceFront->getFitness(j)));
+    result = std::max(result, eps);
+  }
+  return result;
+}
+
 void CrowdingArchive::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
   ParetoFront::insertSolution(solution, fitness);
