@@ -247,7 +247,12 @@ protected:
   void select(int index)
   {
     if (index >= 0)
-      sendSelectionChanged(solutions->getSolution(index), T("solution"));
+    {
+      std::vector<ObjectPtr> selection(2);
+      selection[0] = solutions->getSolution(index).exists() ? solutions->getSolution(index) : new String("None");
+      selection[1] = solutions->getFitness(index);
+      sendSelectionChanged(selection, T("solution"));
+    }
     else
       sendSelectionChanged(std::vector<ObjectPtr>(), string::empty);
 

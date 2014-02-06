@@ -105,6 +105,21 @@ double Fitness::multiplicativeEpsilon(const FitnessPtr& other) const
   return result;
 }
 
+double Fitness::additiveEpsilon(const FitnessPtr& other) const
+{
+  if (dominates(other, false))
+    return 0.0;
+  jassert(getNumValues() == other->getNumValues());
+  double diff, result = 0.0;
+  for (size_t i = 0; i < getNumValues(); ++i)
+  {
+    diff = getValue(i) - other->getValue(i);
+    result += diff * diff;
+  }
+  result = sqrt(result);
+  return result;
+}
+
 FitnessPtr Fitness::makeWorstCombination(const FitnessPtr& fitness1, const FitnessPtr& fitness2)
 {
   jassert(fitness1->limits == fitness2->limits);

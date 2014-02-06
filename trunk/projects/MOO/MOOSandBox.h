@@ -279,7 +279,8 @@ protected:
       context.resultCallback("optimizer", optimizer);
       ParetoFrontPtr referenceFront = problem->getBestSolution().staticCast<ParetoFront>();
       context.resultCallback("Reference front", referenceFront);
-      context.resultCallback("multiplicative epsilon", front->computeMultiplicativeEpsilonIndicator(referenceFront));
+      context.resultCallback("Additive epsilon", front->computeAdditiveEpsilonIndicator(referenceFront));
+      context.resultCallback("Multiplicative epsilon", front->computeMultiplicativeEpsilonIndicator(referenceFront));
       //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
       if (verbosity >= 1)
