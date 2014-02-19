@@ -61,6 +61,10 @@
     <constructor arguments="SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod, double factor" returnType="SolverCallback"/>
     <variable type="Double" name="factor"/>
   </class>
+  <class name="AggregatorEvaluatorSolverCallback" base="SolverCallback">
+    <constructor arguments="SolverEvaluatorPtr evaluator, std::vector&lt;ScalarVariableMeanAndVariancePtr&gt;* data"/>
+    <variable type="SolverEvaluator" name="evaluator"/>
+  </class>
 
   <!-- Solvers -->
   <class name="RandomSolver" base="IterativeSolver">

@@ -129,6 +129,10 @@ protected:
 class ParetoFront : public SolutionVector
 {
 public:
+  /** Construct a ParetoFront from a file.
+   *  The file should contain only the points in fitness space, one per line.
+   */
+  ParetoFront(FitnessLimitsPtr limits, const string& path);
   ParetoFront(FitnessLimitsPtr limits, const std::vector<SolutionAndFitness>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr())
     : SolutionVector(limits, solutions, comparator) {}
   ParetoFront(FitnessLimitsPtr limits) : SolutionVector(limits) {}

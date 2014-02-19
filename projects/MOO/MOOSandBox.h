@@ -30,7 +30,7 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : numDimensions(6), numEvaluations(1000), numRuns(1), verbosity(1), useDefaults(false) {}
+  MOOSandBox() : numDimensions(6), numObjectives(2), numEvaluations(1000), numRuns(1), verbosity(1), useDefaults(false), paretoFrontDir(""), problemIdx(0) {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -57,9 +57,12 @@ protected:
   friend class MOOSandBoxClass;
 
   size_t numDimensions;
+  size_t numObjectives;
   size_t numEvaluations;
   size_t numRuns;
   size_t verbosity;
+  string paretoFrontDir;
+  size_t problemIdx;
 
   bool useDefaults;
 
@@ -203,63 +206,68 @@ protected:
     */
     if (useDefaults)
     {
-      problems.push_back(new DTLZ1MOProblem(6,2));
-      /*problems.push_back(new DTLZ2MOProblem());
+      problems.push_back(new DTLZ1MOProblem());
+      problems.push_back(new DTLZ2MOProblem());
       problems.push_back(new DTLZ3MOProblem());
       problems.push_back(new DTLZ4MOProblem());
       problems.push_back(new DTLZ5MOProblem());
       problems.push_back(new DTLZ6MOProblem());
-      problems.push_back(new DTLZ7MOProblem());*/
+      problems.push_back(new DTLZ7MOProblem());
     }
     else
     {
-      problems.push_back(new DTLZ1MOProblem(numDimensions));
-      /*problems.push_back(new DTLZ2MOProblem(numDimensions));
-      problems.push_back(new DTLZ3MOProblem(numDimensions));
-      problems.push_back(new DTLZ4MOProblem(numDimensions));
-      problems.push_back(new DTLZ5MOProblem(numDimensions));
-      problems.push_back(new DTLZ6MOProblem(numDimensions));
-      problems.push_back(new DTLZ7MOProblem(numDimensions));*/
+      problems.push_back(new DTLZ1MOProblem(numDimensions, numObjectives));
+      problems.push_back(new DTLZ2MOProblem(numDimensions, numObjectives));
+      problems.push_back(new DTLZ3MOProblem(numDimensions, numObjectives));
+      problems.push_back(new DTLZ4MOProblem(numDimensions, numObjectives));
+      problems.push_back(new DTLZ5MOProblem(numDimensions, numObjectives));
+      problems.push_back(new DTLZ6MOProblem(numDimensions, numObjectives));
+      problems.push_back(new DTLZ7MOProblem(numDimensions, numObjectives));
     }
     
-    for (size_t i = 0; i < problems.size(); ++i)
-    {
-      ProblemPtr problem = problems[i];
+    
+      ProblemPtr problem = problems[problemIdx];
+      string path = paretoFrontDir + T("/DTLZ") + string(problemIdx+1) + T(".2D.pf");
+      ParetoFrontPtr referenceFront = new ParetoFront(problem->getFitnessLimits(), path);
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
+      context.resultCallback("Reference front", referenceFront);
       size_t populationSize = 100;
       std::vector<SolverResult> results = std::vector<SolverResult>();
       size_t numSolvers = 7;
       size_t currentSolver = 0;
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 4, numEvaluations / populationSize, true)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 4, numEvaluations / populationSize, true), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100))));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, abYSSOptimizer(populationSize, populationSize, populationSize / 2, populationSize / 2, numEvaluations / populationSize)));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, abYSSOptimizer(populationSize, populationSize, populationSize / 2, populationSize / 2, numEvaluations / populationSize), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       
       std::vector<SolverResult>::iterator best = results.begin();
       for (std::vector<SolverResult>::iterator it = results.begin(); it != results.end(); ++it)
         if (it->first > best->first) best = it;
       context.leaveScope(best->second);
-    }
+    
   }
 
-  SolverResult solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer)
+  SolverResult solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, SolverPtr optimizer, ParetoFrontPtr referenceFront)
   {
     context.enterScope(optimizer->toShortString());
 
     ScalarVariableMeanAndVariancePtr hvs = new ScalarVariableMeanAndVariance();
     context.progressCallback(new ProgressionState(0, numRuns, "Runs"));
+    std::vector<ScalarVariableMeanAndVariancePtr>* values = new std::vector<ScalarVariableMeanAndVariancePtr>();
+    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+    SolverCallbackPtr aggregator = aggregatorEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), values);
     for (size_t i = 0; i < numRuns; ++i)
     {
       context.enterScope("Run " + string((int) i));
@@ -267,23 +275,22 @@ protected:
       DVectorPtr hyperVolumes = new DVector();
       IVectorPtr evaluations = new IVector();
       size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
-      ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
       SolverCallbackPtr callback = compositeSolverCallback(
         fillParetoFrontSolverCallback(front),
-        evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
+        //evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
+        aggregator,
         maxEvaluationsSolverCallback(numEvaluations));
 
 
       optimizer->setVerbosity((SolverVerbosity)verbosity);
       optimizer->solve(context, problem, callback);
       context.resultCallback("optimizer", optimizer);
-      ParetoFrontPtr referenceFront = problem->getBestSolution().staticCast<ParetoFront>();
-      context.resultCallback("Reference front", referenceFront);
       context.resultCallback("Additive epsilon", front->computeAdditiveEpsilonIndicator(referenceFront));
       context.resultCallback("Multiplicative epsilon", front->computeMultiplicativeEpsilonIndicator(referenceFront));
       //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
-      if (verbosity >= 1)
+      /*
+      if (verbosity >= verbosityDetailed)
       {
         context.enterScope("curve");
 
@@ -296,13 +303,24 @@ protected:
           context.leaveScope();
         }
         context.leaveScope();
-      }
+      }*/
 
       double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
+      front->clear();
       context.leaveScope(hv);
       hvs->push(hv);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
+    context.enterScope("curve");
+    for (size_t i = 0; i < values->size(); ++i)
+    {
+      context.enterScope(string(i));
+      context.resultCallback("NumEvaluations", i);
+      context.resultCallback("Hypervolume", values->at(i));
+      context.leaveScope();
+    }
+    context.leaveScope();
+    delete values;
     context.leaveScope(hvs);
     return SolverResult(hvs->getMean(), optimizer);
   }

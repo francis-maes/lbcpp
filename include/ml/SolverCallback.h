@@ -10,6 +10,7 @@
 # define ML_SOLVER_CALLBACK_H_
 
 # include "predeclarations.h"
+# include <ml/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -54,6 +55,8 @@ extern SolverCallbackPtr compositeSolverCallback(SolverCallbackPtr callback1, So
 extern SolverCallbackPtr evaluationPeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  size_t evaluationPeriod);
 extern SolverCallbackPtr timePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod);
 extern SolverCallbackPtr logTimePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod, double factor);
+
+extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<ScalarVariableMeanAndVariancePtr>* data);
 
 }; /* namespace lbcpp */
 
