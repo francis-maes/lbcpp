@@ -265,16 +265,16 @@ protected:
 
     ScalarVariableMeanAndVariancePtr hvs = new ScalarVariableMeanAndVariance();
     context.progressCallback(new ProgressionState(0, numRuns, "Runs"));
-    std::vector<ScalarVariableMeanAndVariancePtr>* values = new std::vector<ScalarVariableMeanAndVariancePtr>();
+    std::vector<EvaluationPoint>* values = new std::vector<EvaluationPoint>();
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
-    SolverCallbackPtr aggregator = aggregatorEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), values);
+    size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
+    SolverCallbackPtr aggregator = aggregatorEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), values, evaluationPeriod);
     for (size_t i = 0; i < numRuns; ++i)
     {
       context.enterScope("Run " + string((int) i));
       DVectorPtr cpuTimes = new DVector();
       DVectorPtr hyperVolumes = new DVector();
       IVectorPtr evaluations = new IVector();
-      size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
       SolverCallbackPtr callback = compositeSolverCallback(
         fillParetoFrontSolverCallback(front),
         //evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
@@ -306,7 +306,9 @@ protected:
       }*/
 
       double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
-      front->clear();
+      //front->clear();
+      
+      front = new ParetoFront(problem->getFitnessLimits());
       context.leaveScope(hv);
       hvs->push(hv);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
@@ -314,9 +316,12 @@ protected:
     context.enterScope("curve");
     for (size_t i = 0; i < values->size(); ++i)
     {
+      double mean = values->at(i).getSummary()->getMean();
+      double stddev = values->at(i).getSummary()->getStandardDeviation();
       context.enterScope(string((int)i));
-      context.resultCallback("NumEvaluations", i);
-      context.resultCallback("Hypervolume", values->at(i));
+      context.resultCallback("NumEvaluations", values->at(i).getNumEvaluations());
+      context.resultCallback("Hypervolume mean", mean);
+      context.resultCallback("Hypervolume stddev", stddev);
       context.leaveScope();
     }
     context.leaveScope();

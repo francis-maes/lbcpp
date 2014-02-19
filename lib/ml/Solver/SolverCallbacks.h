@@ -249,25 +249,30 @@ protected:
 class AggregatorEvaluatorSolverCallback : public SolverCallback
 {
 public:
-  AggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<ScalarVariableMeanAndVariancePtr>* data)
-    : evaluator(evaluator), data(data) {}
+  AggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<EvaluationPoint>* data, size_t evaluationPeriod)
+    : evaluator(evaluator), data(data), evaluationPeriod(evaluationPeriod) {}
   AggregatorEvaluatorSolverCallback() : evaluator(SolverEvaluatorPtr()), data(0) {}
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
-    { i = 0; }
+    { i = 0; numEvaluations = 0;}
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
   {
-    ++i;
-    while (data->size() <= i)
-      data->push_back(new ScalarVariableMeanAndVariance());
-    data->at(i)->push(evaluator->evaluateSolver(context, solver));
+    ++numEvaluations;
+    if (numEvaluations % evaluationPeriod == 0)
+    {
+      while (data->size() <= i)
+        data->push_back(EvaluationPoint(numEvaluations));
+      data->at(i).pushResult(evaluator->evaluateSolver(context, solver));
+      ++i;
+    }
   }
-  virtual void solverStopped(ExecutionContext& context, SolverPtr solver) {}
 
 protected:
   friend class AggregatorEvaluatorSolverCallbackClass;
   SolverEvaluatorPtr evaluator;
-  std::vector<ScalarVariableMeanAndVariancePtr>* data;
+  std::vector<EvaluationPoint>* data;
   size_t i;
+  size_t numEvaluations;
+  size_t evaluationPeriod;
 };
 
 class LogTimePeriodEvaluatorSolverCallback : public TimePeriodEvaluatorSolverCallback

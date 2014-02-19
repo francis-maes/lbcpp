@@ -35,7 +35,7 @@ protected:
 class HyperVolumeSolverEvaluator : public SolverEvaluator
 {
 public:
-  HyperVolumeSolverEvaluator(ParetoFrontPtr front = ParetoFrontPtr())
+  HyperVolumeSolverEvaluator(ParetoFrontPtr& front = (*(ParetoFrontPtr*)0))
     : front(front) {}
   
   double evaluateSolver(ExecutionContext& context, SolverPtr solver)
@@ -47,7 +47,7 @@ public:
 protected:
   friend class HyperVolumeSolverEvaluatorClass;
   
-  ParetoFrontPtr front;
+  ParetoFrontPtr& front;
 };
 
 }; /* namespace lbcpp */
