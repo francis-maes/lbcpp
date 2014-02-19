@@ -227,7 +227,7 @@ protected:
     
     
       ProblemPtr problem = problems[problemIdx];
-      string path = paretoFrontDir + T("/DTLZ") + string(problemIdx+1) + T(".2D.pf");
+      string path = paretoFrontDir + T("/DTLZ") + string((unsigned int)(problemIdx+1)) + T(".2D.pf");
       ParetoFrontPtr referenceFront = new ParetoFront(problem->getFitnessLimits(), path);
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
