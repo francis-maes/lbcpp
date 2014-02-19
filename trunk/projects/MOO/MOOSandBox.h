@@ -314,7 +314,7 @@ protected:
     context.enterScope("curve");
     for (size_t i = 0; i < values->size(); ++i)
     {
-      context.enterScope(string(i));
+      context.enterScope(string((int)i));
       context.resultCallback("NumEvaluations", i);
       context.resultCallback("Hypervolume", values->at(i));
       context.leaveScope();
