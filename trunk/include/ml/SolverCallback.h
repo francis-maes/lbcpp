@@ -26,7 +26,7 @@ public:
 };
 
 extern SolverEvaluatorPtr singleObjectiveSolverEvaluator(FitnessPtr& bestFitness);
-extern SolverEvaluatorPtr hyperVolumeSolverEvaluator(ParetoFrontPtr front);
+extern SolverEvaluatorPtr hyperVolumeSolverEvaluator(ParetoFrontPtr& front);
 
 /*
  ** SolverCallback
@@ -56,7 +56,25 @@ extern SolverCallbackPtr evaluationPeriodEvaluatorSolverCallback(SolverEvaluator
 extern SolverCallbackPtr timePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod);
 extern SolverCallbackPtr logTimePeriodEvaluatorSolverCallback(SolverEvaluatorPtr solverEvaluator, IVectorPtr evaluations, DVectorPtr cpuTimes, DVectorPtr scores,  double evaluationPeriod, double factor);
 
-extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<ScalarVariableMeanAndVariancePtr>* data);
+class EvaluationPoint
+{
+public:
+  EvaluationPoint(size_t numEvaluations) : numEvaluations(numEvaluations), scoreSummary(new ScalarVariableMeanAndVariance()) {}
+  
+  size_t getNumEvaluations() const
+    {return numEvaluations;}
+  void pushResult(double result)
+    {scoreSummary->push(result);}
+  ScalarVariableMeanAndVariancePtr getSummary() const
+    {return scoreSummary;}
+protected:
+  size_t numEvaluations;
+  ScalarVariableMeanAndVariancePtr scoreSummary;
+};
+
+extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<EvaluationPoint>* data, size_t evaluationPeriod = 1);
+
+
 
 }; /* namespace lbcpp */
 

@@ -14,7 +14,7 @@
     <constructor arguments="FitnessPtr&amp; bestFitness"/>
   </class>
   <class name="HyperVolumeSolverEvaluator" base="SolverEvaluator">
-    <constructor arguments="ParetoFrontPtr front"/>
+    <constructor arguments="ParetoFrontPtr&amp; front"/>
     <variable type="ParetoFront" name="front"/>
   </class>
 
@@ -62,7 +62,7 @@
     <variable type="Double" name="factor"/>
   </class>
   <class name="AggregatorEvaluatorSolverCallback" base="SolverCallback">
-    <constructor arguments="SolverEvaluatorPtr evaluator, std::vector&lt;ScalarVariableMeanAndVariancePtr&gt;* data"/>
+    <constructor arguments="SolverEvaluatorPtr evaluator, std::vector&lt;EvaluationPoint&gt;* data, size_t evaluationPeriod"/>
     <variable type="SolverEvaluator" name="evaluator"/>
   </class>
 
