@@ -246,6 +246,30 @@ protected:
   double prevScore;
 };
 
+class AggregatorEvaluatorSolverCallback : public SolverCallback
+{
+public:
+  AggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<ScalarVariableMeanAndVariancePtr>* data)
+    : evaluator(evaluator), data(data) {}
+  AggregatorEvaluatorSolverCallback() : evaluator(SolverEvaluatorPtr()), data(0) {}
+  virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
+    { i = 0; }
+  virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
+  {
+    ++i;
+    while (data->size() <= i)
+      data->push_back(new ScalarVariableMeanAndVariance());
+    data->at(i)->push(evaluator->evaluateSolver(context, solver));
+  }
+  virtual void solverStopped(ExecutionContext& context, SolverPtr solver) {}
+
+protected:
+  friend class AggregatorEvaluatorSolverCallbackClass;
+  SolverEvaluatorPtr evaluator;
+  std::vector<ScalarVariableMeanAndVariancePtr>* data;
+  size_t i;
+};
+
 class LogTimePeriodEvaluatorSolverCallback : public TimePeriodEvaluatorSolverCallback
 {
 public:

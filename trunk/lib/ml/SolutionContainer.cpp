@@ -10,6 +10,8 @@
 #include <ml/SolutionComparator.h>
 #include <MOO-EALib/Hypervolume.h>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 using namespace lbcpp;
 
 /*
@@ -325,6 +327,25 @@ void SolutionVector::clone(ExecutionContext& context, const ObjectPtr& t) const
 /*
 ** ParetoFront
 */
+
+ParetoFront::ParetoFront(FitnessLimitsPtr limits, const string& path) : SolutionVector(limits)
+{
+  size_t n = limits->getNumObjectives();
+  size_t i = 0;
+  std::fstream stream(path.toUTF8(), std::ios_base::in);
+  double value;
+  std::vector<double> v(n);
+  while (stream >> value)
+  {
+    v[i++] = value;
+    if (i % n == 0)
+    {
+      insertSolution(ObjectPtr(), new Fitness(v, limits));
+      i = 0;
+    }
+  }
+}
+
 void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
   std::vector<SolutionAndFitness> newSolutions;
