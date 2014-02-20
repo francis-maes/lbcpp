@@ -156,6 +156,11 @@ public:
  *  \return The binary additive epsilon indicator \f$I(A,B)\f$.
  */
   double computeAdditiveEpsilonIndicator(ParetoFrontPtr referenceFront) const;
+
+/** The spread indicator, as defined by Deb et al (2002) in "A Fast and Elitist Multiobjective Genetic Algorithm:
+ *  NSGA-II". This is a measure for how well the solutions in this ParetoFront are spread out.
+ */
+  double computeSpreadIndicator() const;
 };
 
 class CrowdingArchive : public ParetoFront

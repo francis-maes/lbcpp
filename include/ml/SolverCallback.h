@@ -11,6 +11,7 @@
 
 # include "predeclarations.h"
 # include <ml/RandomVariable.h>
+# include <map>
 
 namespace lbcpp
 {
@@ -27,6 +28,9 @@ public:
 
 extern SolverEvaluatorPtr singleObjectiveSolverEvaluator(FitnessPtr& bestFitness);
 extern SolverEvaluatorPtr hyperVolumeSolverEvaluator(ParetoFrontPtr& front);
+extern SolverEvaluatorPtr additiveEpsilonSolverEvaluator(ParetoFrontPtr& front, ParetoFrontPtr referenceFront);
+extern SolverEvaluatorPtr mutliplicativeEpsilonSolverEvaluator(ParetoFrontPtr& front, ParetoFrontPtr referenceFront);
+extern SolverEvaluatorPtr spreadSolverEvaluator(ParetoFrontPtr& front);
 
 /*
  ** SolverCallback
@@ -72,7 +76,7 @@ protected:
   ScalarVariableMeanAndVariancePtr scoreSummary;
 };
 
-extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<EvaluationPoint>* data, size_t evaluationPeriod = 1);
+extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string,std::vector<EvaluationPoint>>* data, size_t evaluationPeriod = 1);
 
 
 

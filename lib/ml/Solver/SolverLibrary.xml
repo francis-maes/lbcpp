@@ -15,7 +15,15 @@
   </class>
   <class name="HyperVolumeSolverEvaluator" base="SolverEvaluator">
     <constructor arguments="ParetoFrontPtr&amp; front"/>
-    <variable type="ParetoFront" name="front"/>
+  </class>
+  <class name="AdditiveEpsilonSolverEvaluator" base="SolverEvaluator">
+    <constructor arguments="ParetoFrontPtr&amp; front, ParetoFrontPtr referenceFront"/>
+  </class>
+  <class name="MultiplicativeEpsilonSolverEvaluator" base="SolverEvaluator">
+    <constructor arguments="ParetoFrontPtr&amp; front, ParetoFrontPtr referenceFront"/>
+  </class>
+  <class name="SpreadSolverEvaluator" base="SolverEvaluator">
+    <constructor arguments="ParetoFrontPtr&amp; front"/>
   </class>
 
   <!-- Solver Callbacks -->
@@ -62,8 +70,7 @@
     <variable type="Double" name="factor"/>
   </class>
   <class name="AggregatorEvaluatorSolverCallback" base="SolverCallback">
-    <constructor arguments="SolverEvaluatorPtr evaluator, std::vector&lt;EvaluationPoint&gt;* data, size_t evaluationPeriod"/>
-    <variable type="SolverEvaluator" name="evaluator"/>
+    <constructor arguments="std::vector&lt;SolverEvaluatorPtr&gt; evaluators, std::map&lt;string,std::vector&lt;EvaluationPoint&gt;&gt;* data, size_t evaluationPeriod"/>
   </class>
 
   <!-- Solvers -->

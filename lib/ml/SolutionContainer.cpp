@@ -328,6 +328,23 @@ void SolutionVector::clone(ExecutionContext& context, const ObjectPtr& t) const
 ** ParetoFront
 */
 
+double ParetoFront::computeSpreadIndicator() const
+{
+  size_t n = getNumSolutions();
+  if (n < 3)
+    return 0.0;
+  double dmean = 0.0;
+  for (size_t i = 1; i < n; ++i)
+    dmean += getFitness(i-1)->euclideanDistanceTo(getFitness(i));
+  dmean /= n;
+  double df = getFitness(0)->euclideanDistanceTo(getFitness(1));
+  double dl = getFitness(n-2)->euclideanDistanceTo(getFitness(n-1));
+  double sum = 0.0;
+  for (size_t i = 2; i < n-1; ++i)
+    sum += fabs(getFitness(i-1)->euclideanDistanceTo(getFitness(i))-dmean);
+  return ((df + dl + sum)/(df + dl + (n-1)*dmean));
+}
+
 ParetoFront::ParetoFront(FitnessLimitsPtr limits, const string& path) : SolutionVector(limits)
 {
   size_t n = limits->getNumObjectives();
@@ -350,6 +367,8 @@ void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
 {
   std::vector<SolutionAndFitness> newSolutions;
   newSolutions.reserve(solutions.size());
+  std::vector<SolutionAndFitness>::iterator insertPos = newSolutions.begin();
+  bool found = false;
   for (size_t i = 0; i < solutions.size(); ++i)
   {
     FitnessPtr solutionFitness = solutions[i].second;
@@ -357,11 +376,21 @@ void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
       return; // dominated
     if (solution.exists() && solutions[i].first->compare(solution) == 0 ||  // already in the front
         solutions[i].second->compare(fitness) == 0)  // already a solution that has the same fitness  (this test may become flagable in the future)
-      return; 
+      return;
     if (!fitness->strictlyDominates(solutionFitness))
+    {
       newSolutions.push_back(solutions[i]);
+      if (!found && fitness->getValues() <= solutionFitness->getValues())
+      {
+        found = true;
+        insertPos = newSolutions.end() - 1;
+      }
+    }
   }
-  newSolutions.push_back(SolutionAndFitness(solution, fitness));
+  if (!found)
+    newSolutions.push_back(SolutionAndFitness(solution, fitness));
+  else
+    newSolutions.insert(insertPos, SolutionAndFitness(solution, fitness));
   solutions.swap(newSolutions);
 }
 

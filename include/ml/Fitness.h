@@ -52,6 +52,8 @@ public:
   double getValue(size_t i) const
     {jassert(i < values.size()); return values[i];}
 
+  double euclideanDistanceTo(const FitnessPtr& other) const;
+
   const std::vector<double>& getValues() const
     {return values;}
 
