@@ -267,20 +267,13 @@ protected:
     context.progressCallback(new ProgressionState(0, numRuns, "Runs"));
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
-    // hypervolumes
-    //std::vector<EvaluationPoint>* hvvalues = new std::vector<EvaluationPoint>();
-    //SolverCallbackPtr hvaggregator = aggregatorEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), hvvalues, evaluationPeriod);
-    // additive epsilons
-    //std::vector<EvaluationPoint>* aevalues = new std::vector<EvaluationPoint>();
-    //SolverCallbackPtr aeaggregator = aggregatorEvaluatorSolverCallback(additiveEpsilonSolverEvaluator(front, referenceFront), aevalues, evaluationPeriod);
     
+    // aggregator setup
     std::vector<SolverEvaluatorPtr> evaluators;
     evaluators.push_back(hyperVolumeSolverEvaluator(front));
     evaluators.push_back(additiveEpsilonSolverEvaluator(front, referenceFront));
     evaluators.push_back(spreadSolverEvaluator(front));
     std::map<string,std::vector<EvaluationPoint>>* data = new std::map<string,std::vector<EvaluationPoint>>();
-    SolverCallbackPtr aggregator = aggregatorEvaluatorSolverCallback(evaluators, data, evaluationPeriod);
-    // spread
 
     for (size_t i = 0; i < numRuns; ++i)
     {
@@ -290,10 +283,8 @@ protected:
       IVectorPtr evaluations = new IVector();
       SolverCallbackPtr callback = compositeSolverCallback(
         fillParetoFrontSolverCallback(front),
-        //evaluationPeriodEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), evaluations, cpuTimes, hyperVolumes, evaluationPeriod),
-        aggregator,
+        aggregatorEvaluatorSolverCallback(evaluators, data, evaluationPeriod),
         maxEvaluationsSolverCallback(numEvaluations));
-
       optimizer->setVerbosity((SolverVerbosity)verbosity);
       optimizer->solve(context, problem, callback);
       context.resultCallback("optimizer", optimizer);
