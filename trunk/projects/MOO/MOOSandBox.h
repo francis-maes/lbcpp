@@ -265,10 +265,23 @@ protected:
 
     ScalarVariableMeanAndVariancePtr hvs = new ScalarVariableMeanAndVariance();
     context.progressCallback(new ProgressionState(0, numRuns, "Runs"));
-    std::vector<EvaluationPoint>* values = new std::vector<EvaluationPoint>();
     ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
-    SolverCallbackPtr aggregator = aggregatorEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), values, evaluationPeriod);
+    // hypervolumes
+    //std::vector<EvaluationPoint>* hvvalues = new std::vector<EvaluationPoint>();
+    //SolverCallbackPtr hvaggregator = aggregatorEvaluatorSolverCallback(hyperVolumeSolverEvaluator(front), hvvalues, evaluationPeriod);
+    // additive epsilons
+    //std::vector<EvaluationPoint>* aevalues = new std::vector<EvaluationPoint>();
+    //SolverCallbackPtr aeaggregator = aggregatorEvaluatorSolverCallback(additiveEpsilonSolverEvaluator(front, referenceFront), aevalues, evaluationPeriod);
+    
+    std::vector<SolverEvaluatorPtr> evaluators;
+    evaluators.push_back(hyperVolumeSolverEvaluator(front));
+    evaluators.push_back(additiveEpsilonSolverEvaluator(front, referenceFront));
+    evaluators.push_back(spreadSolverEvaluator(front));
+    std::map<string,std::vector<EvaluationPoint>>* data = new std::map<string,std::vector<EvaluationPoint>>();
+    SolverCallbackPtr aggregator = aggregatorEvaluatorSolverCallback(evaluators, data, evaluationPeriod);
+    // spread
+
     for (size_t i = 0; i < numRuns; ++i)
     {
       context.enterScope("Run " + string((int) i));
@@ -281,51 +294,30 @@ protected:
         aggregator,
         maxEvaluationsSolverCallback(numEvaluations));
 
-
       optimizer->setVerbosity((SolverVerbosity)verbosity);
       optimizer->solve(context, problem, callback);
       context.resultCallback("optimizer", optimizer);
-      context.resultCallback("Additive epsilon", front->computeAdditiveEpsilonIndicator(referenceFront));
-      context.resultCallback("Multiplicative epsilon", front->computeMultiplicativeEpsilonIndicator(referenceFront));
-      //context.resultCallback("numEvaluations", decorator->getNumEvaluations());
-
-      /*
-      if (verbosity >= verbosityDetailed)
-      {
-        context.enterScope("curve");
-
-        for (size_t i = 0; i < hyperVolumes->getNumElements(); ++i)
-        {
-          context.enterScope(string(evaluations->get(i)));
-          context.resultCallback("numEvaluations", evaluations->get(i));
-          context.resultCallback("hyperVolume", hyperVolumes->get(i));
-          context.resultCallback("cpuTime", cpuTimes->get(i));
-          context.leaveScope();
-        }
-        context.leaveScope();
-      }*/
-
       double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
-      //front->clear();
-      
       front = new ParetoFront(problem->getFitnessLimits());
       context.leaveScope(hv);
       hvs->push(hv);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
+    
     context.enterScope("curve");
-    for (size_t i = 0; i < values->size(); ++i)
+    for (size_t i = 0; i < data->begin()->second.size(); ++i)
     {
-      double mean = values->at(i).getSummary()->getMean();
-      double stddev = values->at(i).getSummary()->getStandardDeviation();
       context.enterScope(string((int)i));
-      context.resultCallback("NumEvaluations", values->at(i).getNumEvaluations());
-      context.resultCallback("Hypervolume mean", mean);
-      context.resultCallback("Hypervolume stddev", stddev);
+      context.resultCallback("NumEvaluations", data->begin()->second[i].getNumEvaluations());
+      for (auto it = data->begin(); it != data->end(); ++it)
+      {
+        context.resultCallback(it->first + T(" mean"), it->second[i].getSummary()->getMean());
+        context.resultCallback(it->first + T(" stddev"), it->second[i].getSummary()->getStandardDeviation());
+      }
       context.leaveScope();
     }
     context.leaveScope();
-    delete values;
+    delete data;
     context.leaveScope(hvs);
     return SolverResult(hvs->getMean(), optimizer);
   }

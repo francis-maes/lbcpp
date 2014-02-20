@@ -249,9 +249,13 @@ protected:
 class AggregatorEvaluatorSolverCallback : public SolverCallback
 {
 public:
-  AggregatorEvaluatorSolverCallback(SolverEvaluatorPtr evaluator, std::vector<EvaluationPoint>* data, size_t evaluationPeriod)
-    : evaluator(evaluator), data(data), evaluationPeriod(evaluationPeriod) {}
-  AggregatorEvaluatorSolverCallback() : evaluator(SolverEvaluatorPtr()), data(0) {}
+  AggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string,std::vector<EvaluationPoint>>* data, size_t evaluationPeriod)
+    : evaluators(evaluators), data(data), evaluationPeriod(evaluationPeriod) 
+  {
+    for (std::vector<SolverEvaluatorPtr>::iterator it = evaluators.begin(); it != evaluators.end(); ++it)
+      (*data)[(*it)->getDescription()] = std::vector<EvaluationPoint>();
+  }
+  AggregatorEvaluatorSolverCallback() : evaluators(std::vector<SolverEvaluatorPtr>()), data(0), evaluationPeriod(1) {}
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)
     { i = 0; numEvaluations = 0;}
   virtual void solutionEvaluated(ExecutionContext& context, SolverPtr solver, ObjectPtr object, FitnessPtr fitness)
@@ -259,17 +263,20 @@ public:
     ++numEvaluations;
     if (numEvaluations % evaluationPeriod == 0)
     {
-      while (data->size() <= i)
-        data->push_back(EvaluationPoint(numEvaluations));
-      data->at(i).pushResult(evaluator->evaluateSolver(context, solver));
+      for (std::vector<SolverEvaluatorPtr>::iterator it = evaluators.begin(); it != evaluators.end(); ++it)
+      {
+        while ((*data)[(*it)->getDescription()].size() <= i)
+          (*data)[(*it)->getDescription()].push_back(EvaluationPoint(numEvaluations));
+        (*data)[(*it)->getDescription()][i].pushResult((*it)->evaluateSolver(context, solver));
+      }
       ++i;
     }
   }
 
 protected:
   friend class AggregatorEvaluatorSolverCallbackClass;
-  SolverEvaluatorPtr evaluator;
-  std::vector<EvaluationPoint>* data;
+  std::vector<SolverEvaluatorPtr> evaluators;
+  std::map<string,std::vector<EvaluationPoint>>* data;
   size_t i;
   size_t numEvaluations;
   size_t evaluationPeriod;

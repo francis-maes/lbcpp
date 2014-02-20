@@ -287,13 +287,13 @@ private:
   double max2;
 };
 
-struct DTLZ1MOProblem : public DTLZMOProblem {DTLZ1MOProblem(size_t numDimensions =  7, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ1(numDimensions, numObjectives), 1.0, 1.0) {} };
+struct DTLZ1MOProblem : public DTLZMOProblem {DTLZ1MOProblem(size_t numDimensions =  7, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ1(numDimensions, numObjectives), 0.5, 0.5) {} };
 struct DTLZ2MOProblem : public DTLZMOProblem {DTLZ2MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ2(numDimensions, numObjectives), 1.0, 1.0) {} };
 struct DTLZ3MOProblem : public DTLZMOProblem {DTLZ3MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ3(numDimensions, numObjectives), 1.0, 1.0) {} };
 struct DTLZ4MOProblem : public DTLZMOProblem {DTLZ4MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ4(numDimensions, numObjectives), 1.0, 1.0) {} };
 struct DTLZ5MOProblem : public DTLZMOProblem {DTLZ5MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ5(numDimensions, numObjectives), 1.0, 1.0) {} };
 struct DTLZ6MOProblem : public DTLZMOProblem {DTLZ6MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ6(numDimensions, numObjectives), 1.0, 1.0) {} };
-struct DTLZ7MOProblem : public DTLZMOProblem {DTLZ7MOProblem(size_t numDimensions = 22, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ7(numDimensions, numObjectives), 1.0, 1.0) {} };
+struct DTLZ7MOProblem : public DTLZMOProblem {DTLZ7MOProblem(size_t numDimensions = 22, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ7(numDimensions, numObjectives), 2.12, 4.0) {} };
 
 }; /* namespace lbcpp */
 

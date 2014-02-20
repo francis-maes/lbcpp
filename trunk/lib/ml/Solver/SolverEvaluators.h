@@ -20,7 +20,7 @@ public:
   SingleObjectiveSolverEvaluator(FitnessPtr& bestFitness = (*(FitnessPtr* )0))
     : bestFitness(bestFitness) {} 
   
-  double evaluateSolver(ExecutionContext& context, SolverPtr solver)
+  virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver)
     {return bestFitness->getValue(0);}
   
   virtual string getDescription()
@@ -38,7 +38,7 @@ public:
   HyperVolumeSolverEvaluator(ParetoFrontPtr& front = (*(ParetoFrontPtr*)0))
     : front(front) {}
   
-  double evaluateSolver(ExecutionContext& context, SolverPtr solver)
+  virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver)
     {return front->computeHyperVolume(front->getFitnessLimits()->getWorstPossibleFitness());}
   
   virtual string getDescription()
@@ -47,6 +47,60 @@ public:
 protected:
   friend class HyperVolumeSolverEvaluatorClass;
   
+  ParetoFrontPtr& front;
+};
+
+class AdditiveEpsilonSolverEvaluator : public SolverEvaluator
+{
+public:
+  AdditiveEpsilonSolverEvaluator(ParetoFrontPtr& front = (*(ParetoFrontPtr*)0), ParetoFrontPtr referenceFront = ParetoFrontPtr())
+    : front(front), referenceFront(referenceFront) {}
+
+  virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver)
+    {return front->computeAdditiveEpsilonIndicator(referenceFront);}
+
+  virtual string getDescription()
+    {return T("Additive Epsilon");}
+
+protected:
+  friend class AdditiveEpsilonSolverEvaluatorClass;
+  ParetoFrontPtr& front;
+  ParetoFrontPtr referenceFront;
+};
+
+class MultiplicativeEpsilonSolverEvaluator : public SolverEvaluator
+{
+public:
+  MultiplicativeEpsilonSolverEvaluator(ParetoFrontPtr& front = (*(ParetoFrontPtr*)0), ParetoFrontPtr referenceFront = ParetoFrontPtr())
+    : front(front), referenceFront(referenceFront) {}
+
+  virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver)
+    {return front->computeMultiplicativeEpsilonIndicator(referenceFront);}
+
+  virtual string getDescription()
+    {return T("Additive Epsilon");}
+
+protected:
+  friend class MultiplicativeEpsilonSolverEvaluatorClass;
+  
+  ParetoFrontPtr& front;
+  ParetoFrontPtr referenceFront;
+};
+
+class SpreadSolverEvaluator : public SolverEvaluator
+{
+public:
+  SpreadSolverEvaluator(ParetoFrontPtr& front = (*(ParetoFrontPtr*)0)) : front(front) {}
+
+  virtual double evaluateSolver(ExecutionContext& context, SolverPtr solver)
+    {return front->computeSpreadIndicator();}
+
+  virtual string getDescription()
+    {return T("Spread");}
+
+protected:
+  friend class SpreadSolverEvaluatorClass;
+
   ParetoFrontPtr& front;
 };
 

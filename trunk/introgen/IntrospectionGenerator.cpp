@@ -443,7 +443,15 @@ protected:
       returnType = baseClassName;
 
     StringArray tokens;
-    tokens.addTokens(arguments, T(","), NULL);
+    // remove template specifiers
+    String argumentsNoTemplates = arguments;
+    while (argumentsNoTemplates.lastIndexOfChar('<') > -1)
+    {
+      int from = argumentsNoTemplates.lastIndexOfChar('<');
+      int to = argumentsNoTemplates.indexOfChar(from+1, '>');
+      argumentsNoTemplates = argumentsNoTemplates.replaceSection(from, to-from, T(""));
+    }
+    tokens.addTokens(argumentsNoTemplates, T(","), NULL);
     String argNames;
     for (int i = 0; i < tokens.size(); ++i)
     {

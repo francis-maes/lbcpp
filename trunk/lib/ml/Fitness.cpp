@@ -64,6 +64,15 @@ Fitness::Fitness(double value, const FitnessLimitsPtr& limits)
 {
 }
 
+double Fitness::euclideanDistanceTo(const FitnessPtr& other) const
+{
+  jassert(getNumValues() == other->getNumValues());
+  double distance = 0.0;
+  for (size_t i = 0; i < getNumValues(); ++i)
+    distance += (getValue(i) - other->getValue(i)) * (getValue(i) - other->getValue(i));
+  return sqrt(distance);
+}
+
 bool Fitness::dominates(const FitnessPtr& other, bool strictly) const
 {
   jassert(other->limits == limits);
