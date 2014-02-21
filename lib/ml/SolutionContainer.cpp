@@ -487,10 +487,18 @@ void CrowdingArchive::insertSolution(ObjectPtr solution, FitnessPtr fitness)
   {
     /* now we remove the worst solution */
     int worst = 0;
-    comparator->initialize(this);
-    for (size_t i = 1; i < getNumSolutions(); ++i)
-      if (comparator->compareSolutions(worst, i) == 1) // i is worse than worst
+    double worstDistance = DBL_MAX;
+    for (size_t i = 1; i < getNumSolutions()-1; ++i)
+    {
+      double d = 0.0;
+      for (size_t j = 0; j < fitness->getNumValues(); ++j)
+        d += fabs((getFitness(i+1)->getValue(j) - getFitness(i-1)->getValue(j)) / (limits->getUpperLimit(j) - limits->getLowerLimit(j)));
+      if (d < worstDistance)
+      {
         worst = i;
+        worstDistance = d;
+      }
+    }
     solutions.erase(solutions.begin() + worst);
   }
 }

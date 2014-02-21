@@ -43,6 +43,7 @@
     <variable type="PositiveInteger" name="verbosity"/>
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="PositiveInteger" name="problemIdx"/>
+    <variable type="PositiveInteger" name="archiveSize"/>
     <variable type="String" name="paretoFrontDir"/>
   </class>
   
