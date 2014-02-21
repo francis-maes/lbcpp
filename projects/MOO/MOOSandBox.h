@@ -233,7 +233,8 @@ protected:
       ParetoFrontPtr referenceFront = new ParetoFront(problem->getFitnessLimits(), path);
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
-      context.resultCallback("Reference front", referenceFront);
+      if (verbosity >= verbosityDetailed)
+        context.resultCallback("Reference front", referenceFront);
       size_t populationSize = 100;
       std::vector<SolverResult> results = std::vector<SolverResult>();
       size_t numSolvers = 7;
