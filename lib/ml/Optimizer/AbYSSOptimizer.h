@@ -51,7 +51,7 @@ public:
   }
 
   ~AbYSSOptimizer()
-    {cleanUp();}
+    {}
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter);
 
