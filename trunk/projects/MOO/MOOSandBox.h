@@ -279,7 +279,8 @@ protected:
 
     for (size_t i = 0; i < numRuns; ++i)
     {
-      context.enterScope("Run " + string((int) i));
+      if (verbosity > verbosityProgressAndResult)
+        context.enterScope("Run " + string((int) i));
       DVectorPtr cpuTimes = new DVector();
       DVectorPtr hyperVolumes = new DVector();
       IVectorPtr evaluations = new IVector();
@@ -291,7 +292,8 @@ protected:
       optimizer->solve(context, problem, callback);
       double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
       front = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
-      context.leaveScope(hv);
+      if (verbosity > verbosityProgressAndResult)
+        context.leaveScope(hv);
       hvs->push(hv);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
