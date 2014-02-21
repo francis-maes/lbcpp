@@ -275,7 +275,7 @@ protected:
     evaluators.push_back(hyperVolumeSolverEvaluator(front));
     evaluators.push_back(additiveEpsilonSolverEvaluator(front, referenceFront));
     evaluators.push_back(spreadSolverEvaluator(front));
-    std::map<string, std::vector<EvaluationPoint> >* data = new std::map<string,std::vector<EvaluationPoint>>();
+    std::map<string, std::vector<EvaluationPoint> >* data = new std::map<string, std::vector<EvaluationPoint> >();
 
     for (size_t i = 0; i < numRuns; ++i)
     {
@@ -301,7 +301,7 @@ protected:
     {
       context.enterScope(string((int)i));
       context.resultCallback("NumEvaluations", data->begin()->second[i].getNumEvaluations());
-      for (auto it = data->begin(); it != data->end(); ++it)
+      for (std::map<string, std::vector<EvaluationPoint> >::iterator it = data->begin(); it != data->end(); ++it)
       {
         context.resultCallback(it->first + T(" mean"), it->second[i].getSummary()->getMean());
         context.resultCallback(it->first + T(" stddev"), it->second[i].getSummary()->getStandardDeviation());
