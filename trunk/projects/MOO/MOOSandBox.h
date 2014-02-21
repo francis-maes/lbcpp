@@ -30,7 +30,8 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : numDimensions(6), numObjectives(2), numEvaluations(1000), numRuns(1), verbosity(1), useDefaults(false), paretoFrontDir(""), problemIdx(0) {}
+  MOOSandBox() : numDimensions(6), numObjectives(2), numEvaluations(1000), numRuns(1), verbosity(1), 
+    useDefaults(false), paretoFrontDir(""), problemIdx(0), archiveSize(200) {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -63,6 +64,7 @@ protected:
   size_t verbosity;
   string paretoFrontDir;
   size_t problemIdx;
+  size_t archiveSize;
 
   bool useDefaults;
 
@@ -237,8 +239,6 @@ protected:
       size_t numSolvers = 7;
       size_t currentSolver = 0;
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
-      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations), referenceFront));
-      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize), referenceFront));
@@ -250,6 +250,8 @@ protected:
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, omopsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, abYSSOptimizer(populationSize, populationSize, populationSize / 2, populationSize / 2, numEvaluations / populationSize), referenceFront));
+      context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
+      results.push_back(solveWithMultiObjectiveOptimizer(context, problem, randomSolver(uniformSampler(), numEvaluations), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       
       std::vector<SolverResult>::iterator best = results.begin();
@@ -265,7 +267,7 @@ protected:
 
     ScalarVariableMeanAndVariancePtr hvs = new ScalarVariableMeanAndVariance();
     context.progressCallback(new ProgressionState(0, numRuns, "Runs"));
-    ParetoFrontPtr front = new ParetoFront(problem->getFitnessLimits());
+    ParetoFrontPtr front = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
     size_t evaluationPeriod = numEvaluations > 250 ? numEvaluations / 250 : 1;
     
     // aggregator setup
@@ -273,7 +275,7 @@ protected:
     evaluators.push_back(hyperVolumeSolverEvaluator(front));
     evaluators.push_back(additiveEpsilonSolverEvaluator(front, referenceFront));
     evaluators.push_back(spreadSolverEvaluator(front));
-    std::map<string,std::vector<EvaluationPoint>>* data = new std::map<string,std::vector<EvaluationPoint>>();
+    std::map<string, std::vector<EvaluationPoint> >* data = new std::map<string,std::vector<EvaluationPoint>>();
 
     for (size_t i = 0; i < numRuns; ++i)
     {
@@ -287,9 +289,8 @@ protected:
         maxEvaluationsSolverCallback(numEvaluations));
       optimizer->setVerbosity((SolverVerbosity)verbosity);
       optimizer->solve(context, problem, callback);
-      context.resultCallback("optimizer", optimizer);
       double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
-      front = new ParetoFront(problem->getFitnessLimits());
+      front = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
       context.leaveScope(hv);
       hvs->push(hv);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));

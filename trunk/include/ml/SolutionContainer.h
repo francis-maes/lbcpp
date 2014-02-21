@@ -167,21 +167,34 @@ class CrowdingArchive : public ParetoFront
 {
 public:
   CrowdingArchive(size_t maxSize, FitnessLimitsPtr limits, const std::vector<SolutionAndFitness>& solutions) 
-    : ParetoFront(limits, solutions, paretoRankAndCrowdingDistanceComparator()), maxSize(maxSize) 
-  {reserve(maxSize + 1);} // we reserve maxSize+1 because we insert a solution first, then remove the worst
+    : ParetoFront(limits), maxSize(maxSize) 
+  {
+    reserve(maxSize + 1); // we reserve maxSize+1 because we insert a solution first, then remove the worst
+    for (std::vector<SolutionAndFitness>::const_iterator it = solutions.begin(); it != solutions.end(); ++it)
+      insertSolution(it->first, it->second); // make sure we insert solutions sorted and keep the ones with max crowding distance
+  } 
   
-  CrowdingArchive(size_t maxSize, FitnessLimitsPtr limits) 
-    : ParetoFront(limits, std::vector<SolutionAndFitness>(), paretoRankAndCrowdingDistanceComparator()), maxSize(maxSize)
-  {reserve(maxSize + 1);}
+  CrowdingArchive(size_t maxSize, FitnessLimitsPtr limits) : ParetoFront(limits), maxSize(maxSize)
+    {reserve(maxSize + 1);}
   
   CrowdingArchive(size_t maxSize = 100) : maxSize(maxSize)
-  {reserve(maxSize + 1);}
+    {reserve(maxSize + 1);}
 
   virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness);
 
 protected:
   friend class CrowdingArchiveClass;
 
+  size_t maxSize;
+};
+
+class ClusteringArchive : public ParetoFront
+{
+public:
+  virtual void insertSolution(ObjectPtr solution, FitnessPtr fitness)
+  {}
+
+protected:
   size_t maxSize;
 };
 

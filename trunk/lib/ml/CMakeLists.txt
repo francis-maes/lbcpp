@@ -94,6 +94,7 @@ SET(ML_OPTIMIZER_SOURCES
   Optimizer/OMOPSOOptimizer.cpp
   Optimizer/AbYSSOptimizer.h
   Optimizer/AbYSSOptimizer.cpp
+  Optimizer/AMOSAOptimizer.h
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )

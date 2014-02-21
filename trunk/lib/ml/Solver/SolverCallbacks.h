@@ -249,7 +249,7 @@ protected:
 class AggregatorEvaluatorSolverCallback : public SolverCallback
 {
 public:
-  AggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string,std::vector<EvaluationPoint>>* data, size_t evaluationPeriod)
+  AggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string, std::vector<EvaluationPoint> >* data, size_t evaluationPeriod)
     : evaluators(evaluators), data(data), evaluationPeriod(evaluationPeriod) 
   {
     for (std::vector<SolverEvaluatorPtr>::iterator it = evaluators.begin(); it != evaluators.end(); ++it)
@@ -276,7 +276,7 @@ public:
 protected:
   friend class AggregatorEvaluatorSolverCallbackClass;
   std::vector<SolverEvaluatorPtr> evaluators;
-  std::map<string,std::vector<EvaluationPoint>>* data;
+  std::map<string, std::vector<EvaluationPoint> >* data;
   size_t i;
   size_t numEvaluations;
   size_t evaluationPeriod;

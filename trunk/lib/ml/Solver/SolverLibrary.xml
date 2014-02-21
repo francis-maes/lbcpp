@@ -70,7 +70,7 @@
     <variable type="Double" name="factor"/>
   </class>
   <class name="AggregatorEvaluatorSolverCallback" base="SolverCallback">
-    <constructor arguments="std::vector&lt;SolverEvaluatorPtr&gt; evaluators, std::map&lt;string,std::vector&lt;EvaluationPoint&gt;&gt;* data, size_t evaluationPeriod"/>
+    <constructor arguments="std::vector&lt;SolverEvaluatorPtr&gt; evaluators, std::map&lt;string, std::vector&lt;EvaluationPoint&gt; &gt;* data, size_t evaluationPeriod"/>
   </class>
 
   <!-- Solvers -->

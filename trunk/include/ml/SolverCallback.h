@@ -76,7 +76,7 @@ protected:
   ScalarVariableMeanAndVariancePtr scoreSummary;
 };
 
-extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string,std::vector<EvaluationPoint>>* data, size_t evaluationPeriod = 1);
+extern SolverCallbackPtr aggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string, std::vector<EvaluationPoint> >* data, size_t evaluationPeriod = 1);
 
 
 
