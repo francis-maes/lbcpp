@@ -46,8 +46,7 @@ public:
     cleanUp();
   }
 
-  ~SMPSOOptimizer()
-    {cleanUp();}
+  ~SMPSOOptimizer() {}
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter);
 

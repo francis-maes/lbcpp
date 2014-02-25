@@ -252,8 +252,10 @@ public:
   AggregatorEvaluatorSolverCallback(std::vector<SolverEvaluatorPtr> evaluators, std::map<string, std::vector<EvaluationPoint> >* data, size_t evaluationPeriod)
     : evaluators(evaluators), data(data), evaluationPeriod(evaluationPeriod) 
   {
+    // check if all evaluators have exist as keys in the map, otherwise add it
     for (std::vector<SolverEvaluatorPtr>::iterator it = evaluators.begin(); it != evaluators.end(); ++it)
-      (*data)[(*it)->getDescription()] = std::vector<EvaluationPoint>();
+      if (data->find((*it)->getDescription()) == data->end())
+        (*data)[(*it)->getDescription()] = std::vector<EvaluationPoint>();
   }
   AggregatorEvaluatorSolverCallback() : evaluators(std::vector<SolverEvaluatorPtr>()), data(0), evaluationPeriod(1) {}
   virtual void solverStarted(ExecutionContext& context, SolverPtr solver)

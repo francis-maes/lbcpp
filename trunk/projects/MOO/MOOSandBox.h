@@ -306,8 +306,8 @@ protected:
       context.resultCallback("NumEvaluations", data->begin()->second[i].getNumEvaluations());
       for (std::map<string, std::vector<EvaluationPoint> >::iterator it = data->begin(); it != data->end(); ++it)
       {
-        context.resultCallback(it->first + T(" mean"), it->second[i].getSummary()->getMean());
-        context.resultCallback(it->first + T(" stddev"), it->second[i].getSummary()->getStandardDeviation());
+        context.resultCallback(it->first, it->second[i].getSummary());
+        //context.resultCallback(it->first + T(" stddev"), it->second[i].getSummary()->getStandardDeviation());
       }
       context.leaveScope();
     }

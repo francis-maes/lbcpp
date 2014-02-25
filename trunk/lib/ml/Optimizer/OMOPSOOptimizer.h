@@ -38,8 +38,7 @@ public:
   }
 
   virtual bool iterateSolver(ExecutionContext& context, size_t iter);
-  ~OMOPSOOptimizer()
-    {cleanUp();}
+  ~OMOPSOOptimizer() {}
 
 protected:
   friend class OMOPSOOptimizerClass;
