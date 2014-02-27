@@ -196,6 +196,12 @@ public:
   void setImportance(double importance)
     {jassert(isNumberValid(importance)); this->importance = importance;}
 
+  ObjectPtr getLearnerStatistics()
+    {return learnerStatistics;}
+
+  void setLearnerStatistics(ObjectPtr statistics)
+    {learnerStatistics = statistics;}
+
   size_t getDepth() const;
   size_t getNodeDepth(ExpressionPtr node) const;
   size_t getTreeSize() const;
@@ -213,6 +219,7 @@ public:
 protected:
   friend class ExpressionClass;
 
+  ObjectPtr learnerStatistics;
   ClassPtr type;
   size_t allocationIndex;
   double importance;

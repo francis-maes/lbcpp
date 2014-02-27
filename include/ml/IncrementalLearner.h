@@ -76,6 +76,8 @@ public:
 extern IncrementalLearnerPtr pureRandomScalarVectorTreeIncrementalLearner();
 extern IncrementalLearnerPtr ensembleIncrementalLearner(IncrementalLearnerPtr baseLearner, size_t ensembleSize);
 extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrainingSamples, double learningRate, double learningRateDecay);
+extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner();
+
 
 }; /* namespace lbcpp */
 

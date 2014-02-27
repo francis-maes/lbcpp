@@ -18,5 +18,9 @@
     <variable type="Double" name="learningRate"/>
     <variable type="Double" name="learningRateDecay"/>
   </class>
-  
+
+  <class name="HoeffdingTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
+    <constructor arguments="" returnType="IncrementalLearner"/>
+  </class>
+
 </library>
