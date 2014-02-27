@@ -21,6 +21,7 @@ SET(MOO_SOURCES
   SBOExperiments.h
   SBOEnsembleSizeExperiments.h
   PerceptronTest.h
+  HoeffdingTreeLearnerExperiments.h
 #  DTLZFronts.cpp
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
