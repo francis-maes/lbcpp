@@ -71,13 +71,18 @@ public:
   ** Evaluation
   */
   FitnessLimitsPtr getFitnessLimits() const;
-  FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
+  FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object) const;
 
   /*
   ** Reference solutions
   */
   virtual ObjectPtr getBestSolution() const
     {return ObjectPtr();}
+
+  /*
+  ** Supervised learning
+  */
+  virtual ProblemPtr toSupervisedLearningProblem(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, SamplerPtr sampler) const;
 
   /*
   ** Loading / Initialization
