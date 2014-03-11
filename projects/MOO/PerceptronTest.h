@@ -45,7 +45,7 @@ public:
       ProblemPtr problem = makeProblem(context, functionNumber, domain);
     
       // put learners in a vector
-      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
+      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(10, learningRate, learningRateDecay));
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();

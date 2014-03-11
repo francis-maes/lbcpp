@@ -26,38 +26,39 @@ public:
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
     {return new PerceptronExpression();}
 
-  virtual void addTrainingSample(ExecutionContext &context, const std::vector<ObjectPtr>& sample, ExpressionPtr expression) const
+  virtual void addTrainingSample(ExecutionContext &context, ExpressionPtr expression, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
+    // only single-objective for now
+    jassert(output->getNumValues() == 1);
     PerceptronExpressionPtr perceptron = expression.staticCast<PerceptronExpression>();
-    perceptron->updateStatisticsFromTrainingSample(context, sample);
+    perceptron->updateStatistics(context, input);
 
     size_t numTrainingSamples = (size_t) perceptron->getStatistics(0)->getCount();
     if (numTrainingSamples < numInitialTrainingSamples)
       return;
     
     double curLearningRate = learningRate / (1 + numTrainingSamples * learningRateDecay);
-    double prediction = Double::get(perceptron->compute(context, sample));
-    double realVal = Double::get(sample.back());
+    double prediction = perceptron->compute(input);
+    double realVal = output->getValue(0);
     double dy = realVal - prediction;
     DenseDoubleVectorPtr& weights = perceptron->getWeights();
-    DenseDoubleVectorPtr normalized = perceptron->normalizedInputVectorFromTrainingSample(sample);
+    DenseDoubleVectorPtr normalized = perceptron->normalizeInput(input);
     context.enterScope(string((int) numTrainingSamples));
     context.resultCallback("numTrainingSamples", numTrainingSamples);
     context.resultCallback("error", dy);
     context.resultCallback("mean0", perceptron->getStatistics(0)->getMean());
     context.resultCallback("stddev0", perceptron->getStatistics(0)->getStandardDeviation());
-    DenseDoubleVectorPtr s = new DenseDoubleVector(sample.size() - 1, 0.0);
-    for (size_t i = 0; i < sample.size() - 1; ++i)
-      s->setValue(i, Double::get(sample[i+1]));
-    context.resultCallback("sample", s);
+    context.resultCallback("sample", input);
     context.resultCallback("normalized sample", normalized);
     context.resultCallback("prediction", prediction);
     context.resultCallback("real value", realVal);
     context.resultCallback("current learning rate", curLearningRate);
-    for (size_t i = 0; i < weights->getNumValues(); ++i)
+    weights->getValueReference(0) += curLearningRate * dy; // * 1.0
+    context.resultCallback("weight0", weights->getValue(0));
+    for (size_t i = 0; i < normalized->getNumValues(); ++i)
     {
-      weights->getValueReference(i) += curLearningRate * dy * normalized->getValue(i);
-      context.resultCallback("weight" + string((int) i), weights->getValue(i));
+      weights->getValueReference(i+1) += curLearningRate * dy * normalized->getValue(i);
+      context.resultCallback("weight" + string((int) i+1), weights->getValue(i+1));
     }
     context.leaveScope();
   }

@@ -16,12 +16,15 @@
 namespace lbcpp
 {
  
-class PureRandomScalarVectorTreeIncrementalLearner : public ScalarVectorTreeIncrementalLearner
+class PureRandomScalarVectorTreeIncrementalLearner : public IncrementalLearner
 {
 public:
-  virtual void addSampleToTree(ExecutionContext& context, TreeNodePtr root, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
+  virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
+    {return scalarVectorTreeNode();}
+  
+  virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr root, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
-    TreeNodePtr leaf = root->findLeaf(input);
+    TreeNodePtr leaf = root.staticCast<TreeNode>()->findLeaf(input);
     leaf->addSample(input, output);
       
     size_t numAttributes = input->getNumValues(); 
@@ -69,6 +72,13 @@ public:
     AggregatorExpressionPtr expression = expr.staticCast<AggregatorExpression>();
     for (size_t i = 0; i < expression->getNumSubNodes(); ++i)
       baseLearner->addTrainingSample(context, sample, expression->getSubNode(i));
+  }
+  
+  virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr expr, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
+  {
+    AggregatorExpressionPtr expression = expr.staticCast<AggregatorExpression>();
+    for (size_t i = 0; i < expression->getNumSubNodes(); ++i)
+      baseLearner->addTrainingSample(context, expression->getSubNode(i), input, output);
   }
 
 protected:

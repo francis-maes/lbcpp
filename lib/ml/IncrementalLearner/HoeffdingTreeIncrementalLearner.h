@@ -21,12 +21,13 @@ class HoeffdingTreeStatistics : public Object
 
 typedef ReferenceCountedObjectPtr<HoeffdingTreeStatistics> HoeffdingTreeStatisticsPtr;
 
-class HoeffdingTreeIncrementalLearner : public ScalarVectorTreeIncrementalLearner
+class HoeffdingTreeIncrementalLearner : public IncrementalLearner
 {
 public:
   HoeffdingTreeIncrementalLearner() {}
-  virtual void addSampleToTree(ExecutionContext& context, TreeNodePtr root, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
+  virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr expr, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
+    TreeNodePtr root = expr.staticCast<TreeNode>();
     HoeffdingTreeStatisticsPtr stats = root->getLearnerStatistics().staticCast<HoeffdingTreeStatistics>();
 
     // zoek leaf waar dit voorbeeld behoord
