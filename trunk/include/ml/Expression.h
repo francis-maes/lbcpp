@@ -510,6 +510,17 @@ public:
     for (size_t i = 0; i < weights->getNumValues(); ++i)
       weights->setValue(i, weights_[i]);
   }
+  
+  double compute(const DenseDoubleVectorPtr& input) const
+  {
+    if (weights->getNumValues() == 0)
+      return 0.0;
+    jassert(input->getNumValues() + 1 == weights->getNumValues());
+    double result = weights->getValue(0);
+    for (size_t i = 0; i < input->getNumValues(); ++i)
+      result += weights->getValue(i+1) * input->getValue(i);
+    return result;
+  }
 
   virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
   /** Get a reference to the weight vector
@@ -530,27 +541,29 @@ protected:
 class PerceptronExpression : public Expression
 {
 public:
-  PerceptronExpression() : Expression(doubleClass), statistics(std::vector<ScalarVariableMeanAndVariancePtr>()), 
-    normalizedInput(std::vector<ObjectPtr>()), model(new LinearModelExpression()) {}
+  PerceptronExpression() : Expression(doubleClass), model(new LinearModelExpression()),
+    statistics(std::vector<ScalarVariableMeanAndVariancePtr>()), normalizedInput(std::vector<ObjectPtr>()) {}
 
   virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
     {calculateNormalizedInput(inputs); return model->compute(context, normalizedInput);}
+  
+  double compute(const DenseDoubleVectorPtr& input) const
+  {
+    DenseDoubleVectorPtr normalized = normalizeInput(input);
+    return model->compute(normalized);
+  }
 
   ScalarVariableMeanAndVariancePtr getStatistics(size_t i) const
     {return statistics[i];}
 
-  DenseDoubleVectorPtr normalizedInputVectorFromTrainingSample(const std::vector<ObjectPtr>& sample);
+  DenseDoubleVectorPtr normalizeInput(const DenseDoubleVectorPtr& sample) const;
 
   /** \brief Update the input vector statistics
    *  This method will also initialize the statistics and linear model weight vectors if these are uninitialized
    *  \param inputs vector of input values
    */
-  void updateStatistics(ExecutionContext& context, const std::vector<ObjectPtr>& inputs);
-  /** \brief Update the input vector statistics, using a training sample
-   *  This method will also initialize the statistics and linear model weight vectors if these are uninitialized
-   *  \param sample All values except the last one will be regarded as the input vector
-   */
-  void updateStatisticsFromTrainingSample(ExecutionContext& context, const std::vector<ObjectPtr>& inputs);
+  void updateStatistics(ExecutionContext& context, const DenseDoubleVectorPtr& inputs);
+
   /** Get a reference to the model's weight vector
    *  \return a reference to the weight vector, allowing it to be updated
    */
