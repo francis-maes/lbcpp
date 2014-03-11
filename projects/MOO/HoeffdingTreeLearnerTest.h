@@ -1,9 +1,10 @@
 # include <oil/Execution/WorkUnit.h>
-# include "HoeffdingTreeLearner.h"
+# include <ml/IncrementalLearner.h>
 # include <stdlib.h> // abs
 # define _USE_MATH_DEFINES
 # include <math.h> // sin
 # include <ctime>
+# include "../../lib/ml/IncrementalLearner/HoeffdingTreeIncrementalLearner.h"
 
 namespace lbcpp {
 
@@ -37,9 +38,9 @@ public:
 		dataDef->addAttribute("numAtt3");
 		dataDef->addAttribute("numAtt4");*/
 		dataDef->addTargetAttribute("targetValue");
-		HoeffdingTreeLearner htlNY = HoeffdingTreeLearner(context, randomSeed, NY, Hoeffding, 0.01, *dataDef);
-		HoeffdingTreeLearner htlNXY = HoeffdingTreeLearner(context, randomSeed, NXY, Hoeffding, 0.01, *dataDef);
-		std::vector<std::vector<double>> testSet = createTestSet(nbTestSamples);
+		HoeffdingTreeIncrementalLearnerPtr htlNY = hoeffdingTreeIncrementalLearner(context, randomSeed, NY, Hoeffding, 0.01).staticCast<HoeffdingTreeIncrementalLearner>();
+	    HoeffdingTreeIncrementalLearnerPtr htlNXY = hoeffdingTreeIncrementalLearner(context, randomSeed, NXY, Hoeffding, 0.01).staticCast<HoeffdingTreeIncrementalLearner>();
+		std::vector<std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr> > testSet = createTestSet(nbTestSamples);
 		if(!modelNY && !modelNXY)
 			new Boolean(false);
 
@@ -53,26 +54,28 @@ public:
 		double y;
 		for (int i = 0; i < nbSamples; i++) {
 			//std::cout << nbSamples << " - " << i << std::endl;
-			std::vector<double> sample = getSample();
-			y = sample[sample.size() - 1];
+			DenseDoubleVectorPtr input = new DenseDoubleVector(0, 0.0);
+			DenseDoubleVectorPtr output = new DenseDoubleVector(0, 0.0);
+			getSample(input, output);
+			y = output->getValue(0);
 
 			context.enterScope(string((double) i));
 			//context.resultCallback("x", (double) sample[0]);
 			context.resultCallback("i", (double) i);
 			if(modelNY){
-				htlNY.addTrainingSample(sample);
-				context.resultCallback("prediction NY",htlNY.predict(sample));
+				htlNY->addTrainingSample(context, htlNY->root, input, output);
+				context.resultCallback("prediction NY",htlNY->predict(input));
 				//context.resultCallback("predictionError NY", abs(y - htlNY.predict(sample))/y);
 				context.resultCallback("RMSE NY", getRMSE(context, testSet, htlNY));
-				context.resultCallback("nbOfLeaves NY", (double)htlNY.getNbOfLeaves());
+				//context.resultCallback("nbOfLeaves NY", (double)htlNY->getNbOfLeaves());
 
 			}
 			if(modelNXY){
-				htlNXY.addTrainingSample(sample);
-				context.resultCallback("prediction NXY",htlNXY.predict(sample));
+				htlNXY->addTrainingSample(context, htlNXY->root, input, output);
+				context.resultCallback("prediction NXY",htlNXY->predict(input));
 				//context.resultCallback("predictionError NXY", abs(y - htlNXY.predict(sample))/y);
 				context.resultCallback("RMSE NXY", getRMSE(context, testSet, htlNXY));
-				context.resultCallback("nbOfLeaves NXY", (double)htlNXY.getNbOfLeaves());
+				//context.resultCallback("nbOfLeaves NXY", (double)htlNXY.getNbOfLeaves());
 			}
 			context.resultCallback("Training Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
 
@@ -83,11 +86,11 @@ public:
 		}
 		///END TRAINING
 
-		std::cout << "results: " << std::endl;
+		/*std::cout << "results: " << std::endl;
 		if(modelNY)
 			std::cout << "NbOfLeaves NY: " << htlNY.getNbOfLeaves() << std::endl;
 		if(modelNXY)
-			std::cout << "NbOfLeaves NXY: " << htlNXY.getNbOfLeaves() << std::endl;
+			std::cout << "NbOfLeaves NXY: " << htlNXY.getNbOfLeaves() << std::endl;*/
 		std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << std::endl;
 
 		double reNY = 0; // relative error
@@ -97,13 +100,13 @@ public:
 		start = std::clock();
 
 		for (int i = 0; i < nbTestSamples; i++) {
-			std::vector<double> sample = testSet[i];
-			y = sample[sample.size() - 1];
+			std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr> sample = testSet[i];
+			y = sample.second->getValue(0);
 
 			if(modelNY)
-				reNY+= abs(y-htlNY.predict(sample))/y;
+				reNY+= abs(y-htlNY->predict(sample.first))/y;
 			if(modelNXY)
-				reNXY+= abs(y-htlNXY.predict(sample))/y;
+				reNXY+= abs(y-htlNXY->predict(sample.first))/y;
 
 			//context.leaveScope();
 			if(i % 10000 == 0){
@@ -204,45 +207,46 @@ public:
 		context.leaveScope();
 
 		context.enterScope("Functions");
-		std::vector<double> splitsNY = htlNY.getSplits();
-		std::vector<double> splitsNXY = htlNXY.getSplits();
+		DenseDoubleVectorPtr splitsNY = htlNY->getSplits();
+		DenseDoubleVectorPtr splitsNXY = htlNXY->getSplits();
 		for(double x = 0; x < 1; x+=0.01){
 			context.enterScope(string((double) x));
 			context.resultCallback("x",(double)x);
-			std::vector<double> sample;
-			sample.push_back(x);
+			DenseDoubleVectorPtr input = new DenseDoubleVector(0, 0.0);
+			DenseDoubleVectorPtr output = new DenseDoubleVector(0, 0.0);
+			input->appendValue(x);
 			//double noise = MathUtils::randDouble();
 			double noise = 0;
 			if(x > 1)
 				std::cout << x << std::endl;
 			y = getFuncValue(x)+noise; 
-			sample.push_back(y);
+			output->appendValue(y);
 			if(modelNY){
-				context.resultCallback("prediction NY",htlNY.predict(sample));
+				context.resultCallback("prediction NY",htlNY->predict(input));
 
 			}
 			if(modelNXY){
-				context.resultCallback("prediction NXY",htlNXY.predict(sample));
+				context.resultCallback("prediction NXY",htlNXY->predict(input));
 			}
-			for(int i = 0; i < splitsNY.size(); i++){
-				if(abs(splitsNY[i] - x) < 0.01){
+			for(int i = 0; i < splitsNY->getNumValues(); i++){
+				if(abs(splitsNY->getValue(i) - x) < 0.01){
 					context.resultCallback("splitsNY",(double)y);
 				}
 			}
-			for(int i = 0; i < splitsNXY.size(); i++){
-				if(abs(splitsNXY[i] - x) < 0.01){
+			for(int i = 0; i < splitsNXY->getNumValues(); i++){
+				if(abs(splitsNXY->getValue(i) - x) < 0.01){
 					context.resultCallback("splitsNXY",(double)y);
 				}
 			}
 			context.resultCallback("targetFunction",(double)y);
 			context.leaveScope();
 		}
-		htlNY.pprint();
+		htlNY->pprint();
 		std::cout << "****************************" << std::endl;
-		htlNXY.pprint();
+		htlNXY->pprint();
 		context.leaveScope();
 
-		// test perceptron
+		/*// test perceptron
 		context.enterScope("PerceptronTest");
 		Perceptron p = Perceptron(*dataDef, 0.75, 0.005);
 		for (int i = 0; i < nbTestSamples; i++) {
@@ -260,7 +264,7 @@ public:
 			context.resultCallback("prediction",p.predict(sample));
 			context.leaveScope();
 		}
-		context.leaveScope();
+		context.leaveScope();*/
 
 		context.leaveScope();
 
@@ -277,10 +281,13 @@ public:
 		return new Boolean(true);
 	}
 
-	std::vector<std::vector<double>> createTestSet(int nbTestSamples){
-		std::vector<std::vector<double>> testSamples;
+	std::vector<std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr> > createTestSet(int nbTestSamples){
+		std::vector<std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr> > testSamples;
 		for (int i = 0; i < nbTestSamples; i++) {
-			testSamples.push_back(getSample());
+			DenseDoubleVectorPtr input = new DenseDoubleVector(0, 0.0);
+			DenseDoubleVectorPtr output = new DenseDoubleVector(0, 0.0);
+			getSample(input, output);
+			testSamples.push_back(std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr>(input, output));
 		}
 		/*std::vector<double> sample;
 		sample.push_back(0.95);
@@ -294,7 +301,7 @@ public:
 		return testSamples;
 	}
 
-	std::vector<double> getSample(){
+	void getSample(DenseDoubleVectorPtr& input, DenseDoubleVectorPtr& output){
 		/*double x1, x2, x3, x4, x5, y, noise;
 		std::vector<double> sample;
 		x1 = MathUtils::randDouble();
@@ -313,14 +320,14 @@ public:
 		sample.push_back(y);
 		return sample;*/
 		double x1, x2, x3, x4, x5, y, noise;
-		std::vector<double> sample;
+		input->clear();
+		output->clear();
 		x1 = MathUtils::randDouble();
-		sample.push_back(x1);
+		input->appendValue(x1);
 		//noise = MathUtils::randDouble();
 		noise = 0;
 		y = getFuncValue(x1)+noise;
-		sample.push_back(y);
-		return sample;
+		output->appendValue(y);
 	}
 
 	double getFuncValue(double x){
@@ -358,16 +365,16 @@ public:
 		return sample;
 	}*/
 
-	double getRMSE(ExecutionContext& context, std::vector<std::vector<double>> testSet, HoeffdingTreeLearner htl){
+	double getRMSE(ExecutionContext& context, std::vector<std::pair<DenseDoubleVectorPtr,DenseDoubleVectorPtr> > testSet, HoeffdingTreeIncrementalLearnerPtr htl){
 		double se = 0;
 		double diff;
 		for (int i = 0; i < nbTestSamples; i++) {
-			std::vector<double> sample = testSet[i];
+			std::pair<DenseDoubleVectorPtr,DenseDoubleVectorPtr> sample = testSet[i];
 			/*if(i == nbTestSamples){
 				context.resultCallback("Ttargetvalue",sample.back());
 				context.resultCallback("TpredictedValue",htl.predict(sample));
 			}*/
-			diff = sample.back() - htl.predict(sample);
+			diff = sample.second->getValue(0) - htl->predict(sample.first);
 			se+= diff*diff;
 		}
 		return sqrt(se/nbTestSamples);
