@@ -452,6 +452,18 @@ public:
   bool isInternal() const
     {return left && right;}
 
+  TreeNodePtr getLeft()
+    {return left;}
+
+  TreeNodePtr getRight()
+    {return right;}
+
+  void setLeft(TreeNodePtr newLeft)
+    {left = newLeft;}
+
+  void setRight(TreeNodePtr newRight)
+    {right = newRight;}
+
   virtual ObjectPtr getSampleInput(size_t index) const = 0;
   virtual ObjectPtr getSamplePrediction(size_t index) const = 0;
 
@@ -471,23 +483,47 @@ protected:
 extern TreeNodePtr scalarVectorTreeNode();
 extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output);
 
-class HoeffdingTreeNode : public TreeNode
+class HoeffdingTreeNode: public TreeNode
 {
 public:
-  HoeffdingTreeNode() : TreeNode() {}
-  
-  virtual TreeNodePtr findLeaf(const ObjectPtr& input) const;
-  virtual ObjectPtr getSampleInput(size_t index) const;
-  virtual ObjectPtr getSamplePrediction(size_t index) const;
-  virtual void addSample(const ObjectPtr& input, const ObjectPtr& output);
+	HoeffdingTreeNodePtr parent;
+
+	// data for leafnodes
+	PerceptronExpressionPtr linearModel;
+	int examplesSeen;
+
+	HoeffdingTreeNode() : TreeNode()
+	{parent = NULL;}
+
+	HoeffdingTreeNode(HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent) {};
+
+	HoeffdingTreeNode(const PerceptronExpressionPtr linearModel, HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent), examplesSeen(0), linearModel(linearModel) {};
+
+	HoeffdingTreeNode(size_t testVariable, double testThreshold, HoeffdingTreeNodePtr left, HoeffdingTreeNodePtr right, HoeffdingTreeNodePtr parent) : TreeNode(testVariable, testThreshold, denseDoubleVectorClass()), parent(parent), examplesSeen(0), linearModel(NULL) {
+		this->left = left;
+		this->right = right;
+	};
+
+	TreeNodePtr findLeaf(const ObjectPtr& input) const;
+	void pprint(int indent = 0) const;
+	int getNbOfLeaves() const;
+	DenseDoubleVectorPtr getSplits() const;
+
+	ObjectPtr getSampleInput(size_t index) const;
+	ObjectPtr getSamplePrediction(size_t index) const;
+
+  virtual void addSample(const ObjectPtr& input, const ObjectPtr& output)
+    {jassertfalse;}
   virtual void split(ExecutionContext& context, size_t testVariable, double testThreshold);
-  virtual size_t getNumSamples() const;
-  virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
-  
+  size_t getNumSamples() const;
+  ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
+  DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
+
+	bool isRoot() const
+		{return parent == NULL;}
+
 protected:
   friend class HoeffdingTreeNodeClass;
-
-  virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 };
 
 extern TreeNodePtr hoeffdingTreeNode();

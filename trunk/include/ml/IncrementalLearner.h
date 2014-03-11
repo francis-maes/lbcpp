@@ -10,6 +10,7 @@
 # define ML_INCREMENTAL_LEARNER_H_
 
 # include <ml/Expression.h>
+# include "../../projects/MOO/HoeffdingTreeLearner.h"
 
 namespace lbcpp
 {
@@ -56,7 +57,7 @@ typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 extern IncrementalLearnerPtr pureRandomScalarVectorTreeIncrementalLearner();
 extern IncrementalLearnerPtr ensembleIncrementalLearner(IncrementalLearnerPtr baseLearner, size_t ensembleSize);
 extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrainingSamples, double learningRate, double learningRateDecay);
-extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner();
+extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(lbcpp::ExecutionContext& context, int seed, ModelType modelType, SplitType splitType, double delta);
 
 
 }; /* namespace lbcpp */

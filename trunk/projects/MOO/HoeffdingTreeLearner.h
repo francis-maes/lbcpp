@@ -22,6 +22,7 @@ class Perceptron;
 class Split;
 
 enum ModelType {NY, NXY};
+enum SplitType {Hoeffding, FStatistic};
 
 class MathUtils {
 public:
@@ -30,20 +31,29 @@ public:
 		return log(n) / log(2.0f);  
 	}
 	// incremental mean
-	static double mean(double Sy, unsigned N){
+	static double mean(double Sy, int N){
 		return Sy/N;
 	}
 	// incremental standard deviation
-	static double sd(double Sy, double Syy, unsigned N){
-		return sqrt((Syy - (Sy*Sy)/N)/N);
+	static double sd(double Sy, double Syy, int N){
+		double temp = Syy - (Sy * Sy)/N;
+		if(N == 0 || temp  <= 0)
+			return 0;
+		return sqrt(temp/N);
+		/*double temp = (Syy - (Sy * Sy))/(Sy*Sy);
+		if(temp  <= 0)
+			return 0;
+		return sqrt(temp);*/
 	}
 
 	// incremental standard deviation reduction
 	static double sdr(double sdP, double sdL, double sdR, int nL, int nR){
 		return sdP - (nL*sdL + nR*sdR) / (nL + nR);
+		/*double n = nL + nR;
+		return sdP - (log(nL/n)*sdL + log(nR/n)*sdR);*/
 	}
 
-	static double hoeffdingBound(unsigned R, unsigned N, double delta){
+	static double hoeffdingBound(int R, int N, double delta){
 		return (N==0 || delta==0)?1:sqrt(R*R*Log2(1/delta)/2/N);
 	}
 
@@ -57,12 +67,34 @@ public:
 
 	// residual standard deviation
 	static double rsd(double Sx, double Sy, double Sxy, double Sxx, double Syy, double n){
-		// linear regression: Y = a + bX
+		/*// linear regression: Y = a + bX
 		double div = n*Sxx-Sx*Sx;
 		double b = div==0?0:(n*Sxy-Sx*Sy)/div;
 		//double a = n==0?0:(Sy-b*Sx)/n;
 		double a = div==0?0:Sy*Sxx-Sx*Sxy;
+		return sqrt(1.0/n*(Syy-2*a*Sy-2*b*Sxy+n*a*a+2*a*b*Sx+b*b*Sxx));*/
+				// linear regression: Y = a + bX
+		double div = n*Sxx-Sx*Sx;
+		double b = div==0?0:(n*Sxy-Sx*Sy)/div;
+		//double a = n==0?0:(Sy-b*Sx)/n;
+		double a = n==0?0:(Sy-b*Sx)/n;
 		return sqrt(1.0/n*(Syy-2*a*Sy-2*b*Sxy+n*a*a+2*a*b*Sx+b*b*Sxx));
+	}
+
+	static double rss(double Sx, double Sy, double Sxy, double Sxx, double Syy, double n){
+		double rsd = MathUtils::rsd(Sx,Sy,Sxy,Sxx,Syy,n);
+		return rsd*rsd;
+	}
+
+	static double fStatistic(double rss0, double rss1, double rss2, double N, double d){
+		double div = (rss1+rss2)*d;
+		return div == 0? 1:(rss0-rss1-rss2)*(N-2*d)/div;
+	}
+
+	static double deltaFStatistic(double rss0, double rss1, double rss2, double N1, double N2, double d){
+		double div1 = N1+N2-d;
+		double div2 = N1+N2-2*d;
+		return div1==0||div2==0?1:rss0/div1-(rss1+rss2)/div2;
 	}
 };
 
@@ -112,7 +144,7 @@ public:
 		nbAttributes++;
 	}
 
-	void addSample(const vector<float>& sample){
+	void addSample(const vector<double>& sample){
 		for(unsigned i = 0; i < attributeDefinitions.size(); i++){
 			attributeDefinitions[i].addAttributeInstance(sample[i]);
 		}
@@ -136,7 +168,7 @@ public:
 
 	Perceptron(const DataDefinition& dataDefinition, double initialLearningRate, double learningRateDecay){
 		// initialize weights
-		weights.resize(dataDefinition.attributeDefinitions.size());
+		weights = vector<double>(dataDefinition.attributeDefinitions.size(),0);
 		for(unsigned i = 0; i < dataDefinition.attributeDefinitions.size(); i++)
 			weights[i] = MathUtils::randDouble()*2 - 1;
 		threshold = MathUtils::randDouble()*2 - 1;
@@ -155,10 +187,10 @@ public:
 		this->dataDefinition = perceptron.dataDefinition;
 	}
 
-	void train(const vector<float>& sample){
-		unsigned n = 1; // Number of samples used
-		learningRate = initialLearningRate / (1 + n * learningRateDecay);
-		double dy = sample[sample.size() - 1] - predict(sample);
+	void train(const vector<double>& sample){
+		int n = 1; // Number of samples used 
+		learningRate = initialLearningRate;// / (1 + n * learningRateDecay);
+		double dy = sample.back() - predict(sample);
 		// update numerical weights
 		for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
 			weights[i] += learningRate * dy * sample[i];
@@ -167,7 +199,7 @@ public:
 		threshold += learningRate * dy * 1;
 	}
 
-	double predict(const vector<float>& sample){
+	double predict(const vector<double>& sample){
 		double prediction = 0;
 		// use numerical weights
 		for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
@@ -177,21 +209,28 @@ public:
 		prediction += threshold * 1;
 		return prediction;
 	}
+
+	void pprint(){
+		for(unsigned i = 0; i < weights.size(); i++){
+			cout << "y= " << weights[i] << "*x" << i << " + ";
+		}
+		cout << threshold << std::endl;
+	}
 };
 
 class Split {
 private:
-  void init(unsigned attributeNb, double value, double quality) {
+  void init(int attributeNb, double value, double quality) {
 		this->attributeNb = attributeNb;
 		this->value = value;
 		this->quality = quality;
   }
 public:
 	double quality;
-	unsigned attributeNb;
+	int attributeNb;
 	double value;
 
-	Split(unsigned attributeNb, double value, double quality) {
+	Split(int attributeNb, double value, double quality) {
     init(attributeNb, value, quality);
 	}
 
@@ -216,7 +255,7 @@ public:
 
 class DerivedModel {
 public:
-	unsigned n; /* number of samples */
+	int n; /* number of samples */
 
 	virtual void update(int dn, double dSy, double dSyy, double dSx, double dSxx, double dSxy) = 0;
 };
@@ -340,14 +379,14 @@ public:
 		totalLeftModel->Syy = 0;
 		totalRightModel->Syy = leftModel->Syy + rightModel->Syy;
 		totalRightModel->n = leftModel->n + rightModel->n;
-		unsigned total = leftModel->n + rightModel->n;
+		int total = leftModel->n + rightModel->n;
 		quality = 0;
 		findBestSplit(*this, quality, splitPoint, *totalLeftModel, *totalRightModel, total);
 	}
 
 private:
 	void findBestSplit(const EBSTNY& node, double& quality, double& splitPoint,
-		DerivedModelNY& totalLeftModel, DerivedModelNY& totalRightModel, unsigned& total) const{
+		DerivedModelNY& totalLeftModel, DerivedModelNY& totalRightModel, int& total) const{
 		if(node.hasLeftChild()){
 			findBestSplit(*node.left, quality, splitPoint,
 					totalLeftModel, totalRightModel, total);
@@ -385,7 +424,10 @@ public:
 
 	double key; // each node has a value
 
-	EBSTNXY() {
+	//SplitType splitType;
+	//int dim;
+
+	EBSTNXY() {//SplitType splitType, int dim
 		left = NULL;
 		right = NULL;
 
@@ -393,6 +435,9 @@ public:
 		rightModel = new DerivedModelNXY();
 
 		key = 0;
+
+		//this->splitType = splitType;
+		//this->dim = dim;
 	}
 
 	void add(double attribute, double y) {
@@ -442,28 +487,38 @@ public:
 		totalLeftModel->Sx = 0;
 		totalRightModel->Sx = leftModel->Sx + rightModel->Sx;
 		totalRightModel->n = leftModel->n + rightModel->n;
-		unsigned total = leftModel->n + rightModel->n;
+		int total = leftModel->n + rightModel->n;
 		quality = 0;
 		findBestSplit(*this, quality, splitPoint, *totalLeftModel, *totalRightModel, total);
 	}
 
 private:
 	void findBestSplit(const EBSTNXY& node, double& quality, double& splitPoint,
-		DerivedModelNXY& totalLeftModel, DerivedModelNXY& totalRightModel, unsigned& total) const{
+		DerivedModelNXY& totalLeftModel, DerivedModelNXY& totalRightModel, int& total) const{
 		if(node.hasLeftChild()){
 			findBestSplit(*node.left, quality, splitPoint,
 					totalLeftModel, totalRightModel, total);
 		}
+
 		//update the sums and counts for computing the SDR of the split
 		totalLeftModel.update(0, node.leftModel->Sy, node.leftModel->Syy, node.leftModel->Sx, node.leftModel->Sxx, node.leftModel->Sxy);
 		totalRightModel.update(-(int)node.leftModel->n, -node.leftModel->Sy, -node.leftModel->Syy, -node.leftModel->Sx, -node.leftModel->Sxx, -node.leftModel->Sxy);
-		double sdParent = MathUtils::rsd(totalLeftModel.Sx+totalRightModel.Sx, totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Sxy+totalRightModel.Sxy, totalLeftModel.Sxx+totalRightModel.Sxx, totalLeftModel.Syy+totalRightModel.Syy, total);
-		double sdLeftChild = MathUtils::rsd(totalLeftModel.Sx, totalLeftModel.Sy, totalLeftModel.Sxy, totalLeftModel.Sxx, totalLeftModel.Syy, total - totalRightModel.n);
-		double sdRightChild = MathUtils::rsd(totalRightModel.Sx, totalRightModel.Sy, totalRightModel.Sxy, totalRightModel.Sxx, totalRightModel.Syy, totalRightModel.n);
-		double sdr = MathUtils::sdr(sdParent, sdLeftChild, sdRightChild, total - totalRightModel.n, totalRightModel.n);
-		if(quality < sdr){
+		double newQuality;
+		//if(splitType == SplitType::Hoeffding){
+			double sdParent = MathUtils::rsd(totalLeftModel.Sx+totalRightModel.Sx, totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Sxy+totalRightModel.Sxy, totalLeftModel.Sxx+totalRightModel.Sxx, totalLeftModel.Syy+totalRightModel.Syy, total);
+			double sdLeftChild = MathUtils::rsd(totalLeftModel.Sx, totalLeftModel.Sy, totalLeftModel.Sxy, totalLeftModel.Sxx, totalLeftModel.Syy, total - totalRightModel.n);
+			double sdRightChild = MathUtils::rsd(totalRightModel.Sx, totalRightModel.Sy, totalRightModel.Sxy, totalRightModel.Sxx, totalRightModel.Syy, totalRightModel.n);
+			newQuality = MathUtils::sdr(sdParent, sdLeftChild, sdRightChild, total - totalRightModel.n, totalRightModel.n);
+		/*}
+		else{
+			double rssParent = MathUtils::rss(totalLeftModel.Sx+totalRightModel.Sx, totalLeftModel.Sy+totalRightModel.Sy, totalLeftModel.Sxy+totalRightModel.Sxy, totalLeftModel.Sxx+totalRightModel.Sxx, totalLeftModel.Syy+totalRightModel.Syy, total);
+			double rssLeftChild = MathUtils::rss(totalLeftModel.Sx, totalLeftModel.Sy, totalLeftModel.Sxy, totalLeftModel.Sxx, totalLeftModel.Syy, total - totalRightModel.n);
+			double rssRightChild = MathUtils::rss(totalRightModel.Sx, totalRightModel.Sy, totalRightModel.Sxy, totalRightModel.Sxx, totalRightModel.Syy, totalRightModel.n);
+			newQuality = MathUtils::fStatistic(rssParent, rssLeftChild, rssRightChild, total, dim);
+		}*/
+		if(quality < newQuality){
 			//cout <<"new max:" << maxSDR << "\n";
-			quality = sdr;
+			quality = newQuality;
 			splitPoint = node.key;
 		}
 		if(node.hasRightChild()){
@@ -493,7 +548,7 @@ public:
 
 	~AttributeObservation() {};
 
-	AttributeObservation(ModelType modelType, unsigned attributeNb){
+	AttributeObservation(ModelType modelType, int attributeNb){
 		init(modelType);
 		this->attributeNb = attributeNb;
 	}
@@ -529,8 +584,9 @@ public:
 
 	virtual bool isLeaf() const = 0;
 	virtual void pprint(int indent = 0) const = 0;
-	virtual LeafNode* traverseSample(const vector<float>& sample) = 0;
+	virtual LeafNode* traverseSample(const vector<double>& sample) = 0;
 	virtual int getNbOfLeaves() const = 0;
+	virtual vector<double> getSplits() const = 0;
 
 	bool isRoot() const{
 		return parent == NULL;
@@ -542,7 +598,7 @@ public:
 	const DataDefinition* dataDefinition;
 	Perceptron* linearModel;
 	vector<AttributeObservation> attributeObservations;
-	unsigned examplesSeen;
+	int examplesSeen;
 
 
 	~LeafNode() {};
@@ -567,15 +623,20 @@ public:
 
 	void pprint(int indent = 0) const {
         if (indent) cout << setw(indent) << ' ';
-		cout<< "samples: " << examplesSeen << endl;
+		linearModel->pprint();
 	}
 
-	LeafNode* traverseSample(const vector<float>& sample) {
+	LeafNode* traverseSample(const vector<double>& sample) {
 		return this;
 	}
 
 	int getNbOfLeaves() const{
 		return 1;
+	}
+
+	vector<double> getSplits() const {
+		vector<double> none;
+		return none;
 	}
 
 private:
@@ -616,7 +677,7 @@ public:
 		right->pprint(indent+4);
 	}
 
-	LeafNode* traverseSample(const vector<float>& sample) {
+	LeafNode* traverseSample(const vector<double>& sample) {
 		if(sample[split->attributeNb] <= split->value){
 			return left->traverseSample(sample);
 		}
@@ -626,7 +687,17 @@ public:
 	}
 
 	int getNbOfLeaves() const{
-		return left->getNbOfLeaves()+right->getNbOfLeaves()+1;
+		return left->getNbOfLeaves()+right->getNbOfLeaves();
+	}
+
+	vector<double> getSplits() const {
+		vector<double> splits;
+		vector<double> leftSplits = left->getSplits();
+		vector<double> rightSplits = right->getSplits();
+		splits.insert( splits.end(), leftSplits.begin(), leftSplits.end() );
+		splits.insert( splits.end(), rightSplits.begin(), rightSplits.end() );
+		splits.push_back(split->value);
+		return splits;
 	}
 };
 
@@ -636,7 +707,7 @@ class HoeffdingTreeLearner {
 
 protected:
 	double delta; /* confidence level */
-	unsigned chunkSize; /* number of samples before tree is recalculated */
+	int chunkSize; /* number of samples before tree is recalculated */
 	bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */
 	DataDefinition* dataDefinition; /* the data definition of the samples */
 	double initialLearningRate; /* initial learning rate for the perceptron */
@@ -646,24 +717,26 @@ protected:
 	Node* root;
 	lbcpp::ExecutionContext& context;
 	ModelType modelType;
+	SplitType splitType;
 
-	unsigned seenExamples; /* number of unprocessed examples */
+	int seenExamples; /* number of unprocessed examples */
 public:
-	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, ModelType modelType, double delta, DataDefinition& dataDefinition);
+	HoeffdingTreeLearner(lbcpp::ExecutionContext& context, int seed, ModelType modelType, SplitType splitType, double delta, DataDefinition& dataDefinition);
 	HoeffdingTreeLearner();
 	~HoeffdingTreeLearner();
 	/* add the training sample to the tree */
-	void addTrainingSample(const vector<float>& sample);
-	double predict(const vector<float>& sample) const;
+	void addTrainingSample(const vector<double>& sample);
+	double predict(const vector<double>& sample) const;
 	void pprint() const;
 	/* traverses the sample to the leaf of the tree */
-	LeafNode* traverseSample(const vector<float>& sample) const; // temp for testing, should be private
+	LeafNode* traverseSample(const vector<double>& sample) const; // temp for testing, should be private
 	vector<Split>* findBestSplitPerAttribute(const LeafNode& leaf) const;
-	void normalizeSample(vector<float>& sample, LeafNode& leaf) const;
+	void normalizeSample(vector<double>& sample, LeafNode& leaf) const;
 	int getNbOfLeaves() const;
+	vector<double> getSplits();
 private:
-	void updateStatistics(const vector<float>& sample, LeafNode& leaf);
-	void updateLinearModel(const vector<float>& sample, LeafNode& leaf);
+	void updateStatistics(const vector<double>& sample, LeafNode& leaf);
+	void updateLinearModel(const vector<double>& sample, LeafNode& leaf);
 	InternalNode* makeSplit(const Split& split, const LeafNode& leaf);
 	void swap(Node& originalNode, Node& newNode);
 	double getBestSplitratio(const std::vector<Split>& bestSplits) const;
