@@ -178,6 +178,9 @@ typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 class TreeNode;
 typedef ReferenceCountedObjectPtr<TreeNode> TreeNodePtr;
 
+class HoeffdingTreeNode;
+typedef ReferenceCountedObjectPtr<HoeffdingTreeNode> HoeffdingTreeNodePtr;
+
 class LinearModelExpression;
 typedef ReferenceCountedObjectPtr<LinearModelExpression> LinearModelExpressionPtr;
 

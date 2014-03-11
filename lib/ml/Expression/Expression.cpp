@@ -592,15 +592,52 @@ TreeNodePtr HoeffdingTreeNode::findLeaf(const ObjectPtr &input) const
     return left->findLeaf(input);
 }
 
-ObjectPtr HoeffdingTreeNode::getSampleInput(size_t index) const
-  {jassertfalse; return ObjectPtr();}
+#include <iomanip> // std::setw
 
-ObjectPtr HoeffdingTreeNode::getSamplePrediction(size_t index) const
-  {jassertfalse; return ObjectPtr();}
+void HoeffdingTreeNode::pprint(int indent) const
+  {
+	  if(isLeaf()){
+		if (indent) std::cout << std::setw(indent) << ' ';
+		for(unsigned i = 0; i < linearModel->getWeights()->getNumValues(); i++)
+			{std::cout << "y= " << linearModel->getWeights()->getValue(i) << "*x" << i << " + ";}
+	  }
+	  else{
+		if (indent) std::cout << std::setw(indent) << ' ';
+		HoeffdingTreeNode test;
+		std::cout<< "x" << testVariable << "<=" << testThreshold << std::endl;
+		std::cout << "left:" << std::endl;
+		(((HoeffdingTreeNodePtr)left).staticCast<HoeffdingTreeNode>())->pprint(indent+4);
+		std::cout << "right:" << std::endl;
+		(((HoeffdingTreeNodePtr)right).staticCast<HoeffdingTreeNode>())->pprint(indent+4);
+	  }
+}
 
-void HoeffdingTreeNode::addSample(const ObjectPtr& input, const ObjectPtr& output)
+int HoeffdingTreeNode::getNbOfLeaves() const
+  {
+	  if(isLeaf())
+		  return 1;
+	  else
+		return (((HoeffdingTreeNodePtr)left).staticCast<HoeffdingTreeNode>())->getNbOfLeaves()+(((HoeffdingTreeNodePtr)right).staticCast<HoeffdingTreeNode>())->getNbOfLeaves();
+}
+
+DenseDoubleVectorPtr HoeffdingTreeNode::getSplits() const
 {
-
+	if(isLeaf()){
+		DoubleVectorPtr none;
+		return none;
+	}
+	else {
+		DenseDoubleVectorPtr leftSplits = left.staticCast<HoeffdingTreeNode>()->getSplits();
+		DenseDoubleVectorPtr rightSplits = right.staticCast<HoeffdingTreeNode>()->getSplits();
+		DenseDoubleVectorPtr splits = new DenseDoubleVector(leftSplits->getNumValues() + rightSplits->getNumValues() + 1, 1.0);
+		for (size_t i = 0; i < leftSplits->getNumValues(); ++i)
+			splits->setValue(i, leftSplits->getValue(i));
+		size_t offset = leftSplits->getNumValues();
+		for (size_t i = 0; i < rightSplits->getNumValues(); ++i)
+			splits->setValue(offset + i, rightSplits->getValue(i));
+		splits->setValue(offset + rightSplits->getNumValues(), testThreshold);
+		return splits;
+	}
 }
 
 void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, double testThreshold)
@@ -613,6 +650,17 @@ size_t HoeffdingTreeNode::getNumSamples() const
   return 0;
 }
 
+ObjectPtr HoeffdingTreeNode::getSampleInput(size_t index) const
+{
+	return ObjectPtr();
+}
+
+ObjectPtr HoeffdingTreeNode::getSamplePrediction(size_t index) const
+{
+	return ObjectPtr();
+}
+
+
 ObjectPtr HoeffdingTreeNode::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
 {
   return ObjectPtr();
@@ -622,3 +670,4 @@ DataVectorPtr HoeffdingTreeNode::computeSamples(ExecutionContext& context, const
 {
   return DataVectorPtr();
 }
+

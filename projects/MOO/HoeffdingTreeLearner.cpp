@@ -9,25 +9,29 @@
 #include "HoeffdingTreeLearner.h"
 using namespace std;
 
-HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, ModelType modelType, double delta, DataDefinition& dataDefinition) : context(context) {
+HoeffdingTreeLearner::HoeffdingTreeLearner(lbcpp::ExecutionContext& context, int seed, ModelType modelType, SplitType splitType, double delta, DataDefinition& dataDefinition) : context(context) {
 	this->delta = delta;
 	this->dataDefinition = &dataDefinition;
 	this->modelType = modelType;
-	root = new LeafNode(modelType, dataDefinition, initialLearningRate, learningRateDecay, NULL);
+	this->splitType = splitType;
 
 	// default settings:
-	chunkSize = 200;// 1
+	chunkSize = 50;// 1
 	pruneOnly = true;
-	initialLearningRate = 0.75;// 0.75
-	learningRateDecay = 0.005;
+	initialLearningRate = 0.5;// 0.1
+	learningRateDecay = 0.05;
 	threshold = 0.05;
 	verbosity = 0; // 3
 	seenExamples = 0;
+
+	srand(seed);
+
+	root = new LeafNode(modelType, dataDefinition, initialLearningRate, learningRateDecay, NULL);
 };
 
 HoeffdingTreeLearner::~HoeffdingTreeLearner(){};
 
-void HoeffdingTreeLearner::normalizeSample(vector<float>& sample, LeafNode& leaf) const{
+void HoeffdingTreeLearner::normalizeSample(vector<double>& sample, LeafNode& leaf) const{
 	// normalize numerical weights
 	for(unsigned i = 0; i < dataDefinition->attributeDefinitions.size(); i++){
 		sample[i] = MathUtils::normalize(sample[i], dataDefinition->attributeDefinitions[i].getMean(), dataDefinition->attributeDefinitions[i].getStd());
@@ -38,7 +42,7 @@ int HoeffdingTreeLearner::getNbOfLeaves() const{
 	return root->getNbOfLeaves();
 }
 
-void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
+void HoeffdingTreeLearner::addTrainingSample(const vector<double>& sample) {
 	if(verbosity >= 2) {
 		cout << "add training sample\n";
 	}
@@ -46,7 +50,7 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 	seenExamples++;
 	LeafNode* leaf = traverseSample(sample);
 	updateStatistics(sample, *leaf);
-	vector<float> normSample(sample);
+	vector<double> normSample(sample);
 	normalizeSample(normSample, *leaf);
 	updateLinearModel(normSample, *leaf);
 	if(seenExamples % chunkSize == 0){
@@ -75,7 +79,7 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 		double epsilon = MathUtils::hoeffdingBound(1,leaf->examplesSeen, delta);
 		bool splitWasMade = false;
 		int nbOfLeavesSplit = 0;
-		if(Sa != 0 && ((Sb/Sa < 1 - epsilon) || epsilon < threshold)){//|| epsilon < threshold
+		if((Sa != 0 && ((Sb/Sa < 1 - epsilon)|| epsilon < threshold ))){//|| epsilon < threshold
 			nbOfLeavesSplit = leaf->examplesSeen;
 			InternalNode* splittedNode = makeSplit(bestSplits[indexBestSplit], *leaf);
 			if(verbosity >= 3){
@@ -101,7 +105,7 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 		context.resultCallback("Split?", splitWasMade);
 		context.resultCallback("SplitNbOfLeaves", (double) nbOfLeavesSplit);
 	}
-	for(int i = 0; i < sample.size() - 1; i++){
+	for(unsigned i = 0; i < sample.size() - 1; i++){
 			stringstream strs;
 			strs << i;
 			string temp_str = strs.str();
@@ -112,13 +116,13 @@ void HoeffdingTreeLearner::addTrainingSample(const vector<float>& sample) {
 
 }
 
-LeafNode* HoeffdingTreeLearner::traverseSample(const vector<float>& sample) const {
+LeafNode* HoeffdingTreeLearner::traverseSample(const vector<double>& sample) const {
 	// TODO: drift detection code
 
 	return root->traverseSample(sample);
 }
 
-void HoeffdingTreeLearner::updateStatistics(const vector<float>& sample, LeafNode& leaf) {
+void HoeffdingTreeLearner::updateStatistics(const vector<double>& sample, LeafNode& leaf) {
 	if(verbosity >= 2) {
 		cout << "update statistics \n";
 	}
@@ -130,7 +134,7 @@ void HoeffdingTreeLearner::updateStatistics(const vector<float>& sample, LeafNod
 	}
 }
 
-void HoeffdingTreeLearner::updateLinearModel(const vector<float>& sample, LeafNode& leaf) {
+void HoeffdingTreeLearner::updateLinearModel(const vector<double>& sample, LeafNode& leaf) {
 	if(verbosity >= 2) {
 		cout << "update linear model\n";
 	}
@@ -174,8 +178,12 @@ InternalNode* HoeffdingTreeLearner::makeSplit(const Split& split, const LeafNode
 	return parent;
 }
 
+vector<double> HoeffdingTreeLearner::getSplits() {
+	return (this->root)->getSplits();
+}
+
 void HoeffdingTreeLearner::swap(Node& originalNode, Node& newNode) {
-	if(originalNode.isRoot())
+	if(originalNode.isRoot()) 
 		root = &newNode;
 	else if(originalNode.parent->left == &originalNode)
 		originalNode.parent->left = &newNode;
@@ -183,9 +191,9 @@ void HoeffdingTreeLearner::swap(Node& originalNode, Node& newNode) {
 		originalNode.parent->right = &newNode;
 }
 
-double HoeffdingTreeLearner::predict(const vector<float>& sample) const {
+double HoeffdingTreeLearner::predict(const vector<double>& sample) const {
 	LeafNode* leaf = traverseSample(sample);
-	vector<float> normSample(sample);
+	vector<double> normSample(sample);
 	normalizeSample(normSample, *leaf);
 	return leaf->linearModel->predict(normSample);
 }
@@ -251,27 +259,27 @@ void HoeffdingTreeLearner::pprint() const {
 	dataDef->addNumericalAttribute("numAtt2");
 	dataDef->addTargetAttribute("targetValue");
 	HoeffdingTreeLearner* htl = new HoeffdingTreeLearner(NULL, 0.95, *dataDef);
-	vector<float>* sample1 = new vector<float>(0);
+	vector<double>* sample1 = new vector<double>(0);
 	sample1->push_back(1.0/5);
 	sample1->push_back(2.0/5);
 	sample1->push_back(5.4);
-	vector<float>* sample2 = new vector<float>(0);
+	vector<double>* sample2 = new vector<double>(0);
 	sample2->push_back(3.0/5);
 	sample2->push_back(4.0/5);
 	sample2->push_back(9.4);
-	vector<float>* sample3 = new vector<float>(0);
+	vector<double>* sample3 = new vector<double>(0);
 	sample3->push_back(2.0/5);
 	sample3->push_back(2.0/5);
 	sample3->push_back(6);
-	vector<float>* sample4 = new vector<float>(0);
+	vector<double>* sample4 = new vector<double>(0);
 	sample4->push_back(2.0/5);
 	sample4->push_back(1.0/5);
 	sample4->push_back(4.6);
-	vector<float>* sample5 = new vector<float>(0);
+	vector<double>* sample5 = new vector<double>(0);
 	sample5->push_back(5.0/5);
 	sample5->push_back(3.0/5);
 	sample5->push_back(9.2);
-	vector<float>* sample6 = new vector<float>(0);
+	vector<double>* sample6 = new vector<double>(0);
 	sample6->push_back(2.0/5);
 	sample6->push_back(3.0/5);
 	sample6->push_back(7.4);
@@ -307,14 +315,14 @@ void HoeffdingTreeLearner::pprint() const {
 	HoeffdingTreeLearner* htl = new HoeffdingTreeLearner(NULL, 0.95, *dataDef);
 	for(int i = 0; i < 20; i++)
 	{
-		vector<float>* sample = new vector<float>(0);
+		vector<double>* sample = new vector<double>(0);
 		sample->push_back(MathUtils::randDouble());
 		sample->push_back(MathUtils::randDouble());
 		sample->push_back(3*(*sample)[0]+7*(*sample)[1]+2);
 		htl->addTrainingSample(*sample);
 	}
 	cout << "Result:\n";
-	vector<float>* sample = new vector<float>(0);
+	vector<double>* sample = new vector<double>(0);
 	sample->push_back(MathUtils::randDouble());
 	sample->push_back(MathUtils::randDouble());
 	LeafNode* leaf = htl->traverseSample(*sample);
@@ -334,19 +342,19 @@ void HoeffdingTreeLearner::pprint() const {
 	HoeffdingTreeLearner* htl = new HoeffdingTreeLearner(NULL, 0.95, *dataDef);
 	for(int i = 0; i < 80; i++)
 	{
-		vector<float>* sample1 = new vector<float>(0);
+		vector<double>* sample1 = new vector<double>(0);
 		sample1->push_back(MathUtils::randDouble() /2);
 		sample1->push_back(MathUtils::randDouble()/2);
 		sample1->push_back(3*(*sample1)[0]+7*(*sample1)[1]+2);
 		htl->addTrainingSample(*sample1);
-		vector<float>* sample2 = new vector<float>(0);
+		vector<double>* sample2 = new vector<double>(0);
 		sample2->push_back(MathUtils::randDouble()/2+0.5);
 		sample2->push_back(MathUtils::randDouble()/2+0.5);
 		sample2->push_back(-5*(*sample2)[0]-2*(*sample2)[1]+3);
 		htl->addTrainingSample(*sample2);
 	}
 	cout << "Result:\n";
-	vector<float>* sample = new vector<float>(0);
+	vector<double>* sample = new vector<double>(0);
 	sample->push_back(MathUtils::randDouble()/2);
 	sample->push_back(MathUtils::randDouble()/2);
 	LeafNode* leaf = htl->traverseSample(*sample);
@@ -362,19 +370,19 @@ void HoeffdingTreeLearner::pprint() const {
 	dataDef->addNominalAttribute("numAtt2", 2);
 	dataDef->addTargetAttribute("targetValue");
 	HoeffdingTreeLearner* htl = new HoeffdingTreeLearner(NULL, 0.95, *dataDef);
-	vector<float>* sample1 = new vector<float>(0);
+	vector<double>* sample1 = new vector<double>(0);
 	sample1->push_back(0);
 	sample1->push_back(0);
 	sample1->push_back(1.5);
-	vector<float>* sample2 = new vector<float>(0);
+	vector<double>* sample2 = new vector<double>(0);
 	sample2->push_back(0);
 	sample2->push_back(1);
 	sample2->push_back(0.6);
-	vector<float>* sample3 = new vector<float>(0);
+	vector<double>* sample3 = new vector<double>(0);
 	sample3->push_back(1);
 	sample3->push_back(0);
 	sample3->push_back(2.0);
-	vector<float>* sample4 = new vector<float>(0);
+	vector<double>* sample4 = new vector<double>(0);
 	sample4->push_back(1);
 	sample4->push_back(1);
 	sample4->push_back(1.1);

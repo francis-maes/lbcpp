@@ -32,13 +32,14 @@ public:
 		// Fried dataset
 		DataDefinition* dataDef = new DataDefinition();
 		dataDef->addAttribute("numAtt0");
-		dataDef->addAttribute("numAtt1");
+		/*dataDef->addAttribute("numAtt1");
 		dataDef->addAttribute("numAtt2");
 		dataDef->addAttribute("numAtt3");
-		dataDef->addAttribute("numAtt4");
+		dataDef->addAttribute("numAtt4");*/
 		dataDef->addTargetAttribute("targetValue");
-		HoeffdingTreeLearner htlNY = HoeffdingTreeLearner(context, NY, 0.01, *dataDef);
-		HoeffdingTreeLearner htlNXY = HoeffdingTreeLearner(context, NXY, 0.01, *dataDef);
+		HoeffdingTreeLearner htlNY = HoeffdingTreeLearner(context, randomSeed, NY, Hoeffding, 0.01, *dataDef);
+		HoeffdingTreeLearner htlNXY = HoeffdingTreeLearner(context, randomSeed, NXY, Hoeffding, 0.01, *dataDef);
+		std::vector<std::vector<double>> testSet = createTestSet(nbTestSamples);
 		if(!modelNY && !modelNXY)
 			new Boolean(false);
 
@@ -46,39 +47,34 @@ public:
 		context.enterScope("testFunctions");
 
 		std::clock_t start;
-		start = std::clock();
+		start = std::clock(); 
 
 		// START TRAINING
-		float x1, x2, x3, x4, x5, y, noise;
+		double y;
 		for (int i = 0; i < nbSamples; i++) {
-			std::vector<float> sample;
-			x1 = (float)MathUtils::randDouble();
-			x2 = (float)MathUtils::randDouble();
-			x3 = (float)MathUtils::randDouble();
-			x4 = (float)MathUtils::randDouble();
-			x5 = (float)MathUtils::randDouble();
-			sample.push_back(x1);
-			sample.push_back(x2);
-			sample.push_back(x3);
-			sample.push_back(x4);
-			sample.push_back(x5);
-			noise = (float)MathUtils::randDouble();
-			y = (float)(10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise);
-			sample.push_back(y);
+			//std::cout << nbSamples << " - " << i << std::endl;
+			std::vector<double> sample = getSample();
+			y = sample[sample.size() - 1];
 
 			context.enterScope(string((double) i));
+			//context.resultCallback("x", (double) sample[0]);
 			context.resultCallback("i", (double) i);
 			if(modelNY){
 				htlNY.addTrainingSample(sample);
 				context.resultCallback("prediction NY",htlNY.predict(sample));
-				context.resultCallback("predictionError NY", abs(y - htlNY.predict(sample))/y);
+				//context.resultCallback("predictionError NY", abs(y - htlNY.predict(sample))/y);
+				context.resultCallback("RMSE NY", getRMSE(context, testSet, htlNY));
+				context.resultCallback("nbOfLeaves NY", (double)htlNY.getNbOfLeaves());
+
 			}
 			if(modelNXY){
 				htlNXY.addTrainingSample(sample);
 				context.resultCallback("prediction NXY",htlNXY.predict(sample));
-				context.resultCallback("predictionError NXY", abs(y - htlNXY.predict(sample))/y);
+				//context.resultCallback("predictionError NXY", abs(y - htlNXY.predict(sample))/y);
+				context.resultCallback("RMSE NXY", getRMSE(context, testSet, htlNXY));
+				context.resultCallback("nbOfLeaves NXY", (double)htlNXY.getNbOfLeaves());
 			}
-			context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
+			context.resultCallback("Training Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
 
 			context.leaveScope();
 			if(i % 10000 == 0){
@@ -101,26 +97,8 @@ public:
 		start = std::clock();
 
 		for (int i = 0; i < nbTestSamples; i++) {
-			std::vector<float> sample;
-			x1 = (float)MathUtils::randDouble();
-			x2 = (float)MathUtils::randDouble();
-			x3 = (float)MathUtils::randDouble();
-			x4 = (float)MathUtils::randDouble();
-			x5 = (float)MathUtils::randDouble();
-			sample.push_back(x1);
-			sample.push_back(x2);
-			sample.push_back(x3);
-			sample.push_back(x4);
-			sample.push_back(x5);
-			noise = (float)MathUtils::randDouble();
-			y = (float)(10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise);
-			sample.push_back(y);
-
-			//context.enterScope(string((double) i));
-			//context.resultCallback("i", (double) i);
-			//context.resultCallback("prediction",htl.predict(sample));
-			//context.resultCallback("predictionError", abs(y - htl.predict(sample))/y);
-			//context.resultCallback("Time: ", (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000));
+			std::vector<double> sample = testSet[i];
+			y = sample[sample.size() - 1];
 
 			if(modelNY)
 				reNY+= abs(y-htlNY.predict(sample))/y;
@@ -158,7 +136,7 @@ public:
 		double re = 0;
 		double x1, x2, y;
 		for (size_t i = 0; i < nbSamples; i++) {
-			std::vector<float> sample;
+			std::vector<double> sample;
 			if (i % 4 == 0) {
 				x1 = MathUtils::randDouble() / 2;
 				x2 = MathUtils::randDouble() / 10 * 3;
@@ -192,7 +170,7 @@ public:
 			context.enterScope(string((double) i));
 			context.resultCallback("i", (double) i);
 
-			std::vector<float> samplex;
+			std::vector<double> samplex;
 			samplex.push_back(x1);
 			samplex.push_back(x2);
 			samplex.push_back(y);
@@ -224,10 +202,70 @@ public:
 
 
 		context.leaveScope();
+
+		context.enterScope("Functions");
+		std::vector<double> splitsNY = htlNY.getSplits();
+		std::vector<double> splitsNXY = htlNXY.getSplits();
+		for(double x = 0; x < 1; x+=0.01){
+			context.enterScope(string((double) x));
+			context.resultCallback("x",(double)x);
+			std::vector<double> sample;
+			sample.push_back(x);
+			//double noise = MathUtils::randDouble();
+			double noise = 0;
+			if(x > 1)
+				std::cout << x << std::endl;
+			y = getFuncValue(x)+noise; 
+			sample.push_back(y);
+			if(modelNY){
+				context.resultCallback("prediction NY",htlNY.predict(sample));
+
+			}
+			if(modelNXY){
+				context.resultCallback("prediction NXY",htlNXY.predict(sample));
+			}
+			for(int i = 0; i < splitsNY.size(); i++){
+				if(abs(splitsNY[i] - x) < 0.01){
+					context.resultCallback("splitsNY",(double)y);
+				}
+			}
+			for(int i = 0; i < splitsNXY.size(); i++){
+				if(abs(splitsNXY[i] - x) < 0.01){
+					context.resultCallback("splitsNXY",(double)y);
+				}
+			}
+			context.resultCallback("targetFunction",(double)y);
+			context.leaveScope();
+		}
+		htlNY.pprint();
+		std::cout << "****************************" << std::endl;
+		htlNXY.pprint();
+		context.leaveScope();
+
+		// test perceptron
+		context.enterScope("PerceptronTest");
+		Perceptron p = Perceptron(*dataDef, 0.75, 0.005);
+		for (int i = 0; i < nbTestSamples; i++) {
+			std::vector<double> sample = getSample();
+			p.train(sample);
+		}
+		for(double x = 0; x < 1; x+=0.01){
+			context.enterScope(string((double) x));
+			context.resultCallback("x",(double)x);
+			std::vector<double> sample;
+			sample.push_back(x);
+			y = getFuncValue(x); 
+			sample.push_back(y);
+			context.resultCallback("targetFunction",(double)y);
+			context.resultCallback("prediction",p.predict(sample));
+			context.leaveScope();
+		}
+		context.leaveScope();
+
 		context.leaveScope();
 
 		/*cout << "Result:\n";
-		 std::vector<float> sample;
+		 std::vector<double> sample;
 		 sample.push_back(MathUtils::randDouble()/2);
 		 sample.push_back(MathUtils::randDouble()/2);
 		 LeafNode* leaf = htl.traverseSample(sample);
@@ -237,6 +275,122 @@ public:
 		std::cout << "succesfull end \n";
 
 		return new Boolean(true);
+	}
+
+	std::vector<std::vector<double>> createTestSet(int nbTestSamples){
+		std::vector<std::vector<double>> testSamples;
+		for (int i = 0; i < nbTestSamples; i++) {
+			testSamples.push_back(getSample());
+		}
+		/*std::vector<double> sample;
+		sample.push_back(0.95);
+		sample.push_back(0.95);
+		sample.push_back(0.5);
+		sample.push_back(0.5);
+		sample.push_back(0.5);
+		double y = 10*sin(M_PI*0.95*0.95)+5+2.5-0.5;
+		sample.push_back(y);
+		testSamples.push_back(sample);*/
+		return testSamples;
+	}
+
+	std::vector<double> getSample(){
+		/*double x1, x2, x3, x4, x5, y, noise;
+		std::vector<double> sample;
+		x1 = MathUtils::randDouble();
+		x2 = MathUtils::randDouble();
+		x3 = MathUtils::randDouble();
+		x4 = MathUtils::randDouble();
+		x5 = MathUtils::randDouble();
+		sample.push_back(x1);
+		sample.push_back(x2);
+		sample.push_back(x3);
+		sample.push_back(x4);
+		sample.push_back(x5);
+		noise = MathUtils::randDouble();
+		//noise = 0;
+		y = 10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise;
+		sample.push_back(y);
+		return sample;*/
+		double x1, x2, x3, x4, x5, y, noise;
+		std::vector<double> sample;
+		x1 = MathUtils::randDouble();
+		sample.push_back(x1);
+		//noise = MathUtils::randDouble();
+		noise = 0;
+		y = getFuncValue(x1)+noise;
+		sample.push_back(y);
+		return sample;
+	}
+
+	double getFuncValue(double x){
+		//return sin(M_PI*x);
+
+		//return sin(x*M_PI)+1/30*exp(x*M_PI)+0.5*sin(3*x*M_PI);
+
+		/*if(x < 0.25)
+			return x;
+		else if(x < 0.5)
+			return -x+0.5;
+		else if(x < 0.75)
+			return x-0.5;
+		else
+			return -x+1;*/
+
+		//return 3*x+1;
+
+		//return -3*x+1;
+
+		if(x < 0.25)
+			return x;
+		else
+			return -x+0.5;
+	}
+
+	/*std::vector<double> getSample1D(){
+		double x, y, noise;
+		std::vector<double> sample;
+		x = MathUtils::randDouble();
+		sample.push_back(x);
+		//noise = MathUtils::randDouble();
+		y = sin(M_PI*x);
+		sample.push_back(y);
+		return sample;
+	}*/
+
+	double getRMSE(ExecutionContext& context, std::vector<std::vector<double>> testSet, HoeffdingTreeLearner htl){
+		double se = 0;
+		double diff;
+		for (int i = 0; i < nbTestSamples; i++) {
+			std::vector<double> sample = testSet[i];
+			/*if(i == nbTestSamples){
+				context.resultCallback("Ttargetvalue",sample.back());
+				context.resultCallback("TpredictedValue",htl.predict(sample));
+			}*/
+			diff = sample.back() - htl.predict(sample);
+			se+= diff*diff;
+		}
+		return sqrt(se/nbTestSamples);
+	}
+
+	double getRRSE(ExecutionContext& context, std::vector<std::vector<double>> testSet, HoeffdingTreeLearner htl){
+		double avg = 0;
+		double se1 = 0;
+		double diff;
+		for (int i = 0; i < nbTestSamples; i++) {
+			std::vector<double> sample = testSet[i];
+			double diff = sample.back() - htl.predict(sample);
+			avg+=sample.back();
+			se1+= diff*diff;
+		}
+		avg /= nbTestSamples;
+		double se2 = 0;
+		for (int i = 0; i < nbTestSamples; i++) {
+			std::vector<double> sample = testSet[i];
+			diff = avg - htl.predict(sample);
+			se2+= diff*diff;
+		}
+		return se1/se2;
 	}
 
 };

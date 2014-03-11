@@ -20,7 +20,7 @@
   </class>
 
   <class name="HoeffdingTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
-    <constructor arguments="" returnType="IncrementalLearner"/>
+    <constructor arguments="lbcpp::ExecutionContext&amp; context, int seed, ModelType modelType, SplitType splitType, double delta" returnType="IncrementalLearner"/>
   </class>
 
 </library>

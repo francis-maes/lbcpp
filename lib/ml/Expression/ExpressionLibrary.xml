@@ -49,8 +49,11 @@
   </class>
   <class name="HoeffdingTreeNode" base="TreeNode">
     <constructor arguments=""/>
+    <constructor arguments="HoeffdingTreeNodePtr parent"/>
+    <constructor arguments="const PerceptronExpressionPtr linearModel, HoeffdingTreeNodePtr parent"/>
+    <constructor arguments="size_t testVariable, double testThreshold, HoeffdingTreeNodePtr left, HoeffdingTreeNodePtr right, HoeffdingTreeNodePtr parent"/>
   </class>
-  
+
   <!-- Gaussian Process Expression -->
   <class name="GaussianProcessExpression" base="Expression">
     <variable type="SharkGaussianProcess" name="gaussianProcess"/>
