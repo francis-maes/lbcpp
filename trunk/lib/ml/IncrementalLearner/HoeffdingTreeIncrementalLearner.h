@@ -251,9 +251,16 @@ void pprint() const {
 	}
 }
 
+  	  // debug
+	DenseDoubleVectorPtr getSplits() {
+		return (this->root)->getSplits();
+	}
+
 protected:
   friend class HoeffdingTreeIncrementalLearnerClass;
 };
+
+typedef ReferenceCountedObjectPtr<HoeffdingTreeIncrementalLearner> HoeffdingTreeIncrementalLearnerPtr;
 
 } /* namespace lbcpp */
 
