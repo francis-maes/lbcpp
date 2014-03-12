@@ -22,25 +22,37 @@ public:
     {buildTree();}
 
   virtual bool mightHaveSubObjects(const ObjectPtr& object)
-    {return object.staticCast<Expression>()->getNumSubNodes() > 0;}
+    {return object.dynamicCast<Expression>() ? object.staticCast<Expression>()->getNumSubNodes() > 0 || object->getNumVariables() > 0 : object->getNumVariables() > 0;}
     
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object)
   {
-    ExpressionPtr expression = object.staticCast<Expression>();
-    std::vector< std::pair<string, ObjectPtr> > res(expression->getNumSubNodes());
-    for (size_t i = 0; i < res.size(); ++i)
+    if (object.dynamicCast<Expression>() && object.staticCast<Expression>()->getNumSubNodes() > 0)
     {
-      ExpressionPtr sub = expression->getSubNode(i);
-      string str;
-      if (sub.isInstanceOf<TestExpression>())
-        str = "test";
-      else if (sub.isInstanceOf<FunctionExpression>())
-        str = sub.staticCast<FunctionExpression>()->getFunction()->toShortString();
-      else
-        str = sub->toShortString();
-      res[i] = std::make_pair(str, sub);
+      ExpressionPtr expression = object.staticCast<Expression>();
+      std::vector< std::pair<string, ObjectPtr> > res(expression->getNumSubNodes());
+      for (size_t i = 0; i < res.size(); ++i)
+      {
+        ExpressionPtr sub = expression->getSubNode(i);
+        string str;
+        if (sub.isInstanceOf<TestExpression>())
+          str = "test";
+        else if (sub.isInstanceOf<FunctionExpression>())
+          str = sub.staticCast<FunctionExpression>()->getFunction()->toShortString();
+        else
+          str = sub->toShortString();
+        res[i] = std::make_pair(str, sub);
+      }
+      return res;
     }
-    return res;
+    else
+    {
+      std::vector< std::pair<string, ObjectPtr> > res(object->getNumVariables());
+      for (size_t i = 0; i < res.size(); ++i)
+        res[i] = std::make_pair(object->getVariableName(i), object->getVariable(i));
+      if (object.dynamicCast<Expression>())
+        res.erase(res.begin()); // if it is an expression remove the 'type' member field, we don't need to show it
+      return res;
+    }
   }
 };
 

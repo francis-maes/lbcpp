@@ -26,7 +26,7 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class PerceptronTest : public WorkUnit
 {
 public:
-  PerceptronTest() : numSamples(25), randomSeed(0), learningRate(0.1), learningRateDecay(0.005) {}
+  PerceptronTest() : numSamples(25), numInitialSamples(10), randomSeed(0), learningRate(0.1), learningRateDecay(0.005) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -45,7 +45,7 @@ public:
       ProblemPtr problem = makeProblem(context, functionNumber, domain);
     
       // put learners in a vector
-      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(10, learningRate, learningRateDecay));
+      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(numInitialSamples, learningRate, learningRateDecay));
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
@@ -59,7 +59,7 @@ public:
       context.resultCallback("x", 0.0);
       learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
       context.leaveScope();
-      context.resultCallback("model", model);
+      context.resultCallback("perceptron", model);
       context.resultCallback("fitness", fitness);      
       context.resultCallback("data", problemData);
       VectorPtr predictions = model->compute(context, testTable)->getVector();
@@ -76,6 +76,7 @@ protected:
   friend class PerceptronTestClass;
   
   size_t numSamples;
+  size_t numInitialSamples;
   int randomSeed;
   double learningRate;
   double learningRateDecay;
