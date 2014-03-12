@@ -540,7 +540,7 @@ public:
   /** Constructor
    *  \param weights Weight vector. The weight vector is copied on construction.
    */
-  LinearModelExpression(const std::vector<double>& weights_) : Expression(doubleClass) 
+  LinearModelExpression(const std::vector<double>& weights_) : Expression(doubleClass)
   {
     weights = new DenseDoubleVector(weights_.size(), 0.0);
     for (size_t i = 0; i < weights->getNumValues(); ++i)
@@ -572,13 +572,12 @@ protected:
 
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 };
-
-
+  
 class PerceptronExpression : public Expression
 {
 public:
-  PerceptronExpression() : Expression(doubleClass), model(new LinearModelExpression()),
-    statistics(std::vector<ScalarVariableMeanAndVariancePtr>()), normalizedInput(std::vector<ObjectPtr>()) {}
+  PerceptronExpression() : Expression(doubleClass), model(new LinearModelExpression()), statistics(std::vector<ScalarVariableMeanAndVariancePtr>()),
+    normalizedInput(std::vector<ObjectPtr>()) {}
 
   virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
     {calculateNormalizedInput(inputs); return model->compute(context, normalizedInput);}
@@ -591,6 +590,9 @@ public:
 
   ScalarVariableMeanAndVariancePtr getStatistics(size_t i) const
     {return statistics[i];}
+  
+  LinearModelExpressionPtr getModel() const
+    {return model;}
 
   DenseDoubleVectorPtr normalizeInput(const DenseDoubleVectorPtr& sample) const;
 

@@ -47,8 +47,9 @@ public:
     problems.push_back(new DTLZ7MOProblem(1, 1));
 
     // create the domain
-    for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
-    {
+//    for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
+//    {
+    size_t functionNumber = 0;
       ExpressionDomainPtr domain = new ExpressionDomain();
       domain->addInput(doubleClass, "x");
       domain->createSupervision(doubleClass, "y");
@@ -60,7 +61,8 @@ public:
       ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
-      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
+      //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(context, randomSeed, NXY, Hoeffding, 0.01));
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
@@ -83,7 +85,7 @@ public:
       context.resultCallback("testingScore", testingScore);
       makeCurve(context, baseProblem, model);
       context.leaveScope();
-    }
+ //   }
     return new Boolean(true);
   }
   

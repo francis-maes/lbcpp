@@ -395,7 +395,7 @@ const ExpressionPtr& TestExpression::getSubNode(size_t index) const
 
 string TestExpression::toShortString() const
 {
-  string res = "(" + conditionNode->toShortString() + " ? " + 
+  string res = "(" + (conditionNode ? conditionNode->toShortString() : T("NULL")) + " ? " +
     (successNode ? successNode->toShortString() : T("NULL")) + T(" : ") + 
     (failureNode ? failureNode->toShortString() : T("NULL"));
   if (missingNode && missingNode.isInstanceOf<ConstantExpression>() && missingNode.staticCast<ConstantExpression>()->getValue().exists())

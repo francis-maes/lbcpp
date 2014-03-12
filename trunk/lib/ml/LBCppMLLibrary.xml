@@ -15,6 +15,7 @@
   <import name="SplittingCriterion"/>
   <import name="SelectionCriterion"/>
   <import name="Learner"/>
+  <import name="IncrementalLearner"/>
   <import name="Data"/>
 
   <include file="ml/Problem.h"/>

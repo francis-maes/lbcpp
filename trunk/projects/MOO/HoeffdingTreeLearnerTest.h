@@ -6,6 +6,7 @@
 # include <ctime>
 # include "../../lib/ml/IncrementalLearner/HoeffdingTreeIncrementalLearner.h"
 
+
 namespace lbcpp {
 
 extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
@@ -380,7 +381,7 @@ public:
 		return sqrt(se/nbTestSamples);
 	}
 
-	double getRRSE(ExecutionContext& context, std::vector<std::vector<double>> testSet, HoeffdingTreeLearner htl){
+	double getRRSE(ExecutionContext& context, std::vector<std::vector<double> > testSet, HoeffdingTreeLearner htl){
 		double avg = 0;
 		double se1 = 0;
 		double diff;
