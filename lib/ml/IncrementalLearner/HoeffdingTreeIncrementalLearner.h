@@ -62,7 +62,7 @@ public:
 
   HoeffdingTreeIncrementalLearner() : context(defaultExecutionContext()) {}
 
-    ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const {
+  ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const {
 		const_cast<HoeffdingTreeIncrementalLearner*>(this)->root = new HoeffdingTreeNode(perceptronLearner->createExpression(context, doubleClass), NULL);
 		return root;
 	}
