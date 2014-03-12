@@ -32,15 +32,18 @@ public:
 		//ModelType modelType = static_cast<ModelType>(modelTypeInt);
 
 		// Fried dataset
-		DataDefinition* dataDef = new DataDefinition();
-		dataDef->addAttribute("numAtt0");
+		//DataDefinition* dataDef = new DataDefinition();
+		//dataDef->addAttribute("numAtt0");
 		/*dataDef->addAttribute("numAtt1");
 		dataDef->addAttribute("numAtt2");
 		dataDef->addAttribute("numAtt3");
 		dataDef->addAttribute("numAtt4");*/
-		dataDef->addTargetAttribute("targetValue");
+		//dataDef->addTargetAttribute("targetValue");
 		HoeffdingTreeIncrementalLearnerPtr htlNY = hoeffdingTreeIncrementalLearner(context, randomSeed, NY, Hoeffding, 0.01).staticCast<HoeffdingTreeIncrementalLearner>();
 	    HoeffdingTreeIncrementalLearnerPtr htlNXY = hoeffdingTreeIncrementalLearner(context, randomSeed, NXY, Hoeffding, 0.01).staticCast<HoeffdingTreeIncrementalLearner>();
+		// make root (temp hack)
+		htlNY->createExpression(context, doubleClass);
+		htlNXY->createExpression(context, doubleClass);
 		std::vector<std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr> > testSet = createTestSet(nbTestSamples);
 		if(!modelNY && !modelNXY)
 			new Boolean(false);
@@ -229,12 +232,12 @@ public:
 			if(modelNXY){
 				context.resultCallback("prediction NXY",htlNXY->predict(input));
 			}
-			for(int i = 0; i < splitsNY->getNumValues(); i++){
+			for(size_t i = 0; i < splitsNY->getNumValues(); i++){
 				if(abs(splitsNY->getValue(i) - x) < 0.01){
 					context.resultCallback("splitsNY",(double)y);
 				}
 			}
-			for(int i = 0; i < splitsNXY->getNumValues(); i++){
+			for(size_t i = 0; i < splitsNXY->getNumValues(); i++){
 				if(abs(splitsNXY->getValue(i) - x) < 0.01){
 					context.resultCallback("splitsNXY",(double)y);
 				}
@@ -320,7 +323,7 @@ public:
 		y = 10*sin(M_PI*x1*x2)+20*(x3-0.5)*(x3-0.5)+10*x4+5*x5+noise;
 		sample.push_back(y);
 		return sample;*/
-		double x1, x2, x3, x4, x5, y, noise;
+		double x1, y, noise;
 		input->clear();
 		output->clear();
 		x1 = MathUtils::randDouble();
@@ -366,6 +369,7 @@ public:
 		return sample;
 	}*/
 
+	// normalization?
 	double getRMSE(ExecutionContext& context, std::vector<std::pair<DenseDoubleVectorPtr,DenseDoubleVectorPtr> > testSet, HoeffdingTreeIncrementalLearnerPtr htl){
 		double se = 0;
 		double diff;
@@ -381,21 +385,21 @@ public:
 		return sqrt(se/nbTestSamples);
 	}
 
-	double getRRSE(ExecutionContext& context, std::vector<std::vector<double> > testSet, HoeffdingTreeLearner htl){
+	double getRRSE(ExecutionContext& context, std::vector<std::pair<DenseDoubleVectorPtr, DenseDoubleVectorPtr> > testSet, HoeffdingTreeIncrementalLearnerPtr htl){
 		double avg = 0;
 		double se1 = 0;
 		double diff;
 		for (int i = 0; i < nbTestSamples; i++) {
-			std::vector<double> sample = testSet[i];
-			double diff = sample.back() - htl.predict(sample);
-			avg+=sample.back();
+			std::pair<DenseDoubleVectorPtr,DenseDoubleVectorPtr> sample = testSet[i];
+			double diff = sample.second->getValue(0) - htl->predict(sample.first);
+			avg+=sample.second->getValue(0);
 			se1+= diff*diff;
 		}
 		avg /= nbTestSamples;
 		double se2 = 0;
 		for (int i = 0; i < nbTestSamples; i++) {
-			std::vector<double> sample = testSet[i];
-			diff = avg - htl.predict(sample);
+			std::pair<DenseDoubleVectorPtr,DenseDoubleVectorPtr> sample = testSet[i];
+			diff = avg - htl->predict(sample.first);
 			se2+= diff*diff;
 		}
 		return se1/se2;

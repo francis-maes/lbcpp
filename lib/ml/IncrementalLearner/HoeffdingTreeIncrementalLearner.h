@@ -25,7 +25,7 @@ public:
 
 	HoeffdingTreeNodeStatistics(ModelType modelType, int nbAttributes) {
 		attributeObservations = std::vector<AttributeObservation>(nbAttributes);
-		for(unsigned i = 0; i < nbAttributes; i++){
+		for(int i = 0; i < nbAttributes; i++){
 			attributeObservations[i] = AttributeObservation(modelType, i);
 		}
 	}
@@ -36,18 +36,18 @@ typedef ReferenceCountedObjectPtr<HoeffdingTreeNodeStatistics> HoeffdingTreeNode
 class HoeffdingTreeIncrementalLearner : public IncrementalLearner
 {
 public:
-	double delta; /* confidence level */
-	int chunkSize; /* number of samples before tree is recalculated */
-	bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */
-	double threshold; /* threshold for splitting criterium */
-	int verbosity;
-	HoeffdingTreeNodePtr root;
-	lbcpp::ExecutionContext& context;
-	ModelType modelType;
-	SplitType splitType;
-	IncrementalLearnerPtr perceptronLearner;
+  double delta; /* confidence level */
+  int chunkSize; /* number of samples before tree is recalculated */
+  bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */
+  double threshold; /* threshold for splitting criterium */
+  int verbosity;
+  HoeffdingTreeNodePtr root;
+  lbcpp::ExecutionContext& context;
+  ModelType modelType;
+  SplitType splitType;
+  IncrementalLearnerPtr perceptronLearner;
 
-	int seenExamples; /* number of unprocessed examples */
+  int seenExamples; /* number of unprocessed examples */
 
   HoeffdingTreeIncrementalLearner(lbcpp::ExecutionContext& context, int seed, ModelType modelType, SplitType splitType, double delta) : context(context), modelType(modelType), splitType(splitType), delta(delta) {
 	chunkSize = 50;// 1
@@ -63,9 +63,9 @@ public:
   HoeffdingTreeIncrementalLearner() : context(defaultExecutionContext()) {}
 
   ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const {
-		const_cast<HoeffdingTreeIncrementalLearner*>(this)->root = new HoeffdingTreeNode(perceptronLearner->createExpression(context, doubleClass), NULL);
-		return root;
-	}
+    const_cast<HoeffdingTreeIncrementalLearner*>(this)->root = new HoeffdingTreeNode(perceptronLearner->createExpression(context, doubleClass), NULL);
+    return root;
+}
 
 
   void addTrainingSample(ExecutionContext& context, ExpressionPtr expr, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
@@ -121,7 +121,7 @@ public:
 		int nbOfLeavesSplit = 0;
 		if((Sa != 0 && ((Sb/Sa < 1 - epsilon)|| epsilon < threshold ))){//|| epsilon < threshold
 			nbOfLeavesSplit = leaf->examplesSeen;
-			HoeffdingTreeNodePtr splittedNode = makeSplit(bestSplits[indexBestSplit], *leaf);
+			split(bestSplits[indexBestSplit], *leaf);//HoeffdingTreeNodePtr splittedNode = 
 			/*if(verbosity >= 3){
 				cout <<"----->split :x" << bestSplits[indexBestSplit].attributeNb << " <= "<< bestSplits[indexBestSplit].value << "\n";
 				if(leaf->isRoot())
@@ -130,7 +130,7 @@ public:
 					cout <<"----->parent :x" << leaf->parent->split->attributeNb << " <= "<< leaf->parent->split->value << "\n";
 				cout << "splittednode: " << splittedNode->split->value << "\n";
 			}*/
-			swap(leaf, splittedNode); // <-----------------------------------------------------------------------------------------------TODO: check if correct swap is called
+			//swap(leaf, splittedNode); // <-----------------------------------------------------------------------------------------------TODO: check if correct swap is called
 			//delete leaf;
 			splitWasMade = true;
 		}
@@ -156,14 +156,14 @@ public:
 
   }
 
-  void swap(HoeffdingTreeNodePtr originalNode, HoeffdingTreeNodePtr newNode) const {
+  /*void swap(HoeffdingTreeNodePtr originalNode, HoeffdingTreeNodePtr newNode) const {
 	if(originalNode->isRoot()) 
 		*(const_cast<HoeffdingTreeIncrementalLearner*>(this)->root) = *newNode;
 	else if(originalNode->parent->getLeft() == originalNode)
 		originalNode->parent->setLeft(newNode);
 	else
 		originalNode->parent->setRight(newNode);
-}
+}*/
 
   double predict(const DenseDoubleVectorPtr& input) const {
 	HoeffdingTreeNodePtr leaf = findLeaf(input);
@@ -180,16 +180,17 @@ void pprint() const {
 	root->pprint();
 }
 
-  HoeffdingTreeNode* makeSplit(const Split& split, const HoeffdingTreeNode& leaf) const{
+  void split(const Split& split, HoeffdingTreeNode& leaf) const{
 	if(verbosity >= 1) {
 		cout << "split was made at leaf:\n";
 		leaf.pprint();
 	}
-	HoeffdingTreeNode* leftChild = new HoeffdingTreeNode(leaf.linearModel, NULL);
-	HoeffdingTreeNode* rightChild = new HoeffdingTreeNode(leaf.linearModel, NULL);
-	HoeffdingTreeNode* parent = new HoeffdingTreeNode(split.attributeNb, split.value, leftChild, rightChild, leaf.parent);
-	leftChild->parent = parent;
-	rightChild->parent = parent;
+	HoeffdingTreeNode* leftChild = new HoeffdingTreeNode(leaf.linearModel->clone(context), NULL);
+	HoeffdingTreeNode* rightChild = new HoeffdingTreeNode(leaf.linearModel->clone(context), NULL);
+	//HoeffdingTreeNode* parent = new HoeffdingTreeNode(split.attributeNb, split.value, leftChild, rightChild, leaf.parent);
+	leaf.convertLeafToInternalNode(split.attributeNb, split.value, leftChild, rightChild);
+	leftChild->parent = &leaf;
+	rightChild->parent = &leaf;
 	//delete leaf;
 	//leaf = parent;
 	//cout << "splitting proc \n";
@@ -205,7 +206,7 @@ void pprint() const {
 	{
 		leaf = static_cast<InternalNode*>(parent);
 	}*/
-	return parent;
+	//return parent;
 }
 
   HoeffdingTreeNodePtr findLeaf(const DenseDoubleVectorPtr& input) const
@@ -216,7 +217,7 @@ void pprint() const {
 
   std::vector<Split>* findBestSplitPerAttribute(HoeffdingTreeNode& leaf, int nbAttributes) const{
 	std::vector<Split>* bestSplits = new std::vector<Split>();
-	for(unsigned i = 0; i < nbAttributes; i++){
+	for(int i = 0; i < nbAttributes; i++){
 		HoeffdingTreeNodeStatisticsPtr stats = leaf.getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
 		AttributeObservation observation = stats->attributeObservations[i];
 		bestSplits->push_back(*observation.findBestSplitPoint());

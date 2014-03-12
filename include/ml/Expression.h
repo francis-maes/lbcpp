@@ -519,6 +519,14 @@ public:
   ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
   DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
+  void convertLeafToInternalNode(size_t testVariable, double testThreshold, TreeNodePtr leftChild, TreeNodePtr rightChild) {
+	  linearModel = NULL;
+	  this->testVariable = testVariable;
+	  this->testThreshold = testThreshold;
+	  this->left = leftChild;
+	  this->right = rightChild;
+  }
+
 	bool isRoot() const
 		{return parent == NULL;}
 

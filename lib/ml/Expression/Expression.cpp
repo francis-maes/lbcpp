@@ -598,12 +598,15 @@ void HoeffdingTreeNode::pprint(int indent) const
   {
 	  if(isLeaf()){
 		if (indent) std::cout << std::setw(indent) << ' ';
-		for(unsigned i = 0; i < linearModel->getWeights()->getNumValues(); i++)
-			{std::cout << "y= " << linearModel->getWeights()->getValue(i) << "*x" << i << " + ";}
+		if(linearModel->getWeights() != NULL){
+			std::cout << "y= ";
+			for(unsigned i = 0; i < linearModel->getWeights()->getNumValues(); i++)
+				{std::cout << linearModel->getWeights()->getValue(i) << "*x" << i << " + ";}
+			std::cout << std::endl;
+		}
 	  }
 	  else{
 		if (indent) std::cout << std::setw(indent) << ' ';
-		HoeffdingTreeNode test;
 		std::cout<< "x" << testVariable << "<=" << testThreshold << std::endl;
 		std::cout << "left:" << std::endl;
 		(((HoeffdingTreeNodePtr)left).staticCast<HoeffdingTreeNode>())->pprint(indent+4);
@@ -623,8 +626,7 @@ int HoeffdingTreeNode::getNbOfLeaves() const
 DenseDoubleVectorPtr HoeffdingTreeNode::getSplits() const
 {
 	if(isLeaf()){
-		DoubleVectorPtr none;
-		return none;
+		return new DenseDoubleVector(0, 0.0);
 	}
 	else {
 		DenseDoubleVectorPtr leftSplits = left.staticCast<HoeffdingTreeNode>()->getSplits();
