@@ -133,17 +133,17 @@ public:
 		  int indexBestSplit = 0;
 		  double Sa = 0;
 		  double Sb = 0;
-		  for (size_t i = 0; i < bestSplits.size(); ++i)
+      for (size_t i = 0; i < bestSplits.size(); ++i)
       {
-			  if (bestSplits[i].second > Sa)
+        if (bestSplits[i].second > Sa)
         {
-				  indexBestSplit = i;
-				  Sb = Sa;
-				  Sa = bestSplits[i].second;
-			  }
-			  else if (bestSplits[i].second > Sb)
-				  Sb = bestSplits[i].second;
-		  }
+          indexBestSplit = i;
+          Sb = Sa;
+          Sa = bestSplits[i].second;
+        }
+        else if (bestSplits[i].second > Sb)
+          Sb = bestSplits[i].second;
+      }
 		  Sa = (Sa == 0 ? 1 : Sa);
 		  Sb = (Sb == 0 ? 1 : Sb);
 
@@ -153,6 +153,9 @@ public:
 		  if ( Sa != 0 && ( Sb/Sa < (1 - epsilon) || epsilon < threshold))
       {
         leaf->split(context, indexBestSplit, bestSplits[indexBestSplit].first);
+        // TODO set learner statistics in leaf->split
+        leaf->getLeft()->setLearnerStatistics(new HoeffdingTreeNodeStatistics(input->getNumValues()));
+        leaf->getRight()->setLearnerStatistics(new HoeffdingTreeNodeStatistics(input->getNumValues()));
 			  splitWasMade = true;
 		  }
       

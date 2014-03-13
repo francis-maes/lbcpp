@@ -23,6 +23,20 @@ namespace lbcpp
 {
 
 extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
+  
+  
+class Hoedje : public Problem
+{
+public:
+  Hoedje(DomainPtr dom) : Problem(dom) {}
+  
+  FitnessPtr evaluate(ExecutionContext &context, const ObjectPtr &object) const
+  {
+    double val = object.staticCast<DenseDoubleVector>()->getValue(0);
+    if (val < 0.5) return new Fitness(val, FitnessLimitsPtr());
+    else return new Fitness(1.0 - val, FitnessLimitsPtr());
+  }
+};
 
 class HoeffdingTreeLearnerExperiments : public WorkUnit
 {
@@ -46,14 +60,18 @@ public:
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
 
-    // create the domain
-//    for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
-//    {
-    size_t functionNumber = 0;
-      ExpressionDomainPtr domain = new ExpressionDomain();
-      domain->addInput(doubleClass, "x");
-      domain->createSupervision(doubleClass, "y");
+    ExpressionDomainPtr domain = new ExpressionDomain();
+    domain->addInput(doubleClass, "x");
+    domain->createSupervision(doubleClass, "y");
     
+    
+    ScalarVectorDomainPtr dom = new ScalarVectorDomain();
+    dom->addDimension(0.0, 1.0);
+    problems.push_back(new Hoedje(dom));
+    
+    // create the domain
+    for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
+    {
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       SamplerPtr sampler = uniformSampler();
@@ -86,7 +104,7 @@ public:
       context.resultCallback("testingScore", testingScore);
       makeCurve(context, baseProblem, model);
       context.leaveScope();
- //   }
+    }
     return new Boolean(true);
   }
   
@@ -191,6 +209,9 @@ private:
         else if (x < 0.75) return x - 0.5;
         else return -x + 1;
       case 10: return x;
+      case 11:
+        if (x < 0.5) return x;
+        else return 1.0 - x;
     }
     jassert(false);
     return 0.0;

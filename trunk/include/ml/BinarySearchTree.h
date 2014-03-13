@@ -119,6 +119,7 @@ protected:
   ScalarVariableMeanAndVariancePtr leftStats;
   ScalarVariableMeanAndVariancePtr rightStats;
 
+  // TODO statsparent kan niet zomaar gebruikt worden
   std::pair<double, double> findBestSplitPoint(ScalarVariableMeanAndVariancePtr statsParent)
   {
     if (isLeaf())
