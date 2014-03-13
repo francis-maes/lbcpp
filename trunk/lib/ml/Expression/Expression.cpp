@@ -598,10 +598,10 @@ void HoeffdingTreeNode::pprint(int indent) const
   {
 	  if(isLeaf()){
 		if (indent) std::cout << std::setw(indent) << ' ';
-		if(linearModel->getWeights() != NULL){
+		if(perceptron->getWeights() != NULL){
 			std::cout << "y= ";
-			for(unsigned i = 0; i < linearModel->getWeights()->getNumValues(); i++)
-				{std::cout << linearModel->getWeights()->getValue(i) << "*x" << i << " + ";}
+			for(unsigned i = 0; i < perceptron->getWeights()->getNumValues(); i++)
+				{std::cout << perceptron->getWeights()->getValue(i) << "*x" << i << " + ";}
 			std::cout << std::endl;
 		}
 	  }
@@ -644,7 +644,17 @@ DenseDoubleVectorPtr HoeffdingTreeNode::getSplits() const
 
 void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, double testThreshold)
 {
+  HoeffdingTreeNodePtr thisPtr = refCountedPointerFromThis(this);
   
+  left = new HoeffdingTreeNode(perceptron->clone(context), thisPtr);
+  left->setLearnerStatistics(learnerStatistics->clone(context));
+
+  right = new HoeffdingTreeNode(perceptron->clone(context), thisPtr);
+  right->setLearnerStatistics(learnerStatistics->clone(context));
+
+  this->testVariable = testVariable;
+  this->testThreshold = testThreshold;
+  this->perceptron = PerceptronExpressionPtr();
 }
 
 size_t HoeffdingTreeNode::getNumSamples() const
@@ -665,11 +675,18 @@ ObjectPtr HoeffdingTreeNode::getSamplePrediction(size_t index) const
 
 ObjectPtr HoeffdingTreeNode::compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
 {
-  return ObjectPtr();
+  DenseDoubleVectorPtr inputVector = new DenseDoubleVector(inputs.size(), 0.0);
+  for (size_t i = 0; i < inputs.size(); ++i)
+    inputVector->setValue(i, Double::get(inputs[i]));
+  return findLeaf(inputVector).staticCast<HoeffdingTreeNode>()->getPerceptron()->compute(context, inputs);
 }
 
 DataVectorPtr HoeffdingTreeNode::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
-  return DataVectorPtr();
+  DVectorPtr vector = new DVector(indices->size());
+  size_t i = 0;
+  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    vector->set(i++, Double::get(compute(context, data->getRow(*it))));
+  return new DataVector(indices, vector);
 }
 

@@ -25,6 +25,7 @@ public:
     SupervisedLearningObjectivePtr learningObjective = problem->getObjective(0).staticCast<SupervisedLearningObjective>();
     numIterations = learningObjective->getIndices()->size();
     expression = learner->createExpression(context, learningObjective->getSupervision()->getType());
+    learner->setVerbosity(verbosity);
     IterativeSolver::startSolver(context, problem, callback, startingSolution);
   }
 

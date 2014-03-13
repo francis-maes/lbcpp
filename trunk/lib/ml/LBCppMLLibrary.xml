@@ -22,6 +22,7 @@
   <include file="ml/Perturbator.h"/>
   <include file="ml/BanditPool.h"/>
   <include file="ml/DataStream.h"/>
+  <include file="ml/BinarySearchTree.h"/>
 
   <!-- Objective -->
   <class name="ScalarProperty" abstract="yes"/>
@@ -52,14 +53,14 @@
     <constructor arguments="DomainPtr elementsDomain"/>
     <variable type="Domain" name="elementsDomain"/>
   </class>
-  
+
   <!-- Fitness -->
   <class name="FitnessLimits" base="ScalarVectorDomain"/>
 
   <class name="Fitness">
     <code>
       virtual bool isConvertibleToDouble() const
-        {return true;}
+      {return true;}
     </code>
     <variable type="Vector[Double]" name="values"/>
     <variable type="FitnessLimits" name="limits"/>
@@ -80,7 +81,7 @@
   <!-- Perturbator -->
   <class name="Perturbator" base="Object" abstract="yes"/>
   <class name="BinaryPerturbator" base="Object" abstract="yes"/>
-  
+
   <!-- Problems -->
   <class name="Problem" abstract="yes"/>
 
@@ -91,11 +92,23 @@
     <variable type="Boolean" name="optimizeMax"/>
     <variable type="Boolean" name="useMultiThreading"/>
   </class>
-  
+
   <!-- Incremental Learner -->
   <class name="IncrementalLearner" abstract="yes"/>
   <class name="ScalarVectorTreeIncrementalLearner" base="IncrementalLearner" abstract="yes"/>
-  
+
+  <!-- Binary Search Tree -->
+  <class name="BinarySearchTree" abstract="yes">
+    <variable type="Double" name="value"/>
+    <variable type="BinarySearchTree" name="left"/>
+    <variable type="BinarySearchTree" name="right"/>
+  </class>
+
+  <class name="ExtendedBinarySearchTree" base="BinarySearchTree">
+    <variable type="ScalarVariableMeanAndVariance" name="leftStats"/>
+    <variable type="ScalarVariableMeanAndVariance" name="rightStats"/>
+  </class>
+
   <!-- Data Stream -->
   <class name="DataStream" abstract="yes"/>
   <class name="ProblemDataStream">

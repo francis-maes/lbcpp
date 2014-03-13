@@ -10,7 +10,7 @@
 # define ML_INCREMENTAL_LEARNER_H_
 
 # include <ml/Expression.h>
-# include "../../projects/MOO/HoeffdingTreeLearner.h"
+# include <ml/Solver.h>
 
 namespace lbcpp
 {
@@ -18,6 +18,8 @@ namespace lbcpp
 class IncrementalLearner : public Object
 {
 public:
+  IncrementalLearner() : verbosity(verbosityQuiet) {}
+
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const = 0;
   /** This method adds a training sample to the incremental learning algorithm. This method is the most general case,
    *  if your incremental learner can deal with non-numerical data, you should probably override this method in child
@@ -50,6 +52,15 @@ public:
     addTrainingSample(context, expression, input, output);
   }
   virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr expression, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const = 0;
+
+  void setVerbosity(SolverVerbosity verbosity)
+    {this->verbosity = verbosity;}
+
+  SolverVerbosity getVerbosity()
+    {return verbosity;}
+
+protected:
+  SolverVerbosity verbosity;
 };
 
 typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
@@ -57,7 +68,7 @@ typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 extern IncrementalLearnerPtr pureRandomScalarVectorTreeIncrementalLearner();
 extern IncrementalLearnerPtr ensembleIncrementalLearner(IncrementalLearnerPtr baseLearner, size_t ensembleSize);
 extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrainingSamples, double learningRate, double learningRateDecay);
-extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(lbcpp::ExecutionContext& context, int seed, ModelType modelType, SplitType splitType, double delta);
+extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(double delta);
 
 
 }; /* namespace lbcpp */

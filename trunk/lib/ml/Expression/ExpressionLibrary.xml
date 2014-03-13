@@ -10,6 +10,7 @@
   <!-- Expressions-->
   <class name="Expression" base="Object" abstract="yes">
     <variable type="Class" name="type"/>
+    <variable type="Object" name="learnerStatistics"/>
     <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
   </class>
   <class name="VariableExpression" base="Expression">
@@ -42,7 +43,12 @@
   </class>
   
   <!-- Tree Expressions -->
-  <class name="TreeNode" base="Expression" abstract="yes"/>
+  <class name="TreeNode" base="Expression" abstract="yes">
+    <variable type="PositiveInteger" name="testVariable"/>
+    <variable type="Double" name="testThreshold"/>
+    <variable type="TreeNode" name="left"/>
+    <variable type="TreeNode" name="right"/>
+  </class>
   <class name="ScalarVectorTreeNode" base="TreeNode">
     <constructor arguments=""/>
     <constructor arguments="const DenseDoubleVectorPtr&amp; input, const DenseDoubleVectorPtr&amp; output"/>
@@ -51,7 +57,7 @@
     <constructor arguments=""/>
     <constructor arguments="HoeffdingTreeNodePtr parent"/>
     <constructor arguments="const PerceptronExpressionPtr linearModel, HoeffdingTreeNodePtr parent"/>
-    <constructor arguments="size_t testVariable, double testThreshold, HoeffdingTreeNodePtr left, HoeffdingTreeNodePtr right, HoeffdingTreeNodePtr parent"/>
+    <variable type="PerceptronExpression" name="perceptron"/>
   </class>
 
   <!-- Gaussian Process Expression -->

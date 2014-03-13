@@ -62,7 +62,8 @@ public:
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(context, randomSeed, NXY, Hoeffding, 0.01));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(0.01));
+      learner->setVerbosity(verbosityDetailed);
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();

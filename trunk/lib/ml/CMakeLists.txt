@@ -38,6 +38,7 @@ SET(ML_INCLUDES
   ${ML_INCLUDES}/Solver.h
   ${ML_INCLUDES}/SolverCallback.h
   ${ML_INCLUDES}/Search.h
+  ${ML_INCLUDES}/BinarySearchTree.h
   ${ML_INCLUDES}/Function.h
   ${ML_INCLUDES}/Aggregator.h
   ${ML_INCLUDES}/Expression.h

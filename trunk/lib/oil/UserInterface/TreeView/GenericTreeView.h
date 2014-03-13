@@ -86,7 +86,7 @@ public:
   virtual bool mightHaveSubObjects(const ObjectPtr& object) = 0;
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object) = 0;
   virtual string getObjectTooltip(const string& name, const ObjectPtr& object)
-    {return object->toShortString();}
+    {return object ? object->toShortString() : T("NULL");}
 
   virtual size_t getNumDataColumns()
     {return 0;}
