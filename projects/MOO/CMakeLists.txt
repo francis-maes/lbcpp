@@ -11,7 +11,7 @@ SET(MOO_SOURCES
   precompiled.cpp
   HoeffdingTreeLearner.h
   HoeffdingTreeLearner.cpp
-  HoeffdingTreeLearnerTest.h
+ # HoeffdingTreeLearnerTest.h
   SolverInfo.h
   SharkProblems.h
   FQIBasedSolver.h

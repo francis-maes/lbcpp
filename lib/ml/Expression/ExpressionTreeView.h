@@ -22,7 +22,10 @@ public:
     {buildTree();}
 
   virtual bool mightHaveSubObjects(const ObjectPtr& object)
-    {return object.dynamicCast<Expression>() ? object.staticCast<Expression>()->getNumSubNodes() > 0 || object->getNumVariables() > 0 : object->getNumVariables() > 0;}
+  {
+    if (!object) return false;
+    return object.dynamicCast<Expression>() ? object.staticCast<Expression>()->getNumSubNodes() > 0 || object->getNumVariables() > 0 : object->getNumVariables() > 0;
+  }
     
   virtual std::vector< std::pair<string, ObjectPtr> > getSubObjects(const ObjectPtr& object)
   {

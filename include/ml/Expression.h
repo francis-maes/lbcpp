@@ -486,23 +486,12 @@ extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const
 class HoeffdingTreeNode: public TreeNode
 {
 public:
-	HoeffdingTreeNodePtr parent;
-
-	// data for leafnodes
-	PerceptronExpressionPtr linearModel;
-	int examplesSeen;
-
-	HoeffdingTreeNode() : TreeNode()
-	{parent = NULL;}
-
-	HoeffdingTreeNode(HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent) {};
-
-	HoeffdingTreeNode(const PerceptronExpressionPtr linearModel, HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent), examplesSeen(0), linearModel(linearModel) {};
-
-	HoeffdingTreeNode(size_t testVariable, double testThreshold, HoeffdingTreeNodePtr left, HoeffdingTreeNodePtr right, HoeffdingTreeNodePtr parent) : TreeNode(testVariable, testThreshold, denseDoubleVectorClass()), parent(parent), examplesSeen(0), linearModel(NULL) {
-		this->left = left;
-		this->right = right;
-	};
+	HoeffdingTreeNode() : TreeNode(), parent(HoeffdingTreeNodePtr()) 
+    {type = doubleClass;}
+	HoeffdingTreeNode(HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent)
+    {type = doubleClass;}
+	HoeffdingTreeNode(const PerceptronExpressionPtr& linearModel, HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent), perceptron(linearModel)
+    {type = doubleClass;}
 
 	TreeNodePtr findLeaf(const ObjectPtr& input) const;
 	void pprint(int indent = 0) const;
@@ -519,8 +508,10 @@ public:
   ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
   DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
+  PerceptronExpressionPtr getPerceptron() const
+    {return perceptron;}
   void convertLeafToInternalNode(size_t testVariable, double testThreshold, TreeNodePtr leftChild, TreeNodePtr rightChild) {
-	  linearModel = NULL;
+	  perceptron = NULL;
 	  this->testVariable = testVariable;
 	  this->testThreshold = testThreshold;
 	  this->left = leftChild;
@@ -528,10 +519,13 @@ public:
   }
 
 	bool isRoot() const
-		{return parent == NULL;}
+    {return !parent.exists();}
 
 protected:
   friend class HoeffdingTreeNodeClass;
+
+  HoeffdingTreeNodePtr parent;
+  PerceptronExpressionPtr perceptron;
 };
 
 extern TreeNodePtr hoeffdingTreeNode();
@@ -544,7 +538,7 @@ extern TreeNodePtr hoeffdingTreeNode();
 class LinearModelExpression : public Expression
 {
 public:
-  LinearModelExpression() : Expression(doubleClass), weights(DenseDoubleVectorPtr()) {}
+  LinearModelExpression() : Expression(doubleClass), weights(new DenseDoubleVector()) {}
   /** Constructor
    *  \param weights Weight vector. The weight vector is copied on construction.
    */
@@ -572,6 +566,13 @@ public:
    */
   inline DenseDoubleVectorPtr& getWeights()
     {return weights;}
+
+  virtual ObjectPtr clone(ExecutionContext& context) const
+  {
+    LinearModelExpressionPtr result = new LinearModelExpression();
+    weights->clone(context, result->weights);
+    return result;
+  }
 
 protected:
   friend class LinearModelExpressionClass;
@@ -615,6 +616,17 @@ public:
    */
   inline DenseDoubleVectorPtr& getWeights()
     {return model->getWeights();}
+
+  virtual ObjectPtr clone(ExecutionContext& context)
+  {
+    PerceptronExpressionPtr result = new PerceptronExpression();
+    result->model = model->clone(context);
+    result->statistics = std::vector<ScalarVariableMeanAndVariancePtr>(statistics.size());
+    for (size_t i = 0; i < statistics.size(); ++i)
+      result->statistics[i] = statistics[i]->clone(context);
+    result->normalizedInput = std::vector<ObjectPtr>(normalizedInput);
+    return result;
+  }
 
 protected:
   friend class PerceptronExpressionClass;
