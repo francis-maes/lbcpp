@@ -538,7 +538,7 @@ extern TreeNodePtr hoeffdingTreeNode();
 class LinearModelExpression : public Expression
 {
 public:
-  LinearModelExpression() : Expression(doubleClass), weights(new DenseDoubleVector()) {}
+  LinearModelExpression() : Expression(doubleClass), weights(new DenseDoubleVector(1, 0.0)) {}
   /** Constructor
    *  \param weights Weight vector. The weight vector is copied on construction.
    */
@@ -585,9 +585,9 @@ protected:
 class PerceptronExpression : public Expression
 {
 public:
-  PerceptronExpression() : Expression(doubleClass), model(new LinearModelExpression()), statistics(std::vector<ScalarVariableMeanAndVariancePtr>()),
+  PerceptronExpression() : Expression(doubleClass), examplesSeen(0), model(new LinearModelExpression()), statistics(std::vector<ScalarVariableMeanAndVariancePtr>()),
     normalizedInput(std::vector<ObjectPtr>()) {}
-
+  
   virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
     {calculateNormalizedInput(inputs); return model->compute(context, normalizedInput);}
   
@@ -617,20 +617,26 @@ public:
   inline DenseDoubleVectorPtr& getWeights()
     {return model->getWeights();}
 
-  virtual ObjectPtr clone(ExecutionContext& context)
+  virtual ObjectPtr clone(ExecutionContext& context) const
   {
     PerceptronExpressionPtr result = new PerceptronExpression();
     result->model = model->clone(context);
-    result->statistics = std::vector<ScalarVariableMeanAndVariancePtr>(statistics.size());
-    for (size_t i = 0; i < statistics.size(); ++i)
-      result->statistics[i] = statistics[i]->clone(context);
+    result->statistics = std::vector<ScalarVariableMeanAndVariancePtr>(statistics);
     result->normalizedInput = std::vector<ObjectPtr>(normalizedInput);
+    result->examplesSeen = examplesSeen;
     return result;
   }
+  
+  size_t getExamplesSeen()
+    {return examplesSeen;}
+  
+  void setExamplesSeen(size_t numExamples)
+    {examplesSeen = numExamples;}
 
 protected:
   friend class PerceptronExpressionClass;
   
+  size_t examplesSeen;
   LinearModelExpressionPtr model;                            /**< Underlying linear model */
   std::vector<ScalarVariableMeanAndVariancePtr> statistics;  /**< Parameters for input normalization */
   std::vector<ObjectPtr> normalizedInput;                    /**< placeholder for result of normalization of input, this avoids allocating a vector everytime a training sample is added or prediction is required */

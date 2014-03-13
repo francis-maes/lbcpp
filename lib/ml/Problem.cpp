@@ -118,7 +118,7 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
     TablePtr supervision = new Table(numSamples);
     TablePtr validation = new Table(numValidationSamples);
     
-    for (size_t i = 0; i < getDomain()->getNumVariables(); ++i)
+    for (size_t i = 0; i < getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions(); ++i)
     {
       VariableExpressionPtr x = domain->addInput(doubleClass, "x" + string((int) i));
       supervision->addColumn(x, doubleClass);

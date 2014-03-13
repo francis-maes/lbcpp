@@ -33,7 +33,7 @@ public:
     PerceptronExpressionPtr perceptron = expression.staticCast<PerceptronExpression>();
     perceptron->updateStatistics(context, input);
 
-    size_t numTrainingSamples = (size_t) perceptron->getStatistics(0)->getCount();
+    size_t numTrainingSamples = perceptron->getExamplesSeen();
     if (numTrainingSamples < numInitialTrainingSamples)
       return;
     

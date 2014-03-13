@@ -547,6 +547,7 @@ DataVectorPtr PerceptronExpression::computeSamples(ExecutionContext& context, co
 
 void PerceptronExpression::updateStatistics(ExecutionContext& context, const DenseDoubleVectorPtr& inputs)
 {
+  ++examplesSeen;
   if (statistics.empty())
   {
     DenseDoubleVectorPtr& weights = model->getWeights();
@@ -647,14 +648,14 @@ void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, do
   HoeffdingTreeNodePtr thisPtr = refCountedPointerFromThis(this);
   
   left = new HoeffdingTreeNode(perceptron->clone(context), thisPtr);
-  left->setLearnerStatistics(learnerStatistics->clone(context));
-
+  left.staticCast<HoeffdingTreeNode>()->getPerceptron()->setExamplesSeen(0);
   right = new HoeffdingTreeNode(perceptron->clone(context), thisPtr);
-  right->setLearnerStatistics(learnerStatistics->clone(context));
-
+  right.staticCast<HoeffdingTreeNode>()->getPerceptron()->setExamplesSeen(0);
+  
   this->testVariable = testVariable;
   this->testThreshold = testThreshold;
   this->perceptron = PerceptronExpressionPtr();
+  this->setLearnerStatistics(ObjectPtr());
 }
 
 size_t HoeffdingTreeNode::getNumSamples() const
