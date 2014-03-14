@@ -59,6 +59,9 @@
     <variable type="PositiveInteger" name="randomSeed"/>
     <variable type="Double" name="learningRate"/>
     <variable type="Double" name="learningRateDecay"/>
+    <variable type="Double" name="delta"/>
+    <variable type="Double" name="threshold"/>
+    <variable type="PositiveInteger" name="numDims" description="Dimensionality of DTLZ problems. For numDims > 1 no curve is drawn."/>
   </class>
 
   <class name="PerceptronTest" base="WorkUnit">

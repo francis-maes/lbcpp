@@ -616,12 +616,12 @@ void HoeffdingTreeNode::pprint(int indent) const
 	  }
 }
 
-int HoeffdingTreeNode::getNbOfLeaves() const
+size_t HoeffdingTreeNode::getNbOfLeaves() const
   {
 	  if(isLeaf())
 		  return 1;
 	  else
-		return (((HoeffdingTreeNodePtr)left).staticCast<HoeffdingTreeNode>())->getNbOfLeaves()+(((HoeffdingTreeNodePtr)right).staticCast<HoeffdingTreeNode>())->getNbOfLeaves();
+		return left.staticCast<HoeffdingTreeNode>()->getNbOfLeaves() + right.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
 }
 
 DenseDoubleVectorPtr HoeffdingTreeNode::getSplits() const

@@ -153,8 +153,8 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
     ProblemPtr res = new Problem();
     
     res->setDomain(domain);
-    res->addObjective(mseRegressionObjective(supervision, y));
-    res->addValidationObjective(mseRegressionObjective(validation, y));
+    res->addObjective(rmseRegressionObjective(supervision, y));
+    res->addValidationObjective(rmseRegressionObjective(validation, y));
 
     return res;
 }

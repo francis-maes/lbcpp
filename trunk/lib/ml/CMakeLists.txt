@@ -238,6 +238,7 @@ SET(ML_INCREMENTAL_LEARNER_SOURCES
   IncrementalLearner/ExtraTreeIncrementalLearner.h
   IncrementalLearner/HoeffdingTreeIncrementalLearner.h
   IncrementalLearner/PerceptronIncrementalLearner.h
+  IncrementalLearner/IncrementalSplittingCriterion.h
   IncrementalLearner/IncrementalLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/IncrementalLearnerLibrary.cpp
 )

@@ -35,6 +35,8 @@ public:
     TablePtr data = learningObjective->getData();
     size_t index = learningObjective->getIndices()->getIndices()[iter];
     learner->addTrainingSample(context, data->getRow(index), expression);
+    if (verbosity >= verbosityDetailed)
+      context.resultCallback("testing", problem->getValidationObjective(0)->evaluate(context, expression));
     return true;
   }
 

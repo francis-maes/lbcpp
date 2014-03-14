@@ -20,12 +20,23 @@
   </class>
 
   <class name="HoeffdingTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
-    <constructor arguments="double delta" returnType="IncrementalLearner"/>
-    <variable type="PerceptronIncrementalLearner" name="perceptronLearner"/>
+    <constructor arguments="IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize" returnType="IncrementalLearner"/>
+    <variable type="IncrementalSplittingCriterion" name="splittingCriterion"/>
+    <variable type="IncrementalLearner" name="perceptronLearner"/>
+    <variable type="PositiveInteger" name="chunkSize"/>
+    <variable type="Boolean" name="pruneOnly"/>
   </class>
 
   <class name="HoeffdingTreeNodeStatistics">
     <variable type="Vector[ExtendedBinarySearchTree]" name="ebsts"/>
+  </class>
+
+  <!-- Incremental Splitting Criteria -->
+  <class name="IncrementalSplittingCriterion" abstract="yes"/>
+  <class name="HoeffdingBoundStdDevReductionIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
+    <constructor arguments="double delta, double threshold"/>
+    <variable type="Double" name="delta"/>
+    <variable type="Double" name="threshold"/>
   </class>
 
 </library>

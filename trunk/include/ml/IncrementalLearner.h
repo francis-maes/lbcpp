@@ -65,11 +65,36 @@ protected:
 
 typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 
+/** Base class for incremental splitting criteria 
+ *  Subclasses should implement findBestSplit
+ */
+class IncrementalSplittingCriterion : public Object
+{
+public:
+  struct Split
+  {
+    Split() : attribute(0), value(0.0), quality(0.0) {}
+    Split(size_t attribute, double value, double quality) : attribute(attribute), value(value), quality(quality) {}
+    size_t attribute;
+    double value;
+    double quality;
+  };
+
+  /** Find the best split point for this leaf.
+   *  \return A Split struct containing the attribute index, split value and split quality.
+   *          If no suitable Split was found, set quality to DVector::missingValue to indicate this.
+   */
+  virtual Split findBestSplit(TreeNodePtr leaf) const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<IncrementalSplittingCriterion> IncrementalSplittingCriterionPtr;
+
 extern IncrementalLearnerPtr pureRandomScalarVectorTreeIncrementalLearner();
 extern IncrementalLearnerPtr ensembleIncrementalLearner(IncrementalLearnerPtr baseLearner, size_t ensembleSize);
 extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrainingSamples, double learningRate, double learningRateDecay);
-extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(double delta);
+extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize = 10);
 
+extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
 
 }; /* namespace lbcpp */
 
