@@ -495,7 +495,7 @@ public:
 
 	TreeNodePtr findLeaf(const ObjectPtr& input) const;
 	void pprint(int indent = 0) const;
-	int getNbOfLeaves() const;
+	size_t getNbOfLeaves() const;
 	DenseDoubleVectorPtr getSplits() const;
 
 	ObjectPtr getSampleInput(size_t index) const;
@@ -622,7 +622,9 @@ public:
     PerceptronExpressionPtr result = new PerceptronExpression();
     result->model = model->clone(context);
     result->statistics = std::vector<ScalarVariableMeanAndVariancePtr>(statistics);
-    result->normalizedInput = std::vector<ObjectPtr>(normalizedInput);
+    result->normalizedInput = std::vector<ObjectPtr>(normalizedInput.size());
+    for (size_t i = 0; i < normalizedInput.size(); ++i)
+      result->normalizedInput[i] = new Double(0.0);
     result->examplesSeen = examplesSeen;
     return result;
   }

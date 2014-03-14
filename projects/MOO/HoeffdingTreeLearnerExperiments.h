@@ -25,23 +25,10 @@ namespace lbcpp
 extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
   
   
-class Hoedje : public Problem
-{
-public:
-  Hoedje(DomainPtr dom) : Problem(dom) {}
-  
-  FitnessPtr evaluate(ExecutionContext &context, const ObjectPtr &object) const
-  {
-    double val = object.staticCast<DenseDoubleVector>()->getValue(0);
-    if (val < 0.5) return new Fitness(val, FitnessLimitsPtr());
-    else return new Fitness(1.0 - val, FitnessLimitsPtr());
-  }
-};
-
 class HoeffdingTreeLearnerExperiments : public WorkUnit
 {
 public:
-  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(0.1), learningRateDecay(0.005) {}
+  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.2), threshold(0.15), numDims(1) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -59,35 +46,25 @@ public:
     problems.push_back(new DTLZ5MOProblem(1, 1));
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
+    problems.push_back(new FriedmannProblem());
+    
+    SamplerPtr sampler = uniformSampler();
 
-    ExpressionDomainPtr domain = new ExpressionDomain();
-    domain->addInput(doubleClass, "x");
-    domain->createSupervision(doubleClass, "y");
-    
-    
-    ScalarVectorDomainPtr dom = new ScalarVectorDomain();
-    dom->addDimension(0.0, 1.0);
-    problems.push_back(new Hoedje(dom));
-    
-    // create the domain
     for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
     {
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
-      SamplerPtr sampler = uniformSampler();
       sampler->initialize(context, baseProblem->getDomain());
-      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
+      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, numSamples, sampler);
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(0.01));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(0.2, 0.15), perceptronIncrementalLearner(10, learningRate, learningRateDecay)));
       learner->setVerbosity(verbosityDetailed);
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
     
-      TablePtr testTable = makeTestTable(domain->getInput(0));
-
       ExpressionPtr model;
       FitnessPtr fitness;
       context.enterScope("Function " + string((int) functionNumber));
@@ -98,12 +75,11 @@ public:
       context.resultCallback("model", model);
       context.resultCallback("fitness", fitness);      
       context.resultCallback("data", problemData);
-      VectorPtr predictions = model->compute(context, testTable)->getVector();
-      context.resultCallback("predictions", predictions);
       double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
       context.resultCallback("testingScore", testingScore);
+      context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
       makeCurve(context, baseProblem, model);
-      context.leaveScope();
+      context.leaveScope(testingScore);
     }
     return new Boolean(true);
   }
@@ -115,32 +91,36 @@ protected:
   int randomSeed;
   double learningRate;
   double learningRateDecay;
+  double delta;
+  double threshold;
+  size_t numDims;
 
 private:
 
   void makeCurve(ExecutionContext& context, ProblemPtr baseProblem, ExpressionPtr expression)
   {
       //context.enterScope("Curve");
-      double x = 0.0;
-      size_t curveSize = 100;
-      std::vector<ObjectPtr> input = std::vector<ObjectPtr>(1);
-      input[0] = new Double(0.0);
-      DenseDoubleVectorPtr problemInput = new DenseDoubleVector(1, 0.0);
-      ScalarVectorDomainPtr domain = baseProblem->getDomain().staticCast<ScalarVectorDomain>();
-      double range = domain->getUpperLimit(0) - domain->getLowerLimit(0);
-      double offset = domain->getLowerLimit(0);
-      for (size_t i = 0; i < curveSize; ++i)
-      {
-        x = offset + range * i / curveSize;
-        context.enterScope(string(x));
-        context.resultCallback("x", x);
-        input[0].staticCast<Double>()->set(x);
-        problemInput->setValue(0, x);
-        context.resultCallback("supervision", baseProblem->evaluate(context, problemInput)->getValue(0));
-        context.resultCallback("prediction", expression->compute(context, input));
-        context.leaveScope();
-      }
-      //context.leaveScope();
+    if (baseProblem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions() > 1) return;
+    double x = 0.0;
+    size_t curveSize = 200;
+    std::vector<ObjectPtr> input = std::vector<ObjectPtr>(1);
+    input[0] = new Double(0.0);
+    DenseDoubleVectorPtr problemInput = new DenseDoubleVector(1, 0.0);
+    ScalarVectorDomainPtr domain = baseProblem->getDomain().staticCast<ScalarVectorDomain>();
+    double range = domain->getUpperLimit(0) - domain->getLowerLimit(0);
+    double offset = domain->getLowerLimit(0);
+    for (size_t i = 0; i < curveSize; ++i)
+    {
+      x = offset + range * i / curveSize;
+      context.enterScope(string(x));
+      context.resultCallback("x", x);
+      input[0].staticCast<Double>()->set(x);
+      problemInput->setValue(0, x);
+      context.resultCallback("supervision", baseProblem->evaluate(context, problemInput)->getValue(0));
+      context.resultCallback("prediction", expression->compute(context, input));
+      context.leaveScope();
+    }
+    //context.leaveScope();
   }
       
   ProblemPtr makeProblem(ExecutionContext& context, size_t functionNumber, ExpressionDomainPtr domain)

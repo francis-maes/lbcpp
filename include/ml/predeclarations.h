@@ -193,6 +193,7 @@ typedef ReferenceCountedObjectPtr<BinarySearchTree> BinarySearchTreePtr;
 class ExtendedBinarySearchTree;
 typedef ReferenceCountedObjectPtr<ExtendedBinarySearchTree> ExtendedBinarySearchTreePtr;
 
+
 }; /* namespace lbcpp */
 
 #endif // !ML_PREDECLARATIONS_H_

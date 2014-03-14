@@ -34,7 +34,7 @@ public:
     perceptron->updateStatistics(context, input);
 
     size_t numTrainingSamples = perceptron->getExamplesSeen();
-    if (numTrainingSamples < numInitialTrainingSamples)
+    if ((size_t)perceptron->getStatistics(0)->getCount() < numInitialTrainingSamples) // if the statistics have not seen enough examples, don't learn yet
       return;
     
     double curLearningRate = learningRate / (1 + numTrainingSamples * learningRateDecay);

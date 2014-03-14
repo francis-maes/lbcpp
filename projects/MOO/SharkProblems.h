@@ -295,6 +295,31 @@ struct DTLZ5MOProblem : public DTLZMOProblem {DTLZ5MOProblem(size_t numDimension
 struct DTLZ6MOProblem : public DTLZMOProblem {DTLZ6MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ6(numDimensions, numObjectives), 1.0, 1.0) {} };
 struct DTLZ7MOProblem : public DTLZMOProblem {DTLZ7MOProblem(size_t numDimensions = 22, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ7(numDimensions, numObjectives), 2.12, 4.0) {} };
 
+
+class FriedmannObjective : public Objective
+{
+public:
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+  {
+    DenseDoubleVectorPtr input = object.staticCast<DenseDoubleVector>();
+    return 10.0 * sin(M_PI * input->getValue(0) * input->getValue(1)) + 20.0 * (input->getValue(2) - 0.5) * (input->getValue(2) - 0.5) +
+      10.0 * input->getValue(3) + 5.0 * input->getValue(4) + context.getRandomGenerator()->sampleDoubleFromGaussian(0.0, 1.0);
+  }
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = -20.0; best = 40;}
+};
+
+class FriedmannProblem : public Problem
+{
+public:
+  FriedmannProblem()
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(10, std::make_pair(0, 1.0))));
+    addObjective(new FriedmannObjective());
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !MOO_PROBLEM_SHARK_H_
