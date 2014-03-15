@@ -62,6 +62,7 @@ private:
       bestLeft = findBestSplit(attribute, ebst->getLeft().staticCast<ExtendedBinarySearchTree>());
     if (ebst->getRight().exists())
       bestRight = findBestSplit(attribute, ebst->getRight().staticCast<ExtendedBinarySearchTree>());
+    // TODO: still incorrect, need to add right side of parent nodes as well
     ScalarVariableMeanAndVariancePtr leftStats = ebst->getLeftStats();
     ScalarVariableMeanAndVariancePtr rightStats = ebst->getRightStats();
     double totalCount = leftStats->getCount() + rightStats->getCount();
