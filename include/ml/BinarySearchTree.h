@@ -49,7 +49,8 @@ class ExtendedBinarySearchTree : public BinarySearchTree
 {
 public:
   ExtendedBinarySearchTree(double value = DVector::missingValue) : BinarySearchTree(value),
-    leftStats(new ScalarVariableMeanAndVariance()), rightStats(new ScalarVariableMeanAndVariance()) {}
+    leftStats(new ScalarVariableMeanAndVariance()), rightStats(new ScalarVariableMeanAndVariance()),
+    correlation(new PearsonCorrelationCoefficient()) {}
 
   virtual void insertValue(double attribute, double y)
   {
@@ -102,6 +103,7 @@ protected:
 
   ScalarVariableMeanAndVariancePtr leftStats;
   ScalarVariableMeanAndVariancePtr rightStats;
+  CorrelationCoefficientPtr correlation;
 };
 
 } /* namespace lbcpp */

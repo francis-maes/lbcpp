@@ -267,6 +267,44 @@ private:
 
 typedef ReferenceCountedObjectPtr<ScalarVariableRecentMeanAndVariance> ScalarVariableRecentMeanAndVariancePtr;
 
+
+class CorrelationCoefficient : public Object
+{
+public:
+  CorrelationCoefficient() {}
+  virtual void push(double x, double y) = 0;
+  virtual double getCorrelationCoefficient() const = 0;
+protected:
+};
+
+typedef ReferenceCountedObjectPtr<CorrelationCoefficient> CorrelationCoefficientPtr;
+
+class PearsonCorrelationCoefficient : public CorrelationCoefficient
+{
+public:
+  PearsonCorrelationCoefficient() : numSamples(0), sumXY(0.0), sumX(0.0), sumXsquared(0.0), sumY(0.0), sumYsquared(0.0) {}
+  virtual void push(double x, double y)
+  {
+    ++numSamples;
+    sumXY += x * y;
+    sumX += x;
+    sumXsquared += x * x;
+    sumY += y;
+    sumYsquared += y * y;
+  }
+  virtual double getCorrelationCoefficient() const
+    {return (numSamples * sumXY - sumX * sumY) / (sqrt((numSamples - 1) * sumXsquared - sumX * sumX) * sqrt((numSamples - 1) * sumYsquared - sumY * sumY));}
+
+protected:
+  size_t numSamples;
+  double sumXY;
+  double sumX, sumXsquared;
+  double sumY, sumYsquared;
+
+};
+
+typedef ReferenceCountedObjectPtr<PearsonCorrelationCoefficient> PearsonCorrelationCoefficientPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !ML_RANDOM_VARIABLE_H_
