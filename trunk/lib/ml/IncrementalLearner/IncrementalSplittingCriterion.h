@@ -62,14 +62,14 @@ private:
       bestLeft = findBestSplit(attribute, ebst->getLeft().staticCast<ExtendedBinarySearchTree>());
     if (ebst->getRight().exists())
       bestRight = findBestSplit(attribute, ebst->getRight().staticCast<ExtendedBinarySearchTree>());
-    ScalarVariableMeanAndVariancePtr total = new ScalarVariableMeanAndVariance();
     ScalarVariableMeanAndVariancePtr leftStats = ebst->getLeftStats();
     ScalarVariableMeanAndVariancePtr rightStats = ebst->getRightStats();
-    total->push(leftStats->getSum(), leftStats->getCount());
-    total->push(rightStats->getSum(), rightStats->getCount());
-    double sdr = total->getStandardDeviation() - 
-                 leftStats->getStandardDeviation() * leftStats->getCount() / total->getCount() -
-                 rightStats->getStandardDeviation() * rightStats->getCount() / total->getCount();
+    double totalCount = leftStats->getCount() + rightStats->getCount();
+    double totalStdDev = sqrt((leftStats->getSumOfSquares() + rightStats->getSumOfSquares()) / totalCount - 
+      ((leftStats->getSum() + rightStats->getSum()) / totalCount) * ((leftStats->getSum() + rightStats->getSum()) / totalCount));
+    double sdr = totalStdDev - 
+                 leftStats->getStandardDeviation() * leftStats->getCount() / totalCount -
+                 rightStats->getStandardDeviation() * rightStats->getCount() / totalCount;
     Split bestChild = bestLeft.quality >= bestRight.quality ? bestLeft : bestRight;
     Split hereSplit = Split(attribute, ebst->getValue(), sdr);
     return hereSplit.quality >= bestChild.quality ? hereSplit : bestChild;
