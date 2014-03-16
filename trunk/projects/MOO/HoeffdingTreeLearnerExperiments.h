@@ -102,7 +102,7 @@ public:
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.2, 0.15), perceptronIncrementalLearner(10, learningRate, learningRateDecay)));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(chowTestIncrementalSplittingCriterion(2, 0.15), perceptronIncrementalLearner(10, learningRate, learningRateDecay)));
       learner->setVerbosity(verbosityDetailed);
     
       ObjectivePtr problemObj = problem->getObjective(0);
