@@ -97,6 +97,7 @@ extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittin
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr chowTestIncrementalSplittingCriterion(size_t numVariables, double threshold);
 
 }; /* namespace lbcpp */
 

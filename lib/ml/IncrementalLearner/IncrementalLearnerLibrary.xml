@@ -51,4 +51,10 @@
     <variable type="Double" name="threshold"/>
   </class>
 
+  <class name="ChowTestIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
+    <constructor arguments="size_t numVariables, double threshold"/>
+    <variable type="PositiveInteger" name="numVariables"/>
+    <variable type="Double" name="threshold"/>
+  </class>
+
 </library>
