@@ -50,7 +50,7 @@ class ExtendedBinarySearchTree : public BinarySearchTree
 public:
   ExtendedBinarySearchTree(double value = DVector::missingValue) : BinarySearchTree(value),
     leftStats(new ScalarVariableMeanAndVariance()), rightStats(new ScalarVariableMeanAndVariance()),
-    correlation(new PearsonCorrelationCoefficient()) {}
+    leftCorrelation(new PearsonCorrelationCoefficient()), rightCorrelation(new PearsonCorrelationCoefficient()){}
 
   virtual void insertValue(double attribute, double y)
   {
@@ -64,6 +64,7 @@ public:
       if (attribute <= value)
       {
         leftStats->push(y);
+		leftCorrelation->push(attribute, y);
         if (!left.exists())
           left = new ExtendedBinarySearchTree(attribute);
         else
@@ -72,6 +73,7 @@ public:
       else
       {
         rightStats->push(y);
+		rightCorrelation->push(attribute, y);
         if (!right.exists())
           right = new ExtendedBinarySearchTree(attribute);
         else
@@ -91,6 +93,8 @@ public:
     result->value = value;
     result->leftStats = leftStats->clone(context);
     result->rightStats = rightStats->clone(context);
+	result->leftCorrelation = leftCorrelation->clone(context);
+    result->rightCorrelation = rightCorrelation->clone(context);
     if (left.exists())
       result->left = left->clone(context);
     if (right.exists())
@@ -98,12 +102,14 @@ public:
     return result;
   }
 
+PearsonCorrelationCoefficientPtr leftCorrelation;
+PearsonCorrelationCoefficientPtr rightCorrelation;
+
 protected:
   friend class ExtendedBinarySearchTreeClass;
 
   ScalarVariableMeanAndVariancePtr leftStats;
   ScalarVariableMeanAndVariancePtr rightStats;
-  CorrelationCoefficientPtr correlation;
 };
 
 } /* namespace lbcpp */

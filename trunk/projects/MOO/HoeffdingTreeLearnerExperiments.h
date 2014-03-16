@@ -23,6 +23,47 @@ namespace lbcpp
 {
 
 extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
+
+class OneDimFunctionObjective : public Objective
+{
+public:
+  OneDimFunctionObjective(size_t functionIndex) : functionIndex(functionIndex) {};
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+  {
+	double x = object.staticCast<DenseDoubleVector>()->getValue(0);
+	switch (functionIndex)
+    {
+      case 0: return x < 0.5 ? 2 * x : -2 * x + 2;
+      case 1: 
+		  if(x < 0.25)
+		    return 4 * x;
+		  else if(x < 0.5)
+		    return -4 * x + 2;
+		  else if(x < 0.75)
+			return 4 * x - 2;
+		  else
+			return -4 * x + 4;
+	  default: return 0;
+	}
+  }
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0; best = 1;}
+
+protected:
+  size_t functionIndex;
+};
+
+class OneDimFunctionProblem : public Problem
+{
+public:
+  OneDimFunctionProblem(size_t functionIndex)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(1, std::make_pair(0, 1.0))));
+    addObjective(new OneDimFunctionObjective(functionIndex));
+  }
+};
   
   
 class HoeffdingTreeLearnerExperiments : public WorkUnit
@@ -47,6 +88,8 @@ public:
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
     problems.push_back(new FriedmannProblem());
+	problems.push_back(new OneDimFunctionProblem(0));
+	problems.push_back(new OneDimFunctionProblem(1));
     
     SamplerPtr sampler = uniformSampler();
 
@@ -59,7 +102,7 @@ public:
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(0.2, 0.15), perceptronIncrementalLearner(10, learningRate, learningRateDecay)));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.2, 0.15), perceptronIncrementalLearner(10, learningRate, learningRateDecay)));
       learner->setVerbosity(verbosityDetailed);
     
       ObjectivePtr problemObj = problem->getObjective(0);
