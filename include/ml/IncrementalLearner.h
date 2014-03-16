@@ -95,6 +95,8 @@ extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrain
 extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize = 10);
 
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold);
 
 }; /* namespace lbcpp */
 

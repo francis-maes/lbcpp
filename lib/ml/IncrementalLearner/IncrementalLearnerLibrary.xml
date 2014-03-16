@@ -39,4 +39,16 @@
     <variable type="Double" name="threshold"/>
   </class>
 
+  <class name="HoeffdingBoundStdDevReductionIncrementalSplittingCriterion2" base="IncrementalSplittingCriterion">
+    <constructor arguments="double delta, double threshold"/>
+    <variable type="Double" name="delta"/>
+    <variable type="Double" name="threshold"/>
+  </class>
+
+  <class name="MauveIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
+    <constructor arguments="double delta, double threshold"/>
+    <variable type="Double" name="delta"/>
+    <variable type="Double" name="threshold"/>
+  </class>
+
 </library>
