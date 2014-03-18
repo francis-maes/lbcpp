@@ -178,7 +178,7 @@ public:
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
 	HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
-    std::vector<Split> splits(stats->getEBSTs().size(), Split());
+    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
     for (size_t i = 0; i < splits.size(); ++i)
 	{
 	  splits[i].attribute = i;
@@ -265,31 +265,37 @@ private:
     {return (N==0 || delta==0) ? 1 : sqrt(R*R*log2(1/delta) / 2 / N);}
 };
 
-class ChowTestIncrementalSplittingCriterion : public IncrementalSplittingCriterion
+class QuandtAndrewsIncrementalSplittingCriterion : public IncrementalSplittingCriterion
 {
 public:
-  ChowTestIncrementalSplittingCriterion() : numVariables(0), threshold(0.0) {}
-  ChowTestIncrementalSplittingCriterion(size_t numVariables, double threshold) : numVariables(numVariables), threshold(threshold) {}
+  QuandtAndrewsIncrementalSplittingCriterion() : numVariables(0), threshold(0.0) {}
+  QuandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold) : numVariables(numVariables), threshold(threshold) {}
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
 	HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
-	Split split;
-    for (size_t i = 0; i < stats->getEBSTs().size(); ++i)
+    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
+    for (size_t i = 0; i < splits.size(); ++i)
 	{
+	  splits[i].attribute = i;
 	  PearsonCorrelationCoefficientPtr left = new PearsonCorrelationCoefficient();
       PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
 	  int total;
 	  initFindSplit(stats->getEBSTs()[i], left, right, total);
-      split = findBestSplit(i, stats->getEBSTs()[i], left, right, total, 1);
-	  if(split.value != DVector::missingValue)
-	    return split;
+      findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
 	}
+    Split bestSplit;
+    for (size_t i = 0; i < splits.size(); ++i)
+    {
+      if (splits[i].quality > bestSplit.quality)
+        bestSplit = splits[i];
+    }
+    return bestSplit;
 	// todo stopcriterium
   }
 
 protected:
-  friend class ChowTestIncrementalSplittingCriterionClass;
+  friend class QuandtAndrewsIncrementalSplittingCriterionClass;
 
   static double criticalValues[104][10];
   size_t numVariables;
@@ -305,12 +311,12 @@ private:
 	total = left->numSamples + right->numSamples;
   }
 
-  Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total, size_t depth) const
+  void findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total, Split& split) const
   {
 	PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation;
 	PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
 	if(ebst->getLeft().exists())
-	  findBestSplit(attribute, ebst->getLeft(), totalLeft, totalRight, total, depth+1);
+	  findBestSplit(attribute, ebst->getLeft(), totalLeft, totalRight, total, split);
 	//update the sums and counts for computing the SDR of the split
 	totalLeft->update(0, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
 	totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
@@ -319,15 +325,16 @@ private:
 	double rssLeftChild = rss(total - right->numSamples, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
 	double rssRightChild = rss(right->numSamples, right->sumY, right->sumYsquared, right->sumX, right->sumXsquared, right->sumXY);
 	double f = fStatistic(rssParent, rssLeftChild, rssRightChild, total, numVariables);
-	if(f > getCriticalValue(numVariables, total))
-		return Split(attribute, ebst->getValue(), 0);
+	if(f > getCriticalValue(numVariables, total) && split.quality < f)
+	{
+		split.quality = f;
+		split.value = ebst->getValue();
+	}
 	if(ebst->getRight().exists())
-	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, depth+1);
+	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
 	//update the sums and counts for returning to the parent node
 	totalLeft->update(0, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
 	totalRight->update(left->numSamples, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
-	if(depth == 1)
-		return Split(0, DVector::missingValue, DVector::missingValue);
   }
 
   inline double getCriticalValue(size_t dimensionality, size_t numSamples) const
@@ -377,7 +384,7 @@ private:
     {return stdParent - (stdLeftChild * numSamplesLeft + stdRightChild * numSamplesRight) / (numSamplesLeft+numSamplesRight);}
 };
 
-double ChowTestIncrementalSplittingCriterion::criticalValues[104][10] =
+double QuandtAndrewsIncrementalSplittingCriterion::criticalValues[104][10] =
   {
 	{4052.19,4999.52,5403.34,5624.62,5763.65,5858.97,5928.33,5981.10,6022.50,6055.85},
 	{98.502,99.000,99.166,99.249,99.300,99.333,99.356,99.374,99.388,99.399},

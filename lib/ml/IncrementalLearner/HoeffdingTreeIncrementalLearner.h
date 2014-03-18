@@ -94,7 +94,7 @@ public:
       IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(leaf);
       bool splitWasMade = false;
 
-      if (split.quality != DVector::missingValue)
+      if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
       {
         leaf->split(context, split.attribute, split.value);
         // TODO set learner statistics in leaf->split
