@@ -32,6 +32,17 @@
   <class name="DTLZ6MOProblem" base="DTLZMOProblem"/>
   <class name="DTLZ7MOProblem" base="DTLZMOProblem"/>
 
+  <class name="WFGProblem" base="Problem" abstract="yes"/>
+  <class name="WFG1Problem" base="WFGProblem"/>
+  <class name="WFG2Problem" base="WFGProblem"/>
+  <class name="WFG3Problem" base="WFGProblem"/>
+  <class name="WFG4Problem" base="WFGProblem"/>
+  <class name="WFG5Problem" base="WFGProblem"/>
+  <class name="WFG6Problem" base="WFGProblem"/>
+  <class name="WFG7Problem" base="WFGProblem"/>
+  <class name="WFG8Problem" base="WFGProblem"/>
+  <class name="WFG9Problem" base="WFGProblem"/>
+
   <class name="SolverInfo"/>
   <class name="TestOneOptimizer" base="WorkUnit"/>
 
