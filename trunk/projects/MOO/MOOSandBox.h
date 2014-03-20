@@ -20,6 +20,7 @@
 # include <ml/ExpressionSampler.h>
 
 # include "SharkProblems.h"
+# include "WFGProblems.h"
 # include "FQIBasedSolver.h"
 
 namespace lbcpp
@@ -198,16 +199,36 @@ protected:
   void testBiObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<ProblemPtr> problems;
-    /*
-    problems.push_back(new ZDT1MOProblem(numDimensions));
-    problems.push_back(new ZDT2MOProblem(numDimensions));
-    problems.push_back(new ZDT3MOProblem(numDimensions));
-    problems.push_back(new ZDT4MOProblem(numDimensions));
-    problems.push_back(new ZDT6MOProblem(numDimensions));
-    problems.push_back(new LZ06_F1MOProblem(numDimensions));
-    */
+    std::vector<string> pfFiles; // reference pareto front files
+
+    pfFiles.push_back(T("WFG1.2D.pf"));
+    pfFiles.push_back(T("WFG2.2D.pf"));
+    pfFiles.push_back(T("WFG3.2D.pf"));
+    pfFiles.push_back(T("WFG4.2D.pf"));
+    pfFiles.push_back(T("WFG5.2D.pf"));
+    pfFiles.push_back(T("WFG6.2D.pf"));
+    pfFiles.push_back(T("WFG7.2D.pf"));
+    pfFiles.push_back(T("WFG8.2D.pf"));
+    pfFiles.push_back(T("WFG9.2D.pf"));
+    pfFiles.push_back(T("DTLZ1.2D.pf"));
+    pfFiles.push_back(T("DTLZ2.2D.pf"));
+    pfFiles.push_back(T("DTLZ3.2D.pf"));
+    pfFiles.push_back(T("DTLZ4.2D.pf"));
+    pfFiles.push_back(T("DTLZ5.2D.pf"));
+    pfFiles.push_back(T("DTLZ6.2D.pf"));
+    pfFiles.push_back(T("DTLZ7.2D.pf"));
+
     if (useDefaults)
     {
+      problems.push_back(new WFG1Problem());
+      problems.push_back(new WFG2Problem());
+      problems.push_back(new WFG3Problem());
+      problems.push_back(new WFG4Problem());
+      problems.push_back(new WFG5Problem());
+      problems.push_back(new WFG6Problem());
+      problems.push_back(new WFG7Problem());
+      problems.push_back(new WFG8Problem());
+      problems.push_back(new WFG9Problem());
       problems.push_back(new DTLZ1MOProblem());
       problems.push_back(new DTLZ2MOProblem());
       problems.push_back(new DTLZ3MOProblem());
@@ -229,22 +250,25 @@ protected:
     
     
       ProblemPtr problem = problems[problemIdx];
-      string path = paretoFrontDir + T("/DTLZ") + string((int)(problemIdx+1)) + T(".2D.pf");
+      string path = paretoFrontDir + T("/") + pfFiles[problemIdx];
       ParetoFrontPtr referenceFront = new ParetoFront(problem->getFitnessLimits(), path);
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       if (verbosity >= verbosityDetailed)
         context.resultCallback("Reference front", referenceFront);
+      context.resultCallback("Reference front hypervolume", referenceFront->computeHyperVolume());
       size_t populationSize = 100;
       std::vector<SolverResult> results = std::vector<SolverResult>();
-      size_t numSolvers = 7;
+      size_t numSolvers = 5;
       size_t currentSolver = 0;
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize), referenceFront));
+      /*
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, cmaesmoOptimizer(populationSize, populationSize, numEvaluations / populationSize), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, crossEntropySolver(diagonalGaussianSampler(), populationSize, populationSize / 4, numEvaluations / populationSize, true), referenceFront));
+      */
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, smpsoOptimizer(populationSize, populationSize, numEvaluations / populationSize, samplerToVectorSampler(uniformSampler(), 100)), referenceFront));
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
@@ -280,7 +304,7 @@ protected:
 
     for (size_t i = 0; i < numRuns; ++i)
     {
-      if (verbosity > verbosityProgressAndResult)
+      if (verbosity >= verbosityProgressAndResult)
         context.enterScope("Run " + string((int) i));
       DVectorPtr cpuTimes = new DVector();
       DVectorPtr hyperVolumes = new DVector();
@@ -293,7 +317,7 @@ protected:
       optimizer->solve(context, problem, callback);
       double hv = front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());
       front = new CrowdingArchive(archiveSize, problem->getFitnessLimits());
-      if (verbosity > verbosityProgressAndResult)
+      if (verbosity >= verbosityProgressAndResult)
         context.leaveScope(hv);
       hvs->push(hv);
       context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
