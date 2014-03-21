@@ -239,6 +239,15 @@ protected:
     }
     else
     {
+      problems.push_back(new WFG1Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG2Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG3Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG4Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG5Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG6Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG7Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG8Problem(4, numDimensions, numObjectives));
+      problems.push_back(new WFG9Problem(4, numDimensions, numObjectives));
       problems.push_back(new DTLZ1MOProblem(numDimensions, numObjectives));
       problems.push_back(new DTLZ2MOProblem(numDimensions, numObjectives));
       problems.push_back(new DTLZ3MOProblem(numDimensions, numObjectives));
