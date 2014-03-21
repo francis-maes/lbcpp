@@ -573,7 +573,7 @@ protected:
     }
 
     size_t head = k;
-    size_t tail = m - 1;
+    size_t tail = z->getNumValues() - 1;
     result->setValue(m - 1, WFGTransformations::r_sum(subVector(z, head, tail), subVector(w, head, tail)));
     z = result;
   }
@@ -641,7 +641,7 @@ protected:
     }
 
     size_t head = k;
-    size_t tail = m - 1;
+    size_t tail = z->getNumValues() - 1;
     result->setValue(m - 1, WFGTransformations::r_sum(subVector(z, head, tail), subVector(w, head, tail)));
     z = result;
   }
