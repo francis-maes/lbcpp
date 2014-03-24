@@ -78,6 +78,9 @@ private:
 
   inline double hoeffdingBound(size_t R, size_t N, double delta) const
     {return (N==0 || delta==0) ? 1 : sqrt(R*R*log2(1/delta) / 2 / N);}
+
+  inline double log2(double n) const
+    {return log(n)/log(2.0);}
 };
 
 class HoeffdingBoundStdDevReductionIncrementalSplittingCriterion2 : public IncrementalSplittingCriterion
@@ -167,6 +170,9 @@ private:
 
   inline double hoeffdingBound(size_t R, size_t N, double delta) const
     {return (N==0 || delta==0) ? 1 : sqrt(R*R*log2(1/delta) / 2 / N);}
+
+  inline double log2(double n) const
+    {return log(n)/log(2.0);}
 };
 
 class MauveIncrementalSplittingCriterion : public IncrementalSplittingCriterion
@@ -200,7 +206,8 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getNumExamplesSeen(), delta);
-    if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
+	std::cout << stats->getNumExamplesSeen() << std::endl;
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
       return bestSplit;
     else
       return Split(0, DVector::missingValue, DVector::missingValue);
@@ -263,6 +270,9 @@ private:
 
   inline double hoeffdingBound(size_t R, size_t N, double delta) const
     {return (N==0 || delta==0) ? 1 : sqrt(R*R*log2(1/delta) / 2 / N);}
+
+  inline double log2(double n) const
+    {return log(n)/log(2.0);}
 };
 
 class QuandtAndrewsIncrementalSplittingCriterion : public IncrementalSplittingCriterion
@@ -343,7 +353,7 @@ private:
 	if(row <= 0)
 	  return 1000000;
 	else if(row <= 100)
-	  return criticalValues[row][dimensionality-1];
+	  return criticalValues[row-1][dimensionality-1];
     else if(row <= 150)
 	  return criticalValues[99][dimensionality-1];
 	else if(row <= 350)
@@ -367,7 +377,7 @@ private:
   inline double rss(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
   {
 	double _rstd = rstd(numSamples, sumY, sumYsquared, sumX, sumXsquared, sumXY);
-    return _rstd*_rstd;
+    return _rstd*_rstd*numSamples;
   }
 
   // incremental residual standard deviation
@@ -384,6 +394,7 @@ private:
     {return stdParent - (stdLeftChild * numSamplesLeft + stdRightChild * numSamplesRight) / (numSamplesLeft+numSamplesRight);}
 };
 
+// critical values for the 0.01 significance level
 double QuandtAndrewsIncrementalSplittingCriterion::criticalValues[104][10] =
   {
 	{4052.19,4999.52,5403.34,5624.62,5763.65,5858.97,5928.33,5981.10,6022.50,6055.85},
