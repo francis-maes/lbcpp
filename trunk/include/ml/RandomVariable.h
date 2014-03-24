@@ -294,7 +294,7 @@ public:
     sumYsquared += y * y;
   }
 
-  virtual void update(int dNumSamples, double dSumY, double dSumYsquared, double dSumX, double dSumXsquared, double dSumXY)
+  virtual void update(size_t dNumSamples, double dSumY, double dSumYsquared, double dSumX, double dSumXsquared, double dSumXY)
   {
     numSamples += dNumSamples;
     sumY += dSumY;
