@@ -270,6 +270,7 @@ protected:
       std::vector<SolverResult> results = std::vector<SolverResult>();
       size_t numSolvers = 5;
       size_t currentSolver = 0;
+      
       context.progressCallback(new ProgressionState((size_t) currentSolver++, numSolvers, "Solvers"));
       results.push_back(solveWithMultiObjectiveOptimizer(context, problem, nsga2moOptimizer(populationSize, numEvaluations / populationSize), referenceFront));
       /*

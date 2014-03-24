@@ -275,25 +275,43 @@ struct LZ06_F1MOProblem : public LZ06MOProblem {LZ06_F1MOProblem(size_t numDimen
 class DTLZMOProblem : public ProblemFromSharkObjectiveFunction
 {
 public:
-  DTLZMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2) 
-    : ProblemFromSharkObjectiveFunction(objective, false), max1(max1), max2(max2)
+  DTLZMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2, double max3) 
+    : ProblemFromSharkObjectiveFunction(objective, false), max1(max1), max2(max2), max3(max3)
     {initialize(defaultExecutionContext());}
 
   virtual void getObjectiveRange(size_t objectiveIndex, double& worst, double& best) const
-    {worst = objectiveIndex == 1 ? max2 : max1; best = 0.0;}
+  {
+    best = 0.0;
+    switch(objectiveIndex)
+    {
+    case 0:
+      worst = max1;
+      break;
+    case 1:
+      worst = max2;
+      break;
+    case 2:
+      worst = max3;
+      break;
+    default:
+      jassertfalse;
+      break;
+    }
+  }
 
 private:
   double max1;
   double max2;
+  double max3;
 };
 
-struct DTLZ1MOProblem : public DTLZMOProblem {DTLZ1MOProblem(size_t numDimensions =  7, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ1(numDimensions, numObjectives), 0.5, 0.5) {} };
-struct DTLZ2MOProblem : public DTLZMOProblem {DTLZ2MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ2(numDimensions, numObjectives), 1.0, 1.0) {} };
-struct DTLZ3MOProblem : public DTLZMOProblem {DTLZ3MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ3(numDimensions, numObjectives), 1.0, 1.0) {} };
-struct DTLZ4MOProblem : public DTLZMOProblem {DTLZ4MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ4(numDimensions, numObjectives), 1.0, 1.0) {} };
-struct DTLZ5MOProblem : public DTLZMOProblem {DTLZ5MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ5(numDimensions, numObjectives), 1.0, 1.0) {} };
-struct DTLZ6MOProblem : public DTLZMOProblem {DTLZ6MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ6(numDimensions, numObjectives), 1.0, 1.0) {} };
-struct DTLZ7MOProblem : public DTLZMOProblem {DTLZ7MOProblem(size_t numDimensions = 22, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ7(numDimensions, numObjectives), 2.12, 4.0) {} };
+struct DTLZ1MOProblem : public DTLZMOProblem {DTLZ1MOProblem(size_t numDimensions =  7, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ1(numDimensions, numObjectives), 0.5, 0.5, 0.5) {} };
+struct DTLZ2MOProblem : public DTLZMOProblem {DTLZ2MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ2(numDimensions, numObjectives), 1.0, 1.0, 1.0) {} };
+struct DTLZ3MOProblem : public DTLZMOProblem {DTLZ3MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ3(numDimensions, numObjectives), 1.0, 1.0, 1.0) {} };
+struct DTLZ4MOProblem : public DTLZMOProblem {DTLZ4MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ4(numDimensions, numObjectives), 1.0, 1.0, 1.0) {} };
+struct DTLZ5MOProblem : public DTLZMOProblem {DTLZ5MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ5(numDimensions, numObjectives), 1.0, 1.0, 1.0) {} };
+struct DTLZ6MOProblem : public DTLZMOProblem {DTLZ6MOProblem(size_t numDimensions = 12, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ6(numDimensions, numObjectives), 1.0, 1.0, 1.0) {} };
+struct DTLZ7MOProblem : public DTLZMOProblem {DTLZ7MOProblem(size_t numDimensions = 22, size_t numObjectives = 2) : DTLZMOProblem(new DTLZ7(numDimensions, numObjectives), 2.12, 4.0, 6.0) {} };
 
 
 class FriedmannObjective : public Objective

@@ -379,18 +379,16 @@ void ParetoFront::insertSolution(ObjectPtr solution, FitnessPtr fitness)
       return;
     if (!fitness->strictlyDominates(solutionFitness))
     {
-      newSolutions.push_back(solutions[i]);
       if (!found && fitness->getValues() <= solutionFitness->getValues())
       {
         found = true;
-        insertPos = newSolutions.end() - 1;
+        newSolutions.push_back(SolutionAndFitness(solution, fitness));
       }
+      newSolutions.push_back(solutions[i]);
     }
   }
   if (!found)
     newSolutions.push_back(SolutionAndFitness(solution, fitness));
-  else
-    newSolutions.insert(insertPos, SolutionAndFitness(solution, fitness));
   solutions.swap(newSolutions);
 }
 
