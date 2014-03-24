@@ -88,6 +88,12 @@ public:
     HoeffdingTreeNodeStatisticsPtr leafStats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
     leafStats->addObservation(input, output->getValue(0));
     perceptronLearner->addTrainingSample(context, leaf->getPerceptron(), input, output);
+    if (verbosity >= verbosityDetailed)
+    {
+      context.resultCallback("perceptron", leaf->getPerceptron()->clone(context));
+      context.resultCallback("normalization stats mean", leaf->getPerceptron()->getStatistics(0)->getMean());
+      context.resultCallback("normalization stats stddev", leaf->getPerceptron()->getStatistics(0)->getStandardDeviation());
+    }
 	  
     if (leaf->getPerceptron()->getExamplesSeen() >= chunkSize) // >= ipv %
     {
@@ -107,6 +113,7 @@ public:
       {
         context.resultCallback("bestSplitQuality", split.quality);
 		    context.resultCallback("Split?", splitWasMade);
+        context.resultCallback("Splitvalue", split.value);
       }
 	  }
   

@@ -16,6 +16,7 @@
 # include <ml/Domain.h>
 # include <ml/IncrementalLearner.h>
 # include "SharkProblems.h"
+# include "../../lib/ml/Learner/IncrementalLearnerBasedLearner.h"
 
 // TODO: make attribute limits parameters
 
@@ -65,7 +66,6 @@ public:
   }
 };
   
-  
 class HoeffdingTreeLearnerExperiments : public WorkUnit
 {
 public:
@@ -80,14 +80,14 @@ public:
 
     // set up test problems
     std::vector<ProblemPtr> problems;
-    problems.push_back(new DTLZ1MOProblem(1, 1));
+    /*problems.push_back(new DTLZ1MOProblem(1, 1));
     problems.push_back(new DTLZ2MOProblem(1, 1));
     problems.push_back(new DTLZ3MOProblem(1, 1));
     problems.push_back(new DTLZ4MOProblem(1, 1));
     problems.push_back(new DTLZ5MOProblem(1, 1));
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
-    problems.push_back(new FriedmannProblem());
+    problems.push_back(new FriedmannProblem());*/
 	problems.push_back(new OneDimFunctionProblem(0));
 	problems.push_back(new OneDimFunctionProblem(1));
     
@@ -104,8 +104,9 @@ public:
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
 	  // mauveIncrementalSplittingCriterion(0.01, 0.05)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.05)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.999999, 0.05), perceptronIncrementalLearner(10, learningRate, learningRateDecay)));
-      learner->setVerbosity(verbosityDetailed);
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.05), perceptronIncrementalLearner(50, learningRate, learningRateDecay), 100));
+      learner->setVerbosity(verbosityAll);
+      learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();

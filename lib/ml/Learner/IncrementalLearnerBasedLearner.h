@@ -37,6 +37,8 @@ public:
     learner->addTrainingSample(context, data->getRow(index), expression);
     if (verbosity >= verbosityDetailed)
       context.resultCallback("testing", problem->getValidationObjective(0)->evaluate(context, expression));
+    if (verbosity >= verbosityAll)
+      makeCurve(context, baseProblem, expression);
     return true;
   }
 
@@ -45,13 +47,41 @@ public:
     evaluate(context, expression);
     IterativeSolver::stopSolver(context);
   }
+  
+  ProblemPtr baseProblem;
 
 private:
   friend class IncrementalLearnerBasedLearnerClass;
 
   IncrementalLearnerPtr learner;
-
+  
   ExpressionPtr expression;
+  
+  void makeCurve(ExecutionContext& context, ProblemPtr baseProblem, ExpressionPtr expression)
+  {
+    //context.enterScope("Curve");
+    //if (baseProblem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions() > 1) return;
+    double x = 0.0;
+    size_t curveSize = 200;
+    std::vector<ObjectPtr> input = std::vector<ObjectPtr>(1);
+    input[0] = new Double(0.0);
+    DenseDoubleVectorPtr problemInput = new DenseDoubleVector(1, 0.0);
+    //ScalarVectorDomainPtr domain = baseProblem->getDomain().staticCast<ScalarVectorDomain>();
+    double range = 1.0;
+    double offset = 0.0;
+    for (size_t i = 0; i < curveSize; ++i)
+    {
+      x = offset + range * i / curveSize;
+      context.enterScope(string(x));
+      context.resultCallback("x", x);
+      input[0].staticCast<Double>()->set(x);
+      problemInput->setValue(0, x);
+      context.resultCallback("supervision", baseProblem->evaluate(context, problemInput)->getValue(0));
+      context.resultCallback("prediction", expression->compute(context, input));
+      context.leaveScope();
+    }
+    //context.leaveScope();
+  }
 };
 
 }; /* namespace lbcpp */

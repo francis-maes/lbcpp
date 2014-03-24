@@ -58,26 +58,25 @@ public:
     {
       // This node does not have a value yet
       value = attribute;
-      leftStats->push(y); 
+      leftStats->push(y);
+      leftCorrelation->push(attribute, y);
     }
     else 
       if (attribute <= value)
       {
         leftStats->push(y);
-		leftCorrelation->push(attribute, y);
+    		leftCorrelation->push(attribute, y);
         if (!left.exists())
-          left = new ExtendedBinarySearchTree(attribute);
-        else
-          left->insertValue(attribute, y);
+          left = new ExtendedBinarySearchTree();
+        left->insertValue(attribute, y);
       }
       else
       {
         rightStats->push(y);
-		rightCorrelation->push(attribute, y);
+        rightCorrelation->push(attribute, y);
         if (!right.exists())
-          right = new ExtendedBinarySearchTree(attribute);
-        else
-          right->insertValue(attribute, y);
+          right = new ExtendedBinarySearchTree();
+        right->insertValue(attribute, y);
       }
   }
 
@@ -93,7 +92,7 @@ public:
     result->value = value;
     result->leftStats = leftStats->clone(context);
     result->rightStats = rightStats->clone(context);
-	result->leftCorrelation = leftCorrelation->clone(context);
+    result->leftCorrelation = leftCorrelation->clone(context);
     result->rightCorrelation = rightCorrelation->clone(context);
     if (left.exists())
       result->left = left->clone(context);
