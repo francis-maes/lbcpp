@@ -73,6 +73,7 @@
     <variable type="Double" name="delta"/>
     <variable type="Double" name="threshold"/>
     <variable type="PositiveInteger" name="numDims" description="Dimensionality of DTLZ problems. For numDims > 1 no curve is drawn."/>
+    <variable type="PositiveInteger" name="verbosity"/>
   </class>
 
   <class name="PerceptronTest" base="WorkUnit">
