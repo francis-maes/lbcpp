@@ -69,7 +69,7 @@ public:
 class HoeffdingTreeLearnerExperiments : public WorkUnit
 {
 public:
-  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.2), threshold(0.15), numDims(1) {}
+  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.2), threshold(0.15), numDims(1), verbosity(verbosityDetailed) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -105,7 +105,7 @@ public:
 	  // mauveIncrementalSplittingCriterion(0.01, 0.05)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.05)
       SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.05), perceptronIncrementalLearner(50, learningRate, learningRateDecay), 100));
-      learner->setVerbosity(verbosityAll);
+      learner->setVerbosity((SolverVerbosity)verbosity);
       learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
     
       ObjectivePtr problemObj = problem->getObjective(0);
@@ -140,6 +140,7 @@ protected:
   double delta;
   double threshold;
   size_t numDims;
+  size_t verbosity;
 
 private:
 
