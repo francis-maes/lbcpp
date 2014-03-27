@@ -21,13 +21,13 @@ namespace lbcpp
 enum ModelType {NY, NXY};
 enum SplitType {Hoeffding, FStatistic};
 
-class HoeffdingTreeNodeStatistics;
-typedef ReferenceCountedObjectPtr<HoeffdingTreeNodeStatistics> HoeffdingTreeNodeStatisticsPtr;
+class HoeffdingTreeIncrementalLearnerStatistics;
+typedef ReferenceCountedObjectPtr<HoeffdingTreeIncrementalLearnerStatistics> HoeffdingTreeIncrementalLearnerStatisticsPtr;
 
-class HoeffdingTreeNodeStatistics : public Object
+class HoeffdingTreeIncrementalLearnerStatistics : public IncrementalLearnerStatistics
 {
 public:
-  HoeffdingTreeNodeStatistics(size_t numAttributes = 0) : ebsts(std::vector<ExtendedBinarySearchTreePtr>(numAttributes))
+  HoeffdingTreeIncrementalLearnerStatistics(size_t numAttributes = 0) : ebsts(std::vector<ExtendedBinarySearchTreePtr>(numAttributes))
   {
     for (size_t i = 0; i < numAttributes; ++i)
       ebsts[i] = new ExtendedBinarySearchTree();
@@ -35,6 +35,7 @@ public:
 
   void addObservation(const DenseDoubleVectorPtr& attributes, double target)
   {
+    incrementExamplesSeen();
     if (ebsts.size() == 0)
       for (size_t i = 0; i < attributes->getNumValues(); ++i)
         ebsts.push_back(new ExtendedBinarySearchTree());
@@ -42,13 +43,10 @@ public:
     for (size_t i = 0; i < ebsts.size(); ++i)
       ebsts[i]->insertValue(attributes->getValue(i), target);
   }
-
-  size_t getNumExamplesSeen()
-    {return (size_t) ebsts[0]->getLeftStats()->getCount() + (size_t) ebsts[0]->getRightStats()->getCount();}
-
+  
   virtual ObjectPtr clone(ExecutionContext& context) const
   {
-    HoeffdingTreeNodeStatisticsPtr result = new HoeffdingTreeNodeStatistics();
+    HoeffdingTreeIncrementalLearnerStatisticsPtr result = new HoeffdingTreeIncrementalLearnerStatistics();
     result->ebsts = std::vector<ExtendedBinarySearchTreePtr>(ebsts.size());
     for (size_t i = 0; i < ebsts.size(); ++i)
       result->ebsts[i] = ebsts[i]->clone(context);
@@ -59,7 +57,7 @@ public:
     {return ebsts;}
 
 protected:
-  friend class HoeffdingTreeNodeStatisticsClass;
+  friend class HoeffdingTreeIncrementalLearnerStatisticsClass;
 
   std::vector<ExtendedBinarySearchTreePtr> ebsts;
 };
@@ -69,13 +67,13 @@ class HoeffdingTreeIncrementalLearner : public IncrementalLearner
 public:
   HoeffdingTreeIncrementalLearner() {}
 
-	HoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize) : 
-    splittingCriterion(splittingCriterion), perceptronLearner(perceptronLearner), chunkSize(chunkSize), pruneOnly(true) {}
+	HoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner, size_t chunkSize) : 
+    splittingCriterion(splittingCriterion), modelLearner(modelLearner), chunkSize(chunkSize), pruneOnly(true) {}
 
   ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const 
   {
-    HoeffdingTreeNodePtr result = new HoeffdingTreeNode(perceptronLearner->createExpression(context, doubleClass), HoeffdingTreeNodePtr());
-    result->setLearnerStatistics(new HoeffdingTreeNodeStatistics());
+    HoeffdingTreeNodePtr result = new HoeffdingTreeNode(modelLearner->createExpression(context, doubleClass), HoeffdingTreeNodePtr());
+    result->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics());
     return result;
   }
 
@@ -85,17 +83,19 @@ public:
     jassert(output->getNumValues() == 1);
     HoeffdingTreeNodePtr root = expr.staticCast<HoeffdingTreeNode>();
     HoeffdingTreeNodePtr leaf = root->findLeaf(input);
-    HoeffdingTreeNodeStatisticsPtr leafStats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
+    HoeffdingTreeIncrementalLearnerStatisticsPtr leafStats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
+    
+    modelLearner->addTrainingSample(context, leaf->getModel(), input, output);
+    
     leafStats->addObservation(input, output->getValue(0));
-    perceptronLearner->addTrainingSample(context, leaf->getPerceptron(), input, output);
     if (verbosity >= verbosityDetailed)
     {
-      context.resultCallback("perceptron", leaf->getPerceptron()->clone(context));
-      context.resultCallback("normalization stats mean", leaf->getPerceptron()->getStatistics(0)->getMean());
-      context.resultCallback("normalization stats stddev", leaf->getPerceptron()->getStatistics(0)->getStandardDeviation());
+      context.resultCallback("model", leaf->getModel()->clone(context));
+      //context.resultCallback("normalization stats mean", leaf->getPerceptron()->getStatistics(0)->getMean());
+      //context.resultCallback("normalization stats stddev", leaf->getPerceptron()->getStatistics(0)->getStandardDeviation());
     }
 	  
-    if (leaf->getPerceptron()->getExamplesSeen() % chunkSize == 0) // >= ipv %
+    if (leafStats->getExamplesSeen() % chunkSize == 0) // >= ipv %
     {
       IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(leaf);
       bool splitWasMade = false;
@@ -103,13 +103,13 @@ public:
       if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
       {
         leaf->split(context, split.attribute, split.value);
-        (leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.leftThresholdWeight);
+        /*(leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.leftThresholdWeight);
         (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.rightThresholdWeight);
         (leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.leftAttributeWeight);
-        (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.rightAttributeWeight);
+        (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.rightAttributeWeight);*/
         // TODO set learner statistics in leaf->split
-        leaf->getLeft()->setLearnerStatistics(new HoeffdingTreeNodeStatistics(input->getNumValues()));
-        leaf->getRight()->setLearnerStatistics(new HoeffdingTreeNodeStatistics(input->getNumValues()));
+        leaf->getLeft()->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics(input->getNumValues()));
+        leaf->getRight()->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics(input->getNumValues()));
 			  splitWasMade = true;
 		  }
       
@@ -131,7 +131,7 @@ public:
 protected:
   friend class HoeffdingTreeIncrementalLearnerClass;
 
-  IncrementalLearnerPtr perceptronLearner;
+  IncrementalLearnerPtr modelLearner;
   IncrementalSplittingCriterionPtr splittingCriterion;
   size_t chunkSize; /* number of samples before tree is recalculated */
 	bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */

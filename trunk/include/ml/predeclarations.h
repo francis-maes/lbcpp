@@ -175,6 +175,9 @@ typedef ReferenceCountedObjectPtr<PostfixExpressionTypeSpace> PostfixExpressionT
 class IncrementalLearner;
 typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
 
+class IncrementalLearnerStatistics;
+typedef ReferenceCountedObjectPtr<IncrementalLearnerStatistics> IncrementalLearnerStatisticsPtr;
+
 class TreeNode;
 typedef ReferenceCountedObjectPtr<TreeNode> TreeNodePtr;
 
