@@ -78,6 +78,10 @@ public:
     size_t attribute;
     double value;
     double quality;
+    double leftThresholdWeight;
+    double rightThresholdWeight;
+    double leftAttributeWeight;
+    double rightAttributeWeight;
   };
 
   /** Find the best split point for this leaf.

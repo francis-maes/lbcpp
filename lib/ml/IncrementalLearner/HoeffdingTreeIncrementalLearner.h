@@ -95,7 +95,7 @@ public:
       context.resultCallback("normalization stats stddev", leaf->getPerceptron()->getStatistics(0)->getStandardDeviation());
     }
 	  
-    if (leaf->getPerceptron()->getExamplesSeen() >= chunkSize) // >= ipv %
+    if (leaf->getPerceptron()->getExamplesSeen() % chunkSize == 0) // >= ipv %
     {
       IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(leaf);
       bool splitWasMade = false;
@@ -103,6 +103,10 @@ public:
       if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
       {
         leaf->split(context, split.attribute, split.value);
+        (leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.leftThresholdWeight);
+        (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.rightThresholdWeight);
+        (leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.leftAttributeWeight);
+        (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.rightAttributeWeight);
         // TODO set learner statistics in leaf->split
         leaf->getLeft()->setLearnerStatistics(new HoeffdingTreeNodeStatistics(input->getNumValues()));
         leaf->getRight()->setLearnerStatistics(new HoeffdingTreeNodeStatistics(input->getNumValues()));
