@@ -80,16 +80,16 @@ public:
 
     // set up test problems
     std::vector<ProblemPtr> problems;
-    /*problems.push_back(new DTLZ1MOProblem(1, 1));
+    problems.push_back(new DTLZ1MOProblem(1, 1));
     problems.push_back(new DTLZ2MOProblem(1, 1));
     problems.push_back(new DTLZ3MOProblem(1, 1));
     problems.push_back(new DTLZ4MOProblem(1, 1));
     problems.push_back(new DTLZ5MOProblem(1, 1));
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
-    problems.push_back(new FriedmannProblem());*/
-	problems.push_back(new OneDimFunctionProblem(0));
-	problems.push_back(new OneDimFunctionProblem(1));
+    problems.push_back(new FriedmannProblem());
+	  problems.push_back(new OneDimFunctionProblem(0));
+	  problems.push_back(new OneDimFunctionProblem(1));
     
     SamplerPtr sampler = uniformSampler();
 
@@ -98,7 +98,7 @@ public:
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
-      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, numSamples, sampler);
+      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
