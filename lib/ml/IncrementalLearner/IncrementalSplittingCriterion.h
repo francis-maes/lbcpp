@@ -265,7 +265,7 @@ private:
 
   inline double getNormalizedThresholdWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
   {
-    /*double div = numSamples*sumXsquared-sumX*sumX;
+    double div = numSamples*sumXsquared-sumX*sumX;
     double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
 	  double a = numSamples==0?0:(sumY-b*sumX)/numSamples;
     double mx = sumX/numSamples;
@@ -274,8 +274,7 @@ private:
     double sy = sumYsquared/numSamples-my*my;
     //return (a+b*mx-my)/3/sy;
     //return sy/sx*(sx*a-b*mx)+my;
-    return (a-my+sy/sx*b*mx)/3/sy;*/
-
+    return (a-my+sy/sx*b*mx)/3/sy;
   }
 
   inline double getNormalizedAttributeWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
