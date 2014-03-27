@@ -144,10 +144,10 @@ private:
 	//update the sums and counts for computing the SDR of the split
 	totalLeft->update(0, left->sumY, left->sumYsquared, 0, 0, 0);
 	totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, 0, 0, 0);
-	double sdParent = std(total, left->sumY+right->sumY, left->sumYsquared+right->sumYsquared);
-	double sdLeftChild = std(total - right->numSamples, left->sumY, left->sumYsquared);
-	double sdRightChild = std(right->numSamples, right->sumY, right->sumYsquared);
-	double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - right->numSamples, right->numSamples);
+	double sdParent = std(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared);
+	double sdLeftChild = std(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared);
+	double sdRightChild = std(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared);
+	double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - totalRight->numSamples, totalRight->numSamples);
 	if(split.quality < _sdr)
 	{
 	  split.quality = _sdr;
@@ -192,7 +192,7 @@ public:
       PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
 	  int total;
 	  initFindSplit(stats->getEBSTs()[i], left, right, total);
-      findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
+    findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
 	}
     Split bestSplit, secondBestSplit;
     for (size_t i = 0; i < splits.size(); ++i)
@@ -206,8 +206,7 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getNumExamplesSeen(), delta);
-	std::cout << stats->getNumExamplesSeen() << std::endl;
-    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
+    if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
       return bestSplit;
     else
       return Split(0, DVector::missingValue, DVector::missingValue);
@@ -235,24 +234,60 @@ private:
 	PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
 	if(ebst->getLeft().exists())
 	  findBestSplit(attribute, ebst->getLeft(), totalLeft, totalRight, total, split);
+  if(abs(ebst->getValue() - 0.75) < 0.001)
+    std::cout << "ok" << std::endl;
 	//update the sums and counts for computing the SDR of the split
 	totalLeft->update(0, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
 	totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
-	double sdParent = rstd(total, left->sumY+right->sumY, left->sumYsquared+right->sumYsquared, 
-		left->sumX + right->sumX, left->sumXsquared + right->sumXsquared, left->sumXY + right->sumXY);
-	double sdLeftChild = rstd(total - right->numSamples, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
-	double sdRightChild = rstd(right->numSamples, right->sumY, right->sumYsquared, right->sumX, right->sumXsquared, right->sumXY);
-	double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - right->numSamples, right->numSamples);
-	if(split.quality < _sdr)
+	double sdParent = rstd(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared, 
+		totalLeft->sumX + totalRight->sumX, totalLeft->sumXsquared + totalRight->sumXsquared, totalLeft->sumXY + totalRight->sumXY);
+	double sdLeftChild = rstd(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
+	double sdRightChild = rstd(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
+	double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - totalRight->numSamples, totalRight->numSamples);
+  double percNbSamplesLeftSplit = (total - totalRight->numSamples) / (double)total;
+  double percNbSamplesRightSplit = totalRight->numSamples / (double)total;
+  double trimPercentage = 0;
+	if(percNbSamplesLeftSplit > trimPercentage && percNbSamplesRightSplit > trimPercentage && split.quality < _sdr)
 	{
 	  split.quality = _sdr;
 	  split.value = ebst->getValue();
+    split.leftThresholdWeight = getNormalizedThresholdWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
+    split.rightThresholdWeight = getNormalizedThresholdWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
+    split.leftAttributeWeight = getNormalizedAttributeWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
+    split.rightAttributeWeight = getNormalizedAttributeWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
 	}
 	if(ebst->getRight().exists())
 	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
 	//update the sums and counts for returning to the parent node
 	totalLeft->update(0, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
 	totalRight->update(left->numSamples, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
+  }
+
+  inline double getNormalizedThresholdWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
+  {
+    double div = numSamples*sumXsquared-sumX*sumX;
+    double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
+	  double a = numSamples==0?0:(sumY-b*sumX)/numSamples;
+    double mx = sumX/numSamples;
+    double sx = sumXsquared/numSamples-mx*mx;
+    double my = sumY/numSamples;
+    double sy = sumYsquared/numSamples-my*my;
+    //return (a+b*mx-my)/3/sy;
+    //return sy/sx*(sx*a-b*mx)+my;
+    return (a-my+sy/sx*b*mx)/3/sy;
+  }
+
+  inline double getNormalizedAttributeWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
+  {
+    double div = numSamples*sumXsquared-sumX*sumX;
+    double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
+    double mx = sumX/numSamples;
+    double sx = sumXsquared/numSamples-mx*mx;
+    double my = sumY/numSamples;
+    double sy = sumYsquared/numSamples-my*my;
+    //return sx/sy*b;
+    //return sy/sx*b;
+    return sx/sy*b;
   }
 
   // incremental residual standard deviation
@@ -286,14 +321,14 @@ public:
 	HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
     for (size_t i = 0; i < splits.size(); ++i)
-	{
-	  splits[i].attribute = i;
-	  PearsonCorrelationCoefficientPtr left = new PearsonCorrelationCoefficient();
+    {
+      splits[i].attribute = i;
+      PearsonCorrelationCoefficientPtr left = new PearsonCorrelationCoefficient();
       PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
-	  int total;
-	  initFindSplit(stats->getEBSTs()[i], left, right, total);
+      int total;
+      initFindSplit(stats->getEBSTs()[i], left, right, total);
       findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
-	}
+    }
     Split bestSplit;
     for (size_t i = 0; i < splits.size(); ++i)
     {
