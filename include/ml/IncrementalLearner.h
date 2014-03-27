@@ -18,7 +18,7 @@ namespace lbcpp
 class IncrementalLearner : public Object
 {
 public:
-  IncrementalLearner() : verbosity(verbosityQuiet) {}
+  IncrementalLearner() : verbosity((SolverVerbosity) 0) {}
 
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const = 0;
   /** This method adds a training sample to the incremental learning algorithm. This method is the most general case,
@@ -102,6 +102,26 @@ extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncremental
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);
+
+
+class IncrementalLearnerStatistics : public Object
+{
+public:
+  IncrementalLearnerStatistics() : examplesSeen(0) {}
+
+  size_t getExamplesSeen()
+    {return examplesSeen;}
+
+  void incrementExamplesSeen(size_t amount = 1)
+    {examplesSeen += amount;}
+
+protected:
+  friend class IncrementalLearnerStatisticsClass;
+
+  size_t examplesSeen;
+};
+
+extern IncrementalLearnerStatisticsPtr hoeffdingTreeIncrementalLearnerStatistics(size_t numAttributes = 0);
 
 }; /* namespace lbcpp */
 

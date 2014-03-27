@@ -8,6 +8,7 @@
 
 #include "precompiled.h"
 #include <ml/Expression.h>
+#include <ml/IncrementalLearner.h>
 #include <oil/Core/Table.h>
 #include <algorithm>
 using namespace lbcpp;
@@ -592,14 +593,14 @@ TreeNodePtr HoeffdingTreeNode::findLeaf(const ObjectPtr &input) const
   else
     return left->findLeaf(input);
 }
-
+/*
 #include <iomanip> // std::setw
 
 void HoeffdingTreeNode::pprint(int indent) const
   {
 	  if(isLeaf()){
 		if (indent) std::cout << std::setw(indent) << ' ';
-		if(perceptron->getWeights() != NULL){
+		if(model->getWeights() != NULL){
 			std::cout << "y= ";
 			for(unsigned i = 0; i < perceptron->getWeights()->getNumValues(); i++)
 				{std::cout << perceptron->getWeights()->getValue(i) << "*x" << i << " + ";}
@@ -614,7 +615,7 @@ void HoeffdingTreeNode::pprint(int indent) const
 		std::cout << "right:" << std::endl;
 		(((HoeffdingTreeNodePtr)right).staticCast<HoeffdingTreeNode>())->pprint(indent+4);
 	  }
-}
+}*/
 
 size_t HoeffdingTreeNode::getNbOfLeaves() const
   {
@@ -647,14 +648,14 @@ void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, do
 {
   HoeffdingTreeNodePtr thisPtr = refCountedPointerFromThis(this);
   
-  left = new HoeffdingTreeNode(perceptron->clone(context), thisPtr);
-  left.staticCast<HoeffdingTreeNode>()->getPerceptron()->setExamplesSeen(0);
-  right = new HoeffdingTreeNode(perceptron->clone(context), thisPtr);
-  right.staticCast<HoeffdingTreeNode>()->getPerceptron()->setExamplesSeen(0);
-  
+  left = new HoeffdingTreeNode(model->clone(context), thisPtr);
+  right = new HoeffdingTreeNode(model->clone(context), thisPtr);
+  left->setLearnerStatistics(hoeffdingTreeIncrementalLearnerStatistics());
+  right->setLearnerStatistics(hoeffdingTreeIncrementalLearnerStatistics());
+    
   this->testVariable = testVariable;
   this->testThreshold = testThreshold;
-  this->perceptron = PerceptronExpressionPtr();
+  this->model = ExpressionPtr();
   this->setLearnerStatistics(ObjectPtr());
 }
 
@@ -679,7 +680,7 @@ ObjectPtr HoeffdingTreeNode::compute(ExecutionContext &context, const std::vecto
   DenseDoubleVectorPtr inputVector = new DenseDoubleVector(inputs.size(), 0.0);
   for (size_t i = 0; i < inputs.size(); ++i)
     inputVector->setValue(i, Double::get(inputs[i]));
-  return findLeaf(inputVector).staticCast<HoeffdingTreeNode>()->getPerceptron()->compute(context, inputs);
+  return findLeaf(inputVector).staticCast<HoeffdingTreeNode>()->getModel()->compute(context, inputs);
 }
 
 DataVectorPtr HoeffdingTreeNode::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const

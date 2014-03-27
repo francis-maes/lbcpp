@@ -26,7 +26,7 @@ public:
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
-    HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
+    HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size());
     for (size_t i = 0; i < splits.size(); ++i)
       splits[i] = findBestSplit(i, stats->getEBSTs()[i]);
@@ -41,7 +41,7 @@ public:
       else if (splits[i].quality > secondBestSplit.quality)
         secondBestSplit = splits[i];
     }
-    double epsilon = hoeffdingBound(1, stats->getNumExamplesSeen(), delta);
+    double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
     if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
       return bestSplit;
     else
@@ -91,7 +91,7 @@ public:
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
-	HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
+	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size(), Split());
     for (size_t i = 0; i < splits.size(); ++i)
 	{
@@ -113,7 +113,7 @@ public:
       else if (splits[i].quality > secondBestSplit.quality)
         secondBestSplit = splits[i];
     }
-    double epsilon = hoeffdingBound(1, stats->getNumExamplesSeen(), delta);
+    double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
     if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
       return bestSplit;
     else
@@ -183,7 +183,7 @@ public:
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
-	HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
+	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
     for (size_t i = 0; i < splits.size(); ++i)
 	{
@@ -205,7 +205,7 @@ public:
       else if (splits[i].quality > secondBestSplit.quality)
         secondBestSplit = splits[i];
     }
-    double epsilon = hoeffdingBound(1, stats->getNumExamplesSeen(), delta);
+    double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
     if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
       return bestSplit;
     else
@@ -265,7 +265,7 @@ private:
 
   inline double getNormalizedThresholdWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
   {
-    double div = numSamples*sumXsquared-sumX*sumX;
+    /*double div = numSamples*sumXsquared-sumX*sumX;
     double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
 	  double a = numSamples==0?0:(sumY-b*sumX)/numSamples;
     double mx = sumX/numSamples;
@@ -274,7 +274,8 @@ private:
     double sy = sumYsquared/numSamples-my*my;
     //return (a+b*mx-my)/3/sy;
     //return sy/sx*(sx*a-b*mx)+my;
-    return (a-my+sy/sx*b*mx)/3/sy;
+    return (a-my+sy/sx*b*mx)/3/sy;*/
+
   }
 
   inline double getNormalizedAttributeWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
@@ -318,7 +319,7 @@ public:
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
-	HoeffdingTreeNodeStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeNodeStatistics>();
+	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
     for (size_t i = 0; i < splits.size(); ++i)
     {

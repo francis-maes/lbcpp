@@ -9,6 +9,7 @@
 #ifndef ML_EXPRESSION_H_
 # define ML_EXPRESSION_H_
 
+# include "predeclarations.h"
 # include "Function.h"
 # include "Aggregator.h"
 # include "RandomVariable.h"
@@ -490,11 +491,11 @@ public:
     {type = doubleClass;}
 	HoeffdingTreeNode(HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent)
     {type = doubleClass;}
-	HoeffdingTreeNode(const PerceptronExpressionPtr& linearModel, HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent), perceptron(linearModel)
+	HoeffdingTreeNode(const ExpressionPtr& model, HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent), model(model)
     {type = doubleClass;}
 
 	TreeNodePtr findLeaf(const ObjectPtr& input) const;
-	void pprint(int indent = 0) const;
+	//void pprint(int indent = 0) const;
 	size_t getNbOfLeaves() const;
 	DenseDoubleVectorPtr getSplits() const;
 
@@ -508,15 +509,8 @@ public:
   ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const;
   DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 
-  PerceptronExpressionPtr getPerceptron() const
-    {return perceptron;}
-  void convertLeafToInternalNode(size_t testVariable, double testThreshold, TreeNodePtr leftChild, TreeNodePtr rightChild) {
-	  perceptron = NULL;
-	  this->testVariable = testVariable;
-	  this->testThreshold = testThreshold;
-	  this->left = leftChild;
-	  this->right = rightChild;
-  }
+  ExpressionPtr getModel() const
+    {return model;}
 
 	bool isRoot() const
     {return !parent.exists();}
@@ -525,7 +519,7 @@ protected:
   friend class HoeffdingTreeNodeClass;
 
   HoeffdingTreeNodePtr parent;
-  PerceptronExpressionPtr perceptron;
+  ExpressionPtr model;
 };
 
 extern TreeNodePtr hoeffdingTreeNode();

@@ -2,6 +2,15 @@
 
 <library name="IncrementalLearner" directory="IncrementalLearner">
 
+  <class name="IncrementalLearnerStatistics">
+    <variable type="PositiveInteger" name="examplesSeen"/>
+  </class>
+
+  <class name="HoeffdingTreeIncrementalLearnerStatistics" base="IncrementalLearnerStatistics">
+    <constructor arguments="size_t numAttributes"/>
+    <variable type="Vector[ExtendedBinarySearchTree]" name="ebsts"/>
+  </class>
+  
   <class name="PureRandomScalarVectorTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
     <constructor arguments="" returnType="IncrementalLearner"/>
   </class>
@@ -20,15 +29,11 @@
   </class>
 
   <class name="HoeffdingTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
-    <constructor arguments="IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize" returnType="IncrementalLearner"/>
+    <constructor arguments="IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner, size_t chunkSize" returnType="IncrementalLearner"/>
     <variable type="IncrementalSplittingCriterion" name="splittingCriterion"/>
-    <variable type="IncrementalLearner" name="perceptronLearner"/>
+    <variable type="IncrementalLearner" name="modelLearner"/>
     <variable type="PositiveInteger" name="chunkSize"/>
     <variable type="Boolean" name="pruneOnly"/>
-  </class>
-
-  <class name="HoeffdingTreeNodeStatistics">
-    <variable type="Vector[ExtendedBinarySearchTree]" name="ebsts"/>
   </class>
 
   <!-- Incremental Splitting Criteria -->
