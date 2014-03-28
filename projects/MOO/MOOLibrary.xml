@@ -84,6 +84,14 @@
     <variable type="Double" name="learningRateDecay"/>
   </class>
 
+  <class name="RewardLearningTest" base="WorkUnit">
+    <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="PositiveInteger" name="numInitialSamples"/>
+    <variable type="PositiveInteger" name="randomSeed"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="Double" name="learningRateDecay"/>
+  </class>
+
   <class name="SBOExperiments" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations" shortName="n" description="Number of evaluations [1000]"/>
     <variable type="Boolean" name="runBaseline" description="Run baseline methods [false]"/>

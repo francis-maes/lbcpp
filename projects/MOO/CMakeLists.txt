@@ -12,6 +12,10 @@ SET(MOO_SOURCES
   HoeffdingTreeLearner.h
   HoeffdingTreeLearner.cpp
  # HoeffdingTreeLearnerTest.h
+  SkeletonAgent.cpp
+  SkeletonEnvironment.cpp
+  SkeletonExperiment.cpp
+  RewardLearningTest.h
   SolverInfo.h
   SharkProblems.h
   FQIBasedSolver.h
