@@ -521,10 +521,10 @@ ObjectPtr LinearModelExpression::compute(ExecutionContext &context, const std::v
 {
   if (weights->getNumValues() == 0)
     return new Double(0.0);
-  jassert(inputs.size() + 1 == weights->getNumValues());
+  jassert(inputs.size() + 1 >= weights->getNumValues());
   double result = weights->getValue(0);
-  for (size_t i = 0; i < inputs.size(); ++i)
-    result += weights->getValue(i+1) * Double::get(inputs[i]);
+  for (size_t i = 1; i < weights->getNumValues(); ++i)
+    result += weights->getValue(i) * Double::get(inputs[i-1]);
   return new Double(result);
 }
 
@@ -655,8 +655,6 @@ void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, do
     
   this->testVariable = testVariable;
   this->testThreshold = testThreshold;
-  this->model = ExpressionPtr();
-  this->setLearnerStatistics(ObjectPtr());
 }
 
 size_t HoeffdingTreeNode::getNumSamples() const

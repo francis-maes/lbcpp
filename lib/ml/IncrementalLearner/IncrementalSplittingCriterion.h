@@ -129,35 +129,35 @@ protected:
 private:
   void initFindSplit(ExtendedBinarySearchTreePtr ebst, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total) const
   {
-	PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation;
-	PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
-	totalRight->update(left->numSamples + right->numSamples, left->sumY + right->sumY, left->sumYsquared + right->sumYsquared, 0, 0, 0);
-	total = left->numSamples + right->numSamples;
+    PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation;
+    PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
+    totalRight->update(left->numSamples + right->numSamples, left->sumY + right->sumY, left->sumYsquared + right->sumYsquared, 0, 0, 0);
+    total = left->numSamples + right->numSamples;
   }
 
   void findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total, Split& split) const
   {
-	PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation;
-	PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
-	if(ebst->getLeft().exists())
-	  findBestSplit(attribute, ebst->getLeft(), totalLeft, totalRight, total, split);
-	//update the sums and counts for computing the SDR of the split
-	totalLeft->update(0, left->sumY, left->sumYsquared, 0, 0, 0);
-	totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, 0, 0, 0);
-	double sdParent = std(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared);
-	double sdLeftChild = std(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared);
-	double sdRightChild = std(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared);
-	double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - totalRight->numSamples, totalRight->numSamples);
-	if(split.quality < _sdr)
-	{
-	  split.quality = _sdr;
-	  split.value = ebst->getValue();
-	}
-	if(ebst->getRight().exists())
-	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
-	//update the sums and counts for returning to the parent node
-	totalLeft->update(0, -left->sumY, -left->sumYsquared, 0, 0, 0);
-	totalRight->update(left->numSamples, left->sumY, left->sumYsquared, 0, 0, 0);
+    PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation;
+    PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
+    if(ebst->getLeft().exists())
+      findBestSplit(attribute, ebst->getLeft(), totalLeft, totalRight, total, split);
+    //update the sums and counts for computing the SDR of the split
+    totalLeft->update(0, left->sumY, left->sumYsquared, 0, 0, 0);
+    totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, 0, 0, 0);
+    double sdParent = std(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared);
+    double sdLeftChild = std(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared);
+    double sdRightChild = std(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared);
+    double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - totalRight->numSamples, totalRight->numSamples);
+    if(split.quality < _sdr)
+    {
+      split.quality = _sdr;
+      split.value = ebst->getValue();
+    }
+    if(ebst->getRight().exists())
+    findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
+    //update the sums and counts for returning to the parent node
+    totalLeft->update(0, -left->sumY, -left->sumYsquared, 0, 0, 0);
+    totalRight->update(left->numSamples, left->sumY, left->sumYsquared, 0, 0, 0);
   }
 
   // incremental standard deviation

@@ -14,6 +14,7 @@
 # include <iostream>
 # include "precompiled.h"
 # include <ml/BinarySearchTree.h>
+# include <map>
 
 namespace lbcpp
 {
@@ -43,13 +44,36 @@ public:
     for (size_t i = 0; i < ebsts.size(); ++i)
       ebsts[i]->insertValue(attributes->getValue(i), target);
   }
-  
+
   virtual ObjectPtr clone(ExecutionContext& context) const
   {
     HoeffdingTreeIncrementalLearnerStatisticsPtr result = new HoeffdingTreeIncrementalLearnerStatistics();
     result->ebsts = std::vector<ExtendedBinarySearchTreePtr>(ebsts.size());
     for (size_t i = 0; i < ebsts.size(); ++i)
       result->ebsts[i] = ebsts[i]->clone(context);
+    return result;
+  }
+
+  std::vector<ObjectPtr> getRegressionStatsForSplit(size_t attribute, double splitValue, bool leftSide)
+  {
+    std::vector<ObjectPtr> result;
+    for (size_t i = 0; i < ebsts.size(); ++i)
+    {
+      PearsonCorrelationCoefficientPtr stats = new PearsonCorrelationCoefficient();
+      if (i != attribute)
+      {
+        stats->update(*(ebsts[i]->leftCorrelation));
+        stats->update(*(ebsts[i]->rightCorrelation));
+      }
+      else
+      {
+        if (leftSide)
+          stats->update(*(ebsts[i]->getStatsForSplit(splitValue).first));
+        else
+          stats->update(*(ebsts[i]->getStatsForSplit(splitValue).second));
+      }
+      result.push_back(stats);
+    }
     return result;
   }
 
@@ -89,11 +113,7 @@ public:
     
     leafStats->addObservation(input, output->getValue(0));
     if (verbosity >= verbosityDetailed)
-    {
       context.resultCallback("model", leaf->getModel()->clone(context));
-      //context.resultCallback("normalization stats mean", leaf->getPerceptron()->getStatistics(0)->getMean());
-      //context.resultCallback("normalization stats stddev", leaf->getPerceptron()->getStatistics(0)->getStandardDeviation());
-    }
 	  
     if (leafStats->getExamplesSeen() % chunkSize == 0) // >= ipv %
     {
@@ -102,14 +122,19 @@ public:
 
       if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
       {
+        OVectorPtr leftRegressionStats = new OVector();
+        OVectorPtr rightRegressionStats = new OVector();
+        leftRegressionStats->getNativeVector() = leafStats->getRegressionStatsForSplit(split.attribute, split.value, true);
+        rightRegressionStats->getNativeVector() = leafStats->getRegressionStatsForSplit(split.attribute, split.value, false);
         leaf->split(context, split.attribute, split.value);
+        modelLearner->initialiseLearnerStatistics(context, leaf->getLeft().staticCast<HoeffdingTreeNode>()->getModel(), leftRegressionStats);
+        modelLearner->initialiseLearnerStatistics(context, leaf->getRight().staticCast<HoeffdingTreeNode>()->getModel(), rightRegressionStats);
+
+
         /*(leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.leftThresholdWeight);
         (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.rightThresholdWeight);
         (leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.leftAttributeWeight);
         (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.rightAttributeWeight);*/
-        // TODO set learner statistics in leaf->split
-        leaf->getLeft()->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics(input->getNumValues()));
-        leaf->getRight()->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics(input->getNumValues()));
 			  splitWasMade = true;
 		  }
       

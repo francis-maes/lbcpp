@@ -304,14 +304,30 @@ public:
     sumXY += dSumXY;
   }
 
+  virtual void update(const PearsonCorrelationCoefficient& other)
+    {update(other.numSamples, other.sumY, other.sumYsquared, other.sumX, other.sumXsquared, other.sumXY);}
+
   virtual double getCorrelationCoefficient() const
     {return (numSamples * sumXY - sumX * sumY) / (sqrt((numSamples - 1) * sumXsquared - sumX * sumX) * sqrt((numSamples - 1) * sumYsquared - sumY * sumY));}
 
-public:
+  /** Calculate the slope of the simple linear regressor fitted to the data pushed into this object
+   */
+  double getSlope() const
+    {return (sumXY - sumX * sumY / numSamples) / (sumXsquared - sumX * sumX / numSamples);}
+
+  double getXMean() const
+    {return sumX / numSamples;}
+
+  double getYMean() const
+    {return sumY / numSamples;}
+
   size_t numSamples;
   double sumXY;
   double sumX, sumXsquared;
   double sumY, sumYsquared;
+
+protected:
+  friend class PearsonCorrelationCoefficientClass;
 
 };
 
