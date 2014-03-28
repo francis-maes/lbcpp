@@ -80,6 +80,35 @@ public:
       }
   }
 
+
+  /* Calculate total regression statistics for a split
+   * \param splitValue The split value
+   * \return a pair of PearsonCorrelationCoefficientPtrs where the first and second values represent statistics
+   *         for left and right of the split respectively
+   */
+
+  std::pair<PearsonCorrelationCoefficientPtr, PearsonCorrelationCoefficientPtr> getStatsForSplit(double splitValue)
+  {
+    PearsonCorrelationCoefficientPtr leftStats, rightStats;
+    if (splitValue < value)
+    {
+      std::pair<PearsonCorrelationCoefficientPtr, PearsonCorrelationCoefficientPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+      leftStats = stats.first;
+      rightStats = stats.second;
+      rightStats->update(*rightCorrelation);
+      return std::make_pair(leftStats, rightStats);
+    }
+    else if (splitValue > value)
+    {
+      std::pair<PearsonCorrelationCoefficientPtr, PearsonCorrelationCoefficientPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+      leftStats = stats.first;
+      rightStats = stats.second;
+      leftStats->update(*leftCorrelation);
+      return std::make_pair(leftStats, rightStats);
+    }
+    return std::make_pair(new PearsonCorrelationCoefficient(*leftCorrelation), new PearsonCorrelationCoefficient(*rightCorrelation));
+  }
+
   ScalarVariableMeanAndVariancePtr getLeftStats()
     {return leftStats;}
 

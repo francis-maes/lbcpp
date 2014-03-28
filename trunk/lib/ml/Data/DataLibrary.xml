@@ -48,6 +48,16 @@
   <class name="ScalarVariableRecentMean" base="NameableObject"/>
   <class name="ScalarVariableRecentMeanAndVariance" base="ScalarVariableRecentMean"/>
 
+  <class name="CorrelationCoefficient" abstract="yes"/>
+  <class name="PearsonCorrelationCoefficient" base="CorrelationCoefficient">
+    <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="Double" name="sumX"/>
+    <variable type="Double" name="sumY"/>
+    <variable type="Double" name="sumXY"/>
+    <variable type="Double" name="sumXsquared"/>
+    <variable type="Double" name="sumYsquared"/>
+  </class>
+
   <!-- DoubleVector -->
   <template name="DoubleVector" base="Object" abstract="yes">
     <parameter name="elementsEnumeration" type="EnumValue"/>
