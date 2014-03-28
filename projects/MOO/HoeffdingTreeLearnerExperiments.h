@@ -104,7 +104,7 @@ public:
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
 	  // mauveIncrementalSplittingCriterion(0.01, 0.05)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.05)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.05), perceptronIncrementalLearner(50, learningRate, learningRateDecay), 100));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.2), perceptronIncrementalLearner(50, learningRate, learningRateDecay), 100));
       learner->setVerbosity((SolverVerbosity)verbosity);
       learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
     
