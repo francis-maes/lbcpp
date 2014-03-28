@@ -82,6 +82,7 @@ public:
     double rightThresholdWeight;
     double leftAttributeWeight;
     double rightAttributeWeight;
+    double rstd;//residual standard deviation
   };
 
   /** Find the best split point for this leaf.

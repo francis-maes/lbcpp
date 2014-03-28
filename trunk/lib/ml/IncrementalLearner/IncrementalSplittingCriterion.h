@@ -206,7 +206,10 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
-    if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
+    double stdDomain = 0.25; // TODO: get the standard deviation a-priori of all samples here
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && secondBestSplit.quality/bestSplit.quality < (1 - epsilon))
+      return bestSplit;
+    else if(bestSplit.rstd > 0.05*stdDomain && epsilon < threshold)
       return bestSplit;
     else
       return Split(0, DVector::missingValue, DVector::missingValue);
@@ -234,8 +237,6 @@ private:
 	PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation;
 	if(ebst->getLeft().exists())
 	  findBestSplit(attribute, ebst->getLeft(), totalLeft, totalRight, total, split);
-  if(abs(ebst->getValue() - 0.75) < 0.001)
-    std::cout << "ok" << std::endl;
 	//update the sums and counts for computing the SDR of the split
 	totalLeft->update(0, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
 	totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
@@ -255,7 +256,8 @@ private:
     split.rightThresholdWeight = getNormalizedThresholdWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
     split.leftAttributeWeight = getNormalizedAttributeWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
     split.rightAttributeWeight = getNormalizedAttributeWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
-	}
+    split.rstd = sdParent;	
+  }
 	if(ebst->getRight().exists())
 	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
 	//update the sums and counts for returning to the parent node
@@ -267,27 +269,27 @@ private:
   {
     double div = numSamples*sumXsquared-sumX*sumX;
     double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
-	  double a = numSamples==0?0:(sumY-b*sumX)/numSamples;
-    double mx = sumX/numSamples;
-    double sx = sumXsquared/numSamples-mx*mx;
-    double my = sumY/numSamples;
-    double sy = sumYsquared/numSamples-my*my;
+	  return numSamples==0?0:(sumY-b*sumX)/numSamples;
+    //double mx = sumX/numSamples;
+    //double sx = sumXsquared/numSamples-mx*mx;
+    //double my = sumY/numSamples;
+    //double sy = sumYsquared/numSamples-my*my;
     //return (a+b*mx-my)/3/sy;
     //return sy/sx*(sx*a-b*mx)+my;
-    return (a-my+sy/sx*b*mx)/3/sy;
+    //return (a-my+sy/sx*b*mx)/3/sy;
   }
 
   inline double getNormalizedAttributeWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
   {
     double div = numSamples*sumXsquared-sumX*sumX;
-    double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
-    double mx = sumX/numSamples;
-    double sx = sumXsquared/numSamples-mx*mx;
-    double my = sumY/numSamples;
-    double sy = sumYsquared/numSamples-my*my;
+    return div==0?0:(numSamples*sumXY-sumX*sumY)/div;
+    //double mx = sumX/numSamples;
+    //double sx = sumXsquared/numSamples-mx*mx;
+    //double my = sumY/numSamples;
+    //double sy = sumYsquared/numSamples-my*my;
     //return sx/sy*b;
     //return sy/sx*b;
-    return sx/sy*b;
+   // return sx/sy*b;
   }
 
   // incremental residual standard deviation
@@ -365,10 +367,10 @@ private:
 	//update the sums and counts for computing the SDR of the split
 	totalLeft->update(0, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
 	totalRight->update(-(int)left->numSamples, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
-	double rssParent = rss(total, left->sumY+right->sumY, left->sumYsquared+right->sumYsquared, 
-		left->sumX + right->sumX, left->sumXsquared + right->sumXsquared, left->sumXY + right->sumXY);
-	double rssLeftChild = rss(total - right->numSamples, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
-	double rssRightChild = rss(right->numSamples, right->sumY, right->sumYsquared, right->sumX, right->sumXsquared, right->sumXY);
+  double rssParent = rss(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared, 
+		totalLeft->sumX + totalRight->sumX, totalLeft->sumXsquared + totalRight->sumXsquared, totalLeft->sumXY + totalRight->sumXY);
+	double rssLeftChild = rss(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
+	double rssRightChild = rss(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
 	double f = fStatistic(rssParent, rssLeftChild, rssRightChild, total, numVariables);
 	if(f > getCriticalValue(numVariables, total) && split.quality < f)
 	{
