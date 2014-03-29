@@ -126,6 +126,7 @@ protected:
 };
 
 extern IncrementalLearnerStatisticsPtr hoeffdingTreeIncrementalLearnerStatistics(size_t numAttributes = 0);
+extern IncrementalLearnerStatisticsPtr hoeffdingTreeIncrementalLearnerStatistics(ExecutionContext& context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide);
 
 }; /* namespace lbcpp */
 
