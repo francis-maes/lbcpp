@@ -1,7 +1,8 @@
 INCLUDE_DIRECTORIES(
   ${LBCpp_SOURCE_DIR}/include
-  ${LBCpp_SOURCE_DIR}/extern/shark/include  
+  ${LBCpp_SOURCE_DIR}/extern/shark/include
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${LBCpp_SOURCE_DIR}/extern/rlglue
 )
 
 GENERATE_INTROSPECTION_CODE(MOOLibrary.xml MOOLibrary.cpp)
@@ -12,9 +13,6 @@ SET(MOO_SOURCES
   HoeffdingTreeLearner.h
   HoeffdingTreeLearner.cpp
  # HoeffdingTreeLearnerTest.h
-  SkeletonAgent.cpp
-  SkeletonEnvironment.cpp
-  SkeletonExperiment.cpp
   RewardLearningTest.h
   SolverInfo.h
   SharkProblems.h
@@ -35,5 +33,5 @@ SET(MOO_SOURCES
 GENERATE_LBCPP_PRECOMPILED(precompiled MOO_SOURCES)
 
 ADD_LIBRARY(project-moo SHARED ${MOO_SOURCES})
-TARGET_LINK_LIBRARIES(project-moo ml)
+TARGET_LINK_LIBRARIES(project-moo ml rlglue)
 
