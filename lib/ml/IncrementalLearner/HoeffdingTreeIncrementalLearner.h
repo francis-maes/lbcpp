@@ -19,9 +19,6 @@
 namespace lbcpp
 {
 
-enum ModelType {NY, NXY};
-enum SplitType {Hoeffding, FStatistic};
-
 class HoeffdingTreeIncrementalLearnerStatistics;
 typedef ReferenceCountedObjectPtr<HoeffdingTreeIncrementalLearnerStatistics> HoeffdingTreeIncrementalLearnerStatisticsPtr;
 
@@ -32,6 +29,73 @@ public:
   {
     for (size_t i = 0; i < numAttributes; ++i)
       ebsts[i] = new ExtendedBinarySearchTree();
+  }
+
+  // copies one side of the EBST for the splitAttribute and copies the complete EBST for all other attribute
+  HoeffdingTreeIncrementalLearnerStatistics(ExecutionContext& context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide)
+  {
+    HoeffdingTreeIncrementalLearnerStatisticsPtr stats = parentStats.staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
+    size_t numAttributes = parentStats != NULL ? numAttributes = stats->ebsts.size() : 0;
+    ebsts = std::vector<ExtendedBinarySearchTreePtr>(numAttributes);
+    for (size_t i = 0; i < numAttributes; ++i)
+    {
+      if(i != attribute)
+        ebsts[i] = stats->ebsts[i]->clone(context);
+      else
+      {
+        ExtendedBinarySearchTreePtr node = stats->ebsts[i]->getNode(splitValue).staticCast<ExtendedBinarySearchTree>();
+        if(leftSide)
+        {
+          if(node->isLeftChild())
+          {
+            if(node->getLeft().exists())
+              ebsts[i] = node->getLeft()->clone(context);
+            else
+              ebsts[i] = new ExtendedBinarySearchTree();
+          }
+          else if(node->isRightChild())
+          {
+            ebsts[i] = node->clone(context);
+            if(node->getLeft().exists())
+              ebsts[i]->getRight() = node->getLeft()->clone(context);
+            else
+              ebsts[i]->getRight() = new ExtendedBinarySearchTree();
+          }
+          else
+          {
+            if(stats->ebsts[i]->getLeft().exists())
+              ebsts[i] = stats->ebsts[i]->getLeft()->clone(context);
+            else
+              ebsts[i] = new ExtendedBinarySearchTree();
+          }
+        }
+        else
+        {
+          if(node->isLeftChild())
+          {
+            ebsts[i] = node->clone(context);
+            if(stats->ebsts[i]->getRight().exists())
+              ebsts[i]->getLeft() = stats->ebsts[i]->getRight()->clone(context);
+            else
+              ebsts[i]->getLeft() = new ExtendedBinarySearchTree();
+          }
+          else if(node->isRightChild())
+          {
+            if(node->getRight().exists())
+              ebsts[i] = node->getRight()->clone(context);
+            else
+              ebsts[i] = new ExtendedBinarySearchTree();
+          }
+          else
+          {
+            if(stats->ebsts[i]->getRight().exists())
+              ebsts[i] = stats->ebsts[i]->getRight()->clone(context);
+            else
+              ebsts[i] = new ExtendedBinarySearchTree();
+          }
+        }
+      }
+    }
   }
 
   void addObservation(const DenseDoubleVectorPtr& attributes, double target)

@@ -37,6 +37,20 @@ public:
 
   virtual void insertValue(double attribute, double y) = 0;
 
+  // finds the node with a value that equals the given value
+  // if no such node exists, NULL is returned
+  virtual BinarySearchTreePtr getNode(double val) const
+  {
+    if(value == val)
+      return refCountedPointerFromThis(this);
+    else if(val < value && left.exists())
+      return left->getNode(val);
+    else if(val > value && right.exists())
+      return right->getNode(val);
+    else
+      return NULL;
+  }
+
 protected:
   friend class BinarySearchTreeClass;
 
@@ -50,7 +64,8 @@ class ExtendedBinarySearchTree : public BinarySearchTree
 public:
   ExtendedBinarySearchTree(double value = DVector::missingValue) : BinarySearchTree(value),
     leftStats(new ScalarVariableMeanAndVariance()), rightStats(new ScalarVariableMeanAndVariance()),
-    leftCorrelation(new PearsonCorrelationCoefficient()), rightCorrelation(new PearsonCorrelationCoefficient()){}
+    leftCorrelation(new PearsonCorrelationCoefficient()), rightCorrelation(new PearsonCorrelationCoefficient()),
+    parent(NULL) {}
 
   virtual void insertValue(double attribute, double y)
   {
@@ -67,7 +82,10 @@ public:
         leftStats->push(y);
     		leftCorrelation->push(attribute, y);
         if (!left.exists())
+        {
           left = new ExtendedBinarySearchTree();
+          left.staticCast<ExtendedBinarySearchTree>()->parent = refCountedPointerFromThis(this);
+        }
         left->insertValue(attribute, y);
       }
       else
@@ -75,7 +93,10 @@ public:
         rightStats->push(y);
         rightCorrelation->push(attribute, y);
         if (!right.exists())
+        {
           right = new ExtendedBinarySearchTree();
+          right.staticCast<ExtendedBinarySearchTree>()->parent = refCountedPointerFromThis(this);
+        }
         right->insertValue(attribute, y);
       }
   }
@@ -130,12 +151,19 @@ public:
     return result;
   }
 
+  bool isLeftChild() const
+  {return parent != NULL && parent->getLeft().get() == this;}
+
+  bool isRightChild() const
+    {return parent != NULL && parent->getRight().get() == this;}
+
 PearsonCorrelationCoefficientPtr leftCorrelation;
 PearsonCorrelationCoefficientPtr rightCorrelation;
 
 protected:
   friend class ExtendedBinarySearchTreeClass;
 
+  BinarySearchTreePtr parent;
   ScalarVariableMeanAndVariancePtr leftStats;
   ScalarVariableMeanAndVariancePtr rightStats;
 };
