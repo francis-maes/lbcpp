@@ -189,7 +189,7 @@ public:
 	{
 	  splits[i].attribute = i;
 	  PearsonCorrelationCoefficientPtr left = new PearsonCorrelationCoefficient();
-      PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
+    PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
 	  int total;
 	  initFindSplit(stats->getEBSTs()[i], left, right, total);
     findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
@@ -252,10 +252,10 @@ private:
 	{
 	  split.quality = _sdr;
 	  split.value = ebst->getValue();
-    split.leftThresholdWeight = getNormalizedThresholdWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
-    split.rightThresholdWeight = getNormalizedThresholdWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
-    split.leftAttributeWeight = getNormalizedAttributeWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
-    split.rightAttributeWeight = getNormalizedAttributeWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
+    //split.leftThresholdWeight = getNormalizedThresholdWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
+    //split.rightThresholdWeight = getNormalizedThresholdWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
+    //split.leftAttributeWeight = getNormalizedAttributeWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
+    //split.rightAttributeWeight = getNormalizedAttributeWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
     split.rstd = sdParent;	
   }
 	if(ebst->getRight().exists())
@@ -334,11 +334,15 @@ public:
     Split bestSplit;
     for (size_t i = 0; i < splits.size(); ++i)
     {
-      if (splits[i].quality > bestSplit.quality)
+      if (splits[i].quality >= bestSplit.quality)
         bestSplit = splits[i];
     }
-    return bestSplit;
-	// todo stopcriterium
+    // stopping rule
+    double delta = stoppingRuleDelta(bestSplit.rssCombined, bestSplit.rssLeft, bestSplit.rssRight, bestSplit.N, numVariables);
+    if(delta > threshold)
+      return bestSplit;
+    else
+      return Split(0, DVector::missingValue, DVector::missingValue);
   }
 
 protected:
@@ -376,6 +380,10 @@ private:
 	{
 		split.quality = f;
 		split.value = ebst->getValue();
+    split.rssCombined = rssParent;
+    split.rssLeft = rssLeftChild;
+    split.rssRight = rssRightChild;
+    split.N = total;
 	}
 	if(ebst->getRight().exists())
 	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
@@ -401,6 +409,11 @@ private:
 	  return criticalValues[102][dimensionality-1];
 	else
 	  return criticalValues[103][dimensionality-1];
+  }
+
+  inline double stoppingRuleDelta(double rssCombined, double rssLeft, double rssRight, size_t N, size_t d) const
+  {
+    return rssCombined/(N-d) - (rssLeft+rssRight)/(N-2*d);
   }
 
   // F-statistic for chow test

@@ -80,11 +80,11 @@ public:
     size_t attribute;
     double value;
     double quality;
-    double leftThresholdWeight;
-    double rightThresholdWeight;
-    double leftAttributeWeight;
-    double rightAttributeWeight;
     double rstd;//residual standard deviation
+    double rssCombined; // residual sum of squares of the parent node
+    double rssLeft; // residual sum of squares of the left split
+    double rssRight; // residual sum of squares of the right split
+    size_t N; // number of samples seen to make the split
   };
 
   /** Find the best split point for this leaf.
