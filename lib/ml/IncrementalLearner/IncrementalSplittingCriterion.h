@@ -207,10 +207,12 @@ public:
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
     double stdDomain = 0.25; // TODO: get the standard deviation a-priori of all samples here
-    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && secondBestSplit.quality/bestSplit.quality < (1 - epsilon))
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && secondBestSplit.quality/bestSplit.quality < (1 - epsilon) && bestSplit.quality > 1)
       return bestSplit;
-    else if(bestSplit.rstd > 0.05*stdDomain && epsilon < threshold)
+    else if(bestSplit.quality > 1 && epsilon < threshold)
+    {
       return bestSplit;
+    }
     else
       return Split(0, DVector::missingValue, DVector::missingValue);
   }
@@ -256,7 +258,7 @@ private:
     //split.rightThresholdWeight = getNormalizedThresholdWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
     //split.leftAttributeWeight = getNormalizedAttributeWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
     //split.rightAttributeWeight = getNormalizedAttributeWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
-    split.rstd = sdParent;	
+    split.rstd = std(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared);
   }
 	if(ebst->getRight().exists())
 	  findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
@@ -300,6 +302,10 @@ private:
 	  double a = numSamples==0?0:(sumY-b*sumX)/numSamples;
 	  return sqrt(1.0/numSamples*(sumYsquared-2*a*sumY-2*b*sumXY+numSamples*a*a+2*a*b*sumX+b*b*sumXsquared));
 	}
+
+  // incremental standard deviation
+  inline double std(size_t numSamples, double sumY, double sumYsquared) const
+    {return sqrt(sumYsquared/numSamples-(sumY/numSamples)*(sumY/numSamples));}
 
   // incremental standard reduction
   inline double sdr(double stdParent, double stdLeftChild, double stdRightChild, size_t numSamplesLeft, size_t numSamplesRight) const
