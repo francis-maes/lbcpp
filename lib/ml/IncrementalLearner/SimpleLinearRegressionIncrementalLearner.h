@@ -28,6 +28,7 @@ public:
 
   virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr expression, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
+    jassert(output->getNumValues() == 1); // only 1 dim for now
     LinearModelExpressionPtr model = expression.staticCast<LinearModelExpression>();
     size_t numAttributes = input->getNumValues();
     
@@ -42,7 +43,7 @@ public:
       weights = new DenseDoubleVector(numAttributes + 1, 0.0);
 
     // add training sample
-    stats->push(input, output);
+    stats->push(input, output->getValue(0));
 
     // calculate slopes
     for (size_t i = 0; i < numAttributes; ++i)
