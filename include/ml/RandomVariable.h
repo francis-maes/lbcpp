@@ -31,6 +31,7 @@
 # include <oil/Core/Object.h>
 # include <cfloat>
 # include <deque>
+# include <ml/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -333,6 +334,63 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
 typedef ReferenceCountedObjectPtr<PearsonCorrelationCoefficient> PearsonCorrelationCoefficientPtr;
+
+class MultiVariateRegressionStatistics : public Object
+{
+public:
+  MultiVariateRegressionStatistics() {}
+
+  MultiVariateRegressionStatistics(const MultiVariateRegressionStatistics& other)
+  {
+    stats = std::vector<PearsonCorrelationCoefficientPtr>(other.getNumAttributes());
+    for (size_t i = 0; i < stats.size(); ++i)
+      stats[i] = new PearsonCorrelationCoefficient(*other.getStats(i));
+  }
+
+  virtual void push(const DenseDoubleVectorPtr& attributes, double y)
+  {
+    if (stats.size() == 0)
+      for (size_t i = 0; i < attributes->getNumValues(); ++i)
+        stats.push_back(new PearsonCorrelationCoefficient());
+    jassert(attributes->getNumValues() == stats.size());
+    for (size_t i = 0; i < attributes->getNumValues(); ++i)
+      stats[i]->push(attributes->getValue(i), y);
+  }
+
+  virtual void update(const MultiVariateRegressionStatistics& other)
+  {
+    if (stats.size() == 0)
+      for (size_t i = 0; i < other.getNumAttributes(); ++i)
+        stats.push_back(new PearsonCorrelationCoefficient());
+    for (size_t i = 0; i < other.getNumAttributes(); ++i)
+      stats[i]->update(*other.getStats(i));
+  }
+
+  size_t getNumAttributes() const
+    {return stats.size();}
+
+  virtual PearsonCorrelationCoefficientPtr getStats(size_t idx) const
+  {
+    if (stats.size() == 0) return new PearsonCorrelationCoefficient();
+    return stats[idx];
+  }
+
+  virtual ObjectPtr clone(ExecutionContext& context)
+  {
+    ReferenceCountedObjectPtr<MultiVariateRegressionStatistics> result = new MultiVariateRegressionStatistics();
+    result->stats = std::vector<PearsonCorrelationCoefficientPtr>(stats.size());
+    for (size_t i = 0; i < stats.size(); ++i)
+      result->stats[i] = new PearsonCorrelationCoefficient(*stats[i]);
+    return result;
+  }
+
+protected:
+  friend class MultiVariateRegressionStatisticsClass;
+
+  std::vector<PearsonCorrelationCoefficientPtr> stats;
+};
+
+typedef ReferenceCountedObjectPtr<MultiVariateRegressionStatistics> MultiVariateRegressionStatisticsPtr;
 
 }; /* namespace lbcpp */
 

@@ -106,7 +106,7 @@ public:
         ebsts.push_back(new ExtendedBinarySearchTree());
     jassert(attributes->getNumValues() == ebsts.size());
     for (size_t i = 0; i < ebsts.size(); ++i)
-      ebsts[i]->insertValue(attributes->getValue(i), target);
+      ebsts[i]->insertValue(attributes->getValue(i), attributes, target);
   }
 
   virtual ObjectPtr clone(ExecutionContext& context) const
@@ -115,29 +115,6 @@ public:
     result->ebsts = std::vector<ExtendedBinarySearchTreePtr>(ebsts.size());
     for (size_t i = 0; i < ebsts.size(); ++i)
       result->ebsts[i] = ebsts[i]->clone(context);
-    return result;
-  }
-
-  std::vector<ObjectPtr> getRegressionStatsForSplit(size_t attribute, double splitValue, bool leftSide)
-  {
-    std::vector<ObjectPtr> result;
-    for (size_t i = 0; i < ebsts.size(); ++i)
-    {
-      PearsonCorrelationCoefficientPtr stats = new PearsonCorrelationCoefficient();
-      if (i != attribute)
-      {
-        stats->update(*(ebsts[i]->leftCorrelation));
-        stats->update(*(ebsts[i]->rightCorrelation));
-      }
-      else
-      {
-        if (leftSide)
-          stats->update(*(ebsts[i]->getStatsForSplit(splitValue).first));
-        else
-          stats->update(*(ebsts[i]->getStatsForSplit(splitValue).second));
-      }
-      result.push_back(stats);
-    }
     return result;
   }
 
@@ -183,26 +160,17 @@ public:
     if (verbosity >= verbosityDetailed)
       context.resultCallback("model", leaf->getModel()->clone(context));
 	  
-    if (leafStats->getExamplesSeen() % chunkSize == 0) // >= ipv %
+    if (leafStats->getExamplesSeen() % chunkSize == 0)
     {
       IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(leaf);
       bool splitWasMade = false;
 
       if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
       {
-        OVectorPtr leftRegressionStats = new OVector();
-        OVectorPtr rightRegressionStats = new OVector();
-        leftRegressionStats->getNativeVector() = leafStats->getRegressionStatsForSplit(split.attribute, split.value, true);
-        rightRegressionStats->getNativeVector() = leafStats->getRegressionStatsForSplit(split.attribute, split.value, false);
+        std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> regressionStats = leafStats->getEBSTs()[split.attribute]->getStatsForSplit(split.value);
         leaf->split(context, split.attribute, split.value);
-        modelLearner->initialiseLearnerStatistics(context, leaf->getLeft().staticCast<HoeffdingTreeNode>()->getModel(), leftRegressionStats);
-        modelLearner->initialiseLearnerStatistics(context, leaf->getRight().staticCast<HoeffdingTreeNode>()->getModel(), rightRegressionStats);
-
-
-        /*(leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.leftThresholdWeight);
-        (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(0, split.rightThresholdWeight);
-        (leaf->getLeft()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.leftAttributeWeight);
-        (leaf->getRight()).staticCast<HoeffdingTreeNode>()->getPerceptron()->getModel()->getWeights()->setValue(split.attribute, split.rightAttributeWeight);*/
+        modelLearner->initialiseLearnerStatistics(context, leaf->getLeft().staticCast<HoeffdingTreeNode>()->getModel(), regressionStats.first);
+        modelLearner->initialiseLearnerStatistics(context, leaf->getRight().staticCast<HoeffdingTreeNode>()->getModel(), regressionStats.second);
 			  splitWasMade = true;
 		  }
       
@@ -214,12 +182,6 @@ public:
         context.resultCallback("nbOfModels", root->getNbOfLeaves());
       }
 	  }
-  
-    if (verbosity >= verbosityDetailed)
-    {
-      context.resultCallback("observation", input);
-	    context.resultCallback("targetValue", output->getValue(0));
-    }
   }
 
 protected:
