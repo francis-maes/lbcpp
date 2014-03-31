@@ -58,6 +58,10 @@
     <variable type="Double" name="sumYsquared"/>
   </class>
 
+  <class name="MultiVariateRegressionStatistics">
+    <variable type="Vector[PearsonCorrelationCoefficient]" name="stats"/>
+  </class>
+
   <!-- DoubleVector -->
   <template name="DoubleVector" base="Object" abstract="yes">
     <parameter name="elementsEnumeration" type="EnumValue"/>

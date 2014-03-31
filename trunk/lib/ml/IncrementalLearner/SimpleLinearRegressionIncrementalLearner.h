@@ -22,7 +22,7 @@ public:
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
   {
     LinearModelExpressionPtr model = new LinearModelExpression();
-    model->setLearnerStatistics(new OVector(0));
+    model->setLearnerStatistics(new MultiVariateRegressionStatistics());
     return model;
   }
 
@@ -32,32 +32,26 @@ public:
     size_t numAttributes = input->getNumValues();
     
     // check if model is properly initialized
-    if (!model->getLearnerStatistics().dynamicCast<OVector>())
-      model->setLearnerStatistics(new OVector());
+    if (!model->getLearnerStatistics().dynamicCast<MultiVariateRegressionStatistics>())
+      model->setLearnerStatistics(new MultiVariateRegressionStatistics());
 
-    OVectorPtr stats = model->getLearnerStatistics().staticCast<OVector>();
-    if (stats->getNumElements() != numAttributes)
-    {
-      stats->resize(numAttributes);
-      for (size_t i = 0; i < numAttributes; ++i)
-        stats->setElement(i, new PearsonCorrelationCoefficient());
-    }
+    MultiVariateRegressionStatisticsPtr stats = model->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>();
+
     DenseDoubleVectorPtr& weights = model->getWeights();
     if (weights->getNumValues() != numAttributes + 1)
       weights = new DenseDoubleVector(numAttributes + 1, 0.0);
 
     // add training sample
-    for (size_t i = 0; i < numAttributes; ++i)
-      stats->getAndCast<PearsonCorrelationCoefficient>(i)->push(input->getValue(i), output->getValue(0));
+    stats->push(input, output);
 
     // calculate slopes
     for (size_t i = 0; i < numAttributes; ++i)
-      weights->setValue(i + 1, stats->getAndCast<PearsonCorrelationCoefficient>(i)->getSlope());
+      weights->setValue(i + 1, stats->getStats(i)->getSlope());
 
     // calculate intercept
-    weights->setValue(0, stats->getAndCast<PearsonCorrelationCoefficient>(0)->getYMean());
+    weights->setValue(0, stats->getStats(0)->getYMean());
     for (size_t i = 0; i < numAttributes; ++i)
-      weights->getValueReference(0) -= weights->getValue(i+1) * stats->getAndCast<PearsonCorrelationCoefficient>(i)->getXMean();
+      weights->getValueReference(0) -= weights->getValue(i+1) * stats->getStats(i)->getXMean();
   }
 
   /* Initialise the simple linear regression, data should be an OVector with PearsonCorrelationCoefficients as the elements, one for each attribute
@@ -66,20 +60,20 @@ public:
   virtual void initialiseLearnerStatistics(ExecutionContext& context, ExpressionPtr model, ObjectPtr data) const 
   {
     model->setLearnerStatistics(data);
-    OVectorPtr stats = model->getLearnerStatistics().staticCast<OVector>();
+    MultiVariateRegressionStatisticsPtr stats = model->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>();
     DenseDoubleVectorPtr& weights = model.staticCast<LinearModelExpression>()->getWeights();
 
-    if (weights->getNumValues() != stats->getNumElements() + 1)
-      weights = new DenseDoubleVector(stats->getNumElements() + 1, 0.0);
+    if (weights->getNumValues() != stats->getNumAttributes() + 1)
+      weights = new DenseDoubleVector(stats->getNumAttributes() + 1, 0.0);
     
     // calculate slopes
     for (size_t i = 1; i < weights->getNumValues(); ++i)
-      weights->setValue(i, stats->getAndCast<PearsonCorrelationCoefficient>(i - 1)->getSlope());
+      weights->setValue(i, stats->getStats(i - 1)->getSlope());
 
     // calculate intercept
-    weights->setValue(0, stats->getAndCast<PearsonCorrelationCoefficient>(0)->getYMean());
-    for (size_t i = 0; i < stats->getNumElements(); ++i)
-      weights->getValueReference(0) -= weights->getValue(i+1) * stats->getAndCast<PearsonCorrelationCoefficient>(i)->getXMean();
+    weights->setValue(0, stats->getStats(0)->getYMean());
+    for (size_t i = 0; i < stats->getNumAttributes(); ++i)
+      weights->getValueReference(0) -= weights->getValue(i+1) * stats->getStats(i)->getXMean();
   }
 };
 

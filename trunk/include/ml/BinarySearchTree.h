@@ -35,7 +35,7 @@ public:
   double getValue() const
     {return value;}
 
-  virtual void insertValue(double attribute, double y) = 0;
+  virtual void insertValue(double attribute, const DenseDoubleVectorPtr& data, double y) = 0;
 
   // finds the node with a value that equals the given value
   // if no such node exists, NULL is returned
@@ -64,40 +64,40 @@ class ExtendedBinarySearchTree : public BinarySearchTree
 public:
   ExtendedBinarySearchTree(double value = DVector::missingValue) : BinarySearchTree(value),
     leftStats(new ScalarVariableMeanAndVariance()), rightStats(new ScalarVariableMeanAndVariance()),
-    leftCorrelation(new PearsonCorrelationCoefficient()), rightCorrelation(new PearsonCorrelationCoefficient()),
+    leftCorrelation(new MultiVariateRegressionStatistics()), rightCorrelation(new MultiVariateRegressionStatistics()),
     parent(NULL) {}
 
-  virtual void insertValue(double attribute, double y)
+  virtual void insertValue(double attribute, const DenseDoubleVectorPtr& data, double y)
   {
     if (value == DVector::missingValue)
     {
       // This node does not have a value yet
       value = attribute;
       leftStats->push(y);
-      leftCorrelation->push(attribute, y);
+      leftCorrelation->push(data, y);
     }
     else 
       if (attribute <= value)
       {
         leftStats->push(y);
-    		leftCorrelation->push(attribute, y);
+    		leftCorrelation->push(data, y);
         if (!left.exists())
         {
           left = new ExtendedBinarySearchTree();
           left.staticCast<ExtendedBinarySearchTree>()->parent = refCountedPointerFromThis(this);
         }
-        left->insertValue(attribute, y);
+        left->insertValue(attribute, data, y);
       }
       else
       {
         rightStats->push(y);
-        rightCorrelation->push(attribute, y);
+        rightCorrelation->push(data, y);
         if (!right.exists())
         {
           right = new ExtendedBinarySearchTree();
           right.staticCast<ExtendedBinarySearchTree>()->parent = refCountedPointerFromThis(this);
         }
-        right->insertValue(attribute, y);
+        right->insertValue(attribute, data, y);
       }
   }
 
@@ -108,12 +108,14 @@ public:
    *         for left and right of the split respectively
    */
 
-  std::pair<PearsonCorrelationCoefficientPtr, PearsonCorrelationCoefficientPtr> getStatsForSplit(double splitValue)
+  std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> getStatsForSplit(double splitValue)
   {
-    PearsonCorrelationCoefficientPtr leftStats, rightStats;
+    MultiVariateRegressionStatisticsPtr leftStats, rightStats;
+    leftStats = new MultiVariateRegressionStatistics();
+    rightStats = new MultiVariateRegressionStatistics();
     if (splitValue < value)
     {
-      std::pair<PearsonCorrelationCoefficientPtr, PearsonCorrelationCoefficientPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
       leftStats = stats.first;
       rightStats = stats.second;
       rightStats->update(*rightCorrelation);
@@ -121,13 +123,13 @@ public:
     }
     else if (splitValue > value)
     {
-      std::pair<PearsonCorrelationCoefficientPtr, PearsonCorrelationCoefficientPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
       leftStats = stats.first;
       rightStats = stats.second;
       leftStats->update(*leftCorrelation);
       return std::make_pair(leftStats, rightStats);
     }
-    return std::make_pair(new PearsonCorrelationCoefficient(*leftCorrelation), new PearsonCorrelationCoefficient(*rightCorrelation));
+    return std::make_pair(new MultiVariateRegressionStatistics(*leftCorrelation), new MultiVariateRegressionStatistics(*rightCorrelation));
   }
 
   ScalarVariableMeanAndVariancePtr getLeftStats()
@@ -157,8 +159,8 @@ public:
   bool isRightChild() const
     {return parent != NULL && parent->getRight().get() == this;}
 
-PearsonCorrelationCoefficientPtr leftCorrelation;
-PearsonCorrelationCoefficientPtr rightCorrelation;
+MultiVariateRegressionStatisticsPtr leftCorrelation;
+MultiVariateRegressionStatisticsPtr rightCorrelation;
 
 protected:
   friend class ExtendedBinarySearchTreeClass;
