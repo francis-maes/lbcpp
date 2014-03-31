@@ -114,7 +114,8 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
-    if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
+    stats->getSplitRatios()->push(secondBestSplit.quality/bestSplit.quality);
+    if ( bestSplit.quality != 0 && ( stats->getSplitRatios()->getMean() < (1 - epsilon) || epsilon < threshold))
       return bestSplit;
     else
       return Split(0, DVector::missingValue, DVector::missingValue);
@@ -207,7 +208,8 @@ public:
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
     double stdDomain = 0.25; // TODO: get the standard deviation a-priori of all samples here
-    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && secondBestSplit.quality/bestSplit.quality < (1 - epsilon) && bestSplit.quality > 1)
+    stats->getSplitRatios()->push(secondBestSplit.quality/bestSplit.quality);
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && bestSplit.quality > 1)
       return bestSplit;
     else if(bestSplit.quality > 1 && epsilon < threshold)
     {

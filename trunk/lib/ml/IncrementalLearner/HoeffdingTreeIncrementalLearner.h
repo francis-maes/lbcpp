@@ -25,14 +25,14 @@ typedef ReferenceCountedObjectPtr<HoeffdingTreeIncrementalLearnerStatistics> Hoe
 class HoeffdingTreeIncrementalLearnerStatistics : public IncrementalLearnerStatistics
 {
 public:
-  HoeffdingTreeIncrementalLearnerStatistics(size_t numAttributes = 0) : ebsts(std::vector<ExtendedBinarySearchTreePtr>(numAttributes))
+  HoeffdingTreeIncrementalLearnerStatistics(size_t numAttributes = 0) : ebsts(std::vector<ExtendedBinarySearchTreePtr>(numAttributes)), splitRatios(new ScalarVariableMean())
   {
     for (size_t i = 0; i < numAttributes; ++i)
       ebsts[i] = new ExtendedBinarySearchTree();
   }
 
   // copies one side of the EBST for the splitAttribute and copies the complete EBST for all other attribute
-  HoeffdingTreeIncrementalLearnerStatistics(ExecutionContext& context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide)
+  HoeffdingTreeIncrementalLearnerStatistics(ExecutionContext& context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide) : splitRatios(new ScalarVariableMean())
   {
     HoeffdingTreeIncrementalLearnerStatisticsPtr stats = parentStats.staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     size_t numAttributes = parentStats != NULL ? numAttributes = stats->ebsts.size() : 0;
@@ -144,10 +144,14 @@ public:
   const std::vector<ExtendedBinarySearchTreePtr>& getEBSTs() const
     {return ebsts;}
 
+  const ScalarVariableMeanPtr& getSplitRatios() const
+    {return splitRatios;}
+
 protected:
   friend class HoeffdingTreeIncrementalLearnerStatisticsClass;
 
   std::vector<ExtendedBinarySearchTreePtr> ebsts;
+  ScalarVariableMeanPtr splitRatios;
 };
 
 class HoeffdingTreeIncrementalLearner : public IncrementalLearner

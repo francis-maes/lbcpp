@@ -331,6 +331,7 @@ protected:
 
 };
 
+typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
 typedef ReferenceCountedObjectPtr<PearsonCorrelationCoefficient> PearsonCorrelationCoefficientPtr;
 
 }; /* namespace lbcpp */
