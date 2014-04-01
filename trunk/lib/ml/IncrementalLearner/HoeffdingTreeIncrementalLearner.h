@@ -179,9 +179,9 @@ public:
         context.resultCallback("bestSplitQuality", split.quality);
 		    context.resultCallback("Split?", splitWasMade);
         context.resultCallback("Splitvalue", split.value);
-        context.resultCallback("nbOfModels", root->getNbOfLeaves());
       }
 	  }
+    context.resultCallback("nbOfModels", root->getNbOfLeaves());
   }
 
 protected:

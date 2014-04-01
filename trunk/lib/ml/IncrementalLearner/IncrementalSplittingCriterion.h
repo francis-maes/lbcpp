@@ -92,7 +92,7 @@ public:
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
 	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
-    std::vector<Split> splits(stats->getEBSTs().size(), Split());
+    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, DVector::missingValue));
     for (size_t i = 0; i < splits.size(); ++i)
 	{
 	  splits[i].attribute = i;
@@ -185,7 +185,7 @@ public:
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
 	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
-    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
+    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, DVector::missingValue));
     for (size_t i = 0; i < splits.size(); ++i)
 	{
 	  splits[i].attribute = i;
@@ -208,10 +208,12 @@ public:
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
     double stdDomain = 0.25; // TODO: get the standard deviation a-priori of all samples here
+    double maxRho = 0.99;
+    std::cout << bestSplit.rho << " " << (abs(bestSplit.rho) < maxRho) << std::endl;
     stats->getSplitRatios()->push(secondBestSplit.quality/bestSplit.quality);
-    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && bestSplit.quality > 1)
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && abs(bestSplit.rho) < maxRho)
       return bestSplit;
-    else if(bestSplit.quality > 1 && epsilon < threshold)
+    else if(abs(bestSplit.rho) < maxRho && epsilon < threshold)
     {
       return bestSplit;
     }
@@ -251,7 +253,7 @@ private:
     double _sdr = sdr(sdParent, sdLeftChild, sdRightChild, total - totalRight->numSamples, totalRight->numSamples);
     double percNbSamplesLeftSplit = (total - totalRight->numSamples) / (double)total;
     double percNbSamplesRightSplit = totalRight->numSamples / (double)total;
-    double trimPercentage = 0;
+    double trimPercentage = 0.05;
     if(percNbSamplesLeftSplit > trimPercentage && percNbSamplesRightSplit > trimPercentage && split.quality < _sdr)
     {
       split.quality = _sdr;
@@ -261,6 +263,10 @@ private:
       //split.leftAttributeWeight = getNormalizedAttributeWeight(total - totalRight->numSamples, totalLeft->sumY, totalLeft->sumYsquared, totalLeft->sumX, totalLeft->sumXsquared, totalLeft->sumXY);
       //split.rightAttributeWeight = getNormalizedAttributeWeight(totalRight->numSamples, totalRight->sumY, totalRight->sumYsquared, totalRight->sumX, totalRight->sumXsquared, totalRight->sumXY);
       split.rstd = std(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared);
+      PearsonCorrelationCoefficientPtr pCorrelation = new PearsonCorrelationCoefficient();
+      pCorrelation->update(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared, 
+	    totalLeft->sumX + totalRight->sumX, totalLeft->sumXsquared + totalRight->sumXsquared, totalLeft->sumXY + totalRight->sumXY);
+      split.rho = pCorrelation->getCorrelationCoefficient();// not always between -1 and 1 and sometimes -1#IND
     }
     if(ebst->getRight().exists())
       findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
@@ -329,7 +335,7 @@ public:
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
 	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
-    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, 0));
+    std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, DVector::missingValue));
     for (size_t i = 0; i < splits.size(); ++i)
     {
       splits[i].attribute = i;

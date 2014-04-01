@@ -56,6 +56,29 @@ protected:
   size_t functionIndex;
 };
 
+class TwoDimFunctionObjective : public Objective
+{
+public:
+  TwoDimFunctionObjective(size_t functionIndex) : functionIndex(functionIndex) {};
+
+  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+  {
+	double x1 = object.staticCast<DenseDoubleVector>()->getValue(0);
+  double x2 = object.staticCast<DenseDoubleVector>()->getValue(1);
+	switch (functionIndex)
+    {
+  case 0: return max(exp(-10*x1*x1),max(exp(-50*x2*x2),1.25*exp(-5*(x1*x1+x2*x2))));
+	  default: return 0;
+	}
+  }
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = -1; best = 1;}
+
+protected:
+  size_t functionIndex;
+};
+
 class OneDimFunctionProblem : public Problem
 {
 public:
@@ -63,6 +86,16 @@ public:
   {
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(1, std::make_pair(0, 1.0))));
     addObjective(new OneDimFunctionObjective(functionIndex));
+  }
+};
+
+class TwoDimFunctionProblem : public Problem
+{
+public:
+  TwoDimFunctionProblem(size_t functionIndex)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(2, std::make_pair(-1.0, 1.0))));
+    addObjective(new TwoDimFunctionObjective(functionIndex));
   }
 };
   
@@ -81,7 +114,7 @@ public:
     // set up test problems
     std::vector<ProblemPtr> problems;
     problems.push_back(new DTLZ1MOProblem(1, 1));
-    problems.push_back(new DTLZ2MOProblem(1, 1));
+    problems.push_back(new DTLZ2MOProblem(2, 1));
     problems.push_back(new DTLZ3MOProblem(1, 1));
     problems.push_back(new DTLZ4MOProblem(1, 1));
     problems.push_back(new DTLZ5MOProblem(1, 1));
@@ -90,6 +123,7 @@ public:
     problems.push_back(new FriedmannProblem());
 	  problems.push_back(new OneDimFunctionProblem(0));
 	  problems.push_back(new OneDimFunctionProblem(1));
+    problems.push_back(new TwoDimFunctionProblem(0));
     
     SamplerPtr sampler = uniformSampler();
 
@@ -98,13 +132,13 @@ public:
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
-      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
+      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 1000, sampler);
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
 	  // mauveIncrementalSplittingCriterion(0.01, 0.4)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.001)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.2), simpleLinearRegressionIncrementalLearner(), 50));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.05), simpleLinearRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.001), simpleLinearRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
       learner->setVerbosity((SolverVerbosity)verbosity);
@@ -127,6 +161,7 @@ public:
       context.resultCallback("testingScore", testingScore);
       context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
       makeCurve(context, baseProblem, model);
+      makeMatlabSurface(context, baseProblem, model);
       context.leaveScope(testingScore);
     }
     return new Boolean(true);
@@ -145,6 +180,37 @@ protected:
   size_t verbosity;
 
 private:
+    void makeMatlabSurface(ExecutionContext& context, ProblemPtr problem, ExpressionPtr expr)
+  {
+    if (problem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions() <= 1) return;
+    std::ofstream file, file2, file3;
+    file.open("C:\\Users\\xavier\\Documents\\MATLAB\\FunctionData\\surface.dat");
+    file2.open("C:\\Users\\xavier\\Documents\\MATLAB\\FunctionData\\realsurface.dat");
+    file3.open("C:\\Users\\xavier\\Documents\\MATLAB\\FunctionData\\error.dat");
+    std::vector<ObjectPtr> point(2);
+    DenseDoubleVectorPtr vpoint = new DenseDoubleVector(2, 0.0);
+    for (size_t i = 0; i < 100; ++i)
+    {
+      point[1] = new Double(i / 100.0);
+      vpoint->setValue(1, i / 100.0);
+      for (size_t j = 0; j < 100; ++j)
+      {
+        point[0] = new Double(j / 100.0);
+        vpoint->setValue(0, j / 100.0);
+        ObjectPtr result = expr->compute(context, point);
+        FitnessPtr realval = problem->evaluate(context, vpoint);
+        file << Double::get(result) << " ";
+        file2 << realval->getValue(0) << " ";
+        file3 << abs(Double::get(result) - realval->getValue(0)) << " ";
+      }
+      file << std::endl;
+      file2 << std::endl;
+      file3 << std::endl;
+    }
+    file.close();
+    file2.close();
+    file3.close();
+  }
 
   void makeCurve(ExecutionContext& context, ProblemPtr baseProblem, ExpressionPtr expression)
   {
