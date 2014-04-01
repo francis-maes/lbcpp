@@ -84,6 +84,7 @@ public:
     double rssCombined; // residual sum of squares of the parent node
     double rssLeft; // residual sum of squares of the left split
     double rssRight; // residual sum of squares of the right split
+    double rho; // pearson correlation
     size_t N; // number of samples seen to make the split
   };
 
