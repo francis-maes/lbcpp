@@ -179,22 +179,25 @@ private:
 class MauveIncrementalSplittingCriterion : public IncrementalSplittingCriterion
 {
 public:
-  MauveIncrementalSplittingCriterion() : delta(0.0), threshold(0.0) {}
-  MauveIncrementalSplittingCriterion(double delta, double threshold) : delta(delta), threshold(threshold) {}
+  MauveIncrementalSplittingCriterion() : delta(0.0), threshold(0.0), maximumCoefficientOfDetermination(0.0) {}
+  MauveIncrementalSplittingCriterion(double delta, double threshold, double maxCoefficientOfDetermination) : delta(delta), threshold(threshold),
+  maximumCoefficientOfDetermination(maxCoefficientOfDetermination) {}
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
-	HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
+	  HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
+    HoeffdingTreeNodePtr hoeffdingLeaf = leaf.staticCast<HoeffdingTreeNode>();
+    MultiVariateRegressionStatisticsPtr modelStats = hoeffdingLeaf->getModel()->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, DVector::missingValue));
     for (size_t i = 0; i < splits.size(); ++i)
-	{
-	  splits[i].attribute = i;
-	  PearsonCorrelationCoefficientPtr left = new PearsonCorrelationCoefficient();
-    PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
-	  int total;
-	  initFindSplit(stats->getEBSTs()[i], i, left, right, total);
-    findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
-	}
+	  {
+	    splits[i].attribute = i;
+	    PearsonCorrelationCoefficientPtr left = new PearsonCorrelationCoefficient();
+      PearsonCorrelationCoefficientPtr right = new PearsonCorrelationCoefficient();
+	    int total;
+	    initFindSplit(stats->getEBSTs()[i], i, left, right, total);
+      findBestSplit(i, stats->getEBSTs()[i], left, right, total, splits[i]);
+	  }
     Split bestSplit, secondBestSplit;
     for (size_t i = 0; i < splits.size(); ++i)
     {
@@ -207,16 +210,12 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
-    double stdDomain = 0.25; // TODO: get the standard deviation a-priori of all samples here
-    double maxRho = 0.99;
-    std::cout << bestSplit.rho << " " << (abs(bestSplit.rho) < maxRho) << std::endl;
+    double r2 = modelStats->getCoefficientOfDetermination();
     stats->getSplitRatios()->push(secondBestSplit.quality/bestSplit.quality);
-    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && abs(bestSplit.rho) < maxRho)
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && r2 < maximumCoefficientOfDetermination)
       return bestSplit;
-    else if(abs(bestSplit.rho) < maxRho && epsilon < threshold)
-    {
+    else if(r2 < maximumCoefficientOfDetermination && epsilon < threshold)
       return bestSplit;
-    }
     else
       return Split(0, DVector::missingValue, DVector::missingValue);
   }
@@ -224,8 +223,15 @@ public:
 protected:
   friend class MauveIncrementalSplittingCriterionClass;
 
+  // 1-delta expresses how certain the algorithm is 
+  // that the best split is the best of the two best splits
   double delta;
+  // when the hoeffdingbound is lower than this threshold,
+  // a split is made (to allow splitting when best split is equally good as 2nd best split)
   double threshold;
+  // when the function to approximate has a coefficient of determination below this value
+  // in the region of interest, the splitting is halted. (stop condition)
+  double maximumCoefficientOfDetermination;
 
 private:
   void initFindSplit(ExtendedBinarySearchTreePtr ebst, size_t attribute, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total) const
@@ -266,40 +272,12 @@ private:
       PearsonCorrelationCoefficientPtr pCorrelation = new PearsonCorrelationCoefficient();
       pCorrelation->update(total, totalLeft->sumY+totalRight->sumY, totalLeft->sumYsquared+totalRight->sumYsquared, 
 	    totalLeft->sumX + totalRight->sumX, totalLeft->sumXsquared + totalRight->sumXsquared, totalLeft->sumXY + totalRight->sumXY);
-      split.rho = pCorrelation->getCorrelationCoefficient();// not always between -1 and 1 and sometimes -1#IND
     }
     if(ebst->getRight().exists())
       findBestSplit(attribute, ebst->getRight(), totalLeft, totalRight, total, split);
     //update the sums and counts for returning to the parent node
     totalLeft->update(0, -left->sumY, -left->sumYsquared, -left->sumX, -left->sumXsquared, -left->sumXY);
     totalRight->update(left->numSamples, left->sumY, left->sumYsquared, left->sumX, left->sumXsquared, left->sumXY);
-  }
-
-  inline double getNormalizedThresholdWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
-  {
-    double div = numSamples*sumXsquared-sumX*sumX;
-    double b = div==0?0:(numSamples*sumXY-sumX*sumY)/div;
-	  return numSamples==0?0:(sumY-b*sumX)/numSamples;
-    //double mx = sumX/numSamples;
-    //double sx = sumXsquared/numSamples-mx*mx;
-    //double my = sumY/numSamples;
-    //double sy = sumYsquared/numSamples-my*my;
-    //return (a+b*mx-my)/3/sy;
-    //return sy/sx*(sx*a-b*mx)+my;
-    //return (a-my+sy/sx*b*mx)/3/sy;
-  }
-
-  inline double getNormalizedAttributeWeight(size_t numSamples, double sumY, double sumYsquared, double sumX, double sumXsquared, double sumXY) const
-  {
-    double div = numSamples*sumXsquared-sumX*sumX;
-    return div==0?0:(numSamples*sumXY-sumX*sumY)/div;
-    //double mx = sumX/numSamples;
-    //double sx = sumXsquared/numSamples-mx*mx;
-    //double my = sumY/numSamples;
-    //double sy = sumYsquared/numSamples-my*my;
-    //return sx/sy*b;
-    //return sy/sx*b;
-   // return sx/sy*b;
   }
 
   // incremental residual standard deviation

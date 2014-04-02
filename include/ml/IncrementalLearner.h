@@ -84,7 +84,6 @@ public:
     double rssCombined; // residual sum of squares of the parent node
     double rssLeft; // residual sum of squares of the left split
     double rssRight; // residual sum of squares of the right split
-    double rho; // pearson correlation
     size_t N; // number of samples seen to make the split
   };
 
@@ -105,7 +104,7 @@ extern IncrementalLearnerPtr simpleLinearRegressionIncrementalLearner();
 
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
-extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold, double maxCoefficientOfDetermination);
 extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);
 
 

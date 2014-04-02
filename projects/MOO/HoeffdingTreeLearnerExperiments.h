@@ -120,7 +120,7 @@ public:
     problems.push_back(new DTLZ5MOProblem(1, 1));
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
-    problems.push_back(new FriedmannProblem());
+    //problems.push_back(new FriedmannProblem());
 	  problems.push_back(new OneDimFunctionProblem(0));
 	  problems.push_back(new OneDimFunctionProblem(1));
     problems.push_back(new TwoDimFunctionProblem(0));
@@ -132,13 +132,13 @@ public:
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
-      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 1000, sampler);
+      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-	  // mauveIncrementalSplittingCriterion(0.01, 0.4)
+	  // mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.001)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.05), simpleLinearRegressionIncrementalLearner(), 50));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95), simpleLinearRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.001), simpleLinearRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
       learner->setVerbosity((SolverVerbosity)verbosity);

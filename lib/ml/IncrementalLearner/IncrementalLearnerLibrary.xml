@@ -63,9 +63,10 @@
   </class>
 
   <class name="MauveIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
-    <constructor arguments="double delta, double threshold"/>
+    <constructor arguments="double delta, double threshold, double maxCoefficientOfDetermination"/>
     <variable type="Double" name="delta"/>
     <variable type="Double" name="threshold"/>
+    <variable type="Double" name="maximumCoefficientOfDetermination"/>
   </class>
 
   <class name="QuandtAndrewsIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">

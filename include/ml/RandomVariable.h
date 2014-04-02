@@ -311,6 +311,21 @@ public:
   virtual double getCorrelationCoefficient() const
     {return (numSamples * sumXY - sumX * sumY) / (sqrt((numSamples - 1) * sumXsquared - sumX * sumX) * sqrt((numSamples - 1) * sumYsquared - sumY * sumY));}
 
+  virtual double getCoefficientOfDetermination() const
+  {
+    double ss_res = 0;
+    double ss_tot = 0;
+    double div = numSamples*sumXsquared-sumX*sumX;
+    if(div == 0) return 0;
+	  double b = (numSamples*sumXY-sumX*sumY)/div;
+    if(numSamples == 0) return 0;
+	  double a = (sumY-b*sumX)/numSamples;
+	  ss_res = sumYsquared-2*a*sumY-2*b*sumXY+numSamples*a*a+2*a*b*sumX+b*b*sumXsquared;
+    ss_tot = sumYsquared - sumY*sumY/numSamples;
+    if(ss_tot == 0) return 0;
+    return 1 - ss_res/ss_tot;
+  }
+
   /** Calculate the slope of the simple linear regressor fitted to the data pushed into this object
    */
   double getSlope() const
@@ -329,7 +344,6 @@ public:
 
 protected:
   friend class PearsonCorrelationCoefficientClass;
-
 };
 
 typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
@@ -364,6 +378,15 @@ public:
         stats.push_back(new PearsonCorrelationCoefficient());
     for (size_t i = 0; i < other.getNumAttributes(); ++i)
       stats[i]->update(*other.getStats(i));
+  }
+
+  // assumes all variables are uncorrelated
+  virtual double getCoefficientOfDetermination() const
+  {
+    double correlation = 0;
+    for (size_t i = 0; i < getNumAttributes(); ++i)
+      correlation += getStats(i)->getCoefficientOfDetermination();
+    return correlation;
   }
 
   size_t getNumAttributes() const
