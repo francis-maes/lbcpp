@@ -15,6 +15,7 @@
 # include <ml/SelectionCriterion.h>
 # include <ml/Domain.h>
 # include <ml/IncrementalLearner.h>
+# include <ml/Sampler.h>
 # include "SharkProblems.h"
 # include "../../lib/ml/Learner/IncrementalLearnerBasedLearner.h"
 
@@ -24,85 +25,11 @@ namespace lbcpp
 {
 
 extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
-
-class OneDimFunctionObjective : public Objective
-{
-public:
-  OneDimFunctionObjective(size_t functionIndex) : functionIndex(functionIndex) {};
-
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
-  {
-	double x = object.staticCast<DenseDoubleVector>()->getValue(0);
-	switch (functionIndex)
-    {
-      case 0: return x < 0.5 ? 2 * x : -2 * x + 2;
-      case 1: 
-		  if(x < 0.25)
-		    return 4 * x;
-		  else if(x < 0.5)
-		    return -4 * x + 2;
-		  else if(x < 0.75)
-			return 4 * x - 2;
-		  else
-			return -4 * x + 4;
-	  default: return 0;
-	}
-  }
-
-  virtual void getObjectiveRange(double& worst, double& best) const
-    {worst = 0; best = 1;}
-
-protected:
-  size_t functionIndex;
-};
-
-class TwoDimFunctionObjective : public Objective
-{
-public:
-  TwoDimFunctionObjective(size_t functionIndex) : functionIndex(functionIndex) {};
-
-  virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
-  {
-	double x1 = object.staticCast<DenseDoubleVector>()->getValue(0);
-  double x2 = object.staticCast<DenseDoubleVector>()->getValue(1);
-	switch (functionIndex)
-    {
-  case 0: return max(exp(-10*x1*x1),max(exp(-50*x2*x2),1.25*exp(-5*(x1*x1+x2*x2))));
-	  default: return 0;
-	}
-  }
-
-  virtual void getObjectiveRange(double& worst, double& best) const
-    {worst = -1; best = 1;}
-
-protected:
-  size_t functionIndex;
-};
-
-class OneDimFunctionProblem : public Problem
-{
-public:
-  OneDimFunctionProblem(size_t functionIndex)
-  {
-    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(1, std::make_pair(0, 1.0))));
-    addObjective(new OneDimFunctionObjective(functionIndex));
-  }
-};
-
-class TwoDimFunctionProblem : public Problem
-{
-public:
-  TwoDimFunctionProblem(size_t functionIndex)
-  {
-    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(2, std::make_pair(-1.0, 1.0))));
-    addObjective(new TwoDimFunctionObjective(functionIndex));
-  }
-};
   
 class DiscoveryScience : public WorkUnit
 {
 public:
-  DiscoveryScience() : randomSeed(456) {}
+  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -113,17 +40,7 @@ public:
 
     // set up test problems
     std::vector<ProblemPtr> problems;
-    problems.push_back(new DTLZ1MOProblem(1, 1));
-    problems.push_back(new DTLZ2MOProblem(2, 1));
-    problems.push_back(new DTLZ3MOProblem(1, 1));
-    problems.push_back(new DTLZ4MOProblem(1, 1));
-    problems.push_back(new DTLZ5MOProblem(1, 1));
-    problems.push_back(new DTLZ6MOProblem(1, 1));
-    problems.push_back(new DTLZ7MOProblem(1, 1));
-    //problems.push_back(new FriedmannProblem());
-	  problems.push_back(new OneDimFunctionProblem(0));
-	  problems.push_back(new OneDimFunctionProblem(1));
-    problems.push_back(new TwoDimFunctionProblem(0));
+    problems.push_back(new FriedmannProblem());
     
     SamplerPtr sampler = uniformSampler();
 
@@ -138,7 +55,7 @@ public:
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
 	  // mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.001)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95), simpleLinearRegressionIncrementalLearner(), 50));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95), simpleLinearRegressionIncrementalLearner(), chunkSize));
       //SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.001), simpleLinearRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
       learner->setVerbosity((SolverVerbosity)verbosity);
@@ -161,17 +78,18 @@ public:
       context.resultCallback("testingScore", testingScore);
       context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
       makeCurve(context, baseProblem, model);
-      makeMatlabSurface(context, baseProblem, model);
+      //makeMatlabSurface(context, baseProblem, model);
       context.leaveScope(testingScore);
     }
     return new Boolean(true);
   }
   
 protected:
-  friend class HoeffdingTreeLearnerExperimentsClass;
+  friend class DiscoveryScienceClass;
   
   size_t numSamples;
-  int randomSeed;
+  size_t randomSeed;
+  size_t chunkSize;
   double learningRate;
   double learningRateDecay;
   double delta;
@@ -236,80 +154,6 @@ private:
       context.leaveScope();
     }
     //context.leaveScope();
-  }
-      
-  ProblemPtr makeProblem(ExecutionContext& context, size_t functionNumber, ExpressionDomainPtr domain)
-  {
-    ProblemPtr res = new Problem();
-    
-    VariableExpressionPtr x = domain->getInput(0);
-    VariableExpressionPtr y = domain->getSupervision();
-    
-    res->setDomain(domain);
-    res->addObjective(mseRegressionObjective(makeTable(context, functionNumber, numSamples, x, y), y));
-    res->addValidationObjective(mseRegressionObjective(makeTable(context, functionNumber, 101, x, y), y));
-
-    return res;
-  }
-  
-  TablePtr makeTable(ExecutionContext& context, size_t functionNumber, size_t count, VariableExpressionPtr x, VariableExpressionPtr y)
-  {
-    TablePtr res = new Table(count);
-    res->addColumn(x, doubleClass);
-    res->addColumn(y, y->getType());
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    for (size_t i = 0; i < count; ++i)
-    {
-      double x = random->sampleDouble(0.0,1.0);
-      x = juce::roundDoubleToInt(x * 100) / 100.0;
-      res->setElement(i, 0, new Double(x));
-      
-      double y = targetFunction(context, x, functionNumber);
-      res->setElement(i, 1, new Double(y));
-    }
-    return res;
-  }
-  
-  TablePtr makeTestTable(VariableExpressionPtr xVariable) const
-  {
-    TablePtr res = new Table(100);
-    res->addColumn(xVariable, xVariable->getType());
-    double x = 0.0;
-    for (size_t i = 0; i < res->getNumRows(); ++i)
-    {
-      res->setElement(i, 0, new Double(x));
-      x += 0.01;
-      x = juce::roundDoubleToInt(x * 100) / 100.0;
-    }
-    return res;
-  }
-  
-  double targetFunction(ExecutionContext& context, double x, size_t functionIndex)
-  {
-    double x2 = x * x;
-    switch (functionIndex)
-    {
-      case 0: return sin(x2) * cos(x) + 1.0;
-      case 1: return x * x2 + x2 + x;
-      case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-      case 3: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-      case 4: return x2 * x2 + x * x2 + x2 + x;
-      case 5: return sin(x) + sin(x + x2);
-      case 6: return log(x + 2) + log(x2 + 1);
-      case 7: return sqrt(2 + x);
-      case 8: return sqrt(2.0) * x - 1.0 + context.getRandomGenerator()->sampleDoubleFromGaussian(0.0, 0.1);
-      case 9: 
-        if (x < 0.25) return x;
-        else if (x < 0.5) return -x + 0.5;
-        else if (x < 0.75) return x - 0.5;
-        else return -x + 1;
-      case 10: return x;
-      case 11:
-        if (x < 0.5) return x;
-        else return 1.0 - x;
-    }
-    jassert(false);
-    return 0.0;
   }
 };
 
