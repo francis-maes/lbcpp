@@ -76,6 +76,10 @@
     <variable type="PositiveInteger" name="verbosity"/>
   </class>
 
+  <class name="DiscoveryScience" base="WorkUnit">
+    <variable type="PositiveInteger" name="randomSeed"/>
+  </class>
+
   <class name="PerceptronTest" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="numInitialSamples"/>

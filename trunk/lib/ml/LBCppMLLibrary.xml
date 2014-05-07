@@ -112,11 +112,9 @@
   <!-- Data Stream -->
   <class name="DataStream" abstract="yes"/>
   <class name="ProblemDataStream">
-    <constructor arguments="ProblemPtr problem, SamplerPtr sampler, size_t numObjects"/>
+    <constructor arguments="ProblemPtr problem, SamplerPtr sampler"/>
     <variable type="Problem" name="problem"/>
     <variable type="Sampler" name="sampler"/>
-    <variable type="PositiveInteger" name="numObjects"/>
-    <variable type="PositiveInteger" name="numObjectsDrawn"/>
   </class>
 
 </library>

@@ -10,6 +10,7 @@ GENERATE_INTROSPECTION_CODE(MOOLibrary.xml MOOLibrary.cpp)
 SET(MOO_SOURCES
   precompiled.h
   precompiled.cpp
+  DiscoveryScience.h
   HoeffdingTreeLearner.h
   HoeffdingTreeLearner.cpp
  # HoeffdingTreeLearnerTest.h

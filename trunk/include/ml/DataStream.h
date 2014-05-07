@@ -28,9 +28,7 @@ public:
 typedef ReferenceCountedObjectPtr<DataStream> DataStreamPtr;
 
 /** \brief This class creates a DataStream from a Problem.
- *  A Sampler is used to generate inputs for the Problem objectives.
- *  The amount of objects that can be drawn from this DataStream
- *  can be limited.
+ *  A Sampler is used to generate inputs for the Problem.
  */
 class ProblemDataStream : public DataStream
 {
@@ -38,35 +36,25 @@ public:
   /** Constructor
    *  \param problem The Problem from which samples will be taken
    *  \param sampler The Sampler used to generate inputs for problem
-   *  \param numObjects The amount of samples that can be drawn from this DataStream, 0 means infinite
    */
-  ProblemDataStream(ProblemPtr problem, SamplerPtr sampler, size_t numObjects = 0) :
-    problem(problem), sampler(sampler), numObjects(numObjects), numObjectsDrawn(0) {}
+  ProblemDataStream(ProblemPtr problem, SamplerPtr sampler) :
+    problem(problem), sampler(sampler) {}
   ProblemDataStream() {}
 
   virtual bool hasNext() const
-  {
-    if (!numObjects)
-      return true;
-    return numObjectsDrawn < numObjects;
-  }
+    {return true;}
 
   virtual ObjectPtr next(ExecutionContext& context)
-  {
-    if (numObjectsDrawn == numObjects)
-      return ObjectPtr();
-    ++numObjectsDrawn;
-    return problem->evaluate(context, sampler->sample(context));
-  }
+    {return problem->evaluate(context, sampler->sample(context));}
 
 protected:
   friend class ProblemDataStreamClass;
 
   ProblemPtr problem;
   SamplerPtr sampler;
-  size_t numObjects;
-  size_t numObjectsDrawn;
 };
+
+
 
 } /* namespace lbcpp */
 
