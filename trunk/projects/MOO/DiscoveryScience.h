@@ -44,42 +44,44 @@ public:
     
     SamplerPtr sampler = uniformSampler();
 
+    std::vector<SolverPtr> learners;
+    learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95), simpleLinearRegressionIncrementalLearner(), chunkSize)));
+    learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(0.01, 0.05), perceptronIncrementalLearner(50, 0.1, 0.005))));
+
     for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
     {
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
       ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
-    
-      // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
-      //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-	  // mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95)
-	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.001)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95), simpleLinearRegressionIncrementalLearner(), chunkSize));
-      //SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.001), simpleLinearRegressionIncrementalLearner(), 50));
-      //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
-      learner->setVerbosity((SolverVerbosity)verbosity);
-      learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
-    
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
-    
-      ExpressionPtr model;
-      FitnessPtr fitness;
-      context.enterScope("Function " + string((int) functionNumber));
-      context.enterScope("Learning");
-      context.resultCallback("x", 0.0);
-      learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
-      context.leaveScope();
-      context.resultCallback("model", model);
-      context.resultCallback("fitness", fitness);      
-      context.resultCallback("data", problemData);
-      double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
-      context.resultCallback("testingScore", testingScore);
-      context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
-      makeCurve(context, baseProblem, model);
-      //makeMatlabSurface(context, baseProblem, model);
-      context.leaveScope(testingScore);
+
+      for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
+      {
+        
+        SolverPtr learner = learners[learnerNb];
+
+        learner->setVerbosity((SolverVerbosity)verbosity);
+        learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
+        
+        ExpressionPtr model;
+        FitnessPtr fitness;
+        context.enterScope("Function " + string((int) functionNumber));
+        context.enterScope("Learning");
+        context.resultCallback("x", 0.0);
+        learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+        context.leaveScope();
+        context.resultCallback("model", model);
+        context.resultCallback("fitness", fitness);      
+        context.resultCallback("data", problemData);
+        double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
+        context.resultCallback("testingScore", testingScore);
+        context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
+        makeCurve(context, baseProblem, model);
+        //makeMatlabSurface(context, baseProblem, model);
+        context.leaveScope(testingScore);
+      }
     }
     return new Boolean(true);
   }

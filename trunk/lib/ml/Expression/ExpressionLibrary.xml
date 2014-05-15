@@ -178,6 +178,10 @@
   <class name="MSEMultiRegressionObjective" base="SupervisedLearningObjective">
     <constructor arguments="TablePtr data, VariableExpressionPtr supervision"/>
   </class>
+
+  <class name="RRSERegressionObjective" base="SupervisedLearningObjective">
+    <constructor arguments="TablePtr data, VariableExpressionPtr supervision"/>
+  </class>
   
   <!-- User Interface -->
   <uicomponent name="ExpressionTreeView" type="Expression"/>
