@@ -114,47 +114,47 @@ bool Problem::loadFromString(ExecutionContext& context, const string& str)
 
 ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, SamplerPtr sampler) const
 {
-    ExpressionDomainPtr domain = new ExpressionDomain();
-    TablePtr supervision = new Table(numSamples);
-    TablePtr validation = new Table(numValidationSamples);
+  ExpressionDomainPtr domain = new ExpressionDomain();
+  TablePtr supervision = new Table(numSamples);
+  TablePtr validation = new Table(numValidationSamples);
     
-    for (size_t i = 0; i < getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions(); ++i)
-    {
-      VariableExpressionPtr x = domain->addInput(doubleClass, "x" + string((int) i));
-      supervision->addColumn(x, doubleClass);
-      validation->addColumn(x, doubleClass);
-    }
-    VariableExpressionPtr y;
-    if (this->getNumObjectives() > 1)
-      y = domain->createSupervision(doubleClass, "y");
-    else
-      y = domain->createSupervision(doubleClass, "y");
-    supervision->addColumn(y, y->getType());
-    validation->addColumn(y, y->getType());
+  for (size_t i = 0; i < getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions(); ++i)
+  {
+    VariableExpressionPtr x = domain->addInput(doubleClass, "x" + string((int) i));
+    supervision->addColumn(x, doubleClass);
+    validation->addColumn(x, doubleClass);
+  }
+  VariableExpressionPtr y;
+  if (this->getNumObjectives() > 1)
+    y = domain->createSupervision(doubleClass, "y");
+  else
+    y = domain->createSupervision(doubleClass, "y");
+  supervision->addColumn(y, y->getType());
+  validation->addColumn(y, y->getType());
 
-    // fill the tables
-    for (size_t i = 0; i < numSamples; ++i)
-    {
-      DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
-      FitnessPtr result = evaluate(context, sample);
-      for (size_t j = 0; j < sample->getNumValues(); ++j)
-        supervision->setElement(i, j, new Double(sample->getValue(j)));
-      supervision->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
-    }
-    for (size_t i = 0; i < numValidationSamples; ++i)
-    {
-      DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
-      FitnessPtr result = evaluate(context, sample);
-      for (size_t j = 0; j < sample->getNumValues(); ++j)
-        validation->setElement(i, j, new Double(sample->getValue(j)));
-      validation->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
-    }
+  // fill the tables
+  for (size_t i = 0; i < numSamples; ++i)
+  {
+    DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
+    FitnessPtr result = evaluate(context, sample);
+    for (size_t j = 0; j < sample->getNumValues(); ++j)
+      supervision->setElement(i, j, new Double(sample->getValue(j)));
+    supervision->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
+  }
+  for (size_t i = 0; i < numValidationSamples; ++i)
+  {
+    DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
+    FitnessPtr result = evaluate(context, sample);
+    for (size_t j = 0; j < sample->getNumValues(); ++j)
+      validation->setElement(i, j, new Double(sample->getValue(j)));
+    validation->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
+  }
 
-    ProblemPtr res = new Problem();
+  ProblemPtr res = new Problem();
     
-    res->setDomain(domain);
-    res->addObjective(rmseRegressionObjective(supervision, y));
-    res->addValidationObjective(rmseRegressionObjective(validation, y));
+  res->setDomain(domain);
+  res->addObjective(rmseRegressionObjective(supervision, y));
+  res->addValidationObjective(rrseRegressionObjective(validation, y));
 
-    return res;
+  return res;
 }

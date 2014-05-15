@@ -72,6 +72,49 @@ public:
   }
 };
 
+/** The Root Relative Squared Error
+ */
+class RRSERegressionObjective : public SupervisedLearningObjective
+{
+public:
+  RRSERegressionObjective(TablePtr data, VariableExpressionPtr supervision)
+    {configure(data, supervision);}
+
+  RRSERegressionObjective() {}
+
+  virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
+  {
+    double sumSquaredError = 0.0;
+    double meanTarget = 0.0;
+    double sumSquaredErrorsFromMean = 0.0;
+    
+    DVectorPtr supervisions = getSupervisions().staticCast<DVector>();
+    
+    // compute mean absolute error
+    bool areDoubles = predictions->getElementsType()->inheritsFrom(doubleClass);
+    
+    for (size_t i = 0; i < supervisions->getNumElements(); ++i)
+      meanTarget += supervisions->get(i);
+    meanTarget /= (double)supervisions->getNumElements();
+
+    for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    {
+      double prediction =  (areDoubles ? it.getRawDouble() : it.getRawObject()->toDouble());
+      if (prediction == DVector::missingValue || !isNumberValid(prediction))
+        prediction = 0.0;
+      double delta = supervisions->get(it.getIndex()) - prediction;
+      sumSquaredError += delta * delta;
+      delta = supervisions->get(it.getIndex()) - meanTarget;
+      sumSquaredErrorsFromMean += delta * delta;
+    }
+    
+    return sqrt(sumSquaredError / sumSquaredErrorsFromMean);
+  }
+  
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = DBL_MAX; best = 0.0;}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !ML_EXPRESSION_REGRESSION_OBJECTIVES_H_
