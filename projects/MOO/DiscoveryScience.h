@@ -30,7 +30,7 @@ extern void lbCppMLLibraryCacheTypes(ExecutionContext& context); // tmp
 class DiscoveryScience : public WorkUnit
 {
 public:
-  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2) {}
+  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath("") {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -55,6 +55,16 @@ public:
     algoNames.push_back("iMauve");
     algoNames.push_back("FIMT");
 
+    std::vector<string> datasets;
+    datasets.push_back("winequality-white.arff");
+    datasets.push_back("cal_housing.arff");
+    datasets.push_back("CASP.arff");
+    datasets.push_back("ailerons.arff");
+    std::vector<string> datasetnames;
+    datasetnames.push_back("Wine quality");
+    datasetnames.push_back("California housing");
+    datasetnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
+    datasetnames.push_back("Ailerons");
 
     size_t numFolds = 10;
     size_t samplesPerFold = 1000;
@@ -74,26 +84,14 @@ public:
 
       context.leaveScope();
     }
-    context.enterScope("Wine quality");
-    TablePtr wine = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\winequality-white.csv")).staticCast<Table>();
-    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
-      doCrossValidation(context, Problem::generateFoldsFromTable(context, wine, 10), learners[learnerNb], algoNames[learnerNb]);
-    context.leaveScope();
-    context.enterScope("Physicochemical Properties of Protein Tertiary Structure");
-    TablePtr casp = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\CASP.csv")).staticCast<Table>();
-    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
-      doCrossValidation(context, Problem::generateFoldsFromTable(context, casp, 10), learners[learnerNb], algoNames[learnerNb]);
-    context.leaveScope();
-    context.enterScope("California Housing");
-    TablePtr calhousing = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\CaliforniaHousing\\cal_housing.arff")).staticCast<Table>();
-    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
-      doCrossValidation(context, Problem::generateFoldsFromTable(context, calhousing, 10), learners[learnerNb], algoNames[learnerNb]);
-    context.leaveScope();
-    context.enterScope("Ailerons");
-    TablePtr ailerons = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\Ailerons\\ailerons.arff")).staticCast<Table>();
-    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
-      doCrossValidation(context, Problem::generateFoldsFromTable(context, ailerons, 10), learners[learnerNb], algoNames[learnerNb]);
-    context.leaveScope();
+    for (size_t datasetNb = 0; datasetNb < datasets.size(); ++datasetNb)
+    {
+      context.enterScope(datasetnames[datasetNb]);
+      TablePtr table = loader.loadFromFile(context, juce::File(datasetPath + "/" + datasets[datasetNb])).staticCast<Table>();
+      for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
+        doCrossValidation(context, Problem::generateFoldsFromTable(context, table, 10), learners[learnerNb], algoNames[learnerNb]);
+      context.leaveScope();
+    }
     return new Boolean(true);
   }
   
@@ -109,6 +107,8 @@ protected:
   double threshold;
   size_t numDims;
   size_t verbosity;
+
+  string datasetPath;
 
 private:
   void doCrossValidation(ExecutionContext& context, const std::vector<ProblemPtr>& folds, SolverPtr learner, string algoName)
