@@ -81,6 +81,7 @@
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="chunkSize"/>
     <variable type="PositiveInteger" name="verbosity"/>
+    <variable type="String" name="datasetPath"/>
   </class>
 
   <class name="PerceptronTest" base="WorkUnit">
