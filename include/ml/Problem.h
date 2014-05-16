@@ -85,6 +85,11 @@ public:
   virtual ProblemPtr toSupervisedLearningProblem(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, SamplerPtr sampler) const;
 
   /*
+  ** Generate sub-problems for cross-validation
+  */
+  virtual std::vector<ProblemPtr> generateFolds(ExecutionContext& context, size_t numFolds, size_t samplesPerFold, SamplerPtr sampler) const;
+
+  /*
   ** Loading / Initialization
   */
   void reinitialize(ExecutionContext& context);

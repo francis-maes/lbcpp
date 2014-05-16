@@ -56,8 +56,7 @@
   </class>
   <class name="HoeffdingTreeNode" base="TreeNode">
     <constructor arguments=""/>
-    <constructor arguments="HoeffdingTreeNodePtr parent"/>
-    <constructor arguments="const ExpressionPtr model, HoeffdingTreeNodePtr parent"/>
+    <constructor arguments="const ExpressionPtr model"/>
     <variable type="Expression" name="model"/>
   </class>
 

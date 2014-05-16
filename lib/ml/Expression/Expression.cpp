@@ -649,8 +649,8 @@ void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, do
 {
   HoeffdingTreeNodePtr thisPtr = refCountedPointerFromThis(this);
   
-  left = new HoeffdingTreeNode(model->clone(context), thisPtr);
-  right = new HoeffdingTreeNode(model->clone(context), thisPtr);
+  left = new HoeffdingTreeNode(model->clone(context));
+  right = new HoeffdingTreeNode(model->clone(context));
   HoeffdingTreeIncrementalLearnerStatisticsPtr stats = this->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
   //left->setLearnerStatistics(hoeffdingTreeIncrementalLearnerStatistics(context, stats, testVariable, testThreshold, true));
   //right->setLearnerStatistics(hoeffdingTreeIncrementalLearnerStatistics(context, stats, testVariable, testThreshold, false));

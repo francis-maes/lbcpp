@@ -45,6 +45,7 @@ public:
   virtual void stopSolver(ExecutionContext& context)
   {
     evaluate(context, expression);
+    expression = ExpressionPtr();
     IterativeSolver::stopSolver(context);
   }
   

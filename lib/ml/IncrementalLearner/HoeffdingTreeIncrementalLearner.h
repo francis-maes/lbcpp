@@ -32,6 +32,7 @@ public:
   }
 
   // copies one side of the EBST for the splitAttribute and copies the complete EBST for all other attribute
+  /*
   HoeffdingTreeIncrementalLearnerStatistics(ExecutionContext& context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide) : splitRatios(new ScalarVariableMean())
   {
     HoeffdingTreeIncrementalLearnerStatisticsPtr stats = parentStats.staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
@@ -97,7 +98,7 @@ public:
       }
     }
   }
-
+  */
   void addObservation(const DenseDoubleVectorPtr& attributes, double target)
   {
     incrementExamplesSeen();
@@ -141,7 +142,7 @@ public:
 
   ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const 
   {
-    HoeffdingTreeNodePtr result = new HoeffdingTreeNode(modelLearner->createExpression(context, doubleClass), HoeffdingTreeNodePtr());
+    HoeffdingTreeNodePtr result = new HoeffdingTreeNode(modelLearner->createExpression(context, doubleClass));
     result->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics());
     return result;
   }

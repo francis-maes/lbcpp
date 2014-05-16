@@ -126,7 +126,7 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
   }
   VariableExpressionPtr y;
   if (this->getNumObjectives() > 1)
-    y = domain->createSupervision(doubleClass, "y");
+    {jassertfalse;}
   else
     y = domain->createSupervision(doubleClass, "y");
   supervision->addColumn(y, y->getType());
@@ -158,3 +158,62 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
 
   return res;
 }
+
+std::vector<ProblemPtr> Problem::generateFolds(ExecutionContext& context, size_t numFolds, size_t samplesPerFold, SamplerPtr sampler) const
+{
+  std::vector<ProblemPtr> res(numFolds);
+  std::vector<VariableExpressionPtr> variables;
+  size_t numSamples = numFolds * samplesPerFold;
+  TablePtr samples = new Table(numSamples);
+  ExpressionDomainPtr domain = new ExpressionDomain();
+
+  for (size_t i = 0; i < getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions(); ++i)
+  {
+    VariableExpressionPtr x = domain->addInput(doubleClass, "x" + string((int) i));
+    variables.push_back(x);
+    samples->addColumn(x, doubleClass);
+  }
+  VariableExpressionPtr y;
+  if (this->getNumObjectives() > 1)
+    {jassertfalse;}
+  else
+    y = domain->createSupervision(doubleClass, "y");
+  samples->addColumn(y, y->getType());
+
+  for (size_t i = 0; i < numSamples; ++i)
+  {
+    DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
+    FitnessPtr result = evaluate(context, sample);
+    for (size_t j = 0; j < sample->getNumValues(); ++j)
+      samples->setElement(i, j, new Double(sample->getValue(j)));
+    samples->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
+  }
+
+  for (size_t i = 0; i < numFolds; ++i)
+  {
+    TablePtr foldTrain = new Table();
+    TablePtr foldTest = new Table();
+    for (size_t j = 0; j < variables.size(); ++j)
+    {
+      foldTrain->addColumn(variables[j], variables[j]->getType());
+      foldTest->addColumn(variables[j], variables[j]->getType());
+    }
+    foldTrain->addColumn(y, y->getType());
+    foldTest->addColumn(y, y->getType());
+    for (size_t j = 0; j < numSamples; ++j)
+    {
+      if ((j - i) % numFolds == 0)
+        foldTest->addRow(samples->getRow(j));
+      else
+        foldTrain->addRow(samples->getRow(j));
+    }
+    ProblemPtr fold = new Problem();
+    fold->setDomain(domain);
+    fold->addObjective(rmseRegressionObjective(foldTrain, y));
+    fold->addValidationObjective(rrseRegressionObjective(foldTest, y));
+    res[i] = fold;
+  }
+
+  return res;
+}
+

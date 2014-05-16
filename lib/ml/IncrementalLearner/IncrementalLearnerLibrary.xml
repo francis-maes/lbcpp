@@ -7,16 +7,9 @@
   </class>
 
   <class name="HoeffdingTreeIncrementalLearnerStatistics" base="IncrementalLearnerStatistics">
-    <constructor arguments="size_t numAttributes">
-      <variable type="Vector[ExtendedBinarySearchTree]" name="ebsts"/>
-    </constructor>
-    <constructor arguments="ExecutionContext&amp; context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide">
-      <variable type="ExecutionContext" name="context"/>
-      <variable type="IncrementalLearnerStatisticsPtr" name="parentStats"/>
-      <variable type="PositiveInteger" name="attribute"/>
-      <variable type="double" name="splitvalue"/>
-      <variable type="bool" name="leftSide"/>
-    </constructor>
+    <constructor arguments="size_t numAttributes"/>
+    <variable type="Vector[ExtendedBinarySearchTree]" name="ebsts"/>
+    <variable type="ScalarVariableMean" name="splitRatios"/>
   </class>
 
   <class name="PureRandomScalarVectorTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
