@@ -73,12 +73,20 @@ public:
 };
 
 /** The Root Relative Squared Error
+ *  The error relative to a simple predictor's error which always predicts the mean target value for the dataset
  */
 class RRSERegressionObjective : public SupervisedLearningObjective
 {
 public:
-  RRSERegressionObjective(TablePtr data, VariableExpressionPtr supervision)
-    {configure(data, supervision);}
+  RRSERegressionObjective(TablePtr trainData, TablePtr testData, VariableExpressionPtr supervision)
+  {
+    configure(testData, supervision);
+    meanTarget = 0.0;
+    size_t supervisionIdx = trainData->getNumColumns() - 1;
+    for (size_t i = 0; i < trainData->getNumRows(); ++i)
+      meanTarget += trainData->getElement(i, supervisionIdx);
+    meanTarget /= trainData->getNumRows();
+  }
 
   RRSERegressionObjective() {}
 
@@ -93,10 +101,6 @@ public:
     // compute mean absolute error
     bool areDoubles = predictions->getElementsType()->inheritsFrom(doubleClass);
     
-    for (size_t i = 0; i < supervisions->getNumElements(); ++i)
-      meanTarget += supervisions->get(i);
-    meanTarget /= (double)supervisions->getNumElements();
-
     for (DataVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       double prediction =  (areDoubles ? it.getRawDouble() : it.getRawObject()->toDouble());
@@ -113,6 +117,9 @@ public:
   
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = DBL_MAX; best = 0.0;}
+
+protected:
+  double meanTarget;
 };
 
 }; /* namespace lbcpp */

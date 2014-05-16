@@ -134,7 +134,7 @@ extern SupervisedLearningObjectivePtr multiClassAccuracyObjective(TablePtr data,
 extern SupervisedLearningObjectivePtr mseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr rmseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
 extern SupervisedLearningObjectivePtr normalizedRMSERegressionObjective(TablePtr data, VariableExpressionPtr supervision);
-extern SupervisedLearningObjectivePtr rrseRegressionObjective(TablePtr data, VariableExpressionPtr supervision);
+extern SupervisedLearningObjectivePtr rrseRegressionObjective(TablePtr trainData, TablePtr testData, VariableExpressionPtr supervision);
 
 // multi-dimensional regression
 extern SupervisedLearningObjectivePtr mseMultiRegressionObjective(TablePtr data, VariableExpressionPtr supervision);

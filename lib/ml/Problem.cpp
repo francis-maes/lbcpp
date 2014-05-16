@@ -154,7 +154,7 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
     
   res->setDomain(domain);
   res->addObjective(rmseRegressionObjective(supervision, y));
-  res->addValidationObjective(rrseRegressionObjective(validation, y));
+  res->addValidationObjective(rrseRegressionObjective(supervision, validation, y));
 
   return res;
 }
@@ -202,7 +202,7 @@ std::vector<ProblemPtr> Problem::generateFolds(ExecutionContext& context, size_t
     foldTest->addColumn(y, y->getType());
     for (size_t j = 0; j < numSamples; ++j)
     {
-      if ((j - i) % numFolds == 0)
+      if (((int)j - (int)i) % (int)numFolds == 0)
         foldTest->addRow(samples->getRow(j));
       else
         foldTrain->addRow(samples->getRow(j));
@@ -210,7 +210,83 @@ std::vector<ProblemPtr> Problem::generateFolds(ExecutionContext& context, size_t
     ProblemPtr fold = new Problem();
     fold->setDomain(domain);
     fold->addObjective(rmseRegressionObjective(foldTrain, y));
-    fold->addValidationObjective(rrseRegressionObjective(foldTest, y));
+    fold->addValidationObjective(rrseRegressionObjective(foldTrain, foldTest, y));
+    res[i] = fold;
+  }
+
+  return res;
+}
+
+/**
+ * Create a supervised learning problem from a Table
+ * This method assumes the last column of the Table is the supervision
+ */
+ProblemPtr Problem::fromTable(ExecutionContext& context, const TablePtr& table, double testSetFraction)
+{
+  ExpressionDomainPtr domain = new ExpressionDomain();
+  size_t numTrain = (size_t)(table->getNumRows() * (1 - testSetFraction));
+  std::vector<size_t> indices(table->getNumRows());
+  for (size_t i = 0; i < table->getNumRows(); ++i)
+    indices[i] = i;
+  context.getRandomGenerator()->shuffle(indices);
+  TablePtr train = new Table();
+  TablePtr test = new Table();
+  for (size_t i = 0; i < table->getNumColumns() - 1; ++i)
+  {
+    VariableExpressionPtr x = domain->addInput(table->getType(i), table->getKey(i)->toShortString());
+    train->addColumn(x, x->getType());
+    test->addColumn(x, x->getType());
+  }
+  VariableExpressionPtr y = domain->createSupervision(table->getType(table->getNumColumns() - 1), table->getKey(table->getNumColumns() - 1)->toShortString());
+  train->addColumn(y, y->getType());
+  test->addColumn(y, y->getType());
+
+  for (size_t i = 0; i < numTrain; ++i)
+    train->addRow(table->getRow(indices[i]));
+  for (size_t i = numTrain; i < indices.size(); ++i)
+    test->addRow(table->getRow(indices[i]));
+
+  ProblemPtr result = new Problem();
+  result->setDomain(domain);
+  result->addObjective(rmseRegressionObjective(train, y));
+  result->addValidationObjective(rrseRegressionObjective(train, test, y));
+
+  return result;
+}
+
+std::vector<ProblemPtr> Problem::generateFoldsFromTable(ExecutionContext& context, const TablePtr& table, size_t numFolds)
+{
+  std::vector<VariableExpressionPtr> variables;
+  ExpressionDomainPtr domain = new ExpressionDomain();
+  size_t numSamples = table->getNumRows();
+  std::vector<ProblemPtr> res(numFolds);
+
+  for (size_t i = 0; i < table->getNumColumns() - 1; ++i)
+    variables.push_back(domain->addInput(table->getType(i), table->getKey(i)->toShortString()));
+  VariableExpressionPtr y = domain->createSupervision(table->getType(table->getNumColumns() - 1), table->getKey(table->getNumColumns() - 1)->toShortString());
+
+  for (size_t i = 0; i < numFolds; ++i)
+  {
+    TablePtr foldTrain = new Table();
+    TablePtr foldTest = new Table();
+    for (size_t j = 0; j < variables.size(); ++j)
+    {
+      foldTrain->addColumn(variables[j], variables[j]->getType());
+      foldTest->addColumn(variables[j], variables[j]->getType());
+    }
+    foldTrain->addColumn(y, y->getType());
+    foldTest->addColumn(y, y->getType());
+    for (size_t j = 0; j < numSamples; ++j)
+    {
+      if (((int)j - (int)i) % (int)numFolds == 0)
+        foldTest->addRow(table->getRow(j));
+      else
+        foldTrain->addRow(table->getRow(j));
+    }
+    ProblemPtr fold = new Problem();
+    fold->setDomain(domain);
+    fold->addObjective(rmseRegressionObjective(foldTrain, y));
+    fold->addValidationObjective(rrseRegressionObjective(foldTrain, foldTest, y));
     res[i] = fold;
   }
 
