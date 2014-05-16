@@ -83,11 +83,13 @@ public:
   ** Supervised learning
   */
   virtual ProblemPtr toSupervisedLearningProblem(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, SamplerPtr sampler) const;
+  static ProblemPtr fromTable(ExecutionContext& context, const TablePtr& table, double testSetFraction);
 
   /*
   ** Generate sub-problems for cross-validation
   */
   virtual std::vector<ProblemPtr> generateFolds(ExecutionContext& context, size_t numFolds, size_t samplesPerFold, SamplerPtr sampler) const;
+  static std::vector<ProblemPtr> generateFoldsFromTable(ExecutionContext& context, const TablePtr& table, size_t numFolds);
 
   /*
   ** Loading / Initialization

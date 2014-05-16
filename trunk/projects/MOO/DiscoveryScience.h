@@ -18,6 +18,7 @@
 # include <ml/Sampler.h>
 # include "SharkProblems.h"
 # include "../../lib/ml/Learner/IncrementalLearnerBasedLearner.h"
+# include "../../lib/ml/Loader/ArffLoader.h"
 
 // TODO: make attribute limits parameters
 
@@ -40,20 +41,28 @@ public:
 
     // set up test problems
     std::vector<ProblemPtr> problems;
+    std::vector<string> artificialNames;
     problems.push_back(new FriedmannProblem());
-    
+    artificialNames.push_back("Friedmann");
+
     SamplerPtr sampler = uniformSampler();
 
     std::vector<SolverPtr> learners;
+    std::vector<string> algoNames;
+    
     learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.05, 0.95), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(0.01, 0.05), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    algoNames.push_back("iMauve");
+    algoNames.push_back("FIMT");
+
 
     size_t numFolds = 10;
-    size_t samplesPerFold = 10000;
-
+    size_t samplesPerFold = 1000;
+    ArffLoader loader;
+    
     for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
     {
-      context.enterScope("Function " + string((int) functionNumber));
+      context.enterScope(artificialNames[functionNumber]);
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
@@ -61,44 +70,30 @@ public:
       std::vector<ProblemPtr> folds = baseProblem->generateFolds(context, numFolds, samplesPerFold, sampler);
       
       for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
-      {
-        double avgTesting = 0.0;
-        context.enterScope("Crossvalidation");
-        for (size_t foldNb = 0; foldNb < folds.size(); ++foldNb)
-        {
-          context.progressCallback(new ProgressionState(foldNb, folds.size(), "Folds"));
-          ObjectivePtr problemObj = folds[foldNb]->getObjective(0);
-          const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
-          SolverPtr learner = learners[learnerNb];
+        doCrossValidation(context, folds, learners[learnerNb], algoNames[learnerNb]);
 
-          learner->setVerbosity((SolverVerbosity)verbosity);
-          learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
-        
-          ExpressionPtr model;
-          FitnessPtr fitness;
-          
-          context.enterScope("Fold " + string((int) foldNb));
-          learner->solve(context, folds[foldNb], storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
-          if (verbosity > verbosityDetailed)
-          {
-            context.resultCallback("model", model);
-            context.resultCallback("data", problemData);
-          }
-          context.resultCallback("fitness", fitness);      
-          double testingScore = folds[foldNb]->getValidationObjective(0)->evaluate(context, model);
-          context.resultCallback("testingScore", testingScore);
-          context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
-          //makeCurve(context, baseProblem, model);
-          //makeMatlabSurface(context, baseProblem, model);
-          context.leaveScope(testingScore);
-          avgTesting += testingScore;
-        }
-        context.progressCallback(new ProgressionState(folds.size(), folds.size(), "Folds"));
-        avgTesting /= (double)folds.size();
-        context.leaveScope(avgTesting);
-      }
       context.leaveScope();
     }
+    context.enterScope("Wine quality");
+    TablePtr wine = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\winequality-white.csv")).staticCast<Table>();
+    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
+      doCrossValidation(context, Problem::generateFoldsFromTable(context, wine, 10), learners[learnerNb], algoNames[learnerNb]);
+    context.leaveScope();
+    context.enterScope("Physicochemical Properties of Protein Tertiary Structure");
+    TablePtr casp = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\CASP.csv")).staticCast<Table>();
+    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
+      doCrossValidation(context, Problem::generateFoldsFromTable(context, casp, 10), learners[learnerNb], algoNames[learnerNb]);
+    context.leaveScope();
+    context.enterScope("California Housing");
+    TablePtr calhousing = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\CaliforniaHousing\\cal_housing.arff")).staticCast<Table>();
+    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
+      doCrossValidation(context, Problem::generateFoldsFromTable(context, calhousing, 10), learners[learnerNb], algoNames[learnerNb]);
+    context.leaveScope();
+    context.enterScope("Ailerons");
+    TablePtr ailerons = loader.loadFromFile(context, juce::File("C:\\Users\\Denny\\Downloads\\Ailerons\\ailerons.arff")).staticCast<Table>();
+    for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
+      doCrossValidation(context, Problem::generateFoldsFromTable(context, ailerons, 10), learners[learnerNb], algoNames[learnerNb]);
+    context.leaveScope();
     return new Boolean(true);
   }
   
@@ -116,6 +111,44 @@ protected:
   size_t verbosity;
 
 private:
+  void doCrossValidation(ExecutionContext& context, const std::vector<ProblemPtr>& folds, SolverPtr learner, string algoName)
+  {
+    ScalarVariableMean meanTesting;
+    ScalarVariableMean meanTreeSize;
+    context.enterScope(algoName);
+    for (size_t foldNb = 0; foldNb < folds.size(); ++foldNb)
+    {
+      context.progressCallback(new ProgressionState(foldNb, folds.size(), "Folds"));
+      ObjectivePtr problemObj = folds[foldNb]->getObjective(0);
+      const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
+
+      learner->setVerbosity((SolverVerbosity)verbosity);
+        
+      ExpressionPtr model;
+      FitnessPtr fitness;
+          
+      context.enterScope("Fold " + string((int) foldNb));
+      learner->solve(context, folds[foldNb], storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+      if (verbosity > verbosityDetailed)
+      {
+        context.resultCallback("model", model);
+        context.resultCallback("data", problemData);
+      }
+      context.resultCallback("fitness", fitness);      
+      double testingScore = folds[foldNb]->getValidationObjective(0)->evaluate(context, model);
+      context.resultCallback("testingScore", testingScore);
+      size_t nbLeaves = model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
+      context.resultCallback("tree size", nbLeaves);
+      context.leaveScope(testingScore);
+      meanTesting.push(testingScore);
+      meanTreeSize.push(nbLeaves);
+    }
+    context.progressCallback(new ProgressionState(folds.size(), folds.size(), "Folds"));
+    context.resultCallback("Mean testing score", meanTesting.getMean());
+    context.resultCallback("Mean tree size", meanTreeSize.getMean());
+    context.leaveScope(meanTesting.getMean());
+  }
+
     void makeMatlabSurface(ExecutionContext& context, ProblemPtr problem, ExpressionPtr expr)
   {
     if (problem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions() <= 1) return;

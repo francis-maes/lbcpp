@@ -179,7 +179,7 @@
   </class>
 
   <class name="RRSERegressionObjective" base="SupervisedLearningObjective">
-    <constructor arguments="TablePtr data, VariableExpressionPtr supervision"/>
+    <constructor arguments="TablePtr trainData, TablePtr testData, VariableExpressionPtr supervision"/>
   </class>
   
   <!-- User Interface -->
