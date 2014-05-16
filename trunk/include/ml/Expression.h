@@ -487,11 +487,9 @@ extern TreeNodePtr scalarVectorTreeNode(const DenseDoubleVectorPtr& input, const
 class HoeffdingTreeNode: public TreeNode
 {
 public:
-	HoeffdingTreeNode() : TreeNode(), parent(HoeffdingTreeNodePtr()) 
+	HoeffdingTreeNode() : TreeNode()
     {type = doubleClass;}
-	HoeffdingTreeNode(HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent)
-    {type = doubleClass;}
-	HoeffdingTreeNode(const ExpressionPtr& model, HoeffdingTreeNodePtr parent) : TreeNode(), parent(parent), model(model)
+	HoeffdingTreeNode(const ExpressionPtr& model) : TreeNode(), model(model)
     {type = doubleClass;}
 
 	TreeNodePtr findLeaf(const ObjectPtr& input) const;
@@ -512,13 +510,9 @@ public:
   ExpressionPtr getModel() const
     {return model;}
 
-	bool isRoot() const
-    {return !parent.exists();}
-
 protected:
   friend class HoeffdingTreeNodeClass;
 
-  HoeffdingTreeNodePtr parent;
   ExpressionPtr model;
 };
 

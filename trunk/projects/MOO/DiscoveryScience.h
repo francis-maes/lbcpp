@@ -45,43 +45,59 @@ public:
     SamplerPtr sampler = uniformSampler();
 
     std::vector<SolverPtr> learners;
-    learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(0.01, 0.05), perceptronIncrementalLearner(50, 0.1, 0.005))));
+    learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(0.01, 0.05, 0.95), simpleLinearRegressionIncrementalLearner(), chunkSize)));
+    learners.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(0.01, 0.05), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+
+    size_t numFolds = 10;
+    size_t samplesPerFold = 10000;
 
     for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
     {
+      context.enterScope("Function " + string((int) functionNumber));
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
-      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
-      ObjectivePtr problemObj = problem->getObjective(0);
-      const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
-
+      //ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
+      std::vector<ProblemPtr> folds = baseProblem->generateFolds(context, numFolds, samplesPerFold, sampler);
+      
       for (size_t learnerNb = 0; learnerNb < learners.size(); ++learnerNb)
       {
-        
-        SolverPtr learner = learners[learnerNb];
+        double avgTesting = 0.0;
+        context.enterScope("Crossvalidation");
+        for (size_t foldNb = 0; foldNb < folds.size(); ++foldNb)
+        {
+          context.progressCallback(new ProgressionState(foldNb, folds.size(), "Folds"));
+          ObjectivePtr problemObj = folds[foldNb]->getObjective(0);
+          const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
+          SolverPtr learner = learners[learnerNb];
 
-        learner->setVerbosity((SolverVerbosity)verbosity);
-        learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
+          learner->setVerbosity((SolverVerbosity)verbosity);
+          learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
         
-        ExpressionPtr model;
-        FitnessPtr fitness;
-        context.enterScope("Function " + string((int) functionNumber));
-        context.enterScope("Learning");
-        context.resultCallback("x", 0.0);
-        learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
-        context.leaveScope();
-        context.resultCallback("model", model);
-        context.resultCallback("fitness", fitness);      
-        context.resultCallback("data", problemData);
-        double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
-        context.resultCallback("testingScore", testingScore);
-        context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
-        makeCurve(context, baseProblem, model);
-        //makeMatlabSurface(context, baseProblem, model);
-        context.leaveScope(testingScore);
+          ExpressionPtr model;
+          FitnessPtr fitness;
+          
+          context.enterScope("Fold " + string((int) foldNb));
+          learner->solve(context, folds[foldNb], storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+          if (verbosity > verbosityDetailed)
+          {
+            context.resultCallback("model", model);
+            context.resultCallback("data", problemData);
+          }
+          context.resultCallback("fitness", fitness);      
+          double testingScore = folds[foldNb]->getValidationObjective(0)->evaluate(context, model);
+          context.resultCallback("testingScore", testingScore);
+          context.resultCallback("tree size", model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves());
+          //makeCurve(context, baseProblem, model);
+          //makeMatlabSurface(context, baseProblem, model);
+          context.leaveScope(testingScore);
+          avgTesting += testingScore;
+        }
+        context.progressCallback(new ProgressionState(folds.size(), folds.size(), "Folds"));
+        avgTesting /= (double)folds.size();
+        context.leaveScope(avgTesting);
       }
+      context.leaveScope();
     }
     return new Boolean(true);
   }

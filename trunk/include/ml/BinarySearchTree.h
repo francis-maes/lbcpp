@@ -64,8 +64,7 @@ class ExtendedBinarySearchTree : public BinarySearchTree
 public:
   ExtendedBinarySearchTree(double value = DVector::missingValue) : BinarySearchTree(value),
     leftStats(new ScalarVariableMeanAndVariance()), rightStats(new ScalarVariableMeanAndVariance()),
-    leftCorrelation(new MultiVariateRegressionStatistics()), rightCorrelation(new MultiVariateRegressionStatistics()),
-    parent(NULL) {}
+    leftCorrelation(new MultiVariateRegressionStatistics()), rightCorrelation(new MultiVariateRegressionStatistics()) {}
 
   virtual void insertValue(double attribute, const DenseDoubleVectorPtr& data, double y)
   {
@@ -84,7 +83,6 @@ public:
         if (!left.exists())
         {
           left = new ExtendedBinarySearchTree();
-          left.staticCast<ExtendedBinarySearchTree>()->parent = refCountedPointerFromThis(this);
         }
         left->insertValue(attribute, data, y);
       }
@@ -95,7 +93,6 @@ public:
         if (!right.exists())
         {
           right = new ExtendedBinarySearchTree();
-          right.staticCast<ExtendedBinarySearchTree>()->parent = refCountedPointerFromThis(this);
         }
         right->insertValue(attribute, data, y);
       }
@@ -153,19 +150,12 @@ public:
     return result;
   }
 
-  bool isLeftChild() const
-  {return parent != NULL && parent->getLeft().get() == this;}
-
-  bool isRightChild() const
-    {return parent != NULL && parent->getRight().get() == this;}
-
 MultiVariateRegressionStatisticsPtr leftCorrelation;
 MultiVariateRegressionStatisticsPtr rightCorrelation;
 
 protected:
   friend class ExtendedBinarySearchTreeClass;
 
-  BinarySearchTreePtr parent;
   ScalarVariableMeanAndVariancePtr leftStats;
   ScalarVariableMeanAndVariancePtr rightStats;
 };
