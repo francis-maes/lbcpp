@@ -173,7 +173,7 @@ public:
 
     // set up test problems
     std::vector<ProblemPtr> problems;
-    problems.push_back(new DTLZ1MOProblem(1, 1));
+    /*problems.push_back(new DTLZ1MOProblem(1, 1));
     problems.push_back(new DTLZ2MOProblem(2, 1));
     problems.push_back(new DTLZ3MOProblem(1, 1));
     problems.push_back(new DTLZ4MOProblem(1, 1));
@@ -182,10 +182,13 @@ public:
     problems.push_back(new DTLZ7MOProblem(1, 1));
     //problems.push_back(new FriedmannProblem());
 	  problems.push_back(new OneDimFunctionProblem(0));
-	  problems.push_back(new OneDimFunctionProblem(1));
+	  problems.push_back(new OneDimFunctionProblem(1));*/
     problems.push_back(new TwoDimFunctionProblem(0));
-    problems.push_back(new LEXPProblem());
-    problems.push_back(new LOSCProblem());
+    //problems.push_back(new LEXPProblem());
+    //problems.push_back(new LOSCProblem());
+
+    // grid search for optimal parameters
+    //gridSearch(context, problems);
     
     SamplerPtr sampler = uniformSampler();
 
@@ -298,6 +301,41 @@ private:
       context.leaveScope();
     }
     //context.leaveScope();
+  }
+
+  void gridSearch(ExecutionContext& context, std::vector<ProblemPtr> problems)
+  {
+    SamplerPtr sampler = uniformSampler();
+    std::ofstream file;
+    file.open("C:\\Users\\xavier\\Documents\\MATLAB\\FunctionData\\gridsearch.dat");
+    SolverPtr learner;
+    //for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
+    //{
+    size_t functionNumber = 0;
+      // create the learning problem
+      ProblemPtr baseProblem = problems[functionNumber];
+      sampler->initialize(context, baseProblem->getDomain());
+      ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
+      int i = 0;
+      for(double d = 0.01; d <= 0.5; d+=0.01)
+      {
+        for(double t=0.05; t <= 0.6; t+=0.05)
+        {
+          i++;
+          learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(d, t, 0.95), simpleLinearRegressionIncrementalLearner(), 10));
+          learner->setVerbosity((SolverVerbosity)verbosity);
+          learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
+          ExpressionPtr model;
+          FitnessPtr fitness;
+          learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+          double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
+          file << testingScore << " ";
+          std::cout << d << " " << t << " " << i << " " << testingScore << std::endl;
+        }
+        file << std::endl;
+      }
+      file.close();
+    //}
   }
       
   ProblemPtr makeProblem(ExecutionContext& context, size_t functionNumber, ExpressionDomainPtr domain)
