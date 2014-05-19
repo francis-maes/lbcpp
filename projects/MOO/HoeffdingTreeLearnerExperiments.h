@@ -163,7 +163,7 @@ private:
 class HoeffdingTreeLearnerExperiments : public WorkUnit
 {
 public:
-  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.2), threshold(0.15), numDims(1), verbosity(verbosityDetailed) {}
+  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.2), threshold(0.15), numDims(1), verbosity(verbosityQuiet) {}//verbosityDetailed
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -181,14 +181,14 @@ public:
     problems.push_back(new DTLZ6MOProblem(1, 1));
     problems.push_back(new DTLZ7MOProblem(1, 1));
     //problems.push_back(new FriedmannProblem());
-	  problems.push_back(new OneDimFunctionProblem(0));
-	  problems.push_back(new OneDimFunctionProblem(1));*/
+	  problems.push_back(new OneDimFunctionProblem(0));*/
+	  problems.push_back(new OneDimFunctionProblem(1));
     problems.push_back(new TwoDimFunctionProblem(0));
     //problems.push_back(new LEXPProblem());
     //problems.push_back(new LOSCProblem());
 
     // grid search for optimal parameters
-    //gridSearch(context, problems);
+    gridSearch(context, problems);
     
     SamplerPtr sampler = uniformSampler();
 
@@ -306,21 +306,27 @@ private:
   void gridSearch(ExecutionContext& context, std::vector<ProblemPtr> problems)
   {
     SamplerPtr sampler = uniformSampler();
-    std::ofstream file;
-    file.open("C:\\Users\\xavier\\Documents\\MATLAB\\FunctionData\\gridsearch.dat");
     SolverPtr learner;
-    //for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
-    //{
-    size_t functionNumber = 0;
+    double steps = 50;
+    std::vector< double > vec_t(steps);
+    std::vector< std::vector< double > > vec_dt( steps, vec_t );
+    std::vector< std::vector< std::vector< double > > > vec_pdt(problems.size(), vec_dt );
+
+    for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
+    {
       // create the learning problem
       ProblemPtr baseProblem = problems[functionNumber];
       sampler->initialize(context, baseProblem->getDomain());
       ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
       int i = 0;
-      for(double d = 0.01; d <= 0.5; d+=0.01)
+      int di = -1;
+      for(double d = 0.01; d <= 0.50001; d+=0.01)
       {
-        for(double t=0.05; t <= 0.6; t+=0.05)
+        di++;
+        int ti = -1;
+        for(double t=0.01; t <= 0.50001; t+=0.01)
         {
+          ti++;
           i++;
           learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(d, t, 0.95), simpleLinearRegressionIncrementalLearner(), 10));
           learner->setVerbosity((SolverVerbosity)verbosity);
@@ -329,13 +335,29 @@ private:
           FitnessPtr fitness;
           learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
           double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
-          file << testingScore << " ";
           std::cout << d << " " << t << " " << i << " " << testingScore << std::endl;
+          vec_pdt[functionNumber][di][ti] = testingScore;
         }
-        file << std::endl;
       }
+    }
+    // write the results for matlab
+    std::ofstream file;
+    file.open("C:\\Users\\xavier\\Documents\\MATLAB\\FunctionData\\gridsearch.dat");
+    for(double di=0; di < steps; di++)
+    {
+      for(double ti=0; ti < steps; ti++)
+      {
+        double sum = 0;
+        for (size_t functionNumber = 0; functionNumber < problems.size(); ++functionNumber)
+        {
+          sum += vec_pdt[functionNumber][di][ti];
+        }
+        sum /= problems.size();
+        file << sum << " ";
+      }
+      file << std::endl;
+    }
       file.close();
-    //}
   }
       
   ProblemPtr makeProblem(ExecutionContext& context, size_t functionNumber, ExpressionDomainPtr domain)
