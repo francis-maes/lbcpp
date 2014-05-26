@@ -497,8 +497,8 @@ public:
 	size_t getNbOfLeaves() const;
 	DenseDoubleVectorPtr getSplits() const;
 
-	ObjectPtr getSampleInput(size_t index) const;
-	ObjectPtr getSamplePrediction(size_t index) const;
+	virtual ObjectPtr getSampleInput(size_t index) const;
+	virtual ObjectPtr getSamplePrediction(size_t index) const;
 
   virtual void addSample(const ObjectPtr& input, const ObjectPtr& output)
     {jassertfalse;}

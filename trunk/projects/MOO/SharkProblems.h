@@ -14,6 +14,8 @@
 # include <EALib/MultiObjectiveFunctions.h>
 # include <ml/DoubleVector.h>
 
+#define round(x) (floor((x) + 0.5))
+
 namespace lbcpp
 {
 
@@ -336,6 +338,64 @@ public:
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(10, std::make_pair(0, 1.0))));
     addObjective(new FriedmannObjective());
   }
+};
+
+class LEXPProblem : public Problem
+{
+public:
+  LEXPProblem()
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(5, std::make_pair(0, 1.0))));
+    addObjective(new LEXPObjective());
+  }
+private:
+  class LEXPObjective : public Objective
+  {
+  public:
+    LEXPObjective() {};
+
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+    {
+	    double x1 = object.staticCast<DenseDoubleVector>()->getValue(0);
+      double x2 = object.staticCast<DenseDoubleVector>()->getValue(1);
+      double x3 = object.staticCast<DenseDoubleVector>()->getValue(2);
+      double x4 = object.staticCast<DenseDoubleVector>()->getValue(3);
+      double x5 = object.staticCast<DenseDoubleVector>()->getValue(4);
+      return round(x1)*(1+2*x2+3*x3-exp(-2*(x4+x5)))+(1-round(x1))*(1-1.2*x2-3.1*x3+exp(-3*(x4-x5)));
+    }
+
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {worst = -3.25; best = 5.98;}
+  };
+};
+
+class LOSCProblem : public Problem
+{
+public:
+  LOSCProblem()
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(5, std::make_pair(0, 1.0))));
+    addObjective(new LOSCObjective());
+  }
+private:
+  class LOSCObjective : public Objective
+  {
+  public:
+    LOSCObjective() {};
+
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+    {
+	    double x1 = object.staticCast<DenseDoubleVector>()->getValue(0);
+      double x2 = object.staticCast<DenseDoubleVector>()->getValue(1);
+      double x3 = object.staticCast<DenseDoubleVector>()->getValue(2);
+      double x4 = object.staticCast<DenseDoubleVector>()->getValue(3);
+      double x5 = object.staticCast<DenseDoubleVector>()->getValue(4);
+      return round(x1)*(1+1.5*x2+x3+sin(2*(x4+x5))*exp(-2*(x2+x4)))+(1-round(x1))*(-1-2*x2-x3+sin(3*(x4+x5))*exp(-3*(x3-x4)));
+    }
+
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {worst = 0; best = 1;}
+  };
 };
 
 }; /* namespace lbcpp */

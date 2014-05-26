@@ -46,6 +46,7 @@ public:
     
       // put learners in a vector
       SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(numInitialSamples, learningRate, learningRateDecay));
+      //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
