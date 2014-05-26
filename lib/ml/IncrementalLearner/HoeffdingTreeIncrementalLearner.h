@@ -159,7 +159,7 @@ public:
     
     leafStats->addObservation(input, output->getValue(0));
     if (verbosity >= verbosityDetailed)
-      context.resultCallback("model", leaf->getModel()->clone(context));
+      context.resultCallback("model", root);
 	  
     if (leafStats->getExamplesSeen() % chunkSize == 0)
     {
@@ -180,6 +180,7 @@ public:
         context.resultCallback("bestSplitQuality", split.quality);
 		    context.resultCallback("Split?", splitWasMade);
         context.resultCallback("Splitvalue", split.value);
+        context.resultCallback("SplitIdx", split.attribute);
       }
 	  }
     context.resultCallback("nbOfModels", root->getNbOfLeaves());

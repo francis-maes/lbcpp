@@ -647,13 +647,8 @@ DenseDoubleVectorPtr HoeffdingTreeNode::getSplits() const
 
 void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, double testThreshold)
 {
-  HoeffdingTreeNodePtr thisPtr = refCountedPointerFromThis(this);
-  
   left = new HoeffdingTreeNode(model->clone(context));
   right = new HoeffdingTreeNode(model->clone(context));
-  HoeffdingTreeIncrementalLearnerStatisticsPtr stats = this->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
-  //left->setLearnerStatistics(hoeffdingTreeIncrementalLearnerStatistics(context, stats, testVariable, testThreshold, true));
-  //right->setLearnerStatistics(hoeffdingTreeIncrementalLearnerStatistics(context, stats, testVariable, testThreshold, false));
   left->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics());
   right->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics());
     

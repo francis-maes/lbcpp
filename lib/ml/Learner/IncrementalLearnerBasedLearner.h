@@ -37,7 +37,7 @@ public:
     learner->addTrainingSample(context, data->getRow(index), expression);
     if (verbosity >= verbosityDetailed)
       context.resultCallback("testing", problem->getValidationObjective(0)->evaluate(context, expression));
-    if (verbosity >= verbosityAll)
+    if (verbosity >= verbosityAll && data->getNumColumns() == 2) // only for single attribute, single target data
       makeCurve(context, baseProblem, expression);
     return true;
   }
