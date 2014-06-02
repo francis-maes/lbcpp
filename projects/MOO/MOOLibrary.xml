@@ -84,6 +84,8 @@
     <variable type="String" name="datasetPath"/>
   </class>
 
+  <class name="XValWorkUnit" base="WorkUnit"></class>
+
   <class name="PerceptronTest" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="numInitialSamples"/>
