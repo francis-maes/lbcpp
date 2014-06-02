@@ -183,7 +183,8 @@ public:
         context.resultCallback("SplitIdx", split.attribute);
       }
 	  }
-    context.resultCallback("nbOfModels", root->getNbOfLeaves());
+    if (verbosity >= verbosityDetailed)
+      context.resultCallback("nbOfModels", root->getNbOfLeaves());
   }
 
 protected:
