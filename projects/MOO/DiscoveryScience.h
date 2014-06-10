@@ -132,9 +132,14 @@ protected:
   void runSolvers(ExecutionContext& context, double delta, double threshold, const std::vector<string>& algoNames)
   {
     std::vector<SolverPtr> solvers;
+    /*
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), simpleLinearRegressionIncrementalLearner(), chunkSize)));
+    */
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), simpleLinearRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), simpleLinearRegressionIncrementalLearner(), chunkSize)));
 
     for (size_t s = 0; s < solvers.size(); ++s)
     {
@@ -152,8 +157,6 @@ protected:
       context.resultCallback(algoNames[s] + " RRE", testingScore);
       context.resultCallback(algoNames[s] + " TreeSize", nbLeaves);
       context.leaveScope(testingScore);
-
-      
     }
     context.progressCallback(new ProgressionState(solvers.size(), solvers.size(), "Solvers"));
   }

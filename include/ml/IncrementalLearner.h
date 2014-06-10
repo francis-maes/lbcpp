@@ -106,6 +106,7 @@ extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncremental
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold, double maxCoefficientOfDetermination);
 extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);
+extern IncrementalSplittingCriterionPtr nullIncrementalSplittingCriterion();
 
 
 class IncrementalLearnerStatistics : public Object
