@@ -545,6 +545,17 @@ double QuandtAndrewsIncrementalSplittingCriterion::criticalValues[104][10] =
 	{1.04,4.61,3.78,3.32,3.02,2.80,2.64,2.51,2.41,2.32}
   };
 
+/** Splitting criterion that always returns no split found (i.e. no splitting)
+ */
+class NullIncrementalSplittingCriterion : public IncrementalSplittingCriterion
+{
+public:
+  NullIncrementalSplittingCriterion() {}
+
+  virtual Split findBestSplit(TreeNodePtr leaf) const
+    {return Split(0, DVector::missingValue, DVector::missingValue);}
+};
+
 } /* namespace lbcpp */
 
 #endif //!ML_INCREMENTAL_SPLITTING_CRITERION_H_

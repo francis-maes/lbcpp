@@ -68,4 +68,8 @@
     <variable type="Double" name="threshold"/>
   </class>
 
+  <class name="NullIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
+    <constructor arguments=""/>
+  </class>
+
 </library>

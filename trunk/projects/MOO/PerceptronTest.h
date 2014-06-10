@@ -33,41 +33,56 @@ public:
     lbCppMLLibraryCacheTypes(context);
     
     context.getRandomGenerator()->setSeed(randomSeed);
-    
-    // create the domain
+    ExpressionDomainPtr domain = new ExpressionDomain();
+    domain->addInput(doubleClass, "x");
+    domain->createSupervision(doubleClass, "y");
+
+    std::vector<ProblemPtr> problems;
     for (size_t functionNumber = 0; functionNumber < 11; ++functionNumber)
+      problems.push_back(makeProblem(context, functionNumber, domain));
+
+    
+    std::vector<string> datasets;
+    datasets.push_back("winequality-white.arff");
+    datasets.push_back("cal_housing.arff");
+    ArffLoader loader;
+    const string datasetPath = "C:/Projets/lbcpp/datasets";
+    for (size_t i = 0; i < datasets.size(); ++i)
     {
-      ExpressionDomainPtr domain = new ExpressionDomain();
-      VariableExpressionPtr x = domain->addInput(doubleClass, "x");
-      VariableExpressionPtr y = domain->createSupervision(doubleClass, "y");
+      TablePtr table = loader.loadFromFile(context, juce::File(datasetPath + "/" + datasets[i])).staticCast<Table>();
+      problems.push_back(Problem::fromTable(context, table, 0.1));
+    }
+    // create the domain
     
-      // create the learning problem
-      ProblemPtr problem = makeProblem(context, functionNumber, domain);
-    
+    std::vector<SolverPtr> learners;
+    learners.push_back(incrementalLearnerBasedLearner(perceptronIncrementalLearner(numInitialSamples, learningRate, learningRateDecay)));
+    learners.push_back(incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner()));
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      ProblemPtr problem = problems[i];
       // put learners in a vector
-      SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(numInitialSamples, learningRate, learningRateDecay));
       //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
     
       ObjectivePtr problemObj = problem->getObjective(0);
-      const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
-    
-      TablePtr testTable = makeTestTable(domain->getInput(0));
 
-      ExpressionPtr model;
-      FitnessPtr fitness;
-      context.enterScope("Function " + string((int) functionNumber));
-      context.enterScope("Learning");
-      context.resultCallback("x", 0.0);
-      learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
-      context.leaveScope();
-      context.resultCallback("perceptron", model);
-      context.resultCallback("fitness", fitness);      
-      context.resultCallback("data", problemData);
-      VectorPtr predictions = model->compute(context, testTable)->getVector();
-      context.resultCallback("predictions", predictions);
-      double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
-      context.resultCallback("testingScore", testingScore);
-      makeCurve(context, functionNumber, model);
+      context.enterScope("Function " + string((int) i));
+      for (size_t j = 0; j < learners.size(); ++j)
+      {
+        ExpressionPtr model;
+        FitnessPtr fitness;
+        context.enterScope("Learner " + string((int) j));
+        learners[j]->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+        
+        context.resultCallback("model", model);
+        //context.resultCallback("fitness", fitness);      
+        //context.resultCallback("data", problemData);
+        //VectorPtr predictions = model->compute(context, testTable)->getVector();
+        //context.resultCallback("predictions", predictions);
+        //double testingScore = problem->getValidationObjective(0)->evaluate(context, model);
+        //context.resultCallback("testingScore", testingScore);
+        //makeCurve(context, i, model);
+        context.leaveScope();
+      }
       context.leaveScope();
     }
     return new Boolean(true);
