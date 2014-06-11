@@ -24,6 +24,7 @@ SET(MOO_SOURCES
   SBOExperiments.h
   SBOEnsembleSizeExperiments.h
   PerceptronTest.h
+  LinearRegressionTests.h
   HoeffdingTreeLearnerExperiments.h
   WFGProblems.h
 #  DTLZFronts.cpp

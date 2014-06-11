@@ -94,6 +94,11 @@
     <variable type="Double" name="learningRateDecay"/>
   </class>
 
+  <class name="LinearRegressionTests" base="WorkUnit">
+    <variable type="PositiveInteger" name="randomSeed"/>
+    <variable type="PositiveInteger" name="numSamples"/>
+  </class>
+
   <class name="RewardLearningTest" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="PositiveInteger" name="numInitialSamples"/>
