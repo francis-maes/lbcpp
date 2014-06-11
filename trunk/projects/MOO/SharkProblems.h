@@ -398,6 +398,7 @@ private:
   };
 };
 
+
 }; /* namespace lbcpp */
 
 #endif // !MOO_PROBLEM_SHARK_H_
