@@ -76,7 +76,12 @@ public:
       leftCorrelation->push(data, y);
     }
     else 
-      if (attribute <= value)
+      if (attribute == value)
+      {
+        leftStats->push(y);
+        leftCorrelation->push(data, y);
+      }
+      else if (attribute < value)
       {
         leftStats->push(y);
     		leftCorrelation->push(data, y);
