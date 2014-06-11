@@ -132,15 +132,16 @@ protected:
   void runSolvers(ExecutionContext& context, double delta, double threshold, const std::vector<string>& algoNames)
   {
     std::vector<SolverPtr> solvers;
-    /*
+    
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    */
+    
+    /*
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-
+    */
     for (size_t s = 0; s < solvers.size(); ++s)
     {
       context.progressCallback(new ProgressionState(s, solvers.size(), "Solvers"));
@@ -191,13 +192,20 @@ public:
     {
       sampler->initialize(context, problems[i]->getDomain());
       xValProblems.push_back(problems[i]->generateFolds(context, 10, numSamples / 10, sampler));
+      context.informationCallback("Finished creating " + problemnames[i]);
     }
     
     std::vector<string> datasets;
+    datasets.push_back("fried_delve.arff");
+    datasets.push_back("cart_delve.arff");
+    datasets.push_back("pol.arff");
     datasets.push_back("winequality-white.arff");
     datasets.push_back("cal_housing.arff");
     //datasets.push_back("CASP.arff");
     std::vector<string> datasetnames;
+    problemnames.push_back("Friedmann");
+    problemnames.push_back("CART");
+    problemnames.push_back("PoleTelecom");
     problemnames.push_back("Wine quality");
     problemnames.push_back("California housing");
     //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
@@ -206,6 +214,7 @@ public:
     for (size_t i = 0; i < datasets.size(); ++i)
     {
       TablePtr table = loader.loadFromFile(context, juce::File(datasetPath + "/" + datasets[i])).staticCast<Table>();
+      context.informationCallback("Finished loading " + datasets[i]);
       xValProblems.push_back(Problem::generateFoldsFromTable(context, table, 10));
     }
     
