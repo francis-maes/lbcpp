@@ -210,11 +210,13 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
-    double r2 = modelStats->getCoefficientOfDetermination();
+    //double r2 = modelStats->getCoefficientOfDetermination();
     stats->getSplitRatios()->push(secondBestSplit.quality/bestSplit.quality);
-    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && r2 < maximumCoefficientOfDetermination)
+    //if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon) && r2 < maximumCoefficientOfDetermination)
+    if ( bestSplit.quality != 0 && secondBestSplit.quality != 0 && stats->getSplitRatios()->getMean() < (1 - epsilon))
       return bestSplit;
-    else if(r2 < maximumCoefficientOfDetermination && epsilon < threshold)
+    //else if(r2 < maximumCoefficientOfDetermination && epsilon < threshold)
+    else if(epsilon < threshold)
       return bestSplit;
     else
       return Split(0, DVector::missingValue, DVector::missingValue);

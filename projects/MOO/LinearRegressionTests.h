@@ -34,7 +34,7 @@ public:
     
     context.getRandomGenerator()->setSeed(randomSeed);
 
-    IncrementalLearnerPtr slr = simpleLinearRegressionIncrementalLearner();
+    IncrementalLearnerPtr slr = linearLeastSquaresRegressionIncrementalLearner();
     ExpressionPtr model = slr->createExpression(context, doubleClass);
 
     const size_t numAttr = 10;
