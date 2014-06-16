@@ -101,6 +101,7 @@ extern IncrementalLearnerPtr ensembleIncrementalLearner(IncrementalLearnerPtr ba
 extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrainingSamples, double learningRate, double learningRateDecay);
 extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize = 50);
 extern IncrementalLearnerPtr simpleLinearRegressionIncrementalLearner();
+extern IncrementalLearnerPtr linearLeastSquaresRegressionIncrementalLearner();
 
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);

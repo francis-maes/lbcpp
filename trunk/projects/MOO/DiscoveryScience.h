@@ -56,9 +56,11 @@ public:
     thresholds.push_back(0.25);
 
     std::vector<string> algoNames;
+    algoNames.push_back("iMauveLLSQ");
     algoNames.push_back("FIMTp");
     algoNames.push_back("FIMTslr");
     algoNames.push_back("iMauve");
+    
 
 
     context.enterScope(problemName);
@@ -133,15 +135,12 @@ protected:
   {
     std::vector<SolverPtr> solvers;
     
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     
-    /*
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(nullIncrementalSplittingCriterion(), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    */
+    
     for (size_t s = 0; s < solvers.size(); ++s)
     {
       context.progressCallback(new ProgressionState(s, solvers.size(), "Solvers"));
@@ -154,9 +153,9 @@ protected:
 
       ExpressionPtr model = solveProblem(context, folds[0], solvers[s]);
       double testingScore = folds[0]->getValidationObjective(0)->evaluate(context, model);
-      size_t nbLeaves = model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
+      //size_t nbLeaves = model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
       context.resultCallback(algoNames[s] + " RRE", testingScore);
-      context.resultCallback(algoNames[s] + " TreeSize", nbLeaves);
+      //context.resultCallback(algoNames[s] + " TreeSize", nbLeaves);
       context.leaveScope(testingScore);
     }
     context.progressCallback(new ProgressionState(solvers.size(), solvers.size(), "Solvers"));

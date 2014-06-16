@@ -32,7 +32,15 @@
   <class name="SimpleLinearRegressionIncrementalLearner" base="IncrementalLearner">
     <constructor arguments=""/>
   </class>
-  
+
+  <class name="LinearLeastSquaresRegressionIncrementalLearner" base="IncrementalLearner">
+    <constructor arguments=""/>
+  </class>
+
+  <class name="LLSQStatistics">
+    <constructor arguments=""/>
+  </class>
+
   <class name="HoeffdingTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
     <constructor arguments="IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner, size_t chunkSize" returnType="IncrementalLearner"/>
     <variable type="IncrementalSplittingCriterion" name="splittingCriterion"/>
