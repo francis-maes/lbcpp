@@ -51,12 +51,18 @@
 
   <!-- Incremental Splitting Criteria -->
   <class name="IncrementalSplittingCriterion" abstract="yes"/>
-  <class name="HoeffdingBoundStdDevReductionIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
-    <constructor arguments="double delta, double threshold"/>
+  <class name="HoeffdingBoundIncrementalSplittingCriterion" abstract="yes">
     <variable type="Double" name="delta"/>
     <variable type="Double" name="threshold"/>
   </class>
-
+  <class name="HoeffdingBoundStdDevReductionIncrementalSplittingCriterion" base="HoeffdingBoundIncrementalSplittingCriterion">
+    <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
+  </class>
+  <class name="HoeffdingBoundMauveIncrementalSplittingCriterion" base="HoeffdingBoundIncrementalSplittingCriterion">
+    <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
+  </class>
+  
+  <!--
   <class name="HoeffdingBoundStdDevReductionIncrementalSplittingCriterion2" base="IncrementalSplittingCriterion">
     <constructor arguments="double delta, double threshold"/>
     <variable type="Double" name="delta"/>
@@ -74,7 +80,7 @@
     <constructor arguments="size_t numVariables, double threshold"/>
     <variable type="PositiveInteger" name="numVariables"/>
     <variable type="Double" name="threshold"/>
-  </class>
+  </class>-->
 
   <class name="NullIncrementalSplittingCriterion" base="IncrementalSplittingCriterion">
     <constructor arguments=""/>

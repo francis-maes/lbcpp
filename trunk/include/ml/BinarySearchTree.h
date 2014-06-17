@@ -75,7 +75,8 @@ public:
       leftStats->push(y);
       leftCorrelation->push(data, y);
     }
-    else 
+    else
+    {
       if (attribute == value)
       {
         leftStats->push(y);
@@ -101,10 +102,22 @@ public:
         }
         right->insertValue(attribute, data, y);
       }
+    }
   }
 
+  ScalarVariableMeanAndVariancePtr getLeftStats()
+    {return leftStats;}
 
-  /* Calculate total regression statistics for a split
+  ScalarVariableMeanAndVariancePtr getRightStats()
+    {return rightStats;}
+
+  MultiVariateRegressionStatisticsPtr getLeftCorrelation()
+    {return leftCorrelation;}
+
+  MultiVariateRegressionStatisticsPtr getRightCorrelation()
+    {return rightCorrelation;}
+
+    /* Calculate total regression statistics for a split
    * \param splitValue The split value
    * \return a pair of PearsonCorrelationCoefficientPtrs where the first and second values represent statistics
    *         for left and right of the split respectively
@@ -134,12 +147,6 @@ public:
     return std::make_pair(new MultiVariateRegressionStatistics(*leftCorrelation), new MultiVariateRegressionStatistics(*rightCorrelation));
   }
 
-  ScalarVariableMeanAndVariancePtr getLeftStats()
-    {return leftStats;}
-
-  ScalarVariableMeanAndVariancePtr getRightStats()
-    {return rightStats;}
-
   virtual ObjectPtr clone(ExecutionContext& context) const
   {
     ExtendedBinarySearchTreePtr result = new ExtendedBinarySearchTree();
@@ -155,14 +162,14 @@ public:
     return result;
   }
 
-MultiVariateRegressionStatisticsPtr leftCorrelation;
-MultiVariateRegressionStatisticsPtr rightCorrelation;
-
 protected:
   friend class ExtendedBinarySearchTreeClass;
 
   ScalarVariableMeanAndVariancePtr leftStats;
   ScalarVariableMeanAndVariancePtr rightStats;
+  MultiVariateRegressionStatisticsPtr leftCorrelation;
+  MultiVariateRegressionStatisticsPtr rightCorrelation;
+
 };
 
 } /* namespace lbcpp */

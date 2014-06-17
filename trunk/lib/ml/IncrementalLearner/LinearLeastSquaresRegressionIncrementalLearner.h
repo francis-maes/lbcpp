@@ -88,6 +88,9 @@ public:
   
   virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr expression, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
+    if (!expression->getLearnerStatistics().dynamicCast<LLSQStatistics>())
+      expression->setLearnerStatistics(new LLSQStatistics());
+    
     LLSQStatisticsPtr stats = expression->getLearnerStatistics().staticCast<LLSQStatistics>();
     stats->addTrainingSample(input, output);
     if (stats->getExamplesSeen() < input->getNumValues() + 1)

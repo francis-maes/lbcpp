@@ -146,6 +146,15 @@ void ScalarVariableStatistics::push(double val, double weight)
     maximumValue = val;
 }
 
+void ScalarVariableStatistics::push(const ScalarVariableStatistics& other)
+{
+  ScalarVariableMeanAndVariance::push(other);
+  if (other.minimumValue < minimumValue)
+    minimumValue = other.minimumValue;
+  if (other.maximumValue > maximumValue)
+    maximumValue = other.maximumValue;
+}
+
 string ScalarVariableStatistics::toString() const
 {
   return ScalarVariableMeanAndVariance::toString() + " [" +

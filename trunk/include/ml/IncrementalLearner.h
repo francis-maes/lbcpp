@@ -103,10 +103,11 @@ extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittin
 extern IncrementalLearnerPtr simpleLinearRegressionIncrementalLearner();
 extern IncrementalLearnerPtr linearLeastSquaresRegressionIncrementalLearner();
 
+extern IncrementalSplittingCriterionPtr hoeffdingBoundMauveIncrementalSplittingCriterion(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
-extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
+/*extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold, double maxCoefficientOfDetermination);
-extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);
+extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);*/
 extern IncrementalSplittingCriterionPtr nullIncrementalSplittingCriterion();
 
 
