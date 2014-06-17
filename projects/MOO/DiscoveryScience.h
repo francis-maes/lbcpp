@@ -58,13 +58,12 @@ public:
     std::vector<string> algoNames;
     algoNames.push_back("iMauveLLSQ");
     algoNames.push_back("FIMTp");
-    algoNames.push_back("FIMTslr");
-    algoNames.push_back("iMauve");
+    algoNames.push_back("FIMTllsq");
     
 
 
     context.enterScope(problemName);
-    runSolvers(context, 0.005, 0.1, algoNames);
+    runSolvers(context, 0.05, 0.01, algoNames);
     /*
     for (size_t d = 0; d < deltas.size(); ++d)
     {
@@ -105,11 +104,16 @@ protected:
     return model;
   }
 
-  std::pair<double,double> doCrossValidation(ExecutionContext& context, const std::vector<ProblemPtr>& folds, SolverPtr learner, string algoName)
+  std::vector<std::pair<string, ScalarVariableMeanAndVariancePtr> > doCrossValidation(ExecutionContext& context, const std::vector<ProblemPtr>& folds, SolverPtr learner, string algoName)
   {
-    ScalarVariableMean meanTesting;
-    ScalarVariableMean meanTreeSize;
+    ScalarVariableMeanAndVariancePtr meanRRSE = new ScalarVariableMeanAndVariance();
+    ScalarVariableMeanAndVariancePtr meanRMSE = new ScalarVariableMeanAndVariance();
+    ScalarVariableMeanAndVariancePtr meanTreeSize = new ScalarVariableMeanAndVariance();
     //context.enterScope(algoName);
+    std::vector<std::pair<string, ScalarVariableMeanAndVariancePtr> > result;
+    result.push_back(std::make_pair("RRSE", meanRRSE));
+    result.push_back(std::make_pair("RMSE", meanRMSE));
+    result.push_back(std::make_pair("Tree Size", meanTreeSize));
     for (size_t foldNb = 0; foldNb < folds.size(); ++foldNb)
     {
       context.progressCallback(new ProgressionState(foldNb, folds.size(), "Folds"));
@@ -117,46 +121,60 @@ protected:
       ExpressionPtr model = solveProblem(context, folds[foldNb], learner);
       
       double testingScore = folds[foldNb]->getValidationObjective(0)->evaluate(context, model);
+      ObjectivePtr rmse = rmseRegressionObjective(folds[foldNb]->getValidationObjective(0).staticCast<SupervisedLearningObjective>()->getData(), folds[foldNb]->getValidationObjective(0).staticCast<SupervisedLearningObjective>()->getSupervision());
+      double rmseScore = rmse->evaluate(context, model);
       size_t nbLeaves = model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
-      //context.resultCallback("testingScore", testingScore);
-      //context.resultCallback("tree size", nbLeaves);
+      context.resultCallback("testingScore", testingScore);
+      context.resultCallback("RMSE", rmseScore);
+      context.resultCallback("tree size", nbLeaves);
       context.leaveScope(testingScore);
-      meanTesting.push(testingScore);
-      meanTreeSize.push(nbLeaves);
+      meanRRSE->push(testingScore);
+      meanTreeSize->push(nbLeaves);
+      meanRMSE->push(rmseScore);
     }
     context.progressCallback(new ProgressionState(folds.size(), folds.size(), "Folds"));
     //context.resultCallback("Mean testing score", meanTesting.getMean());
     //context.resultCallback("Mean tree size", meanTreeSize.getMean());
     //context.leaveScope(meanTesting.getMean());
-    return std::make_pair(meanTesting.getMean(), meanTreeSize.getMean());
+    return result;
   }
 
   void runSolvers(ExecutionContext& context, double delta, double threshold, const std::vector<string>& algoNames)
   {
     std::vector<SolverPtr> solvers;
     
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+
+    /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    
+    */
     
     for (size_t s = 0; s < solvers.size(); ++s)
     {
       context.progressCallback(new ProgressionState(s, solvers.size(), "Solvers"));
       context.enterScope(algoNames[s]);
       solvers[s]->setVerbosity(verbosity);
-      //std::pair<double, double> results = doCrossValidation(context, folds, solvers[s], algoNames[s]);
-      //context.resultCallback(algoNames[s] + " RRE", results.first);
-      //context.resultCallback(algoNames[s] + " TreeSize", results.second);
-      //context.leaveScope(results.first);
+      std::vector<std::pair<string, ScalarVariableMeanAndVariancePtr> > results = doCrossValidation(context, folds, solvers[s], algoNames[s]);
 
+      for (size_t r = 0; r < results.size(); ++r)
+      {
+        context.resultCallback(results[r].first, results[r].second);
+        context.resultCallback(results[r].first, results[r].second);
+      }
+      context.leaveScope(true);
+
+      /*
       ExpressionPtr model = solveProblem(context, folds[0], solvers[s]);
       double testingScore = folds[0]->getValidationObjective(0)->evaluate(context, model);
       //size_t nbLeaves = model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
       context.resultCallback(algoNames[s] + " RRE", testingScore);
       //context.resultCallback(algoNames[s] + " TreeSize", nbLeaves);
       context.leaveScope(testingScore);
+      */
     }
     context.progressCallback(new ProgressionState(solvers.size(), solvers.size(), "Solvers"));
   }
@@ -166,7 +184,7 @@ protected:
 class DiscoveryScience : public WorkUnit
 {
 public:
-  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath("") {}
+  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath(""), testRun(false) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -179,11 +197,15 @@ public:
     std::vector<ProblemPtr> problems;
     std::vector<string> problemnames;
     problems.push_back(new FriedmannProblem());
-    problems.push_back(new LEXPProblem());
-    problems.push_back(new LOSCProblem());
     problemnames.push_back("Friedmann");
-    problemnames.push_back("Lexp");
-    problemnames.push_back("Losc");
+
+    if (!testRun)
+    {
+      problems.push_back(new LEXPProblem());
+      problems.push_back(new LOSCProblem());
+      problemnames.push_back("Lexp");
+      problemnames.push_back("Losc");
+    }
 
     SamplerPtr sampler = uniformSampler();
     std::vector< std::vector<ProblemPtr> > xValProblems;
@@ -194,27 +216,30 @@ public:
       context.informationCallback("Finished creating " + problemnames[i]);
     }
     
-    std::vector<string> datasets;
-    datasets.push_back("fried_delve.arff");
-    datasets.push_back("cart_delve.arff");
-    datasets.push_back("pol.arff");
-    datasets.push_back("winequality-white.arff");
-    datasets.push_back("cal_housing.arff");
-    //datasets.push_back("CASP.arff");
-    std::vector<string> datasetnames;
-    problemnames.push_back("Friedmann");
-    problemnames.push_back("CART");
-    problemnames.push_back("PoleTelecom");
-    problemnames.push_back("Wine quality");
-    problemnames.push_back("California housing");
-    //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
-    
-    ArffLoader loader;
-    for (size_t i = 0; i < datasets.size(); ++i)
+    if (!testRun)
     {
-      TablePtr table = loader.loadFromFile(context, juce::File(datasetPath + "/" + datasets[i])).staticCast<Table>();
-      context.informationCallback("Finished loading " + datasets[i]);
-      xValProblems.push_back(Problem::generateFoldsFromTable(context, table, 10));
+      std::vector<string> datasets;
+      datasets.push_back("fried_delve.arff");
+      datasets.push_back("cart_delve.arff");
+      datasets.push_back("pol.arff");
+      datasets.push_back("winequality-white.arff");
+      datasets.push_back("cal_housing.arff");
+      //datasets.push_back("CASP.arff");
+    
+      problemnames.push_back("Friedmann");
+      problemnames.push_back("CART");
+      problemnames.push_back("PoleTelecom");
+      problemnames.push_back("Wine quality");
+      problemnames.push_back("California housing");
+      //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
+    
+      ArffLoader loader;
+      for (size_t i = 0; i < datasets.size(); ++i)
+      {
+        TablePtr table = loader.loadFromFile(context, juce::File(datasetPath + "/" + datasets[i])).staticCast<Table>();
+        context.informationCallback("Finished loading " + datasets[i]);
+        xValProblems.push_back(Problem::generateFoldsFromTable(context, table, 10));
+      }
     }
     
     CompositeWorkUnitPtr subWorkUnits = new CompositeWorkUnit("Discovery Science", xValProblems.size());
@@ -223,6 +248,10 @@ public:
     subWorkUnits->setPushChildrenIntoStackFlag(false);
     context.run(subWorkUnits);
     
+    /*
+    for (size_t i = 0; i < xValProblems.size(); ++i)
+      context.run(new XValWorkUnit(xValProblems[i], chunkSize, (SolverVerbosity) verbosity, problemnames[i]), false);
+    */
     return new Boolean(true);
   }
   
@@ -238,6 +267,7 @@ protected:
   double threshold;
   size_t numDims;
   size_t verbosity;
+  bool testRun;
 
   string datasetPath;
 

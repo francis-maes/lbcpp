@@ -18,18 +18,20 @@
 namespace lbcpp
 {
 
-class HoeffdingBoundStdDevReductionIncrementalSplittingCriterion : public IncrementalSplittingCriterion
+class HoeffdingBoundIncrementalSplittingCriterion : public IncrementalSplittingCriterion
 {
 public:
-  HoeffdingBoundStdDevReductionIncrementalSplittingCriterion() : delta(0.0), threshold(0.0) {}
-  HoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold) : delta(delta), threshold(threshold) {}
+  HoeffdingBoundIncrementalSplittingCriterion() : delta(0.0), threshold(0.0) {}
+  HoeffdingBoundIncrementalSplittingCriterion(double delta, double threshold) : delta(delta), threshold(threshold) {}
 
   virtual Split findBestSplit(TreeNodePtr leaf) const
   {
     HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size());
     for (size_t i = 0; i < splits.size(); ++i)
-      splits[i] = findBestSplit(i, stats->getEBSTs()[i]);
+    {
+      splits[i] = findBestSplit(i, stats->getEBSTs()[i], new ScalarVariableMeanAndVariance(), new PearsonCorrelationCoefficient(), new ScalarVariableMeanAndVariance(), new PearsonCorrelationCoefficient());
+    }
     Split bestSplit, secondBestSplit;
     for (size_t i = 0; i < splits.size(); ++i)
     {
@@ -48,31 +50,40 @@ public:
       return Split(0, DVector::missingValue, DVector::missingValue);
   }
 
+  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const = 0;
+
 protected:
-  friend class HoeffdingBoundStdDevReductionIncrementalSplittingCriterionClass;
+  friend class HoeffdingBoundIncrementalSplittingCriterionClass;
 
   double delta;
   double threshold;
 
-private:
-  Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst) const
+  Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const
   {
     Split bestLeft, bestRight;
+    ScalarVariableMeanAndVariancePtr totalRightVariance = new ScalarVariableMeanAndVariance();
+    totalRightVariance->push(*rightVariance);
+    totalRightVariance->push(*(ebst->getRightStats()));
+    ScalarVariableMeanAndVariancePtr totalLeftVariance = new ScalarVariableMeanAndVariance();
+    PearsonCorrelationCoefficientPtr totalRightCorrelation = new PearsonCorrelationCoefficient();
+    totalRightCorrelation->push(*(rightCorrelation));
+    totalRightCorrelation->push(*(ebst->getRightCorrelation()->getStats(attribute)));
+    totalLeftVariance->push(*leftVariance);
+    totalLeftVariance->push(*(ebst->getLeftStats()));
+    PearsonCorrelationCoefficientPtr totalLeftCorrelation = new PearsonCorrelationCoefficient();
+    totalLeftCorrelation->push(*(leftCorrelation));
+    totalLeftCorrelation->push(*(ebst->getLeftCorrelation()->getStats(attribute)));
+    
     if (ebst->getLeft().exists())
-      bestLeft = findBestSplit(attribute, ebst->getLeft().staticCast<ExtendedBinarySearchTree>());
+      bestLeft = findBestSplit(attribute, ebst->getLeft(), leftVariance, leftCorrelation, totalRightVariance, totalRightCorrelation);
     if (ebst->getRight().exists())
-      bestRight = findBestSplit(attribute, ebst->getRight().staticCast<ExtendedBinarySearchTree>());
-    // TODO: still incorrect, need to add right side of parent nodes as well
-    ScalarVariableMeanAndVariancePtr leftStats = ebst->getLeftStats();
-    ScalarVariableMeanAndVariancePtr rightStats = ebst->getRightStats();
-    double totalCount = leftStats->getCount() + rightStats->getCount();
-    double totalStdDev = sqrt((leftStats->getSumOfSquares() + rightStats->getSumOfSquares()) / totalCount - 
-      ((leftStats->getSum() + rightStats->getSum()) / totalCount) * ((leftStats->getSum() + rightStats->getSum()) / totalCount));
-    double sdr = totalStdDev - 
-                 leftStats->getStandardDeviation() * leftStats->getCount() / totalCount -
-                 rightStats->getStandardDeviation() * rightStats->getCount() / totalCount;
+      bestRight = findBestSplit(attribute, ebst->getRight(), totalLeftVariance, totalLeftCorrelation, rightVariance, rightCorrelation);
+    
     Split bestChild = bestLeft.quality >= bestRight.quality ? bestLeft : bestRight;
-    Split hereSplit = Split(attribute, ebst->getValue(), sdr);
+    Split hereSplit = Split(attribute, ebst->getValue(), splitQuality(totalLeftVariance, totalLeftCorrelation, totalRightVariance, totalRightCorrelation));
+
     return hereSplit.quality >= bestChild.quality ? hereSplit : bestChild;
   }
 
@@ -83,6 +94,42 @@ private:
     {return log(n)/log(2.0);}
 };
 
+class HoeffdingBoundStdDevReductionIncrementalSplittingCriterion : public HoeffdingBoundIncrementalSplittingCriterion
+{
+public:
+  HoeffdingBoundStdDevReductionIncrementalSplittingCriterion() : HoeffdingBoundIncrementalSplittingCriterion() {}
+  HoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundIncrementalSplittingCriterion(delta, threshold) {}
+
+  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const
+  {
+    ScalarVariableMeanAndVariancePtr totalVariance = new ScalarVariableMeanAndVariance();
+    totalVariance->push(*leftVariance);
+    totalVariance->push(*rightVariance);
+    return totalVariance->getStandardDeviation() - leftVariance->getCount() * leftVariance->getStandardDeviation() / totalVariance->getCount()
+      - rightVariance->getCount() * rightVariance->getStandardDeviation() / totalVariance->getCount();
+  }
+};
+
+class HoeffdingBoundMauveIncrementalSplittingCriterion : public HoeffdingBoundIncrementalSplittingCriterion
+{
+public:
+  HoeffdingBoundMauveIncrementalSplittingCriterion() : HoeffdingBoundIncrementalSplittingCriterion() {}
+  HoeffdingBoundMauveIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundIncrementalSplittingCriterion(delta, threshold) {}
+
+  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const
+  {
+    PearsonCorrelationCoefficientPtr totalCorrelation = new PearsonCorrelationCoefficient();
+    totalCorrelation->push(*leftCorrelation);
+    totalCorrelation->push(*rightCorrelation);
+    double numLeft = leftVariance->getCount();
+    double numRight = rightVariance->getCount();
+    return totalCorrelation->getResidualStandardDeviation() - numLeft * leftCorrelation->getResidualStandardDeviation() / (numLeft + numRight)
+      - numRight * rightCorrelation->getResidualStandardDeviation() / (numLeft + numRight);
+  }
+};
+/*
 class HoeffdingBoundStdDevReductionIncrementalSplittingCriterion2 : public IncrementalSplittingCriterion
 {
 public:
@@ -130,8 +177,8 @@ protected:
 private:
   void initFindSplit(ExtendedBinarySearchTreePtr ebst, size_t attribute, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total) const
   {
-    PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation->getStats(attribute);
-    PearsonCorrelationCoefficientPtr right = ebst->rightCorrelation->getStats(attribute);
+    PearsonCorrelationCoefficientPtr left = ebst->getLeftCorrelation()->getStats(attribute);
+    PearsonCorrelationCoefficientPtr right = ebst->getRightCorrelation()->getStats(attribute);
     totalRight->update(left->numSamples + right->numSamples, left->sumY + right->sumY, left->sumYsquared + right->sumYsquared, 0, 0, 0);
     total = left->numSamples + right->numSamples;
   }
@@ -187,7 +234,7 @@ public:
   {
 	  HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     HoeffdingTreeNodePtr hoeffdingLeaf = leaf.staticCast<HoeffdingTreeNode>();
-    MultiVariateRegressionStatisticsPtr modelStats = hoeffdingLeaf->getModel()->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>();
+    //MultiVariateRegressionStatisticsPtr modelStats = hoeffdingLeaf->getModel()->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size(), Split(0, DVector::missingValue, DVector::missingValue));
     for (size_t i = 0; i < splits.size(); ++i)
 	  {
@@ -244,7 +291,7 @@ private:
 		left->sumX + right->sumX, left->sumXsquared + right->sumXsquared, left->sumXY + right->sumXY);
 	  total = left->numSamples + right->numSamples;
   }
-
+  
   void findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, PearsonCorrelationCoefficientPtr totalLeft, PearsonCorrelationCoefficientPtr totalRight, int& total, Split& split) const
   {
     PearsonCorrelationCoefficientPtr left = ebst->leftCorrelation->getStats(attribute);
@@ -546,7 +593,7 @@ double QuandtAndrewsIncrementalSplittingCriterion::criticalValues[104][10] =
 	{6.66,4.63,3.80,3.34,3.04,2.82,2.66,2.53,2.43,2.34},
 	{1.04,4.61,3.78,3.32,3.02,2.80,2.64,2.51,2.41,2.32}
   };
-
+  */
 /** Splitting criterion that always returns no split found (i.e. no splitting)
  */
 class NullIncrementalSplittingCriterion : public IncrementalSplittingCriterion

@@ -50,6 +50,9 @@ public:
   virtual void push(double val, double weight)
     {samplesSum += weight * val; samplesCount += weight;}
 
+  virtual void push(const ScalarVariableMean& other)
+    {samplesSum += other.samplesSum; samplesCount += other.samplesCount;}
+
   virtual double getMean() const
     {return samplesCount ? samplesSum / samplesCount : 0.0;}
 
@@ -98,6 +101,12 @@ public:
 
   virtual void push(double val, double weight)
     {ScalarVariableMean::push(val, weight); samplesSumOfSquares += sqr(val) * weight;}
+
+  virtual void push(const ScalarVariableMean& other)
+    {jassertfalse;}
+
+  virtual void push(const ScalarVariableMeanAndVariance& other)
+    {ScalarVariableMean::push(other); samplesSumOfSquares += other.samplesSumOfSquares;}
 
   virtual double getSquaresMean() const
     {return samplesSumOfSquares / samplesCount;}
@@ -149,6 +158,15 @@ public:
   
   virtual void push(double val, double weight)
     {jassertfalse;}
+
+  virtual void push(const ScalarVariableMean& other)
+    {jassertfalse;}
+
+  virtual void push(const ScalarVariableMeanAndVariance& other)
+    {jassertfalse;}
+
+  virtual void push(const ScalarVariableConstMeanAndVariance& other)
+    {jassertfalse;}
   
   virtual double getSquaresMean() const
     {jassertfalse; return 0.0;}
@@ -183,6 +201,14 @@ public:
   virtual void clear();
   virtual void push(double val);
   virtual void push(double val, double weight);
+
+  virtual void push(const ScalarVariableMean& other)
+    {jassertfalse;}
+
+  virtual void push(const ScalarVariableMeanAndVariance& other)
+    {jassertfalse;}
+
+  virtual void push(const ScalarVariableStatistics& other);
 
   void push(const std::vector<double>& values);
 
@@ -295,18 +321,15 @@ public:
     sumYsquared += y * y;
   }
 
-  virtual void update(size_t dNumSamples, double dSumY, double dSumYsquared, double dSumX, double dSumXsquared, double dSumXY)
+  virtual void push(const PearsonCorrelationCoefficient& other)
   {
-    numSamples += dNumSamples;
-    sumY += dSumY;
-    sumYsquared += dSumYsquared;
-    sumX += dSumX;
-    sumXsquared += dSumXsquared;
-    sumXY += dSumXY;
+    numSamples += other.numSamples;
+    sumXY += other.sumXY;
+    sumX += other.sumX;
+    sumXsquared += other.sumXsquared;
+    sumY += other.sumY;
+    sumYsquared += other.sumYsquared;
   }
-
-  virtual void update(const PearsonCorrelationCoefficient& other)
-    {update(other.numSamples, other.sumY, other.sumYsquared, other.sumX, other.sumXsquared, other.sumXY);}
 
   virtual double getCorrelationCoefficient() const
     {return (numSamples * sumXY - sumX * sumY) / (sqrt((numSamples - 1) * sumXsquared - sumX * sumX) * sqrt((numSamples - 1) * sumYsquared - sumY * sumY));}
@@ -326,10 +349,20 @@ public:
     return 1 - ss_res/ss_tot;
   }
 
+  double getResidualStandardDeviation() const
+  {
+    double b = getSlope();
+    double rsd = sqrt((sumYsquared - (sumY * sumY + b * sumX * sumX) / numSamples + b * (sumXsquared + 2 * sumX * sumY / numSamples - 2 * sumXY)) / (numSamples - 1));
+    return rsd;
+  }
+
   /** Calculate the slope of the simple linear regressor fitted to the data pushed into this object
    */
   double getSlope() const
-    {return (sumXY - sumX * sumY / numSamples) / (sumXsquared - sumX * sumX / numSamples);}
+    {return (numSamples * sumXY - sumX * sumY) / (numSamples * sumXsquared - sumX * sumX);}
+
+  double getIntercept() const
+    {return (sumY - getSlope() * sumX) / numSamples;}
 
   double getXMean() const
     {return sumX / numSamples;}
@@ -377,7 +410,7 @@ public:
       for (size_t i = 0; i < other.getNumAttributes(); ++i)
         stats.push_back(new PearsonCorrelationCoefficient());
     for (size_t i = 0; i < other.getNumAttributes(); ++i)
-      stats[i]->update(*other.getStats(i));
+      stats[i]->push(*other.getStats(i));
   }
 
   // assumes all variables are uncorrelated
