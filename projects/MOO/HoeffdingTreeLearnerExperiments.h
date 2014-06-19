@@ -102,7 +102,7 @@ public:
 class HoeffdingTreeLearnerExperiments : public WorkUnit
 {
 public:
-  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.2), threshold(0.15), numDims(1), verbosity(verbosityQuiet) {}//verbosityDetailed
+  HoeffdingTreeLearnerExperiments() : numSamples(50), randomSeed(0), learningRate(2.0), learningRateDecay(0.05), delta(0.01), threshold(0.05), numDims(1), verbosity(verbosityQuiet) {}//verbosityDetailed
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -127,7 +127,7 @@ public:
     //problems.push_back(new LOSCProblem());
 
     // grid search for optimal parameters
-    gridSearch(context, problems);
+    //gridSearch(context, problems);
     
     SamplerPtr sampler = uniformSampler();
 
@@ -142,7 +142,7 @@ public:
       //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
 	  // mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95)
 	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.001)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(0.01, 0.4), simpleLinearRegressionIncrementalLearner(), 50));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.001), simpleLinearRegressionIncrementalLearner(), 50));
       //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
       learner->setVerbosity((SolverVerbosity)verbosity);

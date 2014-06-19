@@ -109,6 +109,25 @@ public:
       model->getWeights()->setValue(i, b(i));
   }
 
+  virtual void initialiseLearnerStatistics(ExecutionContext& context, ExpressionPtr model, ObjectPtr data) const 
+  {
+    model->setLearnerStatistics(data);
+    MultiVariateRegressionStatisticsPtr stats = model->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>();
+    DenseDoubleVectorPtr& weights = model.staticCast<LinearModelExpression>()->getWeights();
+
+    if (weights->getNumValues() != stats->getNumAttributes() + 1)
+      weights = new DenseDoubleVector(stats->getNumAttributes() + 1, 0.0);
+    
+    // calculate slopes
+    for (size_t i = 1; i < weights->getNumValues(); ++i)
+      weights->setValue(i, stats->getStats(i - 1)->getSlope());
+
+    // calculate intercept
+    weights->setValue(0, stats->getStats(0)->getYMean());
+    for (size_t i = 0; i < stats->getNumAttributes(); ++i)
+      weights->getValueReference(0) -= weights->getValue(i+1) * stats->getStats(i)->getXMean();
+  }
+
 };
 
 } /* namespace lbcpp */

@@ -145,10 +145,11 @@ protected:
     
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
 
     /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     */
@@ -165,7 +166,7 @@ protected:
         context.resultCallback(results[r].first, results[r].second);
         context.resultCallback(results[r].first, results[r].second);
       }
-      context.leaveScope(true);
+      context.leaveScope(results[0].second);
 
       /*
       ExpressionPtr model = solveProblem(context, folds[0], solvers[s]);
@@ -196,13 +197,15 @@ public:
     // set up test problems
     std::vector<ProblemPtr> problems;
     std::vector<string> problemnames;
-    problems.push_back(new FriedmannProblem());
-    problemnames.push_back("Friedmann");
+    problems.push_back(new ParaboloidProblem());
+    problemnames.push_back("Paraboloid");   
 
     if (!testRun)
     {
+      problems.push_back(new FriedmannProblem());
       problems.push_back(new LEXPProblem());
       problems.push_back(new LOSCProblem());
+      problemnames.push_back("Friedmann");
       problemnames.push_back("Lexp");
       problemnames.push_back("Losc");
     }

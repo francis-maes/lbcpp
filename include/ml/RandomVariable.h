@@ -352,7 +352,7 @@ public:
   double getResidualStandardDeviation() const
   {
     double b = getSlope();
-    double rsd = sqrt((sumYsquared - (sumY * sumY + b * sumX * sumX) / numSamples + b * (sumXsquared + 2 * sumX * sumY / numSamples - 2 * sumXY)) / (numSamples - 1));
+    double rsd = sqrt((sumYsquared - sumY * sumY / numSamples - 2 * b * (sumXY - sumX * sumY / numSamples) + b * b * (sumXsquared - sumX * sumX / numSamples)) / (numSamples - 1));
     return rsd;
   }
 
