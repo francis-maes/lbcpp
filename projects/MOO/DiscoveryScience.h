@@ -36,27 +36,28 @@ public:
   virtual ObjectPtr run(ExecutionContext& context)
   {
     std::vector<double> deltas;
-    deltas.push_back(0.001);
-    deltas.push_back(0.005);
+    //deltas.push_back(0.001);
+    //deltas.push_back(0.005);
     deltas.push_back(0.01);
-    deltas.push_back(0.05);
-    deltas.push_back(0.10);
-    deltas.push_back(0.15);
-    deltas.push_back(0.20);
-    deltas.push_back(0.25);
+    //deltas.push_back(0.05);
+    //deltas.push_back(0.10);
+    //deltas.push_back(0.15);
+    //deltas.push_back(0.20);
+    //deltas.push_back(0.25);
 
     std::vector<double> thresholds;
-    thresholds.push_back(0.001);
-    thresholds.push_back(0.005);
-    thresholds.push_back(0.01);
+    //thresholds.push_back(0.001);
+    //thresholds.push_back(0.005);
+    //thresholds.push_back(0.01);
     thresholds.push_back(0.05);
-    thresholds.push_back(0.1);
-    thresholds.push_back(0.15);
-    thresholds.push_back(0.20);
-    thresholds.push_back(0.25);
+    //thresholds.push_back(0.1);
+    //thresholds.push_back(0.15);
+    //thresholds.push_back(0.20);
+    //thresholds.push_back(0.25);
 
     std::vector<string> algoNames;
     algoNames.push_back("iMauveLLSQ");
+    algoNames.push_back("iMauveSLR");
     algoNames.push_back("FIMTp");
     algoNames.push_back("FIMTllsq");
     
@@ -144,6 +145,7 @@ protected:
     std::vector<SolverPtr> solvers;
     
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
 

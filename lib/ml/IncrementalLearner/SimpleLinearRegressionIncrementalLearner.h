@@ -55,7 +55,7 @@ public:
       weights->getValueReference(0) -= weights->getValue(i+1) * stats->getStats(i)->getXMean();
   }
 
-  /* Initialise the simple linear regression, data should be an OVector with PearsonCorrelationCoefficients as the elements, one for each attribute
+  /* Initialise the simple linear regression
    *
    */
   virtual void initialiseLearnerStatistics(ExecutionContext& context, ExpressionPtr model, ObjectPtr data) const 
