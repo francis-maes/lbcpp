@@ -398,6 +398,32 @@ private:
   };
 };
 
+class ParaboloidProblem : public Problem
+{
+public:
+  ParaboloidProblem()
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(2, std::make_pair(-4.0, 4.0))));
+    addObjective(new ParaboloidObjective());
+  }
+private:
+  class ParaboloidObjective : public Objective
+  {
+  public:
+    ParaboloidObjective() {}
+
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+    {
+      double x1 = object.staticCast<DenseDoubleVector>()->getValue(0);
+      double x2 = object.staticCast<DenseDoubleVector>()->getValue(1);
+      return sqrt(x1 * x1 + x2 * x2);
+    }
+
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {worst = 0.0; best = 5.66;}
+  };
+};
+
 
 }; /* namespace lbcpp */
 

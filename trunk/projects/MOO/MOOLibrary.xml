@@ -86,6 +86,7 @@
   </class>
 
   <class name="XValWorkUnit" base="WorkUnit"></class>
+  <class name="Sandbox" base="WorkUnit"></class>
 
   <class name="PerceptronTest" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>

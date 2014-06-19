@@ -27,6 +27,7 @@ SET(MOO_SOURCES
   LinearRegressionTests.h
   HoeffdingTreeLearnerExperiments.h
   WFGProblems.h
+  Sandbox.h
 #  DTLZFronts.cpp
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
