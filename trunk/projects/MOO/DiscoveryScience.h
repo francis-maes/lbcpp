@@ -56,10 +56,14 @@ public:
     //thresholds.push_back(0.25);
 
     std::vector<string> algoNames;
+    
     algoNames.push_back("iMauveLLSQ");
     algoNames.push_back("iMauveSLR");
-    algoNames.push_back("FIMTp");
+    algoNames.push_back("iMauveP");
     algoNames.push_back("FIMTllsq");
+    algoNames.push_back("FIMTslr");
+    algoNames.push_back("FIMTp");
+    
     
 
 
@@ -146,8 +150,11 @@ protected:
     
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    
 
     /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
@@ -199,15 +206,17 @@ public:
     // set up test problems
     std::vector<ProblemPtr> problems;
     std::vector<string> problemnames;
-    problems.push_back(new ParaboloidProblem());
-    problemnames.push_back("Paraboloid");   
+    problems.push_back(new FriedmannProblem());
+    problemnames.push_back("Friedmann");
+       
 
     if (!testRun)
     {
-      problems.push_back(new FriedmannProblem());
+      problems.push_back(new ParaboloidProblem());
+      problemnames.push_back("Paraboloid");  
       problems.push_back(new LEXPProblem());
       problems.push_back(new LOSCProblem());
-      problemnames.push_back("Friedmann");
+      
       problemnames.push_back("Lexp");
       problemnames.push_back("Losc");
     }
