@@ -11,7 +11,7 @@
 #include <ml/IncrementalLearner.h>
 #include <oil/Core/Table.h>
 #include <algorithm>
-#include "IncrementalLearner\HoeffdingTreeIncrementalLearner.h"
+#include "IncrementalLearner/HoeffdingTreeIncrementalLearner.h"
 using namespace lbcpp;
 
 /*

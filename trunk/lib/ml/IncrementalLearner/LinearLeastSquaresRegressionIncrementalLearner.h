@@ -32,8 +32,8 @@ public:
     // initialise xtx and xty matrices
     if (xtx.dim(0) != numAttr)
     {
-      xtx.resize(numAttr, numAttr);
-      xty.resize(numAttr, output->getNumValues());
+      xtx.resize(numAttr, numAttr, false);
+      xty.resize(numAttr, output->getNumValues(), false);
       for (size_t i = 0; i < numAttr; ++i)
       {
         for (size_t j = 0; j < numAttr; ++j)
