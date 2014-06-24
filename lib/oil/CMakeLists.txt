@@ -1,6 +1,6 @@
 INCLUDE_DIRECTORIES(
   ${LBCpp_SOURCE_DIR}/include
-  ${LBCpp_SOURCE_DIR}/shark/include
+  ${LBCpp_SOURCE_DIR}/extern/shark/include
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

@@ -28,6 +28,8 @@
 # define ML_RANDOM_VARIABLE_H_
 
 # include "predeclarations.h"
+# include <Array/Array2D.h>
+# include <LinAlg/LinAlg.h>
 # include <oil/Core/Object.h>
 # include <cfloat>
 # include <deque>
@@ -370,6 +372,9 @@ public:
   double getYMean() const
     {return sumY / numSamples;}
 
+  size_t getNumSamples() const
+    {return numSamples;}
+
   size_t numSamples;
   double sumXY;
   double sumX, sumXsquared;
@@ -385,13 +390,15 @@ typedef ReferenceCountedObjectPtr<PearsonCorrelationCoefficient> PearsonCorrelat
 class MultiVariateRegressionStatistics : public Object
 {
 public:
-  MultiVariateRegressionStatistics() {}
+  MultiVariateRegressionStatistics() : xtx(Array<double>(1,1)), xty(Array<double>(1,1)) {}
 
   MultiVariateRegressionStatistics(const MultiVariateRegressionStatistics& other)
   {
     stats = std::vector<PearsonCorrelationCoefficientPtr>(other.getNumAttributes());
     for (size_t i = 0; i < stats.size(); ++i)
       stats[i] = new PearsonCorrelationCoefficient(*other.getStats(i));
+    xtx = Array<double>(other.xtx);
+    xty = Array<double>(other.xty);
   }
 
   virtual void push(const DenseDoubleVectorPtr& attributes, double y)
@@ -402,6 +409,36 @@ public:
     jassert(attributes->getNumValues() == stats.size());
     for (size_t i = 0; i < attributes->getNumValues(); ++i)
       stats[i]->push(attributes->getValue(i), y);
+
+    size_t numAttr = attributes->getNumValues() + 1;
+    DenseDoubleVectorPtr extendedInput = new DenseDoubleVector(numAttr, 1.0);
+    for (size_t i = 1; i < numAttr; ++i)
+      extendedInput->setValue(i, attributes->getValue(i - 1));
+    
+    // initialise xtx and xty matrices
+    if (xtx.dim(0) != numAttr)
+    {
+      xtx.resize(numAttr, numAttr, false);
+      xty.resize(numAttr, 1, false);
+      for (size_t i = 0; i < numAttr; ++i)
+      {
+        for (size_t j = 0; j < numAttr; ++j)
+          xtx(i,j) = 0.0;
+        xty(i,0) = 0.0;
+      }
+    }
+    
+    for (size_t i = 0; i < numAttr; ++i)
+    {
+      xtx(i, i) += extendedInput->getValue(i) * extendedInput->getValue(i);
+      for (size_t j = i + 1; j < numAttr; ++j)
+      {
+        double val = extendedInput->getValue(i) * extendedInput->getValue(j);
+        xtx(i, j) += val;
+        xtx(j, i) += val;
+      }
+      xty(i, 0) += extendedInput->getValue(i) * y;
+    }
   }
 
   virtual void update(const MultiVariateRegressionStatistics& other)
@@ -411,6 +448,27 @@ public:
         stats.push_back(new PearsonCorrelationCoefficient());
     for (size_t i = 0; i < other.getNumAttributes(); ++i)
       stats[i]->push(*other.getStats(i));
+        // initialise xtx and xty matrices
+    
+    size_t numAttr = other.xtx.dim(0);
+    if (xtx.dim(0) != numAttr)
+    {
+      xtx.resize(numAttr, numAttr, false);
+      xty.resize(numAttr, 1, false);
+      for (size_t i = 0; i < numAttr; ++i)
+      {
+        for (size_t j = 0; j < numAttr; ++j)
+          xtx(i,j) = 0.0;
+        xty(i,0) = 0.0;
+      }
+    }
+
+    for (size_t i = 0; i < numAttr; ++i)
+    {
+      for (size_t j = 0; j < numAttr; ++j)
+        xtx(i, j) += other.xtx(i,j);
+      xty(i, 0) += other.xty(i, 0);
+    }
   }
 
   // assumes all variables are uncorrelated
@@ -425,6 +483,35 @@ public:
   size_t getNumAttributes() const
     {return stats.size();}
 
+  size_t getExamplesSeen() const
+  {
+    if (stats.size() == 0) 
+      return 0;
+    return stats[0]->getNumSamples();
+  }
+
+  /** Calculate the linear least squares parameter estimation
+   *
+   */
+  DenseDoubleVectorPtr getLLSQEstimate() const
+  {
+    Array<double> xtxinv(xtx.dim(0), xtx.dim(1));
+    xtxinv = invert(xtx);
+    Array<double> b;
+    matMat(b, xtxinv, xty);
+
+    DenseDoubleVectorPtr result = new DenseDoubleVector(b.dim(0), 0.0);
+    for (size_t i = 0; i < b.dim(0); ++i)
+      result->setValue(i, b(i));
+    return result;
+  }
+
+  Array<double> getXTX() const
+    {return xtx;}
+
+  Array<double> getXTY() const
+    {return xty;}
+
   virtual PearsonCorrelationCoefficientPtr getStats(size_t idx) const
   {
     if (stats.size() == 0) return new PearsonCorrelationCoefficient();
@@ -437,6 +524,8 @@ public:
     result->stats = std::vector<PearsonCorrelationCoefficientPtr>(stats.size());
     for (size_t i = 0; i < stats.size(); ++i)
       result->stats[i] = new PearsonCorrelationCoefficient(*stats[i]);
+    result->xtx = Array<double>(xtx);
+    result->xty = Array<double>(xty);
     return result;
   }
 
@@ -444,6 +533,8 @@ protected:
   friend class MultiVariateRegressionStatisticsClass;
 
   std::vector<PearsonCorrelationCoefficientPtr> stats;
+  Array<double> xtx;
+  Array<double> xty;
 };
 
 typedef ReferenceCountedObjectPtr<MultiVariateRegressionStatistics> MultiVariateRegressionStatisticsPtr;
