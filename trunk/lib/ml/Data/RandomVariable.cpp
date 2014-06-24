@@ -9,6 +9,7 @@
 #include <ml/RandomVariable.h>
 #include <oil/Core.h>
 #include <oil/Lua/Lua.h>
+
 using namespace lbcpp;
 
 /*
