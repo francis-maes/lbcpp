@@ -538,7 +538,7 @@ DataVectorPtr LinearModelExpression::computeSamples(ExecutionContext& context, c
   return new DataVector(indices, vector);
 }
 
-DataVectorPtr PerceptronExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
+DataVectorPtr NormalizedLinearModelExpression::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
 {
   DVectorPtr vector = new DVector(indices->size());
   size_t i = 0;
@@ -547,12 +547,11 @@ DataVectorPtr PerceptronExpression::computeSamples(ExecutionContext& context, co
   return new DataVector(indices, vector);
 }
 
-void PerceptronExpression::updateStatistics(ExecutionContext& context, const DenseDoubleVectorPtr& inputs)
+void NormalizedLinearModelExpression::updateStatistics(ExecutionContext& context, const DenseDoubleVectorPtr& inputs)
 {
   ++examplesSeen;
   if (statistics.empty())
   {
-    DenseDoubleVectorPtr& weights = model->getWeights();
     // This is the first sample, initialize the statistics
     statistics.resize(inputs->getNumValues());
     normalizedInput.resize(inputs->getNumValues());
@@ -575,7 +574,7 @@ void PerceptronExpression::updateStatistics(ExecutionContext& context, const Den
  *  \return A DenseDoubleVectorPtr of \f$n\f$ elements where the elements are
  *          the normalized input vector.
  */
-DenseDoubleVectorPtr PerceptronExpression::normalizeInput(const DenseDoubleVectorPtr& sample) const
+DenseDoubleVectorPtr NormalizedLinearModelExpression::normalizeInput(const DenseDoubleVectorPtr& sample) const
 {
   DenseDoubleVectorPtr result = new DenseDoubleVector(sample->getNumValues(), 1.0);
   for (size_t i = 0; i < result->getNumValues(); ++i)

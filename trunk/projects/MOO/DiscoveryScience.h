@@ -238,6 +238,7 @@ public:
       datasets.push_back("pol.arff");
       datasets.push_back("winequality-white.arff");
       datasets.push_back("cal_housing.arff");
+      datasets.push_back("cal_housing_norm.arff");
       //datasets.push_back("CASP.arff");
     
       problemnames.push_back("Friedmann");
@@ -245,6 +246,7 @@ public:
       problemnames.push_back("PoleTelecom");
       problemnames.push_back("Wine quality");
       problemnames.push_back("California housing");
+      problemnames.push_back("California housing normalized");
       //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
     
       ArffLoader loader;

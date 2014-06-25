@@ -24,13 +24,13 @@ public:
   PerceptronIncrementalLearner() {}
 
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const
-    {return new PerceptronExpression();}
+    {return new NormalizedLinearModelExpression();}
 
   virtual void addTrainingSample(ExecutionContext &context, ExpressionPtr expression, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const
   {
     // only single-objective for now
     jassert(output->getNumValues() == 1);
-    PerceptronExpressionPtr perceptron = expression.staticCast<PerceptronExpression>();
+    NormalizedLinearModelExpressionPtr perceptron = expression.staticCast<NormalizedLinearModelExpression>();
     perceptron->updateStatistics(context, input);
 
     size_t numTrainingSamples = perceptron->getExamplesSeen();

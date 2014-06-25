@@ -38,8 +38,7 @@
   <class name="LinearModelExpression" base="Expression">
     <variable type="Vector[Double]" name="weights"/>
   </class>
-  <class name="PerceptronExpression" base="Expression">
-    <variable type="LinearModelExpression" name="model"/>
+  <class name="NormalizedLinearModelExpression" base="LinearModelExpression">
     <variable type="Vector[ScalarVariableMeanAndVariance]" name="statistics"/>
   </class>
   
