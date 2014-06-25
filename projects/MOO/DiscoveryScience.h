@@ -148,10 +148,10 @@ protected:
   {
     std::vector<SolverPtr> solvers;
     
-    //solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
-    //solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     

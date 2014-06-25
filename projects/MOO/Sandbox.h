@@ -12,6 +12,7 @@
 # include <oil/Execution/WorkUnit.h>
 # include <ml/IncrementalLearner.h>
 # include <ml/BinarySearchTree.h>
+# include <ml/Expression.h>
 
 namespace lbcpp
 {
@@ -23,17 +24,41 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    IncrementalLearnerPtr learner = hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(0.01, 0.05), linearLeastSquaresRegressionIncrementalLearner(), 11);
-    ExpressionPtr model = learner->createExpression(context, doubleClass);
-    for (size_t i = 0; i < 12; ++i)
+    std::vector< std::pair<juce::String, IncrementalLearnerPtr> > learners;
+    learners.push_back(std::make_pair("LLSQ", linearLeastSquaresRegressionIncrementalLearner()));
+    learners.push_back(std::make_pair("SLR", simpleLinearRegressionIncrementalLearner()));
+    //learners.push_back(std::make_pair("Perceptron", perceptronIncrementalLearner(20, 0.05, 0.01)));
+
+    std::vector<LinearModelExpressionPtr> models;
+    for (size_t i = 0; i < learners.size(); ++i)
+      models.push_back(learners[i].second->createExpression(context, doubleClass).staticCast<LinearModelExpression>());
+
+    ProblemPtr problem = new ParaboloidProblem();
+
+    const size_t numPoints = 10000;
+    DenseDoubleVectorPtr input = new DenseDoubleVector(2, 0.0);
+    DenseDoubleVectorPtr output = new DenseDoubleVector(1, 0.0);
+    FitnessPtr fitness;
+    context.enterScope("Learning weights");
+    for (size_t i = 0; i < numPoints; ++i)
     {
-      double x = (double) i;
-      double y = (x <= 5.0 ? x : 10 - x) + context.getRandomGenerator()->sampleDoubleFromGaussian(0.0, 0.2);
-      DenseDoubleVectorPtr input = new DenseDoubleVector(1, x);
-      DenseDoubleVectorPtr output = new DenseDoubleVector(1, y);
-      learner->addTrainingSample(context, model, input, output);
+      input->setValue(0, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
+      input->setValue(1, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
+      fitness = problem->evaluate(context, input);
+      output->setValue(0, fitness->getValue(0));
+      context.enterScope("Iteration " + string((int) i));
+      context.resultCallback("iteration", i);
+      for (size_t l = 0; l < learners.size(); ++l)
+      {
+        learners[l].second->addTrainingSample(context, models[l], input, output);
+        DenseDoubleVectorPtr& weights = models[l]->getWeights();
+        for (size_t j = 0; j < weights->getNumValues(); ++j)
+          context.resultCallback(learners[l].first + string((int) j), weights->getValue(j));
+      }
+      context.leaveScope();
+      context.progressCallback(new ProgressionState(i + 1, numPoints, "Iterations"));
     }
-    context.resultCallback("model", model);
+    context.leaveScope();
     return new Boolean(true);
   }
 
