@@ -84,6 +84,7 @@ public:
   {
     jassert(output->getNumValues() == 1);
     HoeffdingTreeNodePtr root = expr.staticCast<HoeffdingTreeNode>();
+
     HoeffdingTreeNodePtr leaf = root->findLeaf(input);
     HoeffdingTreeIncrementalLearnerStatisticsPtr leafStats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     

@@ -187,8 +187,8 @@ typedef ReferenceCountedObjectPtr<HoeffdingTreeNode> HoeffdingTreeNodePtr;
 class LinearModelExpression;
 typedef ReferenceCountedObjectPtr<LinearModelExpression> LinearModelExpressionPtr;
 
-class PerceptronExpression;
-typedef ReferenceCountedObjectPtr<PerceptronExpression> PerceptronExpressionPtr;
+class NormalizedLinearModelExpression;
+typedef ReferenceCountedObjectPtr<NormalizedLinearModelExpression> NormalizedLinearModelExpressionPtr;
 
 class BinarySearchTree;
 typedef ReferenceCountedObjectPtr<BinarySearchTree> BinarySearchTreePtr;

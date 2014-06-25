@@ -537,7 +537,7 @@ public:
       weights->setValue(i, weights_[i]);
   }
   
-  double compute(const DenseDoubleVectorPtr& input) const
+  virtual double compute(const DenseDoubleVectorPtr& input) const
   {
     if (weights->getNumValues() == 0)
       return 0.0;
@@ -570,26 +570,22 @@ protected:
   virtual DataVectorPtr computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const;
 };
   
-class PerceptronExpression : public Expression
+class NormalizedLinearModelExpression : public LinearModelExpression
 {
 public:
-  PerceptronExpression() : Expression(doubleClass), examplesSeen(0), model(new LinearModelExpression()), statistics(std::vector<ScalarVariableMeanAndVariancePtr>()),
-    normalizedInput(std::vector<ObjectPtr>()) {}
+  NormalizedLinearModelExpression() :examplesSeen(0) {}
   
   virtual ObjectPtr compute(ExecutionContext &context, const std::vector<ObjectPtr>& inputs) const
-    {calculateNormalizedInput(inputs); return model->compute(context, normalizedInput);}
+    {calculateNormalizedInput(inputs); return LinearModelExpression::compute(context, normalizedInput);}
   
-  double compute(const DenseDoubleVectorPtr& input) const
+  virtual double compute(const DenseDoubleVectorPtr& input) const
   {
     DenseDoubleVectorPtr normalized = normalizeInput(input);
-    return model->compute(normalized);
+    return LinearModelExpression::compute(normalized);
   }
 
   ScalarVariableMeanAndVariancePtr getStatistics(size_t i) const
     {return statistics[i];}
-  
-  LinearModelExpressionPtr getModel() const
-    {return model;}
 
   DenseDoubleVectorPtr normalizeInput(const DenseDoubleVectorPtr& sample) const;
 
@@ -599,16 +595,10 @@ public:
    */
   void updateStatistics(ExecutionContext& context, const DenseDoubleVectorPtr& inputs);
 
-  /** Get a reference to the model's weight vector
-   *  \return a reference to the weight vector, allowing it to be updated
-   */
-  inline DenseDoubleVectorPtr& getWeights()
-    {return model->getWeights();}
-
   virtual ObjectPtr clone(ExecutionContext& context) const
   {
-    PerceptronExpressionPtr result = new PerceptronExpression();
-    result->model = model->clone(context);
+    NormalizedLinearModelExpressionPtr result = new NormalizedLinearModelExpression();
+    weights->clone(context, result->weights);
     result->statistics = std::vector<ScalarVariableMeanAndVariancePtr>(statistics);
     result->normalizedInput = std::vector<ObjectPtr>(normalizedInput.size());
     for (size_t i = 0; i < normalizedInput.size(); ++i)
@@ -624,10 +614,9 @@ public:
     {examplesSeen = numExamples;}
 
 protected:
-  friend class PerceptronExpressionClass;
+  friend class NormalizedLinearModelExpressionClass;
   
   size_t examplesSeen;
-  LinearModelExpressionPtr model;                            /**< Underlying linear model */
   std::vector<ScalarVariableMeanAndVariancePtr> statistics;  /**< Parameters for input normalization */
   std::vector<ObjectPtr> normalizedInput;                    /**< placeholder for result of normalization of input, this avoids allocating a vector everytime a training sample is added or prediction is required */
 
