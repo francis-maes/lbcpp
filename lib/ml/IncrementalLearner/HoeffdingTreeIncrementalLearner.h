@@ -54,7 +54,7 @@ public:
   const std::vector<ExtendedBinarySearchTreePtr>& getEBSTs() const
     {return ebsts;}
 
-  const ScalarVariableMeanPtr& getSplitRatios() const
+  ScalarVariableMeanPtr getSplitRatios() const
     {return splitRatios;}
 
 protected:

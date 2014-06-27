@@ -44,10 +44,13 @@ public:
         secondBestSplit = splits[i];
     }
     double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
-    if ( bestSplit.quality != 0 && ( secondBestSplit.quality/bestSplit.quality < (1 - epsilon) || epsilon < threshold))
-      return bestSplit;
-    else
-      return Split(0, DVector::missingValue, DVector::missingValue);
+    if ( bestSplit.quality != 0 )
+    {
+      stats->getSplitRatios()->push(secondBestSplit.quality / bestSplit.quality);
+      if (stats->getSplitRatios()->getMean() < (1 - epsilon) || epsilon < threshold)
+        return bestSplit;
+    }
+    return Split(0, DVector::missingValue, DVector::missingValue);
   }
 
   virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
