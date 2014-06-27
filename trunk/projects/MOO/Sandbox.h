@@ -13,6 +13,8 @@
 # include <ml/IncrementalLearner.h>
 # include <ml/BinarySearchTree.h>
 # include <ml/Expression.h>
+# include <iostream>
+# include <fstream>
 
 namespace lbcpp
 {
@@ -33,19 +35,26 @@ public:
     for (size_t i = 0; i < learners.size(); ++i)
       models.push_back(learners[i].second->createExpression(context, doubleClass).staticCast<LinearModelExpression>());
 
-    ProblemPtr problem = new ParaboloidProblem();
+    ProblemPtr problem = new FriedmannProblem();
 
+    const size_t numAttr = problem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions();
     const size_t numPoints = 10000;
-    DenseDoubleVectorPtr input = new DenseDoubleVector(2, 0.0);
+    DenseDoubleVectorPtr input = new DenseDoubleVector(numAttr, 0.0);
     DenseDoubleVectorPtr output = new DenseDoubleVector(1, 0.0);
     FitnessPtr fitness;
     context.enterScope("Learning weights");
+    std::ofstream file;
+    file.open("C:/Projets/lbcpp/data.txt");
     for (size_t i = 0; i < numPoints; ++i)
     {
-      input->setValue(0, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
-      input->setValue(1, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
+      for (size_t a = 0; a < numAttr; ++a)
+      {
+        input->setValue(a, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
+        file << input->getValue(a) << ",";
+      }
       fitness = problem->evaluate(context, input);
       output->setValue(0, fitness->getValue(0));
+      file << output->getValue(0) << std::endl;
       context.enterScope("Iteration " + string((int) i));
       context.resultCallback("iteration", i);
       for (size_t l = 0; l < learners.size(); ++l)
@@ -58,7 +67,10 @@ public:
       context.leaveScope();
       context.progressCallback(new ProgressionState(i + 1, numPoints, "Iterations"));
     }
+    file.close();
     context.leaveScope();
+    for (size_t i = 0; i < models[0]->getWeights()->getNumValues(); ++i)
+      std::cout << models[0]->getWeights()->getValue(i) << " ";
     return new Boolean(true);
   }
 
