@@ -83,7 +83,8 @@ int RecentWorkUnitsConfiguration::findRecentWorkUnit(const string& workUnit) con
 */
 ExplorerProject::ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration())
 {
-  int numCpus = juce::SystemStats::getNumCpus();
+  //int numCpus = juce::SystemStats::getNumCpus();
+  int numCpus = 4;
   workUnitContext = multiThreadedExecutionContext(numCpus > 2 ? numCpus - 1 : numCpus);
 //  workUnitContext->appendCallback(consoleExecutionCallback());
 }

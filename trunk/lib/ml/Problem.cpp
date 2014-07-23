@@ -133,6 +133,7 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
   validation->addColumn(y, y->getType());
 
   // fill the tables
+  sampler->initialize(context, getDomain());
   for (size_t i = 0; i < numSamples; ++i)
   {
     DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
@@ -151,6 +152,7 @@ ProblemPtr Problem::toSupervisedLearningProblem(ExecutionContext& context, size_
   }
 
   ProblemPtr res = new Problem();
+  res->setThisClass(getClass());
     
   res->setDomain(domain);
   res->addObjective(rmseRegressionObjective(supervision, y));

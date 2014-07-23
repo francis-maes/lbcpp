@@ -28,6 +28,8 @@ SET(MOO_SOURCES
   HoeffdingTreeLearnerExperiments.h
   WFGProblems.h
   Sandbox.h
+  SplitQualityTests.h
+  Utilities.h
 #  DTLZFronts.cpp
   MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp

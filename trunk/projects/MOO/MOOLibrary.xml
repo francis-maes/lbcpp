@@ -43,6 +43,14 @@
   <class name="WFG8Problem" base="WFGProblem"/>
   <class name="WFG9Problem" base="WFGProblem"/>
 
+  <class name="FriedmannProblem" base="Problem"/>
+  <class name="LEXPProblem" base="Problem"/>
+  <class name="LOSCProblem" base="Problem"/>
+  <class name="ParaboloidProblem" base="Problem">
+    <constructor arguments=""/>
+  </class>
+  <class name="CARTProblem" base="Problem"/>
+
   <class name="SolverInfo"/>
   <class name="TestOneOptimizer" base="WorkUnit"/>
 
@@ -85,8 +93,12 @@
     <variable type="Boolean" name="testRun" description="Perform evaluation on one dataset only."/>
   </class>
 
+  <class name="SplitQualityTests" base="WorkUnit"></class>
+  
   <class name="XValWorkUnit" base="WorkUnit"></class>
-  <class name="Sandbox" base="WorkUnit"></class>
+  <class name="Sandbox" base="WorkUnit">
+    <variable type="String" name="datasetPath"/>
+  </class>
 
   <class name="PerceptronTest" base="WorkUnit">
     <variable type="PositiveInteger" name="numSamples"/>
@@ -98,7 +110,7 @@
 
   <class name="LinearRegressionTests" base="WorkUnit">
     <variable type="PositiveInteger" name="randomSeed"/>
-    <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="String" name="datasetPath"/>
   </class>
 
   <class name="RewardLearningTest" base="WorkUnit">

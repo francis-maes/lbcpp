@@ -13,8 +13,9 @@
 # include <ml/IncrementalLearner.h>
 # include <ml/BinarySearchTree.h>
 # include <ml/Expression.h>
-# include <iostream>
-# include <fstream>
+# include <ml/Sampler.h>
+# include "SolverInfo.h"
+# include "SharkProblems.h"
 
 namespace lbcpp
 {
@@ -22,7 +23,7 @@ namespace lbcpp
 class Sandbox : public WorkUnit
 {
 public:
-  Sandbox() {}
+  Sandbox() : datasetPath("") {}
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -31,30 +32,33 @@ public:
     learners.push_back(std::make_pair("SLR", simpleLinearRegressionIncrementalLearner()));
     //learners.push_back(std::make_pair("Perceptron", perceptronIncrementalLearner(20, 0.05, 0.01)));
 
-    std::vector<LinearModelExpressionPtr> models;
-    for (size_t i = 0; i < learners.size(); ++i)
-      models.push_back(learners[i].second->createExpression(context, doubleClass).staticCast<LinearModelExpression>());
+    const size_t numSamples = 10000;
 
-    ProblemPtr problem = new FriedmannProblem();
+    std::vector<std::pair<string, ProblemPtr> > problems = createProblems(context, numSamples, numSamples / 10, false, datasetPath);
 
-    const size_t numAttr = problem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions();
-    const size_t numPoints = 10000;
-    DenseDoubleVectorPtr input = new DenseDoubleVector(numAttr, 0.0);
+    SolverPtr solver = incrementalLearnerBasedLearner(linearLeastSquaresRegressionIncrementalLearner());
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      ExpressionPtr model;
+      FitnessPtr fitness;
+      context.enterScope(problems[i].first);
+      solver->solve(context, problems[i].second, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
+      context.resultCallback("Model", model);
+      context.leaveScope(fitness);
+    }
+
+
+    /*const size_t numPoints = 10000;
+    DenseDoubleVectorPtr input = new DenseDoubleVector(2, 0.0);
     DenseDoubleVectorPtr output = new DenseDoubleVector(1, 0.0);
     FitnessPtr fitness;
     context.enterScope("Learning weights");
-    std::ofstream file;
-    file.open("C:/Projets/lbcpp/data.txt");
     for (size_t i = 0; i < numPoints; ++i)
     {
-      for (size_t a = 0; a < numAttr; ++a)
-      {
-        input->setValue(a, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
-        file << input->getValue(a) << ",";
-      }
+      input->setValue(0, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
+      input->setValue(1, context.getRandomGenerator()->sampleDouble(0.0, 2.0));
       fitness = problem->evaluate(context, input);
       output->setValue(0, fitness->getValue(0));
-      file << output->getValue(0) << std::endl;
       context.enterScope("Iteration " + string((int) i));
       context.resultCallback("iteration", i);
       for (size_t l = 0; l < learners.size(); ++l)
@@ -67,13 +71,66 @@ public:
       context.leaveScope();
       context.progressCallback(new ProgressionState(i + 1, numPoints, "Iterations"));
     }
-    file.close();
-    context.leaveScope();
-    for (size_t i = 0; i < models[0]->getWeights()->getNumValues(); ++i)
-      std::cout << models[0]->getWeights()->getValue(i) << " ";
+    context.leaveScope();*/
     return new Boolean(true);
   }
 
+  std::vector<std::pair<string, ProblemPtr> > createProblems(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, bool testRun, string arffPath)
+  {
+    // set up test problems
+    std::vector<std::pair<string, ProblemPtr> > problems;
+    problems.push_back(std::make_pair("Friedmann", (new FriedmannProblem())->toSupervisedLearningProblem(context, numSamples, numValidationSamples, uniformSampler())));
+
+    if (!testRun)
+    {
+      problems.push_back(std::make_pair("Paraboloid", (new ParaboloidProblem())->toSupervisedLearningProblem(context, numSamples, numValidationSamples, uniformSampler())));
+      problems.push_back(std::make_pair("Lexp", (new LEXPProblem())->toSupervisedLearningProblem(context, numSamples, numValidationSamples, uniformSampler())));
+      problems.push_back(std::make_pair("Losc", (new LOSCProblem())->toSupervisedLearningProblem(context, numSamples, numValidationSamples, uniformSampler())));
+    }
+
+    /*
+    SamplerPtr sampler = uniformSampler();
+    std::vector< std::vector<ProblemPtr> > xValProblems;
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      sampler->initialize(context, problems[i]->getDomain());
+      xValProblems.push_back(problems[i]->generateFolds(context, 10, numSamples / 10, sampler));
+      context.informationCallback("Finished creating " + problemnames[i]);
+    }
+    */
+    if (!testRun)
+    {
+      std::vector<string> datasets;
+      datasets.push_back("fried_delve.arff");
+      datasets.push_back("cart_delve.arff");
+      datasets.push_back("pol.arff");
+      datasets.push_back("winequality-white.arff");
+      datasets.push_back("cal_housing.arff");
+      //datasets.push_back("CASP.arff");
+    
+      std::vector<string> problemnames;
+      problemnames.push_back("Friedmann");
+      problemnames.push_back("CART");
+      problemnames.push_back("PoleTelecom");
+      problemnames.push_back("Wine quality");
+      problemnames.push_back("California housing");
+      //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
+    
+      ArffLoader loader;
+      for (size_t i = 0; i < datasets.size(); ++i)
+      {
+        TablePtr table = loader.loadFromFile(context, juce::File(arffPath + "/" + datasets[i])).staticCast<Table>();
+        context.informationCallback("Finished loading " + datasets[i]);
+        problems.push_back(std::make_pair(problemnames[i], Problem::fromTable(context, table, 0.0)));
+      }
+    }
+    return problems;
+  }
+
+protected:
+  friend class SandboxClass;
+
+  string datasetPath;
 
 };
 

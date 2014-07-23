@@ -57,18 +57,20 @@ public:
 
     std::vector<string> algoNames;
     
+    algoNames.push_back("iTotalMauveLLSQ");
+    algoNames.push_back("iTotalMauveP");
+    algoNames.push_back("iExtMauveLLSQ");
+    algoNames.push_back("iExtMauveP");
     algoNames.push_back("iMauveLLSQ");
-    algoNames.push_back("iMauveSLR");
     algoNames.push_back("iMauveP");
     algoNames.push_back("FIMTllsq");
-    algoNames.push_back("FIMTslr");
     algoNames.push_back("FIMTp");
     
     
 
 
     context.enterScope(problemName);
-    runSolvers(context, 0.05, 0.01, algoNames);
+    runSolvers(context, 0.05, 0.1, algoNames);
     /*
     for (size_t d = 0; d < deltas.size(); ++d)
     {
@@ -147,21 +149,15 @@ protected:
   void runSolvers(ExecutionContext& context, double delta, double threshold, const std::vector<string>& algoNames)
   {
     std::vector<SolverPtr> solvers;
-    
+
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
+    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
-    
-
-    /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), linearLeastSquaresRegressionIncrementalLearner(), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005), chunkSize)));
-    
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(delta, threshold), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(mauveIncrementalSplittingCriterion(delta, threshold, 2.0), simpleLinearRegressionIncrementalLearner(), chunkSize)));
-    */
     
     for (size_t s = 0; s < solvers.size(); ++s)
     {
@@ -203,60 +199,7 @@ public:
     context.getRandomGenerator()->setSeed(randomSeed);
     
 
-    // set up test problems
-    std::vector<ProblemPtr> problems;
-    std::vector<string> problemnames;
-    problems.push_back(new FriedmannProblem());
-    problemnames.push_back("Friedmann");
-       
-
-    if (!testRun)
-    {
-      problems.push_back(new ParaboloidProblem());
-      problemnames.push_back("Paraboloid");  
-      problems.push_back(new LEXPProblem());
-      problems.push_back(new LOSCProblem());
-      
-      problemnames.push_back("Lexp");
-      problemnames.push_back("Losc");
-    }
-
-    SamplerPtr sampler = uniformSampler();
-    std::vector< std::vector<ProblemPtr> > xValProblems;
-    for (size_t i = 0; i < problems.size(); ++i)
-    {
-      sampler->initialize(context, problems[i]->getDomain());
-      xValProblems.push_back(problems[i]->generateFolds(context, 10, numSamples / 10, sampler));
-      context.informationCallback("Finished creating " + problemnames[i]);
-    }
     
-    if (!testRun)
-    {
-      std::vector<string> datasets;
-      datasets.push_back("fried_delve.arff");
-      datasets.push_back("cart_delve.arff");
-      datasets.push_back("pol.arff");
-      datasets.push_back("winequality-white.arff");
-      datasets.push_back("cal_housing.arff");
-      datasets.push_back("cal_housing_norm.arff");
-      //datasets.push_back("CASP.arff");
-    
-      problemnames.push_back("Friedmann");
-      problemnames.push_back("CART");
-      problemnames.push_back("PoleTelecom");
-      problemnames.push_back("Wine quality");
-      problemnames.push_back("California housing");
-      problemnames.push_back("California housing normalized");
-      //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
-    
-      ArffLoader loader;
-      for (size_t i = 0; i < datasets.size(); ++i)
-      {
-        TablePtr table = loader.loadFromFile(context, juce::File(datasetPath + "/" + datasets[i])).staticCast<Table>();
-        context.informationCallback("Finished loading " + datasets[i]);
-        xValProblems.push_back(Problem::generateFoldsFromTable(context, table, 10));
-      }
-    }
     
     /*CompositeWorkUnitPtr subWorkUnits = new CompositeWorkUnit("Discovery Science", xValProblems.size());
     for (size_t p = 0; p < xValProblems.size(); ++p)
@@ -264,9 +207,16 @@ public:
     subWorkUnits->setPushChildrenIntoStackFlag(false);
     context.run(subWorkUnits);
     */
-    
+    /*
     for (size_t i = 0; i < xValProblems.size(); ++i)
       context.run(new XValWorkUnit(xValProblems[i], chunkSize, (SolverVerbosity) verbosity, problemnames[i]), false);
+      */
+
+    std::vector<std::pair<string, std::vector<ProblemPtr> > > problems = createProblems(context, testRun, datasetPath);
+    //for (size_t i = 0; i < problems.size(); ++i)
+      context.run(new XValWorkUnit(problems[4].second, chunkSize, (SolverVerbosity) verbosity, problems[4].first), false);
+      context.run(new XValWorkUnit(problems[6].second, chunkSize, (SolverVerbosity) verbosity, problems[6].first), false);
+
     
     return new Boolean(true);
   }
@@ -289,9 +239,62 @@ protected:
 
 private:
 
-  
+  std::vector<std::pair<string, std::vector<ProblemPtr> > > createProblems(ExecutionContext& context, bool testRun, string arffPath)
+  {
+    // set up test problems
+    std::vector<std::pair<string, ProblemPtr> > problems;
+    problems.push_back(std::make_pair("Friedmann", new FriedmannProblem()));
 
-    void makeMatlabSurface(ExecutionContext& context, ProblemPtr problem, ExpressionPtr expr)
+    if (!testRun)
+    {
+      problems.push_back(std::make_pair("Paraboloid", new ParaboloidProblem()));
+      problems.push_back(std::make_pair("Lexp", new LEXPProblem()));
+      problems.push_back(std::make_pair("Losc", new LOSCProblem()));
+      problems.push_back(std::make_pair("CARTNoNoise", new CARTProblem()));
+    }
+
+    
+    SamplerPtr sampler = uniformSampler();
+    std::vector<std::pair<string, std::vector<ProblemPtr> > > xValProblems;
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      sampler->initialize(context, problems[i].second->getDomain());
+      xValProblems.push_back(std::make_pair(problems[i].first, problems[i].second->generateFolds(context, 10, numSamples / 10, sampler)));
+      context.informationCallback("Finished creating " + problems[i].first);
+    }
+    
+    if (!testRun)
+    {
+      std::vector<string> datasets;
+      datasets.push_back("fried_delve.arff");
+      datasets.push_back("cart_delve.arff");
+      datasets.push_back("pol.arff");
+      datasets.push_back("winequality-white.arff");
+      datasets.push_back("cal_housing.arff");
+      datasets.push_back("cal_housing_norm.arff");
+      //datasets.push_back("CASP.arff");
+    
+      std::vector<string> problemnames;
+      problemnames.push_back("Friedmann");
+      problemnames.push_back("CART");
+      problemnames.push_back("PoleTelecom");
+      problemnames.push_back("Wine quality");
+      problemnames.push_back("California housing");
+      problemnames.push_back("California housing normalized");
+      //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
+    
+      ArffLoader loader;
+      for (size_t i = 0; i < datasets.size(); ++i)
+      {
+        TablePtr table = loader.loadFromFile(context, juce::File(arffPath + "/" + datasets[i])).staticCast<Table>();
+        context.informationCallback("Finished loading " + datasets[i]);
+        xValProblems.push_back(std::make_pair(problemnames[i], Problem::generateFoldsFromTable(context, table, 10)));
+      }
+    }
+    return xValProblems;
+  }
+
+  void makeMatlabSurface(ExecutionContext& context, ProblemPtr problem, ExpressionPtr expr)
   {
     if (problem->getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions() <= 1) return;
     std::ofstream file, file2, file3;

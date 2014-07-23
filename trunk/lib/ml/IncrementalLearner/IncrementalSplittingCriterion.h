@@ -24,7 +24,7 @@ public:
   HoeffdingBoundIncrementalSplittingCriterion() : delta(0.0), threshold(0.0) {}
   HoeffdingBoundIncrementalSplittingCriterion(double delta, double threshold) : delta(delta), threshold(threshold) {}
 
-  virtual Split findBestSplit(TreeNodePtr leaf) const
+  virtual Split findBestSplit(ExecutionContext& context, TreeNodePtr leaf) const
   {
     HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
     std::vector<Split> splits(stats->getEBSTs().size());
@@ -53,16 +53,13 @@ public:
     return Split(0, DVector::missingValue, DVector::missingValue);
   }
 
-  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
-    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const = 0;
-
 protected:
   friend class HoeffdingBoundIncrementalSplittingCriterionClass;
 
   double delta;
   double threshold;
 
-  Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+  virtual Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
     ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const
   {
     Split bestLeft, bestRight;
@@ -126,12 +123,142 @@ public:
     PearsonCorrelationCoefficientPtr totalCorrelation = new PearsonCorrelationCoefficient();
     totalCorrelation->push(*leftCorrelation);
     totalCorrelation->push(*rightCorrelation);
-    double numLeft = leftVariance->getCount();
-    double numRight = rightVariance->getCount();
-    return totalCorrelation->getResidualStandardDeviation() - numLeft * leftCorrelation->getResidualStandardDeviation() / (numLeft + numRight)
-      - numRight * rightCorrelation->getResidualStandardDeviation() / (numLeft + numRight);
+    double numLeft = leftCorrelation->getNumSamples();
+    double numRight = rightCorrelation->getNumSamples();
+    double totalRSD = totalCorrelation->getResidualStandardDeviation();
+    double leftRSD = leftCorrelation->getResidualStandardDeviation();
+    double rightRSD = rightCorrelation->getResidualStandardDeviation();
+    double rsd = totalRSD - numLeft * leftRSD / (numLeft + numRight) - numRight * rightRSD / (numLeft + numRight);
+    return rsd;
   }
 };
+
+class HoeffdingBoundExtendedMauveIncrementalSplittingCriterion : public HoeffdingBoundMauveIncrementalSplittingCriterion
+{
+public:
+  HoeffdingBoundExtendedMauveIncrementalSplittingCriterion() : HoeffdingBoundMauveIncrementalSplittingCriterion() {}
+  HoeffdingBoundExtendedMauveIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold) {}
+
+  virtual Split findBestSplit(ExecutionContext& context, TreeNodePtr leaf) const
+  {
+    HoeffdingTreeIncrementalLearnerStatisticsPtr stats = leaf->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>();
+    std::vector<Split> splits(stats->getEBSTs().size());
+    for (size_t i = 0; i < splits.size(); ++i)
+    {
+      splits[i] = findBestSplit(i, stats->getEBSTs()[i], new MultiVariateRegressionStatistics(), new MultiVariateRegressionStatistics());
+    }
+    Split bestSplit, secondBestSplit;
+    for (size_t i = 0; i < splits.size(); ++i)
+    {
+      if (splits[i].quality > bestSplit.quality)
+      {
+        secondBestSplit = bestSplit;
+        bestSplit = splits[i];
+      }
+      else if (splits[i].quality > secondBestSplit.quality)
+        secondBestSplit = splits[i];
+    }
+    double epsilon = hoeffdingBound(1, stats->getExamplesSeen(), delta);
+    if ( bestSplit.quality != 0 )
+    {
+      double ratio = secondBestSplit.quality / bestSplit.quality;
+      stats->getSplitRatios()->push(ratio);
+      double meanRatio = stats->getSplitRatios()->getMean();
+      if (meanRatio < (1 - epsilon) || epsilon < threshold)
+        return bestSplit;
+    }
+    return Split(0, DVector::missingValue, DVector::missingValue);
+  }
+
+protected:
+  friend class HoeffdingBoundExtendedMauveIncrementalSplittingCriterionClass;
+
+  virtual Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right) const
+  {
+    Split bestLeft, bestRight;
+    MultiVariateRegressionStatisticsPtr totalRight = new MultiVariateRegressionStatistics();
+    totalRight->update(*right);
+    totalRight->update(*(ebst->getRightCorrelation()));
+
+    MultiVariateRegressionStatisticsPtr totalLeft = new MultiVariateRegressionStatistics();
+    totalLeft->update(*left);
+    totalLeft->update(*(ebst->getLeftCorrelation()));
+    
+    if (ebst->getLeft().exists())
+      bestLeft = findBestSplit(attribute, ebst->getLeft(), left, totalRight);
+    if (ebst->getRight().exists())
+      bestRight = findBestSplit(attribute, ebst->getRight(), totalLeft, right);
+    
+    Split bestChild = bestLeft.quality >= bestRight.quality ? bestLeft : bestRight;
+    
+    MultiVariateRegressionStatisticsPtr total = new MultiVariateRegressionStatistics();
+    total->update(*totalLeft);
+    total->update(*totalRight);
+
+    double quality = 0.0;
+    for (size_t i = 0; i < left->getNumAttributes(); ++i)
+    {
+      double current = splitQuality(ScalarVariableMeanAndVariancePtr(), totalLeft->getStats(i), ScalarVariableMeanAndVariancePtr(), totalRight->getStats(i));
+      if (current > quality)
+        quality = current;
+    }
+    //Split hereSplit = Split(attribute, ebst->getValue(), splitQuality(ScalarVariableMeanAndVariancePtr(), totalLeft->getStats(attribute), ScalarVariableMeanAndVariancePtr(), totalRight->getStats(attribute)));
+    Split hereSplit = Split(attribute, ebst->getValue(), quality);
+
+    return hereSplit.quality >= bestChild.quality ? hereSplit : bestChild;
+  }
+};
+
+class HoeffdingBoundTotalMauveIncrementalSplittingCriterion : public HoeffdingBoundMauveIncrementalSplittingCriterion
+{
+public:
+  HoeffdingBoundTotalMauveIncrementalSplittingCriterion() : HoeffdingBoundMauveIncrementalSplittingCriterion() {}
+  HoeffdingBoundTotalMauveIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold) {}
+
+  virtual double splitQuality(MultiVariateRegressionStatisticsPtr total, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right) const
+  {
+    double totalRSD = total->getResidualStandardDeviation();
+    double leftRSD = left->getResidualStandardDeviation();
+    double rightRSD = right->getResidualStandardDeviation();
+    double n = total->getExamplesSeen();
+    double nl = left->getExamplesSeen();
+    double nr = right->getExamplesSeen();
+    double sdr = totalRSD - nl * leftRSD / n - nr * rightRSD / n;
+    return sdr;
+  }
+
+protected:
+  friend class HoeffdingBoundExtendedMauveIncrementalSplittingCriterionClass;
+
+  virtual Split findBestSplit(size_t attribute, ExtendedBinarySearchTreePtr ebst, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right) const
+  {
+    Split bestLeft, bestRight;
+    MultiVariateRegressionStatisticsPtr totalRight = new MultiVariateRegressionStatistics();
+    totalRight->update(*right);
+    totalRight->update(*(ebst->getRightCorrelation()));
+
+    MultiVariateRegressionStatisticsPtr totalLeft = new MultiVariateRegressionStatistics();
+    totalLeft->update(*left);
+    totalLeft->update(*(ebst->getLeftCorrelation()));
+    
+    if (ebst->getLeft().exists())
+      bestLeft = findBestSplit(attribute, ebst->getLeft(), left, totalRight);
+    if (ebst->getRight().exists())
+      bestRight = findBestSplit(attribute, ebst->getRight(), totalLeft, right);
+    
+    Split bestChild = bestLeft.quality >= bestRight.quality ? bestLeft : bestRight;
+    
+    MultiVariateRegressionStatisticsPtr total = new MultiVariateRegressionStatistics();
+    total->update(*totalLeft);
+    total->update(*totalRight);
+
+    double quality = splitQuality(total, left, right);
+    Split hereSplit = Split(attribute, ebst->getValue(), quality);
+
+    return hereSplit.quality >= bestChild.quality ? hereSplit : bestChild;
+  }
+};
+
 /*
 class HoeffdingBoundStdDevReductionIncrementalSplittingCriterion2 : public IncrementalSplittingCriterion
 {
@@ -604,8 +731,12 @@ class NullIncrementalSplittingCriterion : public IncrementalSplittingCriterion
 public:
   NullIncrementalSplittingCriterion() {}
 
-  virtual Split findBestSplit(TreeNodePtr leaf) const
+  virtual Split findBestSplit(ExecutionContext& context, TreeNodePtr leaf) const
     {return Split(0, DVector::missingValue, DVector::missingValue);}
+
+  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const
+    {return 0.0;}
 };
 
 } /* namespace lbcpp */
