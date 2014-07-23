@@ -54,7 +54,7 @@ public:
     context.enterScope("Pushing samples");
     for (size_t i = 0; i < 200; ++i)
     {
-      context.enterScope("Sample " + string(i));
+      context.enterScope("Sample " + string((int)i));
       context.resultCallback("sample", i);
       DenseDoubleVectorPtr sample = sampler->sample(context).staticCast<DenseDoubleVector>();
       x1 = sample->getValue(0);
