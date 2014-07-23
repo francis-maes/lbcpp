@@ -91,7 +91,9 @@ public:
    *  \return A Split struct containing the attribute index, split value and split quality.
    *          If no suitable Split was found, set quality to DVector::missingValue to indicate this.
    */
-  virtual Split findBestSplit(TreeNodePtr leaf) const = 0;
+  virtual Split findBestSplit(ExecutionContext& context, TreeNodePtr leaf) const = 0;
+  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<IncrementalSplittingCriterion> IncrementalSplittingCriterionPtr;
@@ -104,7 +106,9 @@ extern IncrementalLearnerPtr simpleLinearRegressionIncrementalLearner();
 extern IncrementalLearnerPtr linearLeastSquaresRegressionIncrementalLearner();
 
 extern IncrementalSplittingCriterionPtr hoeffdingBoundMauveIncrementalSplittingCriterion(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundTotalMauveIncrementalSplittingCriterion(double delta, double threshold);
 /*extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold, double maxCoefficientOfDetermination);
 extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);*/

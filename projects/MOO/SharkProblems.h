@@ -10,6 +10,8 @@
 # define MOO_PROBLEM_SHARK_H_
 
 # include <ml/Problem.h>
+# include <ml/Expression.h>
+# include <ml/ExpressionDomain.h>
 # include <EALib/ObjectiveFunctions.h>
 # include <EALib/MultiObjectiveFunctions.h>
 # include <ml/DoubleVector.h>
@@ -348,6 +350,14 @@ public:
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(5, std::make_pair(0, 1.0))));
     addObjective(new LEXPObjective());
   }
+
+protected:
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(5, std::make_pair(0, 1.0))));
+    addObjective(new LEXPObjective());
+  }
+
 private:
   class LEXPObjective : public Objective
   {
@@ -377,6 +387,14 @@ public:
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(5, std::make_pair(0, 1.0))));
     addObjective(new LOSCObjective());
   }
+
+protected:
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(5, std::make_pair(0, 1.0))));
+    addObjective(new LOSCObjective());
+  }
+
 private:
   class LOSCObjective : public Objective
   {
@@ -406,6 +424,14 @@ public:
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(2, std::make_pair(-4.0, 4.0))));
     addObjective(new ParaboloidObjective());
   }
+
+protected:
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(2, std::make_pair(-4.0, 4.0))));
+    addObjective(new ParaboloidObjective());
+  }
+
 private:
   class ParaboloidObjective : public Objective
   {
@@ -421,6 +447,158 @@ private:
 
     virtual void getObjectiveRange(double& worst, double& best) const
       {worst = 0.0; best = 5.66;}
+  };
+};
+
+extern ProblemPtr paraboloidProblem();
+
+class CARTProblem : public Problem
+{
+public:
+  CARTProblem()
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(10, std::make_pair(-1.0, 1.0))));
+    addObjective(new CARTObjective());
+  }
+
+  virtual ProblemPtr toSupervisedLearningProblem(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, SamplerPtr sampler) const
+  {
+    ExpressionDomainPtr domain = new ExpressionDomain();
+    TablePtr supervision = new Table(numSamples);
+    TablePtr validation = new Table(numValidationSamples);
+    
+    for (size_t i = 0; i < getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions(); ++i)
+    {
+      VariableExpressionPtr x = domain->addInput(doubleClass, "x" + string((int) i));
+      supervision->addColumn(x, doubleClass);
+      validation->addColumn(x, doubleClass);
+    }
+    VariableExpressionPtr y;
+    if (this->getNumObjectives() > 1)
+      {jassertfalse;}
+    else
+      y = domain->createSupervision(doubleClass, "y");
+    supervision->addColumn(y, y->getType());
+    validation->addColumn(y, y->getType());
+
+    // fill the tables
+    DenseDoubleVectorPtr sample = new DenseDoubleVector(10, 0.0);
+    for (size_t i = 0; i < numSamples; ++i)
+    {
+      sample->setValue(0, context.getRandomGenerator()->sampleBool() ? -1.0 : 1.0);
+      for (size_t j = 1; j < 10; ++j)
+        sample->setValue(j, context.getRandomGenerator()->sampleInt(-1, 2));
+      FitnessPtr result = evaluate(context, sample);
+      for (size_t j = 0; j < sample->getNumValues(); ++j)
+        supervision->setElement(i, j, new Double(sample->getValue(j)));
+      supervision->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
+    }
+    for (size_t i = 0; i < numValidationSamples; ++i)
+    {
+      sample->setValue(0, context.getRandomGenerator()->sampleBool() ? -1.0 : 1.0);
+      for (size_t j = 1; j < 10; ++j)
+        sample->setValue(j, context.getRandomGenerator()->sampleInt(-1, 2));
+      FitnessPtr result = evaluate(context, sample);
+      for (size_t j = 0; j < sample->getNumValues(); ++j)
+        validation->setElement(i, j, new Double(sample->getValue(j)));
+      validation->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
+    }
+
+    ProblemPtr res = new Problem();
+    res->setThisClass(getClass());
+    
+    res->setDomain(domain);
+    res->addObjective(rmseRegressionObjective(supervision, y));
+    res->addValidationObjective(rrseRegressionObjective(supervision, validation, y));
+
+    return res;
+  }
+
+  virtual std::vector<ProblemPtr> generateFolds(ExecutionContext& context, size_t numFolds, size_t samplesPerFold, SamplerPtr sampler) const
+  {
+    std::vector<ProblemPtr> res(numFolds);
+    std::vector<VariableExpressionPtr> variables;
+    size_t numSamples = numFolds * samplesPerFold;
+    TablePtr samples = new Table(numSamples);
+    ExpressionDomainPtr domain = new ExpressionDomain();
+
+    for (size_t i = 0; i < getDomain().staticCast<ScalarVectorDomain>()->getNumDimensions(); ++i)
+    {
+      VariableExpressionPtr x = domain->addInput(doubleClass, "x" + string((int) i));
+      variables.push_back(x);
+      samples->addColumn(x, doubleClass);
+    }
+    VariableExpressionPtr y;
+    if (this->getNumObjectives() > 1)
+      {jassertfalse;}
+    else
+      y = domain->createSupervision(doubleClass, "y");
+    samples->addColumn(y, y->getType());
+
+    DenseDoubleVectorPtr sample = new DenseDoubleVector(10, 0.0);
+    for (size_t i = 0; i < numSamples; ++i)
+    {
+      sample->setValue(0, context.getRandomGenerator()->sampleBool() ? -1.0 : 1.0);
+      for (size_t j = 1; j < 10; ++j)
+        sample->setValue(j, context.getRandomGenerator()->sampleInt(-1, 2));
+      FitnessPtr result = evaluate(context, sample);
+      for (size_t j = 0; j < sample->getNumValues(); ++j)
+        samples->setElement(i, j, new Double(sample->getValue(j)));
+      samples->setElement(i, sample->getNumValues(), new Double(result->getValue(0)));
+    }
+
+    for (size_t i = 0; i < numFolds; ++i)
+    {
+      TablePtr foldTrain = new Table();
+      TablePtr foldTest = new Table();
+      for (size_t j = 0; j < variables.size(); ++j)
+      {
+        foldTrain->addColumn(variables[j], variables[j]->getType());
+        foldTest->addColumn(variables[j], variables[j]->getType());
+      }
+      foldTrain->addColumn(y, y->getType());
+      foldTest->addColumn(y, y->getType());
+      for (size_t j = 0; j < numSamples; ++j)
+      {
+        if (((int)j - (int)i) % (int)numFolds == 0)
+          foldTest->addRow(samples->getRow(j));
+        else
+          foldTrain->addRow(samples->getRow(j));
+      }
+      ProblemPtr fold = new Problem();
+      fold->setDomain(domain);
+      fold->addObjective(rmseRegressionObjective(foldTrain, y));
+      fold->addValidationObjective(rrseRegressionObjective(foldTrain, foldTest, y));
+      res[i] = fold;
+    }
+
+    return res;
+  }
+
+protected:
+  virtual void initialize(ExecutionContext& context)
+  {
+    setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(10, std::make_pair(-1.0, 1.0))));
+    addObjective(new CARTObjective());
+  }
+
+private:
+  class CARTObjective : public Objective
+  {
+  public:
+    CARTObjective() {}
+
+    virtual double evaluate(ExecutionContext& context, const ObjectPtr& object) const
+    {
+      DenseDoubleVectorPtr s = object.staticCast<DenseDoubleVector>();
+      if (s->getValue(0) < 0.0)
+        return 3 + 3 * s->getValue(1) + 2 * s->getValue(2) + 3 * s->getValue(3);
+      else
+        return -3 + 3 * s->getValue(4) + 2 * s->getValue(5) + s->getValue(6);
+    }
+
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {worst = -9.0; best = 9.0;}
   };
 };
 

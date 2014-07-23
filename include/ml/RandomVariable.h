@@ -354,7 +354,14 @@ public:
   double getResidualStandardDeviation() const
   {
     double b = getSlope();
-    double rsd = sqrt((sumYsquared - sumY * sumY / numSamples - 2 * b * (sumXY - sumX * sumY / numSamples) + b * b * (sumXsquared - sumX * sumX / numSamples)) / (numSamples - 1));
+    // residual variance
+    double rv = (sumYsquared - sumY * sumY / numSamples - 2 * b * (sumXY - sumX * sumY / numSamples) + b * b * (sumXsquared - sumX * sumX / numSamples)) / (numSamples - 1);
+    // check small numerical errors
+    if (rv < 0.0 && rv > -1.0e-6)
+      return 0.0;
+    else if (rv < 0)
+      jassertfalse;
+    double rsd = sqrt(rv);
     return rsd;
   }
 
@@ -397,6 +404,7 @@ public:
     stats = std::vector<PearsonCorrelationCoefficientPtr>(other.getNumAttributes());
     for (size_t i = 0; i < stats.size(); ++i)
       stats[i] = new PearsonCorrelationCoefficient(*other.getStats(i));
+    sumXiXj = std::vector<double>(other.sumXiXj.begin(), other.sumXiXj.end());
     xtx = Array<double>(other.xtx);
     xty = Array<double>(other.xty);
   }
@@ -415,6 +423,16 @@ public:
     for (size_t i = 1; i < numAttr; ++i)
       extendedInput->setValue(i, attributes->getValue(i - 1));
     
+        // initialise sumXiXj vector
+    if (sumXiXj.size() == 0)
+      for (size_t i = 1; i < attributes->getNumValues(); ++i)
+        for (size_t j = 0; j < i; ++j)
+          sumXiXj.push_back(0.0);
+    size_t count = 0;
+    for (size_t i = 1; i < attributes->getNumValues(); ++i)
+      for (size_t j = 0; j < i; ++j)
+        sumXiXj[count++] += attributes->getValue(i) * attributes->getValue(j);
+
     // initialise xtx and xty matrices
     if (xtx.dim(0) != numAttr)
     {
@@ -443,13 +461,24 @@ public:
 
   virtual void update(const MultiVariateRegressionStatistics& other)
   {
+    // initialise pearson regression statistics
     if (stats.size() == 0)
       for (size_t i = 0; i < other.getNumAttributes(); ++i)
         stats.push_back(new PearsonCorrelationCoefficient());
     for (size_t i = 0; i < other.getNumAttributes(); ++i)
       stats[i]->push(*other.getStats(i));
-        // initialise xtx and xty matrices
+
+    // initialise sumXiXj vector
+    if (sumXiXj.size() == 0)
+      for (size_t i = 1; i < other.getNumAttributes(); ++i)
+        for (size_t j = 0; j < i; ++j)
+          sumXiXj.push_back(0.0);
+    size_t count = 0;
+    for (size_t i = 1; i < other.getNumAttributes(); ++i)
+      for (size_t j = 0; j < i; ++j)
+        sumXiXj.push_back(other.sumXiXj[count++]);
     
+    // initialise xtx and xty matrices
     size_t numAttr = other.xtx.dim(0);
     if (xtx.dim(0) != numAttr)
     {
@@ -506,6 +535,74 @@ public:
     return result;
   }
 
+  /**
+   * Calculate the slope of the simple linear regressor fitted to attribute i
+   */
+  double getSlope(size_t i) const
+  {
+    if (stats.size() == 0)
+      return 0;
+    return stats[i]->getSlope();
+  }
+
+  /**
+   * Calculate the intercept of the simple linear regressor fitted to attribute i
+   */
+  double getIntercept(size_t i) const
+  {
+    if (stats.size() == 0)
+      return 0;
+    return stats[i]->getIntercept();
+  }
+
+  /**
+   * Calculate the residual standard deviation of the simple linear regressor fitted to attribute i
+   */
+  double getResidualStandardDeviation(size_t i) const
+  {
+    if (stats.size() == 0)
+      return DBL_MAX;
+    double b = stats[i]->getSlope();
+    double rsd = sqrt((stats[i]->sumYsquared - stats[i]->sumY * stats[i]->sumY / stats[i]->numSamples - 2 * b * (stats[i]->sumXY - stats[i]->sumX * stats[i]->sumY / stats[i]->numSamples) + b * b * (stats[i]->sumXsquared - stats[i]->sumX * stats[i]->sumX / stats[i]->numSamples)) / (stats[i]->numSamples - 1));
+    return rsd;
+  }
+
+  /**
+   * Calculate the residual standard deviation of the complete linear model
+   */
+  double getResidualStandardDeviation() const
+  {
+    DenseDoubleVectorPtr weights = getLLSQEstimate();
+    double term1 = stats[0]->sumYsquared;
+    double term2 = 0.0;
+    double term3 = 0.0;
+    double term4 = stats[0]->sumY;
+    for (size_t i = 1; i < weights->getNumValues(); ++i)
+    {
+      term2 += weights->getValue(i) * stats[i-1]->sumXY;
+      term3 += stats[i-1]->sumXsquared * weights->getValue(i) * weights->getValue(i);
+      term4 -= weights->getValue(i) * stats[i-1]->sumX;
+    }
+    /*size_t k = getNumAttributes();
+    for (size_t i = 0; i < sumXiXj.size(); ++i)
+    {
+      term3 += 2 * sumXiXj[i] * weights->getValue(1 + i / k) * weights->getValue(1 + (i + 1) % k);
+    }*/
+    size_t count = 0;
+    for (size_t i = 1; i < getNumAttributes(); ++i)
+      for (size_t j = 0; j < i; ++j)
+        term3 += 2 * weights->getValue(i+1) * weights->getValue(j + 1) * sumXiXj[count++];
+
+    term4 = term4 * term4 / stats[0]->numSamples;
+    double rv = (term1 - 2*term2 + term3 - term4) / (stats[0]->numSamples - 1);
+    if (rv < 0.0 && rv > -1.0e-6)
+      return 0.0;
+    else if (rv < 0.0)
+      jassertfalse;
+    double rsd = sqrt(rv);
+    return rsd;
+  }
+
   Array<double> getXTX() const
     {return xtx;}
 
@@ -533,6 +630,7 @@ protected:
   friend class MultiVariateRegressionStatisticsClass;
 
   std::vector<PearsonCorrelationCoefficientPtr> stats;
+  std::vector<double> sumXiXj;
   Array<double> xtx;
   Array<double> xty;
 };

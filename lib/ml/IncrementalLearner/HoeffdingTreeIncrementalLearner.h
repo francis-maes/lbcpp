@@ -91,12 +91,12 @@ public:
     modelLearner->addTrainingSample(context, leaf->getModel(), input, output);
     
     leafStats->addObservation(input, output->getValue(0));
-    if (verbosity >= verbosityDetailed)
+    if (verbosity >= verbosityAll)
       context.resultCallback("model", root);
 	  
     if (leafStats->getExamplesSeen() % chunkSize == 0)
     {
-      IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(leaf);
+      IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(context, leaf);
       bool splitWasMade = false;
 
       if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
