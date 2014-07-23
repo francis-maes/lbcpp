@@ -213,9 +213,8 @@ public:
       */
 
     std::vector<std::pair<string, std::vector<ProblemPtr> > > problems = createProblems(context, testRun, datasetPath);
-    //for (size_t i = 0; i < problems.size(); ++i)
-      context.run(new XValWorkUnit(problems[4].second, chunkSize, (SolverVerbosity) verbosity, problems[4].first), false);
-      context.run(new XValWorkUnit(problems[6].second, chunkSize, (SolverVerbosity) verbosity, problems[6].first), false);
+    for (size_t i = 0; i < problems.size(); ++i)
+      context.run(new XValWorkUnit(problems[i].second, chunkSize, (SolverVerbosity) verbosity, problems[i].first), false);
 
     
     return new Boolean(true);
