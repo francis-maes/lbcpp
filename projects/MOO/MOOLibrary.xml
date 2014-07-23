@@ -90,6 +90,7 @@
     <variable type="PositiveInteger" name="chunkSize"/>
     <variable type="PositiveInteger" name="verbosity"/>
     <variable type="String" name="datasetPath"/>
+    <variable type="PositiveInteger" name="numFolds"/>
     <variable type="Boolean" name="testRun" description="Perform evaluation on one dataset only."/>
   </class>
 

@@ -470,13 +470,10 @@ public:
 
     // initialise sumXiXj vector
     if (sumXiXj.size() == 0)
-      for (size_t i = 1; i < other.getNumAttributes(); ++i)
-        for (size_t j = 0; j < i; ++j)
-          sumXiXj.push_back(0.0);
-    size_t count = 0;
-    for (size_t i = 1; i < other.getNumAttributes(); ++i)
-      for (size_t j = 0; j < i; ++j)
-        sumXiXj.push_back(other.sumXiXj[count++]);
+      sumXiXj = std::vector<double>(other.sumXiXj.begin(), other.sumXiXj.end());
+    else
+      for (size_t i = 0; i < other.sumXiXj.size(); ++i)
+        sumXiXj[i] += other.sumXiXj[i];
     
     // initialise xtx and xty matrices
     size_t numAttr = other.xtx.dim(0);
@@ -540,8 +537,8 @@ public:
    */
   double getSlope(size_t i) const
   {
-    if (stats.size() == 0)
-      return 0;
+    if (getExamplesSeen() < 2)
+      return 0.0;
     return stats[i]->getSlope();
   }
 
@@ -550,8 +547,8 @@ public:
    */
   double getIntercept(size_t i) const
   {
-    if (stats.size() == 0)
-      return 0;
+    if (getExamplesSeen() == 0)
+      return 0.0;
     return stats[i]->getIntercept();
   }
 
@@ -560,7 +557,7 @@ public:
    */
   double getResidualStandardDeviation(size_t i) const
   {
-    if (stats.size() == 0)
+    if (getExamplesSeen() < 2)
       return DBL_MAX;
     double b = stats[i]->getSlope();
     double rsd = sqrt((stats[i]->sumYsquared - stats[i]->sumY * stats[i]->sumY / stats[i]->numSamples - 2 * b * (stats[i]->sumXY - stats[i]->sumX * stats[i]->sumY / stats[i]->numSamples) + b * b * (stats[i]->sumXsquared - stats[i]->sumX * stats[i]->sumX / stats[i]->numSamples)) / (stats[i]->numSamples - 1));
@@ -572,6 +569,8 @@ public:
    */
   double getResidualStandardDeviation() const
   {
+    if (getExamplesSeen() < 2)
+      return DBL_MAX;
     DenseDoubleVectorPtr weights = getLLSQEstimate();
     double term1 = stats[0]->sumYsquared;
     double term2 = 0.0;

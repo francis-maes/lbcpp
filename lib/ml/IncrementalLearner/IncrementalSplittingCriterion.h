@@ -209,11 +209,11 @@ protected:
   }
 };
 
-class HoeffdingBoundTotalMauveIncrementalSplittingCriterion : public HoeffdingBoundMauveIncrementalSplittingCriterion
+class HoeffdingBoundTotalMauveIncrementalSplittingCriterion : public HoeffdingBoundExtendedMauveIncrementalSplittingCriterion
 {
 public:
-  HoeffdingBoundTotalMauveIncrementalSplittingCriterion() : HoeffdingBoundMauveIncrementalSplittingCriterion() {}
-  HoeffdingBoundTotalMauveIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold) {}
+  HoeffdingBoundTotalMauveIncrementalSplittingCriterion() : HoeffdingBoundExtendedMauveIncrementalSplittingCriterion() {}
+  HoeffdingBoundTotalMauveIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundExtendedMauveIncrementalSplittingCriterion(delta, threshold) {}
 
   virtual double splitQuality(MultiVariateRegressionStatisticsPtr total, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right) const
   {
@@ -252,7 +252,7 @@ protected:
     total->update(*totalLeft);
     total->update(*totalRight);
 
-    double quality = splitQuality(total, left, right);
+    double quality = splitQuality(total, totalLeft, totalRight);
     Split hereSplit = Split(attribute, ebst->getValue(), quality);
 
     return hereSplit.quality >= bestChild.quality ? hereSplit : bestChild;

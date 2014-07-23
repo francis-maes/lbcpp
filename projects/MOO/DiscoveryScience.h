@@ -190,7 +190,7 @@ protected:
 class DiscoveryScience : public WorkUnit
 {
 public:
-  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath(""), testRun(false) {}
+  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath(""), numFolds(10), testRun(false) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -232,6 +232,7 @@ protected:
   double threshold;
   size_t numDims;
   size_t verbosity;
+  size_t numFolds;
   bool testRun;
 
   string datasetPath;
@@ -258,7 +259,7 @@ private:
     for (size_t i = 0; i < problems.size(); ++i)
     {
       sampler->initialize(context, problems[i].second->getDomain());
-      xValProblems.push_back(std::make_pair(problems[i].first, problems[i].second->generateFolds(context, 10, numSamples / 10, sampler)));
+      xValProblems.push_back(std::make_pair(problems[i].first, problems[i].second->generateFolds(context, numFolds, numSamples / numFolds, sampler)));
       context.informationCallback("Finished creating " + problems[i].first);
     }
     
@@ -287,7 +288,7 @@ private:
       {
         TablePtr table = loader.loadFromFile(context, juce::File(arffPath + "/" + datasets[i])).staticCast<Table>();
         context.informationCallback("Finished loading " + datasets[i]);
-        xValProblems.push_back(std::make_pair(problemnames[i], Problem::generateFoldsFromTable(context, table, 10)));
+        xValProblems.push_back(std::make_pair(problemnames[i], Problem::generateFoldsFromTable(context, table, numFolds)));
       }
     }
     return xValProblems;

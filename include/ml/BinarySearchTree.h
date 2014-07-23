@@ -125,26 +125,34 @@ public:
 
   std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> getStatsForSplit(double splitValue)
   {
-    MultiVariateRegressionStatisticsPtr leftStats, rightStats;
-    leftStats = new MultiVariateRegressionStatistics();
-    rightStats = new MultiVariateRegressionStatistics();
-    if (splitValue < value)
+    // FIXME: SOMETHING IS WRONG WITH THIS METHOD
+    MultiVariateRegressionStatisticsPtr leftMVRS, rightMVRS;
+    leftMVRS = new MultiVariateRegressionStatistics();
+    rightMVRS = new MultiVariateRegressionStatistics();
+    if (splitValue <= value)
     {
-      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
-      leftStats = stats.first;
-      rightStats = stats.second;
-      rightStats->update(*rightCorrelation);
-      return std::make_pair(leftStats, rightStats);
+      if (left.exists())
+      {
+        std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+        leftMVRS = stats.first;
+        rightMVRS = stats.second;
+      }
+      else
+        leftMVRS->update(*leftCorrelation);
+      rightMVRS->update(*rightCorrelation);
+      return std::make_pair(leftMVRS, rightMVRS);
     }
-    else if (splitValue > value)
+    else
     {
-      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
-      leftStats = stats.first;
-      rightStats = stats.second;
-      leftStats->update(*leftCorrelation);
-      return std::make_pair(leftStats, rightStats);
+      if (right.exists())
+      {
+        std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+        leftMVRS = stats.first;
+        rightMVRS = stats.second;
+      }
+      leftMVRS->update(*leftCorrelation);
+      return std::make_pair(leftMVRS, rightMVRS);
     }
-    return std::make_pair(new MultiVariateRegressionStatistics(*leftCorrelation), new MultiVariateRegressionStatistics(*rightCorrelation));
   }
 
   virtual ObjectPtr clone(ExecutionContext& context) const
