@@ -52,7 +52,7 @@ public:
       {
         if ((k+1) % interval == 0)
         {
-          context.enterScope("Iteration " + string(k));
+          context.enterScope("Iteration " + string((int)k));
           context.resultCallback("Iteration", k);
         }
         for (size_t l = 0; l < learners.size(); ++l)
