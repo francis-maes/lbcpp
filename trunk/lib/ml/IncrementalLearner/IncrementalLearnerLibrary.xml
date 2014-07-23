@@ -65,7 +65,7 @@
     <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
   </class>
   
-  <class name="HoeffdingBoundTotalMauveIncrementalSplittingCriterion" base="HoeffdingBoundIncrementalSplittingCriterion">
+  <class name="HoeffdingBoundTotalMauveIncrementalSplittingCriterion" base="HoeffdingBoundExtendedMauveIncrementalSplittingCriterion">
     <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
   </class>
   
