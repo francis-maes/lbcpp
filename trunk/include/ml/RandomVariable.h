@@ -325,12 +325,32 @@ public:
 
   virtual void push(const PearsonCorrelationCoefficient& other)
   {
+    if (other.numSamples == 0)
+      return;
     numSamples += other.numSamples;
     sumXY += other.sumXY;
     sumX += other.sumX;
     sumXsquared += other.sumXsquared;
     sumY += other.sumY;
     sumYsquared += other.sumYsquared;
+  }
+
+  virtual void subtract(const PearsonCorrelationCoefficient& other)
+  {
+    if (other.numSamples > numSamples)
+      jassertfalse;
+    if (other.numSamples == 0)
+      return;
+    numSamples -= other.numSamples;
+    sumXY -= other.sumXY;
+    sumX -= other.sumX;
+    if (other.sumXsquared > sumXsquared)
+      jassertfalse;
+    sumXsquared -= other.sumXsquared;
+    sumY -= other.sumY;
+    if (other.sumYsquared > sumYsquared)
+      jassertfalse;
+    sumYsquared -= other.sumYsquared;
   }
 
   virtual double getCorrelationCoefficient() const
@@ -461,6 +481,8 @@ public:
 
   virtual void update(const MultiVariateRegressionStatistics& other)
   {
+    if (other.stats.size() == 0)
+      return;
     // initialise pearson regression statistics
     if (stats.size() == 0)
       for (size_t i = 0; i < other.getNumAttributes(); ++i)
@@ -494,6 +516,28 @@ public:
       for (size_t j = 0; j < numAttr; ++j)
         xtx(i, j) += other.xtx(i,j);
       xty(i, 0) += other.xty(i, 0);
+    }
+  }
+
+  /**
+   * Subtract the statistics of an other MultiVariateRegressionStatistics from this one
+   */
+  virtual void subtract(const MultiVariateRegressionStatistics& other)
+  {
+    if (other.stats.size() == 0)
+      return;
+    for (size_t i = 0; i < other.getNumAttributes(); ++i)
+      stats[i]->subtract(*other.getStats(i));
+
+    for (size_t i = 0; i < other.sumXiXj.size(); ++i)
+      sumXiXj[i] -= other.sumXiXj[i];
+    
+    size_t numAttr = other.xtx.dim(0);
+    for (size_t i = 0; i < numAttr; ++i)
+    {
+      for (size_t j = 0; j < numAttr; ++j)
+        xtx(i, j) -= other.xtx(i,j);
+      xty(i, 0) -= other.xty(i, 0);
     }
   }
 

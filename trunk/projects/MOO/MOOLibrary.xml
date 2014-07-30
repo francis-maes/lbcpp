@@ -91,6 +91,7 @@
     <variable type="PositiveInteger" name="verbosity"/>
     <variable type="String" name="datasetPath"/>
     <variable type="PositiveInteger" name="numFolds"/>
+    <variable type="PositiveInteger" name="problemNb"/>
     <variable type="Boolean" name="testRun" description="Perform evaluation on one dataset only."/>
   </class>
 

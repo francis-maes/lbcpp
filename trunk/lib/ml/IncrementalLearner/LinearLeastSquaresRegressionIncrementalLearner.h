@@ -103,7 +103,6 @@ public:
   {
     model->setLearnerStatistics(data);
     MultiVariateRegressionStatisticsPtr stats = data.staticCast<MultiVariateRegressionStatistics>();
-    model.staticCast<LinearModelExpression>()->getWeights() = stats->getLLSQEstimate();
   }
 
 };
