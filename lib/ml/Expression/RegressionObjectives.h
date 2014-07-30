@@ -84,7 +84,7 @@ public:
     meanTarget = 0.0;
     size_t supervisionIdx = trainData->getNumColumns() - 1;
     for (size_t i = 0; i < trainData->getNumRows(); ++i)
-      meanTarget += trainData->getElement(i, supervisionIdx);
+      meanTarget += Double::get(trainData->getElement(i, supervisionIdx));
     meanTarget /= trainData->getNumRows();
   }
 
@@ -93,7 +93,6 @@ public:
   virtual double evaluatePredictions(ExecutionContext& context, DataVectorPtr predictions) const
   {
     double sumSquaredError = 0.0;
-    double meanTarget = 0.0;
     double sumSquaredErrorsFromMean = 0.0;
     
     DVectorPtr supervisions = getSupervisions().staticCast<DVector>();

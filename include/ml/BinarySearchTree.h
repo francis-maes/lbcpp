@@ -87,9 +87,7 @@ public:
         leftStats->push(y);
     		leftCorrelation->push(data, y);
         if (!left.exists())
-        {
           left = new ExtendedBinarySearchTree();
-        }
         left->insertValue(attribute, data, y);
       }
       else
@@ -97,9 +95,7 @@ public:
         rightStats->push(y);
         rightCorrelation->push(data, y);
         if (!right.exists())
-        {
           right = new ExtendedBinarySearchTree();
-        }
         right->insertValue(attribute, data, y);
       }
     }
@@ -122,37 +118,35 @@ public:
    * \return a pair of PearsonCorrelationCoefficientPtrs where the first and second values represent statistics
    *         for left and right of the split respectively
    */
-
   std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> getStatsForSplit(double splitValue)
   {
     // FIXME: SOMETHING IS WRONG WITH THIS METHOD
+    
     MultiVariateRegressionStatisticsPtr leftMVRS, rightMVRS;
     leftMVRS = new MultiVariateRegressionStatistics();
     rightMVRS = new MultiVariateRegressionStatistics();
-    if (splitValue <= value)
+    if (splitValue < value)
     {
-      if (left.exists())
-      {
-        std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
-        leftMVRS = stats.first;
-        rightMVRS = stats.second;
-      }
-      else
-        leftMVRS->update(*leftCorrelation);
+      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+      leftMVRS = stats.first;
+      rightMVRS = stats.second;
       rightMVRS->update(*rightCorrelation);
+      rightMVRS->update(*leftCorrelation);
+      rightMVRS->subtract(*(left.staticCast<ExtendedBinarySearchTree>()->leftCorrelation));
+      rightMVRS->subtract(*(left.staticCast<ExtendedBinarySearchTree>()->rightCorrelation));
       return std::make_pair(leftMVRS, rightMVRS);
     }
-    else
+    else if (splitValue > value)
     {
-      if (right.exists())
-      {
-        std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
-        leftMVRS = stats.first;
-        rightMVRS = stats.second;
-      }
+      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
+      leftMVRS = stats.first;
+      rightMVRS = stats.second;
       leftMVRS->update(*leftCorrelation);
       return std::make_pair(leftMVRS, rightMVRS);
     }
+    leftMVRS->update(*leftCorrelation);
+    rightMVRS->update(*rightCorrelation);
+    return std::make_pair(leftMVRS, rightMVRS);
   }
 
   virtual ObjectPtr clone(ExecutionContext& context) const

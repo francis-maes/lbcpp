@@ -116,16 +116,21 @@ protected:
     ScalarVariableMeanAndVariancePtr meanRRSE = new ScalarVariableMeanAndVariance();
     ScalarVariableMeanAndVariancePtr meanRMSE = new ScalarVariableMeanAndVariance();
     ScalarVariableMeanAndVariancePtr meanTreeSize = new ScalarVariableMeanAndVariance();
+    ScalarVariableMeanAndVariancePtr meanTime = new ScalarVariableMeanAndVariance();
     //context.enterScope(algoName);
     std::vector<std::pair<string, ScalarVariableMeanAndVariancePtr> > result;
     result.push_back(std::make_pair("RRSE", meanRRSE));
     result.push_back(std::make_pair("RMSE", meanRMSE));
     result.push_back(std::make_pair("Tree Size", meanTreeSize));
+    result.push_back(std::make_pair("Runtime (s)", meanTime));
     for (size_t foldNb = 0; foldNb < folds.size(); ++foldNb)
     {
       context.progressCallback(new ProgressionState(foldNb, folds.size(), "Folds"));
       context.enterScope("Fold " + string((int) foldNb));
+
+      double time = Time::getHighResolutionCounter();
       ExpressionPtr model = solveProblem(context, folds[foldNb], learner);
+      time = Time::getHighResolutionCounter() - time;
       
       double testingScore = folds[foldNb]->getValidationObjective(0)->evaluate(context, model);
       ObjectivePtr rmse = rmseRegressionObjective(folds[foldNb]->getValidationObjective(0).staticCast<SupervisedLearningObjective>()->getData(), folds[foldNb]->getValidationObjective(0).staticCast<SupervisedLearningObjective>()->getSupervision());
@@ -134,10 +139,12 @@ protected:
       context.resultCallback("testingScore", testingScore);
       context.resultCallback("RMSE", rmseScore);
       context.resultCallback("tree size", nbLeaves);
+      context.resultCallback("Time", time);
       context.leaveScope(testingScore);
       meanRRSE->push(testingScore);
       meanTreeSize->push(nbLeaves);
       meanRMSE->push(rmseScore);
+      meanTime->push(time);
     }
     context.progressCallback(new ProgressionState(folds.size(), folds.size(), "Folds"));
     //context.resultCallback("Mean testing score", meanTesting.getMean());
@@ -190,7 +197,7 @@ protected:
 class DiscoveryScience : public WorkUnit
 {
 public:
-  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath(""), numFolds(10), testRun(false) {}
+  DiscoveryScience() : randomSeed(456), numSamples(1000), chunkSize(100), verbosity(2), datasetPath(""), numFolds(10), problemNb(0), testRun(false) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -212,10 +219,12 @@ public:
       context.run(new XValWorkUnit(xValProblems[i], chunkSize, (SolverVerbosity) verbosity, problemnames[i]), false);
       */
 
-    std::vector<std::pair<string, std::vector<ProblemPtr> > > problems = createProblems(context, testRun, datasetPath);
-    for (size_t i = 0; i < problems.size(); ++i)
-      context.run(new XValWorkUnit(problems[i].second, chunkSize, (SolverVerbosity) verbosity, problems[i].first), false);
-
+    std::pair<string, std::vector<ProblemPtr> > problem = createProblem(context, datasetPath, problemNb);
+    /*for (size_t i = 0; i < problems.size(); ++i)
+      context.run(new XValWorkUnit(problems[i].second, chunkSize, (SolverVerbosity) verbosity, problems[i].first), false);*/
+    //std::vector<ProblemPtr> gekkeFold = std::vector<ProblemPtr>(1, problems[0].second[3]);
+    //context.run(new XValWorkUnit(gekkeFold, chunkSize, (SolverVerbosity) verbosity, problems[0].first));
+    context.run(new XValWorkUnit(problem.second, chunkSize, (SolverVerbosity) verbosity, problem.first), false);
     
     return new Boolean(true);
   }
@@ -233,64 +242,82 @@ protected:
   size_t numDims;
   size_t verbosity;
   size_t numFolds;
+  size_t problemNb;
   bool testRun;
 
   string datasetPath;
 
 private:
 
+
+  std::pair<string, std::vector<ProblemPtr> > createProblem(ExecutionContext& context, string arffPath, size_t problemNb)
+  {
+    const size_t numGeneratedProblems = 4;
+    SamplerPtr sampler = uniformSampler();
+    ProblemPtr problem;
+    string name;
+    if (problemNb < numGeneratedProblems)
+    {
+      switch (problemNb)
+      {
+      case 0:
+        name = "Paraboloid";
+        problem = new ParaboloidProblem();
+        break;
+      case 1:
+        name = "Lexp";
+        problem = new LEXPProblem();
+        break;
+      case 2:
+        name = "Losc";
+        problem = new LOSCProblem();
+        break;
+      case 3:
+        name = "CARTNoiseless";
+        problem = new CARTProblem();
+        break;
+      };
+      sampler->initialize(context, problem->getDomain());
+      return std::make_pair(name, problem->generateFolds(context, numFolds, numSamples / numFolds, sampler));
+    }
+    std::vector<string> datasets;
+    datasets.push_back("abalone_delve.arff");
+    datasets.push_back("ailerons.arff");
+    datasets.push_back("cal_housing.arff");
+    datasets.push_back("cal_housing_norm.arff");
+    datasets.push_back("CASP.arff");
+    datasets.push_back("cpu_delve.arff");
+    datasets.push_back("fried_delve.arff");
+    datasets.push_back("cart_delve.arff");
+    datasets.push_back("pol.arff");
+    datasets.push_back("winequality-white.arff");
+
+    std::vector<string> problemnames;
+    problemnames.push_back("Abalone");
+    problemnames.push_back("Ailerons");
+    problemnames.push_back("California housing");
+    problemnames.push_back("California housing normalized");
+    problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
+    problemnames.push_back("CPU");
+    problemnames.push_back("Friedmann");
+    problemnames.push_back("CART");
+    problemnames.push_back("PoleTelecom");
+    problemnames.push_back("Wine quality");
+
+    ArffLoader loader;
+    TablePtr table = loader.loadFromFile(context, juce::File(arffPath + "/" + datasets[problemNb -  numGeneratedProblems])).staticCast<Table>();
+    context.informationCallback("Finished loading " + datasets[problemNb - numGeneratedProblems]);
+    return std::make_pair(problemnames[problemNb - numGeneratedProblems], Problem::generateFoldsFromTable(context, table, numFolds));
+  }
+
+
   std::vector<std::pair<string, std::vector<ProblemPtr> > > createProblems(ExecutionContext& context, bool testRun, string arffPath)
   {
-    // set up test problems
-    std::vector<std::pair<string, ProblemPtr> > problems;
-    problems.push_back(std::make_pair("Friedmann", new FriedmannProblem()));
-
-    if (!testRun)
-    {
-      problems.push_back(std::make_pair("Paraboloid", new ParaboloidProblem()));
-      problems.push_back(std::make_pair("Lexp", new LEXPProblem()));
-      problems.push_back(std::make_pair("Losc", new LOSCProblem()));
-      problems.push_back(std::make_pair("CARTNoNoise", new CARTProblem()));
-    }
-
-    
-    SamplerPtr sampler = uniformSampler();
     std::vector<std::pair<string, std::vector<ProblemPtr> > > xValProblems;
-    for (size_t i = 0; i < problems.size(); ++i)
-    {
-      sampler->initialize(context, problems[i].second->getDomain());
-      xValProblems.push_back(std::make_pair(problems[i].first, problems[i].second->generateFolds(context, numFolds, numSamples / numFolds, sampler)));
-      context.informationCallback("Finished creating " + problems[i].first);
-    }
-    
+    xValProblems.push_back(createProblem(context, arffPath, 0));
     if (!testRun)
-    {
-      std::vector<string> datasets;
-      datasets.push_back("fried_delve.arff");
-      datasets.push_back("cart_delve.arff");
-      datasets.push_back("pol.arff");
-      datasets.push_back("winequality-white.arff");
-      datasets.push_back("cal_housing.arff");
-      datasets.push_back("cal_housing_norm.arff");
-      //datasets.push_back("CASP.arff");
-    
-      std::vector<string> problemnames;
-      problemnames.push_back("Friedmann");
-      problemnames.push_back("CART");
-      problemnames.push_back("PoleTelecom");
-      problemnames.push_back("Wine quality");
-      problemnames.push_back("California housing");
-      problemnames.push_back("California housing normalized");
-      //problemnames.push_back("Physicochemical Properties of Protein Tertiary Structure");
-    
-      ArffLoader loader;
-      for (size_t i = 0; i < datasets.size(); ++i)
-      {
-        TablePtr table = loader.loadFromFile(context, juce::File(arffPath + "/" + datasets[i])).staticCast<Table>();
-        context.informationCallback("Finished loading " + datasets[i]);
-        xValProblems.push_back(std::make_pair(problemnames[i], Problem::generateFoldsFromTable(context, table, numFolds)));
-      }
-    }
+      for (size_t i = 1; i < 14; ++i)
+        xValProblems.push_back(createProblem(context, arffPath, i));
     return xValProblems;
   }
 

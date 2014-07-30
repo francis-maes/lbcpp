@@ -215,14 +215,24 @@ public:
   HoeffdingBoundTotalMauveIncrementalSplittingCriterion() : HoeffdingBoundExtendedMauveIncrementalSplittingCriterion() {}
   HoeffdingBoundTotalMauveIncrementalSplittingCriterion(double delta, double threshold) : HoeffdingBoundExtendedMauveIncrementalSplittingCriterion(delta, threshold) {}
 
+  virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const
+  {
+    jassertfalse;
+    return 0.0;
+  }
+
   virtual double splitQuality(MultiVariateRegressionStatisticsPtr total, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right) const
   {
+    double nl = left->getExamplesSeen();
+    double nr = right->getExamplesSeen();
+    size_t numAttr = total->getNumAttributes();
+    if (nl < numAttr + 1 || nr < numAttr + 1)
+      return 0.0;
     double totalRSD = total->getResidualStandardDeviation();
     double leftRSD = left->getResidualStandardDeviation();
     double rightRSD = right->getResidualStandardDeviation();
     double n = total->getExamplesSeen();
-    double nl = left->getExamplesSeen();
-    double nr = right->getExamplesSeen();
     double sdr = totalRSD - nl * leftRSD / n - nr * rightRSD / n;
     return sdr;
   }
@@ -242,7 +252,15 @@ protected:
     totalLeft->update(*(ebst->getLeftCorrelation()));
     
     if (ebst->getLeft().exists())
-      bestLeft = findBestSplit(attribute, ebst->getLeft(), left, totalRight);
+    {
+      MultiVariateRegressionStatisticsPtr totalRightIncludingThisNode = new MultiVariateRegressionStatistics();
+      totalRightIncludingThisNode->update(*right);
+      totalRightIncludingThisNode->update(*(ebst->getRightCorrelation()));
+      totalRightIncludingThisNode->update(*(ebst->getLeftCorrelation()));
+      totalRightIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getLeftCorrelation()));
+      totalRightIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getRightCorrelation()));
+      bestLeft = findBestSplit(attribute, ebst->getLeft(), left, totalRightIncludingThisNode);
+    }
     if (ebst->getRight().exists())
       bestRight = findBestSplit(attribute, ebst->getRight(), totalLeft, right);
     
