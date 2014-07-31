@@ -43,7 +43,6 @@ def parseResult(item):
     return 0.0
 
 def load_trace(tracefile):
-  print('Parsing ' + tracefile)
   tree = ET.parse(tracefile)
   root = tree.getroot()
   # get workunit node
@@ -82,10 +81,39 @@ def main():
 def run(tracefile):
   results = load_trace(tracefile)
   width = 0.8
+  filenames = list()
+  printHeader = True
   for problem in results.keys():
     for resultName in results[problem].keys():
-      means = [results[problem][resultName][key].mean() for key in results[problem][resultName].keys()]
-      stddevs = [results[problem][resultName][key].stddev() for key in results[problem][resultName].keys()]
+      algNames = sorted(results[problem][resultName].keys())
+      if printHeader:
+        printHeader = False
+        column_spec = '|l|'
+        for a in algNames:
+          column_spec = column_spec + 'c|'
+        print '\\begin{table}[htp]'
+        print '\\tiny'
+        print '\\begin{tabular}{' + column_spec + '}'
+        print '\\hline'
+        header_row = ''
+        for a in algNames:
+          header_row = header_row + ' & ' + a
+        print header_row + '\\\\'
+        print '\\hline'
+      row = resultName
+      minimum = 1e9
+      for key in algNames:
+        if (minimum > results[problem][resultName][key].mean()):
+          minimum = results[problem][resultName][key].mean()
+      for key in algNames:
+        row = row + ' & '
+        if (results[problem][resultName][key].mean() == minimum):
+          row = row + '\\cellcolor{blue!25} '
+        row = row + '$' + "{:.3f}".format(results[problem][resultName][key].mean()) + '_{' + "{:.3f}".format(results[problem][resultName][key].stddev()) + '}$'
+      print row + ' \\\\'
+      print '\\hline'
+      means = [results[problem][resultName][key].mean() for key in algNames]
+      stddevs = [results[problem][resultName][key].stddev() for key in algNames]
       ind = np.arange(len(means))
       ind = [x + (1-width) / 2 for x in ind]
       fig, ax = plt.subplots()
@@ -93,35 +121,25 @@ def run(tracefile):
       ax.set_ylabel(resultName)
       ax.set_title(problem)
       ax.set_xticks(ind)
-      ax.set_xticklabels(results[problem][resultName].keys(), rotation=15)
+      ax.set_xticklabels(algNames, rotation=20)
       ax.set_ylim(bottom=0)
-
-
-#%%
-def create_plots(curves):
-  legend = ['NSGA-II','SMPSO','OMOPSO','AbYSS']
-  colors = ['b','g','r','c','m','y','k']
-  markers = ['o','v','^','s','x']
-
-  for p in range(0, 16):
-    plt.clf()
-    alg_lines = []
-    alg_nb = 0
-    ax = plt.subplot(111)
-    for alg in legend:
-      xvals = [int(x) for x in curves[alg][str(p)]]
-      xvals.sort()
-      yvals = [curves[alg][str(p)][str(x)][-1][1].mean() for x in xvals]
-      yerrs = [curves[alg][str(p)][str(x)][-1][1].stddev() for x in xvals]
-      alg_lines.append(plt.errorbar(xvals, yvals, yerr=yerrs, fmt='-' + colors[alg_nb] + markers[alg_nb]))
-      alg_nb += 1
-    box = ax.get_position()
-    ax.grid()
-    ax.set_position([box.x0, box.y0, box.width*0.8, box.height])
-    ax.legend([l[0] for l in alg_lines], legend, loc='center left', numpoints=1, bbox_to_anchor=(1, 0.8))
-    ax.set_xlabel('Search-space dimensionality')
-    ax.set_ylabel('Spread')
-    savefig('dimimpact-spread-' + getName(p) + '.pdf')
+      plt.grid(b=True, which='major', color='k', linestyle=':')
+      plt.savefig(problem.replace(' ', '-') + "-" + resultName.replace(' ', '-') + ".pdf", bbox_inches='tight')
+      filenames.append((problem.replace(' ', '-') + "-" + resultName.replace(' ', '-') + ".pdf", resultName))
+      plt.close(fig)
+    print '\\end{tabular}'
+    print '\\caption{Results for problem ' + problem + '}'
+    print '\\end{table}'
+    print '\\begin{figure}[htp]'
+    print '\\centering'
+    for f in filenames:
+      print '\\begin{subfigure}{0.45\\textwidth}'
+      print '  \\includegraphics[width=\\textwidth]{' + f[0] + '}'
+      print '  \\caption{' + f[1] + '}'
+      print '\\end{subfigure}'
+    print '\\caption{Results for problem ' + problem + '}'
+    print '\\end{figure}'
+    print '\\clearpage'
 
 #%%
 if __name__ == "__main__":
