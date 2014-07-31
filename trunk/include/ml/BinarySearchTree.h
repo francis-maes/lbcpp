@@ -120,8 +120,6 @@ public:
    */
   std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> getStatsForSplit(double splitValue)
   {
-    // FIXME: SOMETHING IS WRONG WITH THIS METHOD
-    
     MultiVariateRegressionStatisticsPtr leftMVRS, rightMVRS;
     leftMVRS = new MultiVariateRegressionStatistics();
     rightMVRS = new MultiVariateRegressionStatistics();
