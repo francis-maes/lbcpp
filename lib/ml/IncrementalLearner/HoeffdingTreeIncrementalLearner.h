@@ -57,11 +57,34 @@ public:
   ScalarVariableMeanPtr getSplitRatios() const
     {return splitRatios;}
 
+  /* Reset the split ratio statistic */
+  void resetSplitRatios(IncrementalSplittingCriterion::Split newBestSplit, IncrementalSplittingCriterion::Split newSecondBestSplit)
+  {
+    splitRatios = new ScalarVariableMean();
+    bestSplit = newBestSplit;
+    secondBestSplit = newSecondBestSplit;
+  }
+
+  size_t getTotalEBSTNodes() const
+  {
+    size_t result = 0;
+    for (size_t i = 0; i < ebsts.size(); ++i)
+      result += ebsts[i]->getSize();
+    return result;
+  }
+
+  IncrementalSplittingCriterion::Split getBestSplit() const
+    {return bestSplit;}
+
+  IncrementalSplittingCriterion::Split getSecondBestSplit() const
+    {return secondBestSplit;}
+
 protected:
   friend class HoeffdingTreeIncrementalLearnerStatisticsClass;
 
   std::vector<ExtendedBinarySearchTreePtr> ebsts;
   ScalarVariableMeanPtr splitRatios;
+  IncrementalSplittingCriterion::Split bestSplit, secondBestSplit;
 };
 
 class HoeffdingTreeIncrementalLearner : public IncrementalLearner
@@ -69,8 +92,8 @@ class HoeffdingTreeIncrementalLearner : public IncrementalLearner
 public:
   HoeffdingTreeIncrementalLearner() {}
 
-	HoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner, size_t chunkSize) : 
-    splittingCriterion(splittingCriterion), modelLearner(modelLearner), chunkSize(chunkSize), pruneOnly(true) {}
+	HoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner) : 
+    splittingCriterion(splittingCriterion), modelLearner(modelLearner), pruneOnly(true) {}
 
   ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const 
   {
@@ -93,31 +116,33 @@ public:
     leafStats->addObservation(input, output->getValue(0));
     if (verbosity >= verbosityAll)
       context.resultCallback("model", root);
-	  
-    if (leafStats->getExamplesSeen() % chunkSize == 0)
-    {
-      IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(context, leaf);
-      bool splitWasMade = false;
 
-      if (split.value != DVector::missingValue && split.quality != DVector::missingValue)
-      {
-        std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> regressionStats = leafStats->getEBSTs()[split.attribute]->getStatsForSplit(split.value);
-        leaf->split(context, split.attribute, split.value);
-        modelLearner->initialiseLearnerStatistics(context, leaf->getLeft().staticCast<HoeffdingTreeNode>()->getModel(), regressionStats.first);
-        modelLearner->initialiseLearnerStatistics(context, leaf->getRight().staticCast<HoeffdingTreeNode>()->getModel(), regressionStats.second);
-			  splitWasMade = true;
-		  }
+    IncrementalSplittingCriterion::Split split = splittingCriterion->findBestSplit(context, leaf);
+    bool splitWasMade = false;
+
+    if (split.value != DVector::missingValue && split.attribute != DVector::missingValue)
+    {
+      std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> regressionStats = leafStats->getEBSTs()[split.attribute]->getStatsForSplit(split.value);
+      leaf->split(context, split.attribute, split.value);
+      modelLearner->initialiseLearnerStatistics(context, leaf->getLeft().staticCast<HoeffdingTreeNode>()->getModel(), regressionStats.first);
+      modelLearner->initialiseLearnerStatistics(context, leaf->getRight().staticCast<HoeffdingTreeNode>()->getModel(), regressionStats.second);
+      leaf->setLearnerStatistics(HoeffdingTreeIncrementalLearnerStatisticsPtr());
+			splitWasMade = true;
+		}
       
-      if (verbosity >= verbosityDetailed)
-      {
-        context.resultCallback("bestSplitQuality", split.quality);
-		    context.resultCallback("Split?", splitWasMade);
-        context.resultCallback("Splitvalue", split.value);
-        context.resultCallback("SplitIdx", split.attribute);
-      }
-	  }
     if (verbosity >= verbosityDetailed)
+    {
+      context.resultCallback("bestSplitQuality", split.quality);
+		  context.resultCallback("Split?", splitWasMade);
+      context.resultCallback("Splitvalue", split.value);
+      context.resultCallback("SplitIdx", split.attribute);
       context.resultCallback("nbOfModels", root->getNbOfLeaves());
+      std::vector<TreeNodePtr> leaves = root->getAllLeafs();
+      size_t totalEBSTNodes = 0;
+      for (size_t i = 0; i < leaves.size(); ++i)
+        totalEBSTNodes += leaves[i]->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>()->getTotalEBSTNodes();
+      context.resultCallback("nbEBSTNodes", totalEBSTNodes);
+    } 
   }
 
 protected:
@@ -125,7 +150,6 @@ protected:
 
   IncrementalLearnerPtr modelLearner;
   IncrementalSplittingCriterionPtr splittingCriterion;
-  size_t chunkSize; /* number of samples before tree is recalculated */
 	bool pruneOnly; /* whether to prune only or to generate alternate trees for drift detection */
 };
 

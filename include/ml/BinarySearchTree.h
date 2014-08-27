@@ -35,6 +35,14 @@ public:
   double getValue() const
     {return value;}
 
+  /** Prune the left subtree from this node **/
+  void pruneLeft()
+    {left = BinarySearchTreePtr();}
+
+  /** Prune the right subtree from this node **/
+  void pruneRight()
+    {right = BinarySearchTreePtr();}
+
   virtual void insertValue(double attribute, const DenseDoubleVectorPtr& data, double y) = 0;
 
   // finds the node with a value that equals the given value
@@ -49,6 +57,17 @@ public:
       return right->getNode(val);
     else
       return NULL;
+  }
+
+  /** Calculate the number of nodes in the tree **/
+  size_t getSize() const
+  {
+    size_t count = 1;
+    if (left.exists())
+      count += left->getSize();
+    if (right.exists())
+      count += right->getSize();
+    return count;
   }
 
 protected:
@@ -113,7 +132,7 @@ public:
   MultiVariateRegressionStatisticsPtr getRightCorrelation()
     {return rightCorrelation;}
 
-    /* Calculate total regression statistics for a split
+  /* Calculate total regression statistics for a split
    * \param splitValue The split value
    * \return a pair of PearsonCorrelationCoefficientPtrs where the first and second values represent statistics
    *         for left and right of the split respectively
@@ -123,7 +142,7 @@ public:
     MultiVariateRegressionStatisticsPtr leftMVRS, rightMVRS;
     leftMVRS = new MultiVariateRegressionStatistics();
     rightMVRS = new MultiVariateRegressionStatistics();
-    if (splitValue < value)
+    if (splitValue < value && left.exists())
     {
       std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = left.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
       leftMVRS = stats.first;
@@ -134,7 +153,7 @@ public:
       rightMVRS->subtract(*(left.staticCast<ExtendedBinarySearchTree>()->rightCorrelation));
       return std::make_pair(leftMVRS, rightMVRS);
     }
-    else if (splitValue > value)
+    else if (splitValue > value && right.exists())
     {
       std::pair<MultiVariateRegressionStatisticsPtr, MultiVariateRegressionStatisticsPtr> stats = right.staticCast<ExtendedBinarySearchTree>()->getStatsForSplit(splitValue);
       leftMVRS = stats.first;

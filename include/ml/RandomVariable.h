@@ -110,6 +110,13 @@ public:
   virtual void push(const ScalarVariableMeanAndVariance& other)
     {ScalarVariableMean::push(other); samplesSumOfSquares += other.samplesSumOfSquares;}
 
+  virtual void subtract(const ScalarVariableMeanAndVariance& other)
+  {
+    samplesSum -= other.samplesSum;
+    samplesCount -= other.samplesCount;
+    samplesSumOfSquares -= other.samplesSumOfSquares;
+  }
+
   virtual double getSquaresMean() const
     {return samplesSumOfSquares / samplesCount;}
 
@@ -373,11 +380,13 @@ public:
 
   double getResidualStandardDeviation() const
   {
+    if (numSamples < 2)
+      return DBL_MAX;
     double b = getSlope();
     // residual variance
     double rv = (sumYsquared - sumY * sumY / numSamples - 2 * b * (sumXY - sumX * sumY / numSamples) + b * b * (sumXsquared - sumX * sumX / numSamples)) / (numSamples - 1);
     // check small numerical errors
-    if (rv < 0.0 && rv > -1.0e-6)
+    if (rv < 0.0 && rv > -1.0e-3)
       return 0.0;
     else if (rv < 0)
       jassertfalse;
@@ -417,9 +426,9 @@ typedef ReferenceCountedObjectPtr<PearsonCorrelationCoefficient> PearsonCorrelat
 class MultiVariateRegressionStatistics : public Object
 {
 public:
-  MultiVariateRegressionStatistics() : xtx(Array<double>(1,1)), xty(Array<double>(1,1)) {}
+  MultiVariateRegressionStatistics() : xtx(Array<double>(1,1)), xty(Array<double>(1,1)), cachedWeightsValid(false) {}
 
-  MultiVariateRegressionStatistics(const MultiVariateRegressionStatistics& other)
+  MultiVariateRegressionStatistics(const MultiVariateRegressionStatistics& other) : cachedWeightsValid(false)
   {
     stats = std::vector<PearsonCorrelationCoefficientPtr>(other.getNumAttributes());
     for (size_t i = 0; i < stats.size(); ++i)
@@ -431,6 +440,7 @@ public:
 
   virtual void push(const DenseDoubleVectorPtr& attributes, double y)
   {
+    cachedWeightsValid = false;
     if (stats.size() == 0)
       for (size_t i = 0; i < attributes->getNumValues(); ++i)
         stats.push_back(new PearsonCorrelationCoefficient());
@@ -481,6 +491,7 @@ public:
 
   virtual void update(const MultiVariateRegressionStatistics& other)
   {
+    cachedWeightsValid = false;
     if (other.stats.size() == 0)
       return;
     // initialise pearson regression statistics
@@ -524,6 +535,7 @@ public:
    */
   virtual void subtract(const MultiVariateRegressionStatistics& other)
   {
+    cachedWeightsValid = false;
     if (other.stats.size() == 0)
       return;
     for (size_t i = 0; i < other.getNumAttributes(); ++i)
@@ -565,14 +577,28 @@ public:
    */
   DenseDoubleVectorPtr getLLSQEstimate() const
   {
-    Array<double> xtxinv(xtx.dim(0), xtx.dim(1));
-    xtxinv = invert(xtx);
-    Array<double> b;
-    matMat(b, xtxinv, xty);
+    DenseDoubleVectorPtr result = new DenseDoubleVector(xtx.dim(0), 0.0);
+    if (cachedWeightsValid)
+    {
+      for (size_t i = 0; i < cachedWeights->getNumValues(); ++i)
+        result->setValue(i, cachedWeights->getValue(i));
+    }
+    else
+    {
+      Array<double> xtxinv(xtx.dim(0), xtx.dim(1));
+      xtxinv = invert(xtx);
+      Array<double> b;
+      matMat(b, xtxinv, xty);
 
-    DenseDoubleVectorPtr result = new DenseDoubleVector(b.dim(0), 0.0);
-    for (size_t i = 0; i < b.dim(0); ++i)
-      result->setValue(i, b(i));
+      const_cast<MultiVariateRegressionStatistics*>(this)->cachedWeights = new DenseDoubleVector(xtx.dim(0), 0.0);
+
+      for (size_t i = 0; i < b.dim(0); ++i)
+      {
+        const_cast<MultiVariateRegressionStatistics*>(this)->cachedWeights->setValue(i, b(i));
+        result->setValue(i, b(i));
+      }
+    }
+    const_cast<MultiVariateRegressionStatistics*>(this)->cachedWeightsValid = true;
     return result;
   }
 
@@ -638,7 +664,7 @@ public:
 
     term4 = term4 * term4 / stats[0]->numSamples;
     double rv = (term1 - 2*term2 + term3 - term4) / (stats[0]->numSamples - 1);
-    if (rv < 0.0 && rv > -1.0e-6)
+    if (rv < 0.0 && rv > -1.0e-3)
       return 0.0;
     else if (rv < 0.0)
       jassertfalse;
@@ -676,6 +702,9 @@ protected:
   std::vector<double> sumXiXj;
   Array<double> xtx;
   Array<double> xty;
+
+  DenseDoubleVectorPtr cachedWeights;
+  bool cachedWeightsValid;
 };
 
 typedef ReferenceCountedObjectPtr<MultiVariateRegressionStatistics> MultiVariateRegressionStatisticsPtr;

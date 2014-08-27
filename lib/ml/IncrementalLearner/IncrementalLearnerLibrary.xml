@@ -42,10 +42,9 @@
   </class>
 
   <class name="HoeffdingTreeIncrementalLearner" base="ScalarVectorTreeIncrementalLearner">
-    <constructor arguments="IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner, size_t chunkSize" returnType="IncrementalLearner"/>
+    <constructor arguments="IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr modelLearner" returnType="IncrementalLearner"/>
     <variable type="IncrementalSplittingCriterion" name="splittingCriterion"/>
     <variable type="IncrementalLearner" name="modelLearner"/>
-    <variable type="PositiveInteger" name="chunkSize"/>
     <variable type="Boolean" name="pruneOnly"/>
   </class>
 
@@ -54,19 +53,20 @@
   <class name="HoeffdingBoundIncrementalSplittingCriterion" abstract="yes">
     <variable type="Double" name="delta"/>
     <variable type="Double" name="threshold"/>
+    <variable type="PositiveInteger" name="chunkSize"/>
   </class>
   <class name="HoeffdingBoundStdDevReductionIncrementalSplittingCriterion" base="HoeffdingBoundIncrementalSplittingCriterion">
-    <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
+    <constructor arguments="size_t chunkSize, double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
   </class>
   <class name="HoeffdingBoundMauveIncrementalSplittingCriterion" base="HoeffdingBoundIncrementalSplittingCriterion">
-    <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
+    <constructor arguments="size_t chunkSize, double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
   </class>
   <class name="HoeffdingBoundExtendedMauveIncrementalSplittingCriterion" base="HoeffdingBoundIncrementalSplittingCriterion">
-    <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
+    <constructor arguments="size_t chunkSize, double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
   </class>
   
   <class name="HoeffdingBoundTotalMauveIncrementalSplittingCriterion" base="HoeffdingBoundExtendedMauveIncrementalSplittingCriterion">
-    <constructor arguments="double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
+    <constructor arguments="size_t chunkSize, double delta, double threshold" returnType="IncrementalSplittingCriterion"/>
   </class>
   
   <!--
