@@ -28,9 +28,9 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
-    IncrementalSplittingCriterionPtr extMauve = hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(0.05, 0.1);
-    IncrementalSplittingCriterionPtr mauve = hoeffdingBoundMauveIncrementalSplittingCriterion(0.05, 0.1);
-    IncrementalSplittingCriterionPtr sdr = hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(0.05, 0.1);
+    IncrementalSplittingCriterionPtr extMauve = hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(1, 0.05, 0.1);
+    IncrementalSplittingCriterionPtr mauve = hoeffdingBoundMauveIncrementalSplittingCriterion(1, 0.05, 0.1);
+    IncrementalSplittingCriterionPtr sdr = hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(1, 0.05, 0.1);
 
     ScalarVariableMeanAndVariancePtr leftVariance = new ScalarVariableMeanAndVariance();
     ScalarVariableMeanAndVariancePtr rightVariance = new ScalarVariableMeanAndVariance();

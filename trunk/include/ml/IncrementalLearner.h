@@ -75,21 +75,23 @@ class IncrementalSplittingCriterion : public Object
 public:
   struct Split
   {
-    Split() : attribute(0), value(0.0), quality(0.0) {}
+    Split() : attribute(DVector::missingValue), value(DVector::missingValue), quality(0.0) {}
     Split(size_t attribute, double value, double quality) : attribute(attribute), value(value), quality(quality) {}
     size_t attribute;
     double value;
     double quality;
-    double rstd;//residual standard deviation
-    double rssCombined; // residual sum of squares of the parent node
-    double rssLeft; // residual sum of squares of the left split
-    double rssRight; // residual sum of squares of the right split
-    size_t N; // number of samples seen to make the split
+
+    /** Compares this Split's attribute and value against the other's attribute
+     *  and value. Returns true if both are equal. Note that the quality does not
+     *  need to be equal.
+     */
+    bool isSameSplitAs(const Split& other)
+      {return attribute == other.attribute && value == other.value;}
   };
 
   /** Find the best split point for this leaf.
    *  \return A Split struct containing the attribute index, split value and split quality.
-   *          If no suitable Split was found, set quality to DVector::missingValue to indicate this.
+   *          If no suitable Split was found, set attribute and value to DVector::missingValue to indicate this.
    */
   virtual Split findBestSplit(ExecutionContext& context, TreeNodePtr leaf) const = 0;
   virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
@@ -101,14 +103,14 @@ typedef ReferenceCountedObjectPtr<IncrementalSplittingCriterion> IncrementalSpli
 extern IncrementalLearnerPtr pureRandomScalarVectorTreeIncrementalLearner();
 extern IncrementalLearnerPtr ensembleIncrementalLearner(IncrementalLearnerPtr baseLearner, size_t ensembleSize);
 extern IncrementalLearnerPtr perceptronIncrementalLearner(size_t numInitialTrainingSamples, double learningRate, double learningRateDecay);
-extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner, size_t chunkSize = 50);
+extern IncrementalLearnerPtr hoeffdingTreeIncrementalLearner(IncrementalSplittingCriterionPtr splittingCriterion, IncrementalLearnerPtr perceptronLearner);
 extern IncrementalLearnerPtr simpleLinearRegressionIncrementalLearner();
 extern IncrementalLearnerPtr linearLeastSquaresRegressionIncrementalLearner();
 
-extern IncrementalSplittingCriterionPtr hoeffdingBoundMauveIncrementalSplittingCriterion(double delta, double threshold);
-extern IncrementalSplittingCriterionPtr hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(double delta, double threshold);
-extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(double delta, double threshold);
-extern IncrementalSplittingCriterionPtr hoeffdingBoundTotalMauveIncrementalSplittingCriterion(double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundMauveIncrementalSplittingCriterion(size_t chunkSize, double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(size_t chunkSize, double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(size_t chunkSize, double delta, double threshold);
+extern IncrementalSplittingCriterionPtr hoeffdingBoundTotalMauveIncrementalSplittingCriterion(size_t chunkSize, double delta, double threshold);
 /*extern IncrementalSplittingCriterionPtr hoeffdingBoundStdDevReductionIncrementalSplittingCriterion2(double delta, double threshold);
 extern IncrementalSplittingCriterionPtr mauveIncrementalSplittingCriterion(double delta, double threshold, double maxCoefficientOfDetermination);
 extern IncrementalSplittingCriterionPtr quandtAndrewsIncrementalSplittingCriterion(size_t numVariables, double threshold);*/

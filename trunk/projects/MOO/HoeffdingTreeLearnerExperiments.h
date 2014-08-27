@@ -139,12 +139,8 @@ public:
       ProblemPtr problem = baseProblem->toSupervisedLearningProblem(context, numSamples, 100, sampler);
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
-      //SolverPtr learner = incrementalLearnerBasedLearner(perceptronIncrementalLearner(30, learningRate, learningRateDecay));
-	  // mauveIncrementalSplittingCriterion(0.01, 0.4, 0.95)
-	  // quandtAndrewsIncrementalSplittingCriterion(2, 0.001)
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(delta, threshold), linearLeastSquaresRegressionIncrementalLearner(), 50));
-      //SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(quandtAndrewsIncrementalSplittingCriterion(2, 0.001), simpleLinearRegressionIncrementalLearner(), 50));
-      //SolverPtr learner = incrementalLearnerBasedLearner(simpleLinearRegressionIncrementalLearner());
+      
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(50, delta, threshold), linearLeastSquaresRegressionIncrementalLearner()));
       learner->setVerbosity((SolverVerbosity)verbosity);
       learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
     
@@ -267,7 +263,7 @@ private:
         {
           ti++;
           i++;
-          learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(d, t), simpleLinearRegressionIncrementalLearner(), 10));
+          learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(10, d, t), simpleLinearRegressionIncrementalLearner()));
           learner->setVerbosity((SolverVerbosity)verbosity);
           learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
           ExpressionPtr model;

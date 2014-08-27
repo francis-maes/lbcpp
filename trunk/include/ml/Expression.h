@@ -465,6 +465,21 @@ public:
   void setRight(TreeNodePtr newRight)
     {right = newRight;}
 
+  std::vector<TreeNodePtr> getAllLeafs() const
+  {
+    std::vector<TreeNodePtr> result;
+    if (isLeaf())
+      result.push_back(refCountedPointerFromThis<TreeNode>(this));
+    else
+    {
+      std::vector<TreeNodePtr> leftLeaves = left->getAllLeafs();
+      std::vector<TreeNodePtr> rightLeaves = right->getAllLeafs();
+      result.insert(result.end(), leftLeaves.begin(), leftLeaves.end());
+      result.insert(result.end(), rightLeaves.begin(), rightLeaves.end());
+    }
+    return result;
+  }
+
   virtual ObjectPtr getSampleInput(size_t index) const = 0;
   virtual ObjectPtr getSamplePrediction(size_t index) const = 0;
 
