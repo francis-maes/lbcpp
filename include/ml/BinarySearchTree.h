@@ -120,6 +120,9 @@ public:
     }
   }
 
+  size_t getExamplesSeen() const
+    {return leftCorrelation->getExamplesSeen() + rightCorrelation->getExamplesSeen();}
+
   ScalarVariableMeanAndVariancePtr getLeftStats()
     {return leftStats;}
 

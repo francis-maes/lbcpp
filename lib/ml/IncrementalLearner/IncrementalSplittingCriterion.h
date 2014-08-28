@@ -59,7 +59,7 @@ public:
         double minRatio = stats->getSecondBestSplit().quality / stats->getBestSplit().quality - 2 * epsilon;
         for (size_t i = 0; i < stats->getEBSTs().size(); ++i)
           pruneStatistics(i, stats->getEBSTs()[i], new ScalarVariableMeanAndVariance(), new PearsonCorrelationCoefficient(), 
-          new ScalarVariableMeanAndVariance(), new PearsonCorrelationCoefficient(), stats->getBestSplit().quality, minRatio);
+          new ScalarVariableMeanAndVariance(), new PearsonCorrelationCoefficient(), stats->getBestSplit().quality, minRatio, stats->getExamplesSeen() * 0.05);
       }
     }
     return Split(DVector::missingValue, DVector::missingValue, 0.0);
@@ -73,7 +73,7 @@ protected:
   double threshold;
 
   virtual bool pruneStatistics(size_t attribute, ExtendedBinarySearchTreePtr ebst, ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
-    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation, double qualityBest, double minRatio) const
+    ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation, double qualityBest, double minRatio, size_t minExamples) const
   {
     Split bestLeft, bestRight;
     
@@ -109,14 +109,14 @@ protected:
       totalRightCorrelationIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getLeftCorrelation()->getStats(attribute)));
       totalRightCorrelationIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getRightCorrelation()->getStats(attribute)));
 
-      pruneLeft = pruneStatistics(attribute, ebst->getLeft(), leftVariance, leftCorrelation, totalRightVarianceIncludingThisNode, totalRightCorrelationIncludingThisNode, qualityBest, minRatio);
+      pruneLeft = pruneStatistics(attribute, ebst->getLeft(), leftVariance, leftCorrelation, totalRightVarianceIncludingThisNode, totalRightCorrelationIncludingThisNode, qualityBest, minRatio, minExamples);
     }
     if (ebst->getRight().exists())
-      pruneRight = pruneStatistics(attribute, ebst->getRight(), totalLeftVariance, totalLeftCorrelation, rightVariance, rightCorrelation, qualityBest, minRatio);
+      pruneRight = pruneStatistics(attribute, ebst->getRight(), totalLeftVariance, totalLeftCorrelation, rightVariance, rightCorrelation, qualityBest, minRatio, minExamples);
     
     double quality = splitQuality(totalLeftVariance, totalLeftCorrelation, totalRightVariance, totalRightCorrelation);
 
-    bool canPruneThisNode = pruneLeft && pruneRight && quality / qualityBest < minRatio;
+    bool canPruneThisNode = pruneLeft && pruneRight && quality / qualityBest < minRatio && ebst->getExamplesSeen() >= minExamples;
 
     if (!canPruneThisNode)
     {
@@ -255,7 +255,7 @@ public:
       {
         double minRatio = stats->getSecondBestSplit().quality / stats->getBestSplit().quality - 2 * epsilon;
         for (size_t i = 0; i < stats->getEBSTs().size(); ++i)
-          pruneStatistics(i, stats->getEBSTs()[i], new MultiVariateRegressionStatistics(), new MultiVariateRegressionStatistics(), stats->getBestSplit().quality, minRatio);
+          pruneStatistics(i, stats->getEBSTs()[i], new MultiVariateRegressionStatistics(), new MultiVariateRegressionStatistics(), stats->getBestSplit().quality, minRatio, stats->getExamplesSeen() * 0.05);
       }
     }
     return Split(DVector::missingValue, DVector::missingValue, 0.0);
@@ -265,7 +265,7 @@ protected:
   friend class HoeffdingBoundExtendedMauveIncrementalSplittingCriterionClass;
 
   virtual bool pruneStatistics(size_t attribute, ExtendedBinarySearchTreePtr ebst, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right,
-    double qualityBest, double minRatio) const
+    double qualityBest, double minRatio, size_t minExamples) const
   {
     MultiVariateRegressionStatisticsPtr totalRight = new MultiVariateRegressionStatistics();
     totalRight->update(*right);
@@ -285,10 +285,10 @@ protected:
       totalRightIncludingThisNode->update(*(ebst->getLeftCorrelation()));
       totalRightIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getLeftCorrelation()));
       totalRightIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getRightCorrelation()));
-      pruneLeft = pruneStatistics(attribute, ebst->getLeft(), left, totalRightIncludingThisNode, qualityBest, minRatio);
+      pruneLeft = pruneStatistics(attribute, ebst->getLeft(), left, totalRightIncludingThisNode, qualityBest, minRatio, minExamples);
     }
     if (ebst->getRight().exists())
-      pruneRight = pruneStatistics(attribute, ebst->getRight(), totalLeft, right, qualityBest, minRatio);
+      pruneRight = pruneStatistics(attribute, ebst->getRight(), totalLeft, right, qualityBest, minRatio, minExamples);
     
     double quality = 0.0;
     for (size_t i = 0; i < left->getNumAttributes(); ++i)
@@ -298,7 +298,7 @@ protected:
         quality = current;
     }
     
-    bool canPruneThisNode = pruneLeft && pruneRight && quality / qualityBest < minRatio;
+    bool canPruneThisNode = pruneLeft && pruneRight && quality / qualityBest < minRatio && ebst->getExamplesSeen() >= minExamples;
 
     if (!canPruneThisNode)
     {
