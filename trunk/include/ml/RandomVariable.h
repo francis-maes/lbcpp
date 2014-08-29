@@ -382,9 +382,9 @@ public:
   {
     if (numSamples < 2)
       return DBL_MAX;
-    double b = getSlope();
     // residual variance
-    double rv = (sumYsquared - sumY * sumY / numSamples - 2 * b * (sumXY - sumX * sumY / numSamples) + b * b * (sumXsquared - sumX * sumX / numSamples)) / (numSamples - 1);
+    double tmp = sumXY - sumX * sumY / numSamples;
+    double rv = (sumYsquared - sumY * sumY / numSamples - tmp * tmp / (sumXsquared - sumX * sumX / numSamples)) / (numSamples - 1);
     // check small numerical errors
     if (rv < 0.0 && rv > -1.0e-3)
       return 0.0;
