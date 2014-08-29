@@ -14,6 +14,7 @@
 # include <ml/BinarySearchTree.h>
 # include <ml/Expression.h>
 # include <ml/Sampler.h>
+# include <ml/RandomVariable.h>
 # include "SolverInfo.h"
 # include "SharkProblems.h"
 
@@ -27,6 +28,33 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
+
+    MultiVariateRegressionStatisticsPtr stats = new MultiVariateRegressionStatistics();
+    std::vector<DenseDoubleVectorPtr> X;
+    std::vector<double> Y;
+    size_t m = 10; //num attributes
+    size_t n = 200; // num examples
+    for (size_t i = 0; i < n; ++i)
+    {
+      DenseDoubleVectorPtr x = new DenseDoubleVector(4, 0.0);
+      for (size_t j = 0; j < m; ++j)
+        x->setValue(j, context.getRandomGenerator()->sampleDouble());
+      double y = x->getValue(0) + 2*x->getValue(1) - x->getValue(2) - 2*x->getValue(3) + context.getRandomGenerator()->sampleDoubleFromGaussian();
+      stats->push(x, y);
+      X.push_back(x);
+      Y.push_back(y);
+      DenseDoubleVectorPtr weights = stats->getLLSQEstimate();
+      if (i > 2)
+      {
+        context.enterScope("Iteration " + string((int) i));
+        context.resultCallback("Iteration", i);
+        context.resultCallback("Calculated RSD", rsd(X, Y, weights));
+        context.resultCallback("Estimated RSD", stats->getResidualStandardDeviation());
+        context.leaveScope();
+      }
+    }
+
+    /*
     std::vector< std::pair<juce::String, IncrementalLearnerPtr> > learners;
     learners.push_back(std::make_pair("LLSQ", linearLeastSquaresRegressionIncrementalLearner()));
     learners.push_back(std::make_pair("SLR", simpleLinearRegressionIncrementalLearner()));
@@ -73,6 +101,21 @@ public:
     }
     context.leaveScope();*/
     return new Boolean(true);
+  }
+
+  double rsd(std::vector<DenseDoubleVectorPtr> X, std::vector<double> Y, DenseDoubleVectorPtr weights)
+  {
+    double sumResiduals = 0.0;
+    double sumSqResiduals = 0.0;
+    for (size_t i = 0; i < X.size(); ++i)
+    {
+      double yhat = weights->getValue(0);
+      for (size_t j = 0; j < X[0]->getNumValues(); ++j)
+        yhat += X[i]->getValue(j) * weights->getValue(j+1);
+      sumResiduals += yhat - Y[i];
+      sumSqResiduals += (yhat - Y[i]) * (yhat - Y[i]);
+    }
+    return sqrt(sumSqResiduals / X.size() - (sumResiduals / X.size()) * (sumResiduals / X.size()));
   }
 
   std::vector<std::pair<string, ProblemPtr> > createProblems(ExecutionContext& context, size_t numSamples, size_t numValidationSamples, bool testRun, string arffPath)

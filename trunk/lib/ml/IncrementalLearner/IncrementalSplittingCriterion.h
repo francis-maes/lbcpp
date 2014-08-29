@@ -387,7 +387,7 @@ protected:
   friend class HoeffdingBoundTotalMauveIncrementalSplittingCriterionClass;
 
   virtual bool pruneStatistics(size_t attribute, ExtendedBinarySearchTreePtr ebst, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right,
-    double qualityBest, double minRatio) const
+    double qualityBest, double minRatio, size_t minExamples) const
   {
     MultiVariateRegressionStatisticsPtr totalRight = new MultiVariateRegressionStatistics();
     totalRight->update(*right);
@@ -407,10 +407,10 @@ protected:
       totalRightIncludingThisNode->update(*(ebst->getLeftCorrelation()));
       totalRightIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getLeftCorrelation()));
       totalRightIncludingThisNode->subtract(*(ebst->getLeft().staticCast<ExtendedBinarySearchTree>()->getRightCorrelation()));
-      pruneLeft = pruneStatistics(attribute, ebst->getLeft(), left, totalRightIncludingThisNode, qualityBest, minRatio);
+      pruneLeft = pruneStatistics(attribute, ebst->getLeft(), left, totalRightIncludingThisNode, qualityBest, minRatio, minExamples);
     }
     if (ebst->getRight().exists())
-      pruneRight = pruneStatistics(attribute, ebst->getRight(), totalLeft, right, qualityBest, minRatio);
+      pruneRight = pruneStatistics(attribute, ebst->getRight(), totalLeft, right, qualityBest, minRatio, minExamples);
     
     MultiVariateRegressionStatisticsPtr total = new MultiVariateRegressionStatistics();
     total->update(*totalLeft);

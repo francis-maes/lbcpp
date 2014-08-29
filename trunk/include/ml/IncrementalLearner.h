@@ -14,11 +14,14 @@
 
 namespace lbcpp
 {
+
+class IncrementalLearnerCallback;
+typedef ReferenceCountedObjectPtr<IncrementalLearnerCallback> IncrementalLearnerCallbackPtr;
   
 class IncrementalLearner : public Object
 {
 public:
-  IncrementalLearner() : verbosity((SolverVerbosity) 0) {}
+  IncrementalLearner() : verbosity((SolverVerbosity) 0), callback(IncrementalLearnerCallbackPtr()) {}
 
   virtual ExpressionPtr createExpression(ExecutionContext& context, ClassPtr supervisionType) const = 0;
   /** This method adds a training sample to the incremental learning algorithm. This method is the most general case,
@@ -61,8 +64,12 @@ public:
   SolverVerbosity getVerbosity()
     {return verbosity;}
 
+  void setCallback(IncrementalLearnerCallbackPtr callback)
+    {this->callback = callback;}
+
 protected:
   SolverVerbosity verbosity;
+  IncrementalLearnerCallbackPtr callback;
 };
 
 typedef ReferenceCountedObjectPtr<IncrementalLearner> IncrementalLearnerPtr;
@@ -136,6 +143,40 @@ protected:
 
 extern IncrementalLearnerStatisticsPtr hoeffdingTreeIncrementalLearnerStatistics(size_t numAttributes = 0);
 extern IncrementalLearnerStatisticsPtr hoeffdingTreeIncrementalLearnerStatistics(ExecutionContext& context, IncrementalLearnerStatisticsPtr parentStats, size_t attribute, double splitValue, bool leftSide);
+
+
+/** Callbacks **/
+class IncrementalLearnerCallback : public Object
+{
+public:
+  virtual void exampleAdded(ExecutionContext& context, ExpressionPtr model) = 0;
+};
+
+class EvaluatorIncrementalLearnerCallback : public IncrementalLearnerCallback
+{
+public:
+  EvaluatorIncrementalLearnerCallback(string name, ObjectivePtr evaluationObjective) : name(name), objective(evaluationObjective) {}
+  
+  virtual void exampleAdded(ExecutionContext& context, ExpressionPtr model)
+    {context.resultCallback(name, objective->evaluate(context, model));}
+protected:
+  string name;
+  ObjectivePtr objective;
+};
+
+class EvaluationPeriodIncrementalLearnerCallback : public IncrementalLearnerCallback
+{
+public:
+  EvaluationPeriodIncrementalLearnerCallback(IncrementalLearnerCallbackPtr callback, size_t period) : callback(callback), period(period), numCalls(0) {}
+
+  virtual void exampleAdded(ExecutionContext& context, ExpressionPtr model)
+    {if (++numCalls % period == 0) callback->exampleAdded(context, model);}
+protected:
+  IncrementalLearnerCallbackPtr callback;
+  size_t period;
+  size_t numCalls;
+};
+
 
 }; /* namespace lbcpp */
 

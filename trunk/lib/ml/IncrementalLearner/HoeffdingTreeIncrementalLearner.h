@@ -129,8 +129,11 @@ public:
       leaf->setLearnerStatistics(HoeffdingTreeIncrementalLearnerStatisticsPtr());
 			splitWasMade = true;
 		}
-      
-    if (verbosity >= verbosityDetailed)
+    
+    if (callback.exists())
+     callback->exampleAdded(context, root);
+
+    /*if (verbosity >= verbosityDetailed)
     {
       context.resultCallback("bestSplitQuality", split.quality);
 		  context.resultCallback("Split?", splitWasMade);
@@ -142,7 +145,7 @@ public:
       for (size_t i = 0; i < leaves.size(); ++i)
         totalEBSTNodes += leaves[i]->getLearnerStatistics().staticCast<HoeffdingTreeIncrementalLearnerStatistics>()->getTotalEBSTNodes();
       context.resultCallback("nbEBSTNodes", totalEBSTNodes);
-    } 
+    }*/
   }
 
 protected:
