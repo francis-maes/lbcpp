@@ -35,10 +35,6 @@ public:
     TablePtr data = learningObjective->getData();
     size_t index = learningObjective->getIndices()->getIndices()[iter];
     learner->addTrainingSample(context, data->getRow(index), expression);
-    if (verbosity >= verbosityDetailed)
-      context.resultCallback("testing", problem->getValidationObjective(0)->evaluate(context, expression));
-    if (verbosity >= verbosityAll && data->getNumColumns() == 2) // only for single attribute, single target data
-      makeCurve(context, baseProblem, expression);
     return true;
   }
 
@@ -49,7 +45,8 @@ public:
     IterativeSolver::stopSolver(context);
   }
   
-  ProblemPtr baseProblem;
+  IncrementalLearnerPtr getLearner() const
+    {return learner;}
 
 private:
   friend class IncrementalLearnerBasedLearnerClass;
@@ -57,7 +54,7 @@ private:
   IncrementalLearnerPtr learner;
   
   ExpressionPtr expression;
-  
+  /*
   void makeCurve(ExecutionContext& context, ProblemPtr baseProblem, ExpressionPtr expression)
   {
     //context.enterScope("Curve");
@@ -82,7 +79,7 @@ private:
       context.leaveScope();
     }
     //context.leaveScope();
-  }
+  }*/
 };
 
 }; /* namespace lbcpp */

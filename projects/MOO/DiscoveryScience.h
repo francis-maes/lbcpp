@@ -127,6 +127,13 @@ protected:
       context.enterScope("Fold " + string((int) foldNb));
 
       double time = Time::getHighResolutionCounter();
+      
+      size_t numExamples = folds[foldNb]->getObjective(0).staticCast<SupervisedLearningObjective>()->getData()->getNumRows();
+      if (verbosity >= verbosityDetailed)
+        learner.staticCast<IncrementalLearnerBasedLearner>()->getLearner()->setCallback(
+          new EvaluationPeriodIncrementalLearnerCallback(
+          new EvaluatorIncrementalLearnerCallback("RRSE", folds[foldNb]->getValidationObjective(0)), numExamples / 500));
+
       ExpressionPtr model = solveProblem(context, folds[foldNb], learner);
       time = Time::getHighResolutionCounter() - time;
       
@@ -145,9 +152,6 @@ protected:
       meanTime->push(time);
     }
     context.progressCallback(new ProgressionState(folds.size(), folds.size(), "Folds"));
-    //context.resultCallback("Mean testing score", meanTesting.getMean());
-    //context.resultCallback("Mean tree size", meanTreeSize.getMean());
-    //context.leaveScope(meanTesting.getMean());
     return result;
   }
 
@@ -177,15 +181,6 @@ protected:
         context.resultCallback(results[r].first, results[r].second);
       }
       context.leaveScope(results[0].second);
-
-      /*
-      ExpressionPtr model = solveProblem(context, folds[0], solvers[s]);
-      double testingScore = folds[0]->getValidationObjective(0)->evaluate(context, model);
-      //size_t nbLeaves = model.staticCast<HoeffdingTreeNode>()->getNbOfLeaves();
-      context.resultCallback(algoNames[s] + " RRE", testingScore);
-      //context.resultCallback(algoNames[s] + " TreeSize", nbLeaves);
-      context.leaveScope(testingScore);
-      */
     }
     context.progressCallback(new ProgressionState(solvers.size(), solvers.size(), "Solvers"));
   }

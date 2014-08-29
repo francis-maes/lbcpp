@@ -642,28 +642,27 @@ public:
     if (getExamplesSeen() < 2)
       return DBL_MAX;
     DenseDoubleVectorPtr weights = getLLSQEstimate();
+
     double term1 = stats[0]->sumYsquared;
     double term2 = 0.0;
-    double term3 = 0.0;
-    double term4 = stats[0]->sumY;
     for (size_t i = 1; i < weights->getNumValues(); ++i)
     {
-      term2 += weights->getValue(i) * stats[i-1]->sumXY;
-      term3 += stats[i-1]->sumXsquared * weights->getValue(i) * weights->getValue(i);
-      term4 -= weights->getValue(i) * stats[i-1]->sumX;
+      term1 -= 2 * weights->getValue(i) * stats[i-1]->sumXY;
+      term1 += weights->getValue(i) * weights->getValue(i) * stats[i-1]->sumXsquared;
+      term2 += weights->getValue(i) * stats[i-1]->sumX;
     }
-    /*size_t k = getNumAttributes();
-    for (size_t i = 0; i < sumXiXj.size(); ++i)
-    {
-      term3 += 2 * sumXiXj[i] * weights->getValue(1 + i / k) * weights->getValue(1 + (i + 1) % k);
-    }*/
+    term2 = -2 * stats[0]->sumY * term2 + stats[0]->sumY * stats[0]->sumY;
+    double tmp = 0.0;
+    for (size_t i = 1; i < weights->getNumValues(); ++i)
+      tmp += weights->getValue(i) * stats[i-1]->sumX;
+    term2 += tmp * tmp;
     size_t count = 0;
     for (size_t i = 1; i < getNumAttributes(); ++i)
       for (size_t j = 0; j < i; ++j)
-        term3 += 2 * weights->getValue(i+1) * weights->getValue(j + 1) * sumXiXj[count++];
+        term1 += 2 * weights->getValue(i + 1) * weights->getValue(j + 1) * sumXiXj[count++];
 
-    term4 = term4 * term4 / stats[0]->numSamples;
-    double rv = (term1 - 2*term2 + term3 - term4) / (stats[0]->numSamples - 1);
+
+    double rv = (term1 - term2 / stats[0]->numSamples) / stats[0]->numSamples;
     if (rv < 0.0 && rv > -1.0e-3)
       return 0.0;
     else if (rv < 0.0)

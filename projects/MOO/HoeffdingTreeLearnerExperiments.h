@@ -142,7 +142,7 @@ public:
       
       SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(50, delta, threshold), linearLeastSquaresRegressionIncrementalLearner()));
       learner->setVerbosity((SolverVerbosity)verbosity);
-      learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
+      //learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
     
       ObjectivePtr problemObj = problem->getObjective(0);
       const TablePtr& problemData = problemObj.staticCast<LearningObjective>()->getData();
@@ -265,7 +265,7 @@ private:
           i++;
           learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(10, d, t), simpleLinearRegressionIncrementalLearner()));
           learner->setVerbosity((SolverVerbosity)verbosity);
-          learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
+          //learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
           ExpressionPtr model;
           FitnessPtr fitness;
           learner->solve(context, problem, storeBestSolverCallback(*(ObjectPtr* )&model, fitness));
