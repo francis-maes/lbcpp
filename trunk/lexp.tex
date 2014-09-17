@@ -1,0 +1,526 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{a4wide}
+\usepackage[table]{xcolor}
+\begin{document}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $41.700 \pm 2.193$ & $41.700 \pm 2.193$ & $36.700 \pm 2.238$ & $36.700 \pm 2.238$ & $47.200 \pm 3.059$ & $47.200 \pm 3.059$ & \cellcolor{blue!25} $36.100 \pm 4.657$ & \cellcolor{blue!25} $36.100 \pm 4.657$ \\
+\hline
+Runtime (s) & $0.134 \pm 0.007$ & $0.122 \pm 0.005$ & $0.165 \pm 0.012$ & $0.152 \pm 0.009$ & $0.128 \pm 0.005$ & \cellcolor{blue!25} $0.114 \pm 0.005$ & $0.252 \pm 0.020$ & $0.253 \pm 0.027$ \\
+\hline
+RRSE & $0.193 \pm 0.019$ & $0.300 \pm 0.030$ & $0.100 \pm 0.023$ & $0.280 \pm 0.018$ & $0.056 \pm 0.012$ & $0.481 \pm 0.023$ & \cellcolor{blue!25} $0.039 \pm 0.008$ & $0.477 \pm 0.022$ \\
+\hline
+RMSE & $0.213 \pm 0.018$ & $0.330 \pm 0.023$ & $0.109 \pm 0.023$ & $0.308 \pm 0.021$ & $0.062 \pm 0.014$ & $0.530 \pm 0.027$ & \cellcolor{blue!25} $0.043 \pm 0.010$ & $0.525 \pm 0.022$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Paraboloid}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Paraboloid-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Paraboloid-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Paraboloid-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Paraboloid-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Paraboloid}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $37.200 \pm 2.600$ & $37.200 \pm 2.600$ & $32.900 \pm 4.253$ & $32.900 \pm 4.253$ & \cellcolor{blue!25} $29.400 \pm 2.498$ & \cellcolor{blue!25} $29.400 \pm 2.498$ & $29.500 \pm 1.628$ & $29.500 \pm 1.628$ \\
+\hline
+Runtime (s) & $0.440 \pm 0.041$ & $0.395 \pm 0.036$ & $0.616 \pm 0.080$ & $0.615 \pm 0.111$ & $0.440 \pm 0.059$ & \cellcolor{blue!25} $0.356 \pm 0.051$ & $1.414 \pm 0.178$ & $1.398 \pm 0.151$ \\
+\hline
+RRSE & $0.199 \pm 0.157$ & $0.296 \pm 0.038$ & $0.148 \pm 0.050$ & $0.282 \pm 0.034$ & $0.235 \pm 0.079$ & $0.380 \pm 0.065$ & \cellcolor{blue!25} $0.110 \pm 0.053$ & $0.266 \pm 0.045$ \\
+\hline
+RMSE & $0.501 \pm 0.400$ & $0.745 \pm 0.107$ & $0.373 \pm 0.127$ & $0.708 \pm 0.093$ & $0.591 \pm 0.203$ & $0.955 \pm 0.174$ & \cellcolor{blue!25} $0.278 \pm 0.137$ & $0.668 \pm 0.121$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Lexp}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Lexp-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Lexp-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Lexp-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Lexp-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Lexp}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $39.500 \pm 2.693$ & $39.500 \pm 2.693$ & $35.000 \pm 1.612$ & $35.000 \pm 1.612$ & $31.800 \pm 3.628$ & $31.800 \pm 3.628$ & \cellcolor{blue!25} $27.200 \pm 2.891$ & \cellcolor{blue!25} $27.200 \pm 2.891$ \\
+\hline
+Runtime (s) & $0.417 \pm 0.046$ & \cellcolor{blue!25} $0.372 \pm 0.048$ & $0.643 \pm 0.093$ & $0.594 \pm 0.082$ & $0.457 \pm 0.048$ & $0.387 \pm 0.056$ & $1.498 \pm 0.155$ & $1.454 \pm 0.143$ \\
+\hline
+RRSE & $0.197 \pm 0.026$ & $0.296 \pm 0.027$ & $0.196 \pm 0.030$ & $0.294 \pm 0.033$ & $0.218 \pm 0.034$ & $0.337 \pm 0.036$ & \cellcolor{blue!25} $0.177 \pm 0.026$ & $0.288 \pm 0.029$ \\
+\hline
+RMSE & $0.638 \pm 0.089$ & $0.960 \pm 0.107$ & $0.635 \pm 0.097$ & $0.954 \pm 0.122$ & $0.706 \pm 0.116$ & $1.095 \pm 0.146$ & \cellcolor{blue!25} $0.574 \pm 0.096$ & $0.938 \pm 0.132$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Losc}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Losc-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Losc-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Losc-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Losc-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Losc}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $48.000 \pm 1.414$ & $48.000 \pm 1.414$ & $9.200 \pm 3.370$ & $9.200 \pm 3.370$ & \cellcolor{blue!25} $1.000 \pm 0.000$ & \cellcolor{blue!25} $1.000 \pm 0.000$ & $10.500 \pm 0.671$ & $10.500 \pm 0.671$ \\
+\hline
+Runtime (s) & $0.326 \pm 0.010$ & $0.189 \pm 0.012$ & $0.325 \pm 0.003$ & $0.175 \pm 0.004$ & $0.314 \pm 0.003$ & \cellcolor{blue!25} $0.161 \pm 0.003$ & $0.463 \pm 0.005$ & $0.314 \pm 0.004$ \\
+\hline
+RRSE & \cellcolor{blue!25} $0.000 \pm 0.000$ & $0.067 \pm 0.011$ & $0.451 \pm 0.042$ & $0.465 \pm 0.038$ & $0.527 \pm 0.020$ & $0.527 \pm 0.020$ & $0.000 \pm 0.000$ & $0.024 \pm 0.002$ \\
+\hline
+RMSE & \cellcolor{blue!25} $0.000 \pm 0.000$ & $0.308 \pm 0.045$ & $2.073 \pm 0.183$ & $2.137 \pm 0.168$ & $2.422 \pm 0.078$ & $2.425 \pm 0.078$ & $0.000 \pm 0.000$ & $0.111 \pm 0.011$ \\
+\hline
+\end{tabular}
+\caption{Results for problem CARTNoiseless}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CARTNoiseless-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CARTNoiseless-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CARTNoiseless-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CARTNoiseless-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem CARTNoiseless}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $26.500 \pm 3.528$ & $26.500 \pm 3.528$ & $21.900 \pm 1.921$ & $21.900 \pm 1.921$ & $29.900 \pm 2.587$ & $29.900 \pm 2.587$ & \cellcolor{blue!25} $16.300 \pm 1.187$ & \cellcolor{blue!25} $16.300 \pm 1.187$ \\
+\hline
+Runtime (s) & $0.596 \pm 0.042$ & $0.508 \pm 0.027$ & $0.990 \pm 0.050$ & $0.849 \pm 0.062$ & $0.519 \pm 0.050$ & \cellcolor{blue!25} $0.424 \pm 0.041$ & $2.974 \pm 0.179$ & $2.864 \pm 0.156$ \\
+\hline
+RRSE & $0.750 \pm 0.068$ & $0.744 \pm 0.020$ & \cellcolor{blue!25} $0.709 \pm 0.083$ & $0.745 \pm 0.025$ & $0.731 \pm 0.032$ & $0.769 \pm 0.038$ & $0.724 \pm 0.051$ & $0.759 \pm 0.029$ \\
+\hline
+RMSE & $2.420 \pm 0.264$ & $2.399 \pm 0.108$ & \cellcolor{blue!25} $2.288 \pm 0.290$ & $2.401 \pm 0.123$ & $2.355 \pm 0.091$ & $2.479 \pm 0.163$ & $2.332 \pm 0.167$ & $2.449 \pm 0.138$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Abalone}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Abalone-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Abalone-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Abalone-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Abalone-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Abalone}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $111.000 \pm 9.767$ & $111.000 \pm 9.767$ & $84.100 \pm 6.503$ & $84.100 \pm 6.503$ & $92.500 \pm 3.263$ & $92.500 \pm 3.263$ & \cellcolor{blue!25} $43.800 \pm 1.778$ & \cellcolor{blue!25} $43.800 \pm 1.778$ \\
+\hline
+Runtime (s) & $32.712 \pm 0.914$ & \cellcolor{blue!25} $26.777 \pm 0.826$ & $44.725 \pm 1.479$ & $38.384 \pm 1.038$ & $34.208 \pm 1.339$ & $28.513 \pm 1.360$ & $114.841 \pm 4.158$ & $107.151 \pm 2.230$ \\
+\hline
+RRSE & $0.498 \pm 0.014$ & $2.362 \pm 0.039$ & $0.489 \pm 0.045$ & $2.362 \pm 0.039$ & $0.504 \pm 0.040$ & $2.362 \pm 0.039$ & \cellcolor{blue!25} $0.476 \pm 0.028$ & $2.362 \pm 0.039$ \\
+\hline
+RMSE & $0.000 \pm 0.000$ & $0.001 \pm 0.000$ & $0.000 \pm 0.000$ & $0.001 \pm 0.000$ & $0.000 \pm 0.000$ & $0.001 \pm 0.000$ & \cellcolor{blue!25} $0.000 \pm 0.000$ & $0.001 \pm 0.000$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Ailerons}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Ailerons-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Ailerons-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Ailerons-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Ailerons-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Ailerons}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $186.300 \pm 5.100$ & $186.300 \pm 5.100$ & $159.700 \pm 4.755$ & $159.700 \pm 4.755$ & $183.800 \pm 5.997$ & $183.800 \pm 5.997$ & \cellcolor{blue!25} $89.400 \pm 5.257$ & \cellcolor{blue!25} $89.400 \pm 5.257$ \\
+\hline
+Runtime (s) & $2.927 \pm 0.365$ & $2.787 \pm 0.358$ & $5.245 \pm 0.751$ & $5.014 \pm 0.727$ & $2.962 \pm 0.336$ & \cellcolor{blue!25} $2.704 \pm 0.325$ & $16.756 \pm 1.484$ & $16.486 \pm 1.551$ \\
+\hline
+RRSE & $0.734 \pm 0.168$ & \cellcolor{blue!25} $0.606 \pm 0.017$ & $3.301 \pm 7.791$ & $0.614 \pm 0.019$ & $0.853 \pm 0.162$ & $0.635 \pm 0.018$ & $0.694 \pm 0.126$ & $0.611 \pm 0.015$ \\
+\hline
+RMSE & $84540.491 \pm 18811.694$ & \cellcolor{blue!25} $69948.435 \pm 1893.049$ & $376599.068 \pm 885368.087$ & $70852.323 \pm 1909.366$ & $98417.277 \pm 18712.875$ & $73243.752 \pm 2020.565$ & $80105.503 \pm 14509.106$ & $70556.432 \pm 1994.149$ \\
+\hline
+\end{tabular}
+\caption{Results for problem California housing}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem California housing}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $186.300 \pm 5.100$ & $186.300 \pm 5.100$ & $159.300 \pm 4.291$ & $159.300 \pm 4.291$ & $183.400 \pm 7.242$ & $183.400 \pm 7.242$ & \cellcolor{blue!25} $88.400 \pm 3.583$ & \cellcolor{blue!25} $88.400 \pm 3.583$ \\
+\hline
+Runtime (s) & $2.912 \pm 0.275$ & $2.726 \pm 0.348$ & $5.463 \pm 0.818$ & $5.186 \pm 0.756$ & $3.098 \pm 0.324$ & \cellcolor{blue!25} $2.700 \pm 0.332$ & $17.537 \pm 1.113$ & $17.608 \pm 1.299$ \\
+\hline
+RRSE & $0.835 \pm 0.286$ & $0.686 \pm 0.051$ & $0.713 \pm 0.069$ & \cellcolor{blue!25} $0.658 \pm 0.074$ & $0.827 \pm 0.154$ & $0.659 \pm 0.041$ & $0.720 \pm 0.099$ & $0.658 \pm 0.057$ \\
+\hline
+RMSE & $0.199 \pm 0.069$ & $0.163 \pm 0.013$ & $0.170 \pm 0.017$ & \cellcolor{blue!25} $0.157 \pm 0.018$ & $0.196 \pm 0.035$ & $0.157 \pm 0.010$ & $0.171 \pm 0.025$ & $0.157 \pm 0.014$ \\
+\hline
+\end{tabular}
+\caption{Results for problem California housing normalized}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-normalized-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-normalized-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-normalized-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{California-housing-normalized-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem California housing normalized}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $292.600 \pm 10.101$ & $292.600 \pm 10.101$ & $230.700 \pm 6.634$ & $230.700 \pm 6.634$ & $283.400 \pm 15.094$ & $283.400 \pm 15.094$ & \cellcolor{blue!25} $169.500 \pm 4.843$ & \cellcolor{blue!25} $169.500 \pm 4.843$ \\
+\hline
+Runtime (s) & $11.292 \pm 0.118$ & $10.443 \pm 0.205$ & $21.599 \pm 0.413$ & $20.247 \pm 0.368$ & $11.216 \pm 0.160$ & \cellcolor{blue!25} $10.167 \pm 0.149$ & $63.661 \pm 3.364$ & $60.306 \pm 0.831$ \\
+\hline
+RRSE & $1.032 \pm 0.415$ & $0.780 \pm 0.009$ & $0.821 \pm 0.102$ & \cellcolor{blue!25} $0.777 \pm 0.003$ & $1.049 \pm 0.623$ & $0.792 \pm 0.007$ & $1.096 \pm 0.469$ & $0.791 \pm 0.006$ \\
+\hline
+RMSE & $6.312 \pm 2.533$ & $4.770 \pm 0.065$ & $5.022 \pm 0.640$ & \cellcolor{blue!25} $4.754 \pm 0.031$ & $6.412 \pm 3.794$ & $4.844 \pm 0.049$ & $6.706 \pm 2.869$ & $4.841 \pm 0.037$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Physicochemical Properties of Protein Tertiary Structure}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Physicochemical-Properties-of-Protein-Tertiary-Structure-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Physicochemical-Properties-of-Protein-Tertiary-Structure-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Physicochemical-Properties-of-Protein-Tertiary-Structure-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Physicochemical-Properties-of-Protein-Tertiary-Structure-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Physicochemical Properties of Protein Tertiary Structure}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $36.700 \pm 3.100$ & $36.700 \pm 3.100$ & $31.600 \pm 2.615$ & $31.600 \pm 2.615$ & $48.400 \pm 3.231$ & $48.400 \pm 3.231$ & \cellcolor{blue!25} $25.000 \pm 1.342$ & \cellcolor{blue!25} $25.000 \pm 1.342$ \\
+\hline
+Runtime (s) & $7.659 \pm 0.132$ & $6.682 \pm 0.148$ & $15.465 \pm 0.290$ & $14.052 \pm 0.351$ & $7.365 \pm 0.063$ & \cellcolor{blue!25} $6.391 \pm 0.077$ & $71.440 \pm 1.569$ & $70.194 \pm 1.530$ \\
+\hline
+RRSE & $0.263 \pm 0.121$ & $0.233 \pm 0.056$ & $0.303 \pm 0.110$ & $0.221 \pm 0.059$ & $0.665 \pm 0.814$ & $0.613 \pm 0.319$ & $0.267 \pm 0.111$ & \cellcolor{blue!25} $0.182 \pm 0.020$ \\
+\hline
+RMSE & $4.812 \pm 2.158$ & $4.249 \pm 0.918$ & $5.538 \pm 1.988$ & $4.037 \pm 0.979$ & $12.102 \pm 14.446$ & $11.166 \pm 5.738$ & $4.950 \pm 2.281$ & \cellcolor{blue!25} $3.340 \pm 0.286$ \\
+\hline
+\end{tabular}
+\caption{Results for problem CPU}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CPU-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CPU-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CPU-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CPU-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem CPU}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $318.900 \pm 11.717$ & $318.900 \pm 11.717$ & $276.200 \pm 9.304$ & $276.200 \pm 9.304$ & $246.700 \pm 11.019$ & $246.700 \pm 11.019$ & \cellcolor{blue!25} $142.300 \pm 3.689$ & \cellcolor{blue!25} $142.300 \pm 3.689$ \\
+\hline
+Runtime (s) & $11.529 \pm 0.265$ & \cellcolor{blue!25} $9.940 \pm 0.055$ & $21.395 \pm 0.343$ & $18.661 \pm 0.432$ & $11.953 \pm 0.081$ & $10.325 \pm 0.099$ & $98.862 \pm 2.482$ & $93.762 \pm 1.719$ \\
+\hline
+RRSE & $0.434 \pm 0.188$ & $0.377 \pm 0.009$ & $0.273 \pm 0.021$ & $0.330 \pm 0.007$ & $0.307 \pm 0.050$ & $0.349 \pm 0.020$ & \cellcolor{blue!25} $0.224 \pm 0.003$ & $0.284 \pm 0.008$ \\
+\hline
+RMSE & $2.171 \pm 0.942$ & $1.884 \pm 0.038$ & $1.362 \pm 0.113$ & $1.647 \pm 0.034$ & $1.536 \pm 0.256$ & $1.743 \pm 0.104$ & \cellcolor{blue!25} $1.117 \pm 0.017$ & $1.419 \pm 0.037$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Friedmann}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Friedmann-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Friedmann-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Friedmann-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Friedmann-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Friedmann}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $456.500 \pm 8.041$ & $456.500 \pm 8.041$ & $2.700 \pm 5.100$ & $2.700 \pm 5.100$ & \cellcolor{blue!25} $1.000 \pm 0.000$ & \cellcolor{blue!25} $1.000 \pm 0.000$ & $273.300 \pm 12.297$ & $273.300 \pm 12.297$ \\
+\hline
+Runtime (s) & $3.436 \pm 0.248$ & $2.522 \pm 0.097$ & $3.397 \pm 0.095$ & $1.901 \pm 0.067$ & $3.186 \pm 0.018$ & \cellcolor{blue!25} $1.696 \pm 0.007$ & $4.427 \pm 0.255$ & $3.340 \pm 0.018$ \\
+\hline
+RRSE & $0.244 \pm 0.004$ & $0.249 \pm 0.011$ & $0.532 \pm 0.031$ & $0.533 \pm 0.031$ & $0.543 \pm 0.007$ & $0.543 \pm 0.007$ & $0.242 \pm 0.004$ & \cellcolor{blue!25} $0.231 \pm 0.003$ \\
+\hline
+RMSE & $1.070 \pm 0.015$ & $1.095 \pm 0.054$ & $2.338 \pm 0.142$ & $2.339 \pm 0.140$ & $2.384 \pm 0.017$ & $2.384 \pm 0.017$ & $1.061 \pm 0.013$ & \cellcolor{blue!25} $1.016 \pm 0.012$ \\
+\hline
+\end{tabular}
+\caption{Results for problem CART}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CART-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CART-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CART-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{CART-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem CART}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $79.500 \pm 6.217$ & $79.500 \pm 6.217$ & $68.000 \pm 3.924$ & $68.000 \pm 3.924$ & $82.300 \pm 3.926$ & $82.300 \pm 3.926$ & \cellcolor{blue!25} $45.300 \pm 2.002$ & \cellcolor{blue!25} $45.300 \pm 2.002$ \\
+\hline
+Runtime (s) & $10.874 \pm 0.193$ & $7.599 \pm 0.125$ & $15.506 \pm 0.364$ & $12.131 \pm 0.364$ & $10.701 \pm 0.089$ & \cellcolor{blue!25} $7.320 \pm 0.109$ & $62.273 \pm 6.921$ & $58.413 \pm 6.968$ \\
+\hline
+RRSE & $1.060 \pm 0.719$ & $1.217 \pm 0.004$ & $20.013 \pm 56.673$ & $1.217 \pm 0.004$ & $1.598 \pm 1.426$ & $1.217 \pm 0.004$ & \cellcolor{blue!25} $0.704 \pm 0.740$ & $1.217 \pm 0.004$ \\
+\hline
+RMSE & $44.316 \pm 30.293$ & $50.776 \pm 0.739$ & $840.546 \pm 2381.935$ & $50.776 \pm 0.739$ & $66.884 \pm 60.343$ & $50.776 \pm 0.739$ & \cellcolor{blue!25} $29.434 \pm 31.132$ & $50.776 \pm 0.739$ \\
+\hline
+\end{tabular}
+\caption{Results for problem PoleTelecom}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{PoleTelecom-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{PoleTelecom-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{PoleTelecom-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{PoleTelecom-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem PoleTelecom}
+\end{figure}
+\begin{table}[h]
+\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+ & FIMTllsq & FIMTp & iExtMauveLLSQ & iExtMauveP & iMauveLLSQ & iMauveP & iTotalMauveLLSQ & iTotalMauveP\\
+\hline
+Tree Size & $32.800 \pm 3.600$ & $32.800 \pm 3.600$ & $26.100 \pm 2.427$ & $26.100 \pm 2.427$ & $32.600 \pm 3.169$ & $32.600 \pm 3.169$ & \cellcolor{blue!25} $15.900 \pm 1.044$ & \cellcolor{blue!25} $15.900 \pm 1.044$ \\
+\hline
+Runtime (s) & $0.949 \pm 0.017$ & \cellcolor{blue!25} $0.785 \pm 0.027$ & $1.548 \pm 0.030$ & $1.414 \pm 0.052$ & $0.972 \pm 0.010$ & $0.807 \pm 0.021$ & $4.750 \pm 0.319$ & $4.461 \pm 0.095$ \\
+\hline
+RRSE & $1.072 \pm 0.370$ & $0.850 \pm 0.022$ & $0.968 \pm 0.106$ & $0.844 \pm 0.019$ & $0.954 \pm 0.102$ & $0.856 \pm 0.017$ & $0.897 \pm 0.064$ & \cellcolor{blue!25} $0.844 \pm 0.014$ \\
+\hline
+RMSE & $0.946 \pm 0.315$ & $0.752 \pm 0.023$ & $0.856 \pm 0.085$ & $0.747 \pm 0.024$ & $0.844 \pm 0.090$ & $0.758 \pm 0.020$ & $0.794 \pm 0.060$ & \cellcolor{blue!25} $0.747 \pm 0.025$ \\
+\hline
+\end{tabular}
+\caption{Results for problem Wine quality}
+\end{table}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Wine-quality-Tree-Size.pdf}
+  \caption{Tree Size}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Wine-quality-Runtime-(s).pdf}
+  \caption{Runtime (s)}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Wine-quality-RRSE.pdf}
+  \caption{RRSE}
+\end{subfigure}
+\begin{subfigure}{0.45\textwidth}
+  \includegraphics[width=\textwidth]{Wine-quality-RMSE.pdf}
+  \caption{RMSE}
+\end{subfigure}
+\caption{Results for problem Wine quality}
+\end{figure}
+\end{document}
