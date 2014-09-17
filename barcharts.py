@@ -10,6 +10,8 @@ Created on Wed Jul 30 10:03:57 2014
 from math import sqrt
 import argparse
 import xml.etree.ElementTree as ET
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
@@ -154,6 +156,7 @@ def run(tracefile):
   filenames = list()
   printHeader = True
   for problem in results.keys():
+    texfile = open(os.path.join(outdir, problem.replace(' ','-') + "-table.tex"),'w')
     for resultName in results[problem].keys():
       algNames = sorted(results[problem][resultName].keys())
       if printHeader:
@@ -161,15 +164,15 @@ def run(tracefile):
         column_spec = '|l|'
         for a in algNames:
           column_spec = column_spec + 'c|'
-        print('\\begin{table}[htp]')
-        print('\\tiny')
-        print('\\begin{tabular}{' + column_spec + '}')
-        print('\\hline')
+        texfile.write('\\begin{table}[htp]\n')
+        texfile.write('\\tiny\n')
+        texfile.write('\\begin{tabular}{' + column_spec + '}\n')
+        texfile.write('\\hline\n')
         header_row = ''
         for a in algNames:
           header_row = header_row + ' & ' + a
-        print(header_row + '\\\\')
-        print('\\hline')
+        texfile.write(header_row + '\\\\\n')
+        texfile.write('\\hline\n')
       row = resultName
       minimum = 1e9
       for key in algNames:
@@ -180,8 +183,8 @@ def run(tracefile):
         if (results[problem][resultName][key].mean() == minimum):
           row = row + '\\cellcolor{blue!25} '
         row = row + '$' + "{:.3f}".format(results[problem][resultName][key].mean()) + '_{' + "{:.3f}".format(results[problem][resultName][key].stddev()) + '}$'
-      print(row + ' \\\\')
-      print('\\hline')
+      texfile.write(row + ' \\\\\n')
+      texfile.write('\\hline\n')
       means = [results[problem][resultName][key].mean() for key in algNames]
       stddevs = [results[problem][resultName][key].stddev() for key in algNames]
       ind = np.arange(len(means))
@@ -194,27 +197,28 @@ def run(tracefile):
       ax.set_xticklabels(algNames, rotation=20)
       ax.set_ylim(bottom=0)
       plt.grid(b=True, which='major', color='k', linestyle=':')
-      plt.savefig(os.path.join(outdir, problem.replace(' ', '-') + "-" + resultName.replace(' ', '-') + ".pdf"), bbox_inches='tight')
-      filenames.append((problem.replace(' ', '-') + "-" + resultName.replace(' ', '-') + ".pdf", resultName))
+      filename = problem.replace(' ', '-') + "-" + resultName.replace(' ', '-') + ".pdf"
+      plt.savefig(os.path.join(outdir, filename), bbox_inches='tight')
+      filenames.append((filename, resultName))
       plt.close(fig)
-    print('\\end{tabular}')
-    print('\\caption{Results for problem ' + problem + '}')
-    print('\\end{table}')
+    texfile.write('\\end{tabular}\n')
+    texfile.write('\\caption{Results for problem ' + problem + '}\n')
+    texfile.write('\\end{table}\n')
 
     draw_plot(plot_results[problem], os.path.join(outdir, problem.replace(' ', '-') + "-curve.pdf"))
     filenames.append((problem.replace(' ', '-') + "-curve.pdf","RRSE Curve"))
-    print('\\begin{figure}[htp]')
-    print('\\centering')
-
+    texfile.write('\\begin{figure}[htp]\n')
+    texfile.write('\\centering\n')
 
     for f in filenames:
-      print('\\begin{subfigure}{0.45\\textwidth}')
-      print('  \\includegraphics[width=\\textwidth]{' + f[0] + '}')
-      print('  \\caption{' + f[1] + '}')
-      print('\\end{subfigure}')
-    print('\\caption{Results for problem ' + problem + '}')
-    print('\\end{figure}')
-    print('\\clearpage')
+      texfile.write('\\begin{subfigure}{0.45\\textwidth}\n')
+      texfile.write('  \\includegraphics[width=\\textwidth]{' + f[0] + '}\n')
+      texfile.write('  \\caption{' + f[1] + '}\n')
+      texfile.write('\\end{subfigure}\n')
+    texfile.write('\\caption{Results for problem ' + problem + '}\n')
+    texfile.write('\\end{figure}\n')
+    texfile.write('\\clearpage\n')
+    texfile.close()
 
 #%%
 if __name__ == "__main__":
