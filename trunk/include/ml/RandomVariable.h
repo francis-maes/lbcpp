@@ -639,7 +639,7 @@ public:
    */
   double getResidualStandardDeviation() const
   {
-    if (getExamplesSeen() < 2)
+    if (getExamplesSeen() < 2 * stats.size())
       return DBL_MAX;
     DenseDoubleVectorPtr weights = getLLSQEstimate();
 
@@ -662,7 +662,7 @@ public:
         term1 += 2 * weights->getValue(i + 1) * weights->getValue(j + 1) * sumXiXj[count++];
 
 
-    double rv = (term1 - term2 / stats[0]->numSamples) / stats[0]->numSamples;
+    double rv = (term1 - term2 / stats[0]->numSamples) / (stats[0]->numSamples - 1);
     if (rv < 0.0 && rv > -1.0e-3)
       return 0.0;
     else if (rv < 0.0)
