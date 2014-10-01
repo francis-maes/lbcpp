@@ -418,7 +418,7 @@ protected:
 
     double quality = splitQuality(total, totalLeft, totalRight);
     
-    bool canPruneThisNode = pruneLeft && pruneRight && quality / qualityBest < minRatio;
+    bool canPruneThisNode = pruneLeft && pruneRight && quality / qualityBest < minRatio && ebst->getExamplesSeen() >= minExamples;
 
     if (!canPruneThisNode)
     {

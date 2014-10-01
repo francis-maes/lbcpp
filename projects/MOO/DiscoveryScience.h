@@ -58,12 +58,12 @@ public:
     std::vector<string> algoNames;
     
     algoNames.push_back("iTotalMauveLLSQ");
-    algoNames.push_back("iTotalMauveP");
+    /*algoNames.push_back("iTotalMauveP");
     algoNames.push_back("iExtMauveLLSQ");
     algoNames.push_back("iExtMauveP");
     algoNames.push_back("iMauveLLSQ");
     algoNames.push_back("iMauveP");
-    algoNames.push_back("FIMTllsq");
+    algoNames.push_back("FIMTllsq");*/
     algoNames.push_back("FIMTp");
     
 
@@ -87,11 +87,14 @@ public:
     return new Boolean(true);
   }
 
+  std::vector<std::pair<string, std::vector< std::pair<size_t, double> > > > algorithmCurves;
+
 protected:
   std::vector<ProblemPtr> folds;
   size_t chunkSize;
   SolverVerbosity verbosity;
   string problemName;
+  std::vector<std::vector< std::pair<size_t, double> > > foldCurves;
 
   ExpressionPtr solveProblem(ExecutionContext& context, const ProblemPtr& problem, const SolverPtr& learner)
   {
@@ -126,16 +129,16 @@ protected:
       context.progressCallback(new ProgressionState(foldNb, folds.size(), "Folds"));
       context.enterScope("Fold " + string((int) foldNb));
 
-      double time = Time::getHighResolutionCounter();
-      
       size_t numExamples = folds[foldNb]->getObjective(0).staticCast<SupervisedLearningObjective>()->getData()->getNumRows();
-      if (verbosity >= verbosityDetailed)
-        learner.staticCast<IncrementalLearnerBasedLearner>()->getLearner()->setCallback(
-          new EvaluationPeriodIncrementalLearnerCallback(
-          new EvaluatorIncrementalLearnerCallback("RRSE", folds[foldNb]->getValidationObjective(0)), numExamples / 500));
+      
+      CurveBuilderIncrementalLearnerCallbackPtr curve = new CurveBuilderIncrementalLearnerCallback("RRSE", folds[foldNb]->getValidationObjective(0), numExamples / 500);
+      learner.staticCast<IncrementalLearnerBasedLearner>()->getLearner()->setCallback(curve);
 
+      double time = Time::getHighResolutionCounter();
       ExpressionPtr model = solveProblem(context, folds[foldNb], learner);
       time = Time::getHighResolutionCounter() - time;
+      
+      foldCurves.push_back(curve->getCurve());
       
       double testingScore = folds[foldNb]->getValidationObjective(0)->evaluate(context, model);
       ObjectivePtr rmse = rmseRegressionObjective(folds[foldNb]->getValidationObjective(0).staticCast<SupervisedLearningObjective>()->getData(), folds[foldNb]->getValidationObjective(0).staticCast<SupervisedLearningObjective>()->getSupervision());
@@ -160,13 +163,13 @@ protected:
     std::vector<SolverPtr> solvers;
 
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
+    /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
+    */solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     
     for (size_t s = 0; s < solvers.size(); ++s)
     {
@@ -174,6 +177,16 @@ protected:
       context.enterScope(algoNames[s]);
       solvers[s]->setVerbosity(verbosity);
       std::vector<std::pair<string, ScalarVariableMeanAndVariancePtr> > results = doCrossValidation(context, folds, solvers[s], algoNames[s]);
+
+      std::vector< std::pair< size_t, double > > meanCurve;
+      for (size_t i = 0; i < foldCurves[0].size(); ++i)
+        meanCurve.push_back(foldCurves[0][i]);
+      for (size_t i = 1; i < foldCurves.size(); ++i)
+        for (size_t j = 0; j < meanCurve.size(); ++j)
+          meanCurve[j].second += foldCurves[i][j].second;
+      for (size_t i = 0; i < meanCurve.size(); ++i)
+        meanCurve[i].second /= foldCurves.size();
+      algorithmCurves.push_back(std::make_pair(algoNames[s], meanCurve));
 
       for (size_t r = 0; r < results.size(); ++r)
       {
@@ -187,6 +200,8 @@ protected:
 
 };
 
+typedef ReferenceCountedObjectPtr<XValWorkUnit> XValWorkUnitPtr;
+
 class DiscoveryScience : public WorkUnit
 {
 public:
@@ -197,27 +212,23 @@ public:
     lbCppMLLibraryCacheTypes(context);
     
     context.getRandomGenerator()->setSeed(randomSeed);
-    
-
-    
-    
-    /*CompositeWorkUnitPtr subWorkUnits = new CompositeWorkUnit("Discovery Science", xValProblems.size());
-    for (size_t p = 0; p < xValProblems.size(); ++p)
-      subWorkUnits->setWorkUnit(p, new XValWorkUnit(xValProblems[p], chunkSize, (SolverVerbosity) verbosity, problemnames[p]));
-    subWorkUnits->setPushChildrenIntoStackFlag(false);
-    context.run(subWorkUnits);
-    */
-    /*
-    for (size_t i = 0; i < xValProblems.size(); ++i)
-      context.run(new XValWorkUnit(xValProblems[i], chunkSize, (SolverVerbosity) verbosity, problemnames[i]), false);
-      */
 
     std::pair<string, std::vector<ProblemPtr> > problem = createProblem(context, datasetPath, problemNb);
-    /*for (size_t i = 0; i < problems.size(); ++i)
-      context.run(new XValWorkUnit(problems[i].second, chunkSize, (SolverVerbosity) verbosity, problems[i].first), false);*/
-    //std::vector<ProblemPtr> gekkeFold = std::vector<ProblemPtr>(1, problems[0].second[3]);
-    //context.run(new XValWorkUnit(gekkeFold, chunkSize, (SolverVerbosity) verbosity, problems[0].first));
-    context.run(new XValWorkUnit(problem.second, chunkSize, (SolverVerbosity) verbosity, problem.first), false);
+    XValWorkUnitPtr workunit = new XValWorkUnit(problem.second, chunkSize, (SolverVerbosity) verbosity, problem.first);
+    
+    context.run(workunit.staticCast<WorkUnit>(), false);
+
+    context.enterScope("Curve");
+    for (size_t i = 0; i < workunit->algorithmCurves[0].second.size(); ++i)
+    {
+      context.enterScope("Iteration " + string((int) workunit->algorithmCurves[0].second[i].first));
+      context.resultCallback("Iterations", workunit->algorithmCurves[0].second[i].first);
+      for (size_t j = 0; j < workunit->algorithmCurves.size(); ++j)
+        context.resultCallback(workunit->algorithmCurves[j].first, workunit->algorithmCurves[j].second[i].second);
+      context.leaveScope();
+    }
+    context.leaveScope();
+
     
     return new Boolean(true);
   }

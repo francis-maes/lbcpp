@@ -54,6 +54,7 @@ public:
     }
     addTrainingSample(context, expression, input, output);
   }
+  
   virtual void addTrainingSample(ExecutionContext& context, ExpressionPtr expression, const DenseDoubleVectorPtr& input, const DenseDoubleVectorPtr& output) const = 0;
 
   virtual void initialiseLearnerStatistics(ExecutionContext& context, ExpressionPtr model, ObjectPtr data) const {}
@@ -164,6 +165,26 @@ protected:
   ObjectivePtr objective;
 };
 
+class CurveBuilderIncrementalLearnerCallback : public IncrementalLearnerCallback
+{
+public:
+  CurveBuilderIncrementalLearnerCallback(string name, ObjectivePtr evaluationObjective, size_t period) : name(name), objective(evaluationObjective), period(period), numCalls(0) {}
+  
+  virtual void exampleAdded(ExecutionContext& context, ExpressionPtr model)
+    {if (++numCalls % period == 0) curve.push_back(std::make_pair(numCalls, objective->evaluate(context, model)));}
+
+  std::vector< std::pair<size_t, double> > getCurve()
+    {return curve;}
+protected:
+  string name;
+  ObjectivePtr objective;
+  size_t period;
+  size_t numCalls;
+  std::vector< std::pair<size_t, double> > curve;
+};
+
+typedef ReferenceCountedObjectPtr<CurveBuilderIncrementalLearnerCallback> CurveBuilderIncrementalLearnerCallbackPtr;
+
 class EvaluationPeriodIncrementalLearnerCallback : public IncrementalLearnerCallback
 {
 public:
@@ -177,6 +198,7 @@ protected:
   size_t numCalls;
 };
 
+typedef ReferenceCountedObjectPtr<EvaluationPeriodIncrementalLearnerCallback> EvaluationPeriodIncrementalLearnerCallbackPtr;
 
 }; /* namespace lbcpp */
 
