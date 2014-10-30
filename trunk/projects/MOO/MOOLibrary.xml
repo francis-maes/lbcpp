@@ -133,6 +133,7 @@
     <variable type="Boolean" name="runIncrementalXT" description="Run surrogate-based optimization with incremental extremely randomized trees [false]"/>
     <variable type="Boolean" name="runGP" description="Run surrogate-based optimization with gaussian processes [false]"/>
     <variable type="Boolean" name="runParEGO" description="Run the ParEGO algorithm [false]"/>
+    <variable type="Boolean" name="runIMauve" description="Run the iMauve algorithm [false]"/>
     <variable type="Boolean" name="uniformSampling" description="Initialize surrogate-based optimizers with uniform sampling [false]"/>
     <variable type="Boolean" name="latinHypercubeSampling" description="Initialize surrogate-based optimizers with latin hypercube sampling [false]"/>
     <variable type="Boolean" name="modifiedLatinHypercubeSampling" description="Initialize surrogate-based optimizers with modified latin hypercube sampling [false]"/>

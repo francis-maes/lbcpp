@@ -650,7 +650,7 @@ void HoeffdingTreeNode::split(ExecutionContext& context, size_t testVariable, do
   right = new HoeffdingTreeNode(model->clone(context));
   left->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics());
   right->setLearnerStatistics(new HoeffdingTreeIncrementalLearnerStatistics());
-    
+
   this->testVariable = testVariable;
   this->testThreshold = testThreshold;
 }
@@ -676,7 +676,10 @@ ObjectPtr HoeffdingTreeNode::compute(ExecutionContext &context, const std::vecto
   DenseDoubleVectorPtr inputVector = new DenseDoubleVector(inputs.size(), 0.0);
   for (size_t i = 0; i < inputs.size(); ++i)
     inputVector->setValue(i, Double::get(inputs[i]));
-  return findLeaf(inputVector).staticCast<HoeffdingTreeNode>()->getModel()->compute(context, inputs);
+  HoeffdingTreeNodePtr leaf = findLeaf(inputVector).staticCast<HoeffdingTreeNode>();
+  double mean = leaf->getModel()->compute(context, inputs);
+  double stddev = leaf->getModel()->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>()->getResidualStandardDeviation();
+  return new ScalarVariableConstMeanAndVariance(mean, stddev * stddev);
 }
 
 DataVectorPtr HoeffdingTreeNode::computeSamples(ExecutionContext& context, const TablePtr& data, const IndexSetPtr& indices) const
@@ -684,7 +687,7 @@ DataVectorPtr HoeffdingTreeNode::computeSamples(ExecutionContext& context, const
   DVectorPtr vector = new DVector(indices->size());
   size_t i = 0;
   for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-    vector->set(i++, Double::get(compute(context, data->getRow(*it))));
+    vector->set(i++, compute(context, data->getRow(*it))->toDouble());
   return new DataVector(indices, vector);
 }
 
