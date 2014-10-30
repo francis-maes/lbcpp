@@ -51,7 +51,10 @@ public:
                       numRuns(10),
                       verbosity(1),
                       optimizerVerbosity(1),
-                      problemIdx(1) {}
+                      problemIdx(1),
+                      chunkSize(50),
+                      delta(0.01),
+                      threshold(0.05) {}
   
   virtual ObjectPtr run(ExecutionContext& context)
   {
@@ -80,6 +83,7 @@ protected:
   bool runIncrementalXT;         /**< Run with incremental extremely randomized trees                  */
   bool runGP;                    /**< Run with gaussian processes                                      */
   bool runParEGO;                /**< Run with ParEGO                                                  */
+  bool runIMauve;                /**< Run with iMauve                                                  */
 
   bool uniformSampling;          /**< Run with uniform sampling                                        */
   bool latinHypercubeSampling;   /**< Run with latin hypercube sampling                                */
@@ -102,6 +106,10 @@ protected:
   size_t optimizerVerbosity;
   
   size_t problemIdx;             /**< The problem to run (1-6)                                         */
+
+  size_t chunkSize;
+  double delta;
+  double threshold;
    
   /*
    ** Single Objective
@@ -268,6 +276,36 @@ protected:
         solvers.push_back(SolverSettings(batchSurrogateBasedSolver(edgeSampler, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, RF, Expected Improvement, Edge Sampling", &bestEI));        
       }
     } // runRandomForests
+
+    if (runIMauve || runAll)
+    {
+      // create iMauve learner
+      IncrementalLearnerPtr learner = hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner());
+      
+      if (uniformSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(uniform, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, iMauve, Expected Improvement, Uniform", &bestEI));
+      }
+      
+      if (latinHypercubeSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercube, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, iMauve, Expected Improvement, Latin Hypercube", &bestEI));
+      }
+      
+      if (modifiedLatinHypercubeSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(latinHypercubeModified, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, iMauve, Expected Improvement, Modified Latin Hypercube", &bestEI));
+      }
+      
+      if (edgeSampling || runAll)
+      {
+        FitnessPtr bestEI;
+        solvers.push_back(SolverSettings(incrementalSurrogateBasedSolver(edgeSampler, learner, innerSolver, encoder, expectedImprovementSelectionCriterion(bestEI), numEvaluations), numRuns, numEvaluations, evaluationPeriod, evaluationPeriodFactor, verbosity, optimizerVerbosity, "SBO, iMauve, Expected Improvement, Edge Sampling", &bestEI));        
+      }
+    } // runIMauve
     
     std::vector<ProblemPtr> problemVariants(numRuns);
     for (size_t i = 0; i < problemVariants.size(); ++i)
