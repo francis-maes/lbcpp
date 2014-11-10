@@ -28,6 +28,7 @@ public:
 
   virtual ObjectPtr run(ExecutionContext& context)
   {
+    IncrementalSplittingCriterionPtr totalMauve = hoeffdingBoundTotalMauveIncrementalSplittingCriterion(1, 0.05, 0.1);
     IncrementalSplittingCriterionPtr extMauve = hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(1, 0.05, 0.1);
     IncrementalSplittingCriterionPtr mauve = hoeffdingBoundMauveIncrementalSplittingCriterion(1, 0.05, 0.1);
     IncrementalSplittingCriterionPtr sdr = hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(1, 0.05, 0.1);
@@ -73,11 +74,10 @@ public:
         rightMVRS->push(sample, y);
       }
       totalMVRS->push(sample, y);
-      std::pair<size_t, double> extMauveResult = extMauveSplitQuality(extMauve, leftMVRS, rightMVRS);
       if (i > 10)
       {
-        context.resultCallback("extMauveAttribute", extMauveResult.first);
-        context.resultCallback("extMauveQuality", extMauveResult.second);
+        context.resultCallback("extMauveQuality", extMauve->splitQuality(totalMVRS, leftMVRS, rightMVRS));
+        context.resultCallback("totalMauveQuality", totalMauve->splitQuality(totalMVRS, leftMVRS, rightMVRS));
         context.resultCallback("Mauve", mauve->splitQuality(leftVariance, leftCorr, rightVariance, rightCorr));
         context.resultCallback("sdr", sdr->splitQuality(leftVariance, leftCorr, rightVariance, rightCorr));
         context.resultCallback("Total left RSD", leftMVRS->getResidualStandardDeviation());

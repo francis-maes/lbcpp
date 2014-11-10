@@ -104,6 +104,11 @@ public:
   virtual Split findBestSplit(ExecutionContext& context, TreeNodePtr leaf) const = 0;
   virtual double splitQuality(ScalarVariableMeanAndVariancePtr leftVariance, PearsonCorrelationCoefficientPtr leftCorrelation,
     ScalarVariableMeanAndVariancePtr rightVariance, PearsonCorrelationCoefficientPtr rightCorrelation) const = 0;
+  virtual double splitQuality(MultiVariateRegressionStatisticsPtr total, MultiVariateRegressionStatisticsPtr left, MultiVariateRegressionStatisticsPtr right) const
+  {
+    jassertfalse;
+    return 0.0;
+  }
 };
 
 typedef ReferenceCountedObjectPtr<IncrementalSplittingCriterion> IncrementalSplittingCriterionPtr;
