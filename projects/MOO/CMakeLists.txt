@@ -23,6 +23,7 @@ SET(MOO_SOURCES
   TestSBOInnerOptimizers.h
   SBOExperiments.h
   SBOEnsembleSizeExperiments.h
+  SBOIMauveParameterOptimization.h
   PerceptronTest.h
   LinearRegressionTests.h
   HoeffdingTreeLearnerExperiments.h

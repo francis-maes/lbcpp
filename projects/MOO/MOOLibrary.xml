@@ -13,6 +13,9 @@
   <class name="RosenbrockProblem" base="ProblemFromSharkObjectiveFunction"/>
   <class name="RosenbrockRotatedProblem" base="ProblemFromSharkObjectiveFunction"/>
 
+  <class name="OneDimFunctionProblem" base="Problem"/>
+  <class name="TwoDimFunctionProblem" base="Problem"/>
+
   <class name="ZDTMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
   <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
@@ -149,6 +152,23 @@
     <variable type="PositiveInteger" name="problemIdx" shortName="p" description="The problem to run (1-6) [1]"/>
   </class>
 
+  <class name="SBOIMauveParameterOptimization" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations" shortName="n" description="Number of evaluations [1000]"/>
+    <variable type="Boolean" name="runBaseline" description="Run baseline methods [false]"/>
+    <variable type="PositiveInteger" name="populationSize" description="Population size for baseline methods and inner optimization of surrogate-based methods [20]"/>
+    <variable type="Boolean" name="uniformSampling" description="Initialize surrogate-based optimizers with uniform sampling [false]"/>
+    <variable type="Boolean" name="latinHypercubeSampling" description="Initialize surrogate-based optimizers with latin hypercube sampling [false]"/>
+    <variable type="Boolean" name="modifiedLatinHypercubeSampling" description="Initialize surrogate-based optimizers with modified latin hypercube sampling [false]"/>
+    <variable type="Boolean" name="edgeSampling" description="Initialize surrogate-based optimizers with edge sampling [false]"/>
+    <variable type="Double" name="evaluationPeriod" description="Number of seconds between evaluations in function of CPU time [10.0]"/>
+    <variable type="Double" name="evaluationPeriodFactor" description="After each evaluation for CPU time, evaluationPeriod is multiplied by this factor [1.0]"/>
+    <variable type="PositiveInteger" name="numDims" shortName="d" description="Dimensionality of test problems [6]"/>
+    <variable type="PositiveInteger" name="numRuns" shortName="r" description="Number of times to run each method on each problem [10]"/>
+    <variable type="PositiveInteger" name="verbosity" description="Verbosity of output, verbosity >= 2 gives curves for each run [1]"/>
+    <variable type="PositiveInteger" name="optimizerVerbosity" description="Verbosity of optimizers [1]"/>
+    <variable type="PositiveInteger" name="problemIdx" shortName="p" description="The problem to run (1-6) [1]"/>
+  </class>
+  
   <class name="SBOEnsembleSizeExperiments" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations" shortName="n" description="Number of evaluations [1000]"/>
     <variable type="Double" name="evaluationPeriod" description="Number of seconds between evaluations in function of CPU time [10.0]"/>

@@ -45,6 +45,7 @@ public:
 			return 4 * x - 2;
 		  else
 			return -4 * x + 4;
+      case 2: return sin(3*2*M_PI*x);
 	  default: return 0;
 	}
   }
@@ -82,7 +83,7 @@ protected:
 class OneDimFunctionProblem : public Problem
 {
 public:
-  OneDimFunctionProblem(size_t functionIndex)
+  OneDimFunctionProblem(size_t functionIndex = 0)
   {
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(1, std::make_pair(0, 1.0))));
     addObjective(new OneDimFunctionObjective(functionIndex));
@@ -92,7 +93,7 @@ public:
 class TwoDimFunctionProblem : public Problem
 {
 public:
-  TwoDimFunctionProblem(size_t functionIndex)
+  TwoDimFunctionProblem(size_t functionIndex = 0)
   {
     setDomain(new ScalarVectorDomain(std::vector< std::pair<double, double> >(2, std::make_pair(-1.0, 1.0))));
     addObjective(new TwoDimFunctionObjective(functionIndex));
@@ -122,7 +123,7 @@ public:
     //problems.push_back(new FriedmannProblem());
 	  problems.push_back(new OneDimFunctionProblem(0));*/
 	  problems.push_back(new OneDimFunctionProblem(1));
-    problems.push_back(new TwoDimFunctionProblem(0));
+    problems.push_back(new OneDimFunctionProblem(2));
     //problems.push_back(new LEXPProblem());
     //problems.push_back(new LOSCProblem());
 
@@ -140,7 +141,7 @@ public:
     
       // dit veranderen van perceptronIncrementalLearner naar hoeffdingTreeLearner()
       
-      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(50, delta, threshold), linearLeastSquaresRegressionIncrementalLearner()));
+      SolverPtr learner = incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(50, delta, threshold), linearLeastSquaresRegressionIncrementalLearner()));
       learner->setVerbosity((SolverVerbosity)verbosity);
       //learner.staticCast<IncrementalLearnerBasedLearner>()->baseProblem = baseProblem;
     
@@ -232,7 +233,11 @@ private:
       input[0].staticCast<Double>()->set(x);
       problemInput->setValue(0, x);
       context.resultCallback("supervision", baseProblem->evaluate(context, problemInput)->getValue(0));
-      context.resultCallback("prediction", expression->compute(context, input));
+      ObjectPtr result = expression->compute(context, input);
+      ScalarVariableConstMeanAndVariancePtr r = result.staticCast<ScalarVariableConstMeanAndVariance>();
+      context.resultCallback("prediction", r->getMean());
+      context.resultCallback("prediction + stddev", r->getMean() + r->getStandardDeviation());
+      context.resultCallback("prediction - stddev", r->getMean() - r->getStandardDeviation());
       context.leaveScope();
     }
     //context.leaveScope();
