@@ -61,8 +61,8 @@ public:
     /*algoNames.push_back("iTotalMauveP");
     algoNames.push_back("iExtMauveLLSQ");
     algoNames.push_back("iExtMauveP");
-    algoNames.push_back("iMauveLLSQ");
-    algoNames.push_back("iMauveP");
+    */algoNames.push_back("iMauveLLSQ");
+    /*algoNames.push_back("iMauveP");
     algoNames.push_back("FIMTllsq");*/
     algoNames.push_back("FIMTp");
     
@@ -166,8 +166,8 @@ protected:
     /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundTotalMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundExtendedMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
-    solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
+    */solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
+    /*solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundMauveIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(chunkSize, delta, threshold), linearLeastSquaresRegressionIncrementalLearner())));
     */solvers.push_back(incrementalLearnerBasedLearner(hoeffdingTreeIncrementalLearner(hoeffdingBoundStdDevReductionIncrementalSplittingCriterion(chunkSize, delta, threshold), perceptronIncrementalLearner(20, 0.1, 0.005))));
     
