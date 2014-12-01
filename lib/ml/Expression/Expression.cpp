@@ -678,7 +678,7 @@ ObjectPtr HoeffdingTreeNode::compute(ExecutionContext &context, const std::vecto
     inputVector->setValue(i, Double::get(inputs[i]));
   HoeffdingTreeNodePtr leaf = findLeaf(inputVector).staticCast<HoeffdingTreeNode>();
   double mean = Double::get(leaf->getModel()->compute(context, inputs));
-  double stddev = leaf->getModel()->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>()->getResidualStandardDeviation();
+  double stddev = leaf->getModel()->getLearnerStatistics() ? leaf->getModel()->getLearnerStatistics().staticCast<MultiVariateRegressionStatistics>()->getResidualStandardDeviation() : 0.0;
   return new ScalarVariableConstMeanAndVariance(mean, stddev * stddev);
 }
 
