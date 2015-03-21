@@ -1,0 +1,1 @@
+Lbcpp is a toolbox for machine learning. It aims to streamline the process of setting up experiments and analyzing their results.
